@@ -1,0 +1,286 @@
+# Planning Rules — Sprint 3 / Sprint 4
+# Goal → Abstract Task decomposition patterns.
+#
+# Rules define HOW to break down a user goal into abstract Agent tasks.
+# Sprint 3 uses keyword matching (rule-based, deterministic, no LLM).
+#
+# Sprint 4 adds "capability" to each task config for Executor routing.
+#   capability: TaskType → handler dispatch (e.g., "simple.retrieve" → SimpleRetrieveHandler)
+#   TaskType describes the task category; capability routes to the implementation.
+#
+# CRITICAL:
+#   - Do NOT include specific tools, indicators, or data sources.
+#     Planner generates ABSTRACT tasks; Executor maps to handlers via capability.
+#   - TaskType must be generic Agent capability: RETRIEVE/PROCESS/ANALYZE/GENERATE/VALIDATE/DECIDE.
+#   - Planner does not know about DXY, US10Y, Yahoo, or any domain-specific entities.
+#
+# Future (Sprint 5+):
+#   - Replace "simple.*" capabilities with real ones: "macro.yahoo", "macro.signal", etc.
+#   - LLMPlanner reads these rules as few-shot examples for LLM task decomposition.
+
+rules:
+  # ── Macro Environment Analysis (7-step DAG) ────────────────────────
+  - rule_id: "macro_environment_analysis"
+    description: "Decompose a macro environment analysis request (full 7-step pipeline)"
+    trigger_keywords:
+      - "macro"
+      - "environment"
+      - "economy"
+      - "economic"
+      - "financial conditions"
+      - "market environment"
+    tasks:
+      # Step 1: Collect
+      - id: "collect_market_data"
+        name: "Collect Market Data"
+        description: "Fetch current market data from available sources"
+        type: retrieve
+        priority: 1
+        dependencies: []
+        config:
+          capability: "simple.retrieve"
+      # Step 2: Normalize
+      - id: "normalize_market_data"
+        name: "Normalize Market Data"
+        description: "Normalize and validate retrieved market data"
+        type: process
+        priority: 2
+        dependencies: ["collect_market_data"]
+        config:
+          capability: "simple.process"
+      # Step 3: Signal
+      - id: "generate_signals"
+        name: "Generate Macro Signals"
+        description: "Generate structured signals from processed data via Signal Engine"
+        type: analyze
+        priority: 3
+        dependencies: ["normalize_market_data"]
+        config:
+          capability: "macro.signal"
+      # Step 4: Hypothesis
+      - id: "generate_hypothesis"
+        name: "Generate Macro Hypothesis"
+        description: "Formulate macro hypothesis from generated signals"
+        type: generate
+        priority: 4
+        dependencies: ["generate_signals"]
+        config:
+          capability: "macro.hypothesis"
+      # Step 5: Reflection
+      - id: "reflect_hypothesis"
+        name: "Reflect on Hypothesis"
+        description: "Critically review hypothesis beliefs via Reflection Engine"
+        type: validate
+        priority: 5
+        dependencies: ["generate_hypothesis"]
+        config:
+          capability: "macro.reflection"
+      # Step 6: Memory
+      - id: "persist_beliefs"
+        name: "Persist Beliefs to Memory"
+        description: "Record reviewed beliefs to long-term memory"
+        type: generate
+        priority: 6
+        dependencies: ["reflect_hypothesis"]
+        config:
+          capability: "macro.memory"
+      # Step 7: Narrative
+      - id: "generate_narrative"
+        name: "Generate Macro Narrative"
+        description: "Synthesize full cognitive chain into structured MacroNarrative"
+        type: generate
+        priority: 7
+        dependencies: ["persist_beliefs"]
+        config:
+          capability: "macro.narrative"
+
+  # ── Liquidity Analysis ──────────────────────────────────────────────
+  - rule_id: "liquidity_analysis"
+    description: "Decompose a liquidity analysis request"
+    trigger_keywords:
+      - "liquidity"
+      - "financial conditions"
+      - "tightening"
+      - "easing"
+      - "dollar"
+      - "funding"
+    tasks:
+      - id: "retrieve_liquidity_data"
+        name: "Retrieve Liquidity Data"
+        description: "Fetch current liquidity-related market data"
+        type: retrieve
+        priority: 1
+        dependencies: []
+        config:
+          capability: "simple.retrieve"
+      - id: "process_liquidity_data"
+        name: "Process Liquidity Data"
+        description: "Normalize and validate liquidity indicators"
+        type: process
+        priority: 2
+        dependencies: ["retrieve_liquidity_data"]
+        config:
+          capability: "simple.process"
+      - id: "analyze_liquidity"
+        name: "Analyze Liquidity Conditions"
+        description: "Evaluate liquidity signals from processed data"
+        type: analyze
+        priority: 3
+        dependencies: ["process_liquidity_data"]
+        config:
+          capability: "simple.analyze"
+      - id: "generate_liquidity_assessment"
+        name: "Generate Liquidity Assessment"
+        description: "Synthesize findings into a liquidity assessment"
+        type: generate
+        priority: 4
+        dependencies: ["analyze_liquidity"]
+        config:
+          capability: "simple.generate"
+
+  # ── Risk Assessment ─────────────────────────────────────────────────
+  - rule_id: "risk_assessment"
+    description: "Decompose a risk analysis request"
+    trigger_keywords:
+      - "risk"
+      - "volatility"
+      - "stress"
+      - "tail risk"
+      - "drawdown"
+      - "systemic"
+    tasks:
+      - id: "retrieve_risk_data"
+        name: "Retrieve Risk Data"
+        description: "Fetch volatility and risk-related market data"
+        type: retrieve
+        priority: 1
+        dependencies: []
+        config:
+          capability: "simple.retrieve"
+      - id: "process_risk_data"
+        name: "Process Risk Data"
+        description: "Normalize and validate risk indicators"
+        type: process
+        priority: 2
+        dependencies: ["retrieve_risk_data"]
+        config:
+          capability: "simple.process"
+      - id: "analyze_risk_signals"
+        name: "Analyze Risk Signals"
+        description: "Evaluate risk signals for elevated stress conditions"
+        type: analyze
+        priority: 3
+        dependencies: ["process_risk_data"]
+        config:
+          capability: "simple.analyze"
+      - id: "generate_risk_assessment"
+        name: "Generate Risk Assessment"
+        description: "Synthesize findings into risk assessment"
+        type: generate
+        priority: 4
+        dependencies: ["analyze_risk_signals"]
+        config:
+          capability: "simple.generate"
+
+  # ── Report Generation ───────────────────────────────────────────────
+  - rule_id: "report_generation"
+    description: "Decompose a report generation request"
+    trigger_keywords:
+      - "report"
+      - "summary"
+      - "briefing"
+      - "write"
+      - "document"
+      - "publish"
+    tasks:
+      - id: "retrieve_context"
+        name: "Retrieve Context Data"
+        description: "Fetch all relevant data and prior analysis"
+        type: retrieve
+        priority: 1
+        dependencies: []
+        config:
+          capability: "simple.retrieve"
+      - id: "compile_report"
+        name: "Compile Report"
+        description: "Synthesize data into structured report"
+        type: generate
+        priority: 2
+        dependencies: ["retrieve_context"]
+        config:
+          capability: "simple.generate"
+      - id: "validate_report"
+        name: "Validate Report"
+        description: "Verify report accuracy and completeness"
+        type: validate
+        priority: 3
+        dependencies: ["compile_report"]
+        config:
+          capability: "simple.validate"
+
+  # ── Data Collection Only ────────────────────────────────────────────
+  - rule_id: "data_collection"
+    description: "Decompose a data-only request"
+    trigger_keywords:
+      - "collect"
+      - "fetch"
+      - "data"
+      - "update"
+      - "refresh"
+      - "ingest"
+    tasks:
+      - id: "retrieve_requested_data"
+        name: "Retrieve Requested Data"
+        description: "Fetch the requested data from available sources"
+        type: retrieve
+        priority: 1
+        dependencies: []
+        config:
+          capability: "simple.retrieve"
+      - id: "process_collected_data"
+        name: "Process Collected Data"
+        description: "Normalize and validate the collected data"
+        type: process
+        priority: 2
+        dependencies: ["retrieve_requested_data"]
+        config:
+          capability: "simple.process"
+      - id: "validate_collected_data"
+        name: "Validate Collected Data"
+        description: "Verify data quality and completeness"
+        type: validate
+        priority: 3
+        dependencies: ["process_collected_data"]
+        config:
+          capability: "simple.validate"
+
+  # ── Default / Catch-all ─────────────────────────────────────────────
+  - rule_id: "default_analysis"
+    description: "Default decomposition for unrecognized analysis requests"
+    trigger_keywords:
+      - "__default__"
+    tasks:
+      - id: "retrieve_relevant_data"
+        name: "Retrieve Relevant Data"
+        description: "Fetch data relevant to the request from available sources"
+        type: retrieve
+        priority: 1
+        dependencies: []
+        config:
+          capability: "simple.retrieve"
+      - id: "analyze_retrieved_data"
+        name: "Analyze Retrieved Data"
+        description: "Process and analyze the retrieved data"
+        type: analyze
+        priority: 2
+        dependencies: ["retrieve_relevant_data"]
+        config:
+          capability: "simple.analyze"
+      - id: "generate_output"
+        name: "Generate Output"
+        description: "Synthesize analysis into a structured output"
+        type: generate
+        priority: 3
+        dependencies: ["analyze_retrieved_data"]
+        config:
+          capability: "simple.generate"

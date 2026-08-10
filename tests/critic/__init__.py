@@ -1,0 +1,1 @@
+"""Tests — Critic module."""

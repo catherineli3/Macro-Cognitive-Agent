@@ -1,0 +1,370 @@
+{
+  "milestone": "F1.7",
+  "title": "Ground Truth Learning Audit — Observation/Evidence/Validation Data Flow & Accuracy Trace & Framework Formation Gate Analysis",
+  "generated_at": "2026-07-18T13:30:00+00:00",
+  "classification": "FINDINGS_ONLY — no agent modifications",
+
+  "p1_observation_evidence_validation": {
+    "summary": "Observation → Evidence → Validation 三层已架构分离，但存在跨层引用导致 evidence inflation。三层定义：Observation（TransmissionEdge.observation_count）→ Evidence（ResearchFinding.evidence['observations']）→ Validation（PrincipleEvidence 的 correct_count/incorrect_count + record_outcome 触发的 accuracy 更新）",
+    "separation_status": "PARTIALLY_SEPARATED — 字段层面分离，但值层面存在传递复用",
+    "inflation_root_cause": "同一个 TransmissionEdge.observation_count 被复制到多个 ResearchFinding 中（F1/F2 各一份副本），然后在 PrincipleExtractor 中用 sum() 跨 finding 累加，造成重复计数",
+
+    "data_flow_steps": [
+      {
+        "step": 0,
+        "layer": "Observation",
+        "source": "src/transmission/transmission_graph.py:476",
+        "operation": "edge.observation_count += 1",
+        "trigger": "apply_update() — 每次 transmission edge 被评估（无论正确与否）",
+        "frequency": "每个 edge 每 cycle 最多 1 次"
+      },
+      {
+        "step": 1,
+        "layer": "Observation → Evidence bridge",
+        "source": "src/transmission/transmission_graph.py:407-408",
+        "operation": "SegmentDiagnosis.evidence['observations'] = edge.observation_count",
+        "note": "诊断时拷贝 edge 当时累计值到每个 segment"
+      },
+      {
+        "step": 2a,
+        "layer": "Evidence (F1 finding)",
+        "source": "src/research/findings/engine.py:101,118,157,178",
+        "operation": "ResearchFinding.evidence['observations'] = edge.observation_count",
+        "note": "F1（最可靠）、F2（断裂）等 finding 类型直接拷贝 edge 累计值"
+      },
+      {
+        "step": 2b,
+        "layer": "Evidence (Note)",
+        "source": "src/research/findings/note_generator.py:62",
+        "operation": "ResearchNote.evidence_count = sum(segment.evidence['observations'])",
+        "note": "一条 chain 上多个 segment 的 observation 加总"
+      },
+      {
+        "step": 3,
+        "layer": "Evidence → Principle (inflation point)",
+        "source": "src/research/principles/principle_extractor.py:153,331",
+        "operation": "total_obs = sum(f.evidence.get('observations', 0) for f in findings)",
+        "note": "▲ CORE INFLATION: 多个 finding 引用同一个 edge, sum() 将所有 finding 的 observation 加总, 造成同一 edge 被多次计数"
+      },
+      {
+        "step": 4a,
+        "layer": "Validation (G3 feedback)",
+        "source": "src/schemas/research.py:123",
+        "operation": "PrincipleEvidence.total_observations += 1 (via record_outcome)",
+        "trigger": "EvolutionPipeline._run_evidence_feedback() — 每 cycle 每 principle 一次"
+      },
+      {
+        "step": 4b",
+        "layer": "Validation (G3 feedback)",
+        "source": "src/schemas/research.py:126",
+        "operation": "PrincipleEvidence.correct_count += 1 (when thesis_correct=True)",
+        "trigger": "同上"
+      },
+      {
+        "step": 4c",
+        "layer": "Validation (G3 feedback)",
+        "source": "src/schemas/research.py:136",
+        "operation": "PrincipleEvidence.accuracy = computed_accuracy = correct/(correct+incorrect)",
+        "trigger": "同上, record_outcome 内部计算"
+      }
+    ],
+
+    "inflation_breakdown": {
+      "observed_final_state": {
+        "total_raw_observations": 1314932,
+        "independent_validations": 372,
+        "regime_confirmations": 12,
+        "overall_inflation_ratio": 3534.8
+      },
+      "inflation_layer_1_same_edge_multiple_findings": {
+        "description": "同一个 edge 产生 F1 和 F2 两个 finding, 各带一份完整的 observation_count 副本",
+        "example": "edge X observation_count=100 → F1 finding evidence['observations']=100, F2 finding evidence['observations']=100",
+        "inflation_factor": "≈2x (per edge per finding type)"
+      },
+      "inflation_layer_2_cross_finding_accumulation": {
+        "description": "PrincipleExtractor 中 total_obs = sum(f.evidence['observations'] for f in findings), 把同一 domain 的所有 finding 的 observations 加总",
+        "inflation_factor": "≈N_findings_per_domain x (取决于每个 domain 有多少 finding)"
+      },
+      "inflation_layer_3_g3_record_outcome": {
+        "description": "record_outcome 在已有的 inflated total_observations 基础上每 cycle 再 +1",
+        "inflation_factor": "≈1x (累加而非倍增，影响较小)"
+      },
+      "actual_independent_signal": {
+        "description": "correct_count (93) 和 incorrect_count (0) 才是真正的独立验证信号，来自 G3 的 record_outcome",
+        "count": 93,
+        "vs_raw_obs": "93 vs 328733 per principle — 99.97% 的 total_observations 不是独立验证"
+      }
+    }
+  },
+
+  "p2_accuracy_modification_paths": {
+    "summary": "仅存在 1 个运行时修改 PrincipleEvidence.accuracy 的路径: record_outcome()。但该路径的 thesis_correct 信号来自内部推导（非外部 ground truth），形成自指循环。",
+    "runtime_write_paths_count": 1,
+    "initialization_only_paths_count": 2,
+    "read_only_paths_count": 5,
+
+    "unique_runtime_write_path": {
+      "id": "PATH_A_record_outcome",
+      "call_chain": [
+        "EvolutionPipeline.run() → Step 2c: _run_evidence_feedback()",
+        "  → _determine_thesis_correctness() → returns bool thesis_correct",
+        "  → p.evidence.record_outcome(correct=thesis_correct)",
+        "  → self.accuracy = self.computed_accuracy  (research.py:136)"
+      ],
+      "file_locations": {
+        "entry": "src/research/evolution/evolution_pipeline.py:199 (run, Step 2c)",
+        "feedback_call": "src/research/evolution/evolution_pipeline.py:415 (p.evidence.record_outcome)",
+        "thesis_signal": "src/research/evolution/evolution_pipeline.py:424-461 (_determine_thesis_correctness)",
+        "accuracy_write": "src/schemas/research.py:136 (self.accuracy = self.computed_accuracy)"
+      },
+      "thesis_correct_signal_sources": [
+        {
+          "priority": 1,
+          "signal": "Framework accuracy_trajectory",
+          "logic": "recent[-5:] 中 <0.5 比例 ≤40% → correct=True",
+          "source_code": "evolution_pipeline.py:433-443",
+          "self_referential": true,
+          "note": "Framework accuracy 本身来自 PrincipleEvidence.accuracy (framework_evaluator.py:96 读取 p.evidence.accuracy), 形成闭环"
+        },
+        {
+          "priority": 2,
+          "signal": "Evolution result (promotions vs conflicts)",
+          "logic": "promotions>0 && conflicts==0 → True; conflicts>0 && promotions==0 → False",
+          "source_code": "evolution_pipeline.py:446-452",
+          "self_referential": false,
+          "note": "只有在 promotion 或 conflict 发生时才有区分度"
+        },
+        {
+          "priority": 3,
+          "signal": "Current result (findings_processed)",
+          "logic": "findings_processed>0 && conflicts==0 → True",
+          "source_code": "evolution_pipeline.py:455-458",
+          "self_referential": false,
+          "note": "synthetic data 中几乎总是 conflicts==0, 因此几乎总是返回 True"
+        },
+        {
+          "priority": 4,
+          "signal": "Fallback",
+          "logic": "return True (unconditional)",
+          "source_code": "evolution_pipeline.py:461",
+          "self_referential": false,
+          "note": "当所有信号都缺失时, 默认标记为正确 → 产生 upward bias"
+        }
+      ],
+      "circularity_diagram": "PrincipleEvidence.accuracy → FrameworkEvaluator.compute_accuracy() 读取 → Framework.accuracy_trajectory → _determine_thesis_correctness() Signal 1 → record_outcome(correct) → PrincipleEvidence.accuracy — CLOSED LOOP, 无外部 ground truth"
+    },
+
+    "initialization_paths": [
+      {
+        "id": "PATH_B_create_principle",
+        "source": "src/research/principles/admission_gate.py:163",
+        "operation": "accuracy=0.0 (hardcoded)",
+        "note": "该路径未被当前 pipeline 调用（pipeline 使用 PrincipleExtractor）"
+      },
+      {
+        "id": "PATH_C_dataclass_default",
+        "source": "src/schemas/research.py:92",
+        "operation": "accuracy: float = 0.0 (dataclass default)",
+        "note": "新 PrincipleEvidence 实例默认值"
+      }
+    ],
+
+    "paths_excluded": [
+      {
+        "candidate": "Framework → Principle accuracy back-write",
+        "result": "NOT FOUND — FrameworkStore.update_accuracy() 写入 Framework.accuracy_trajectory, 不写入 PrincipleEvidence.accuracy",
+        "verification": "src/research/framework/framework_store.py:106"
+      },
+      {
+        "candidate": "Belief → Principle accuracy back-write",
+        "result": "NOT FOUND — BeliefLifecycleManager 只读取 principle strength_score, 不写回",
+        "verification": "src/research/evolution/belief_lifecycle.py:141"
+      },
+      {
+        "candidate": "Snapshot deserialization → accuracy modification",
+        "result": "NOT FOUND — SnapshotReader 加载为 raw dict, 不重构 schema 对象",
+        "verification": "src/research/snapshot/snapshot_reader.py:138-141"
+      },
+      {
+        "candidate": "Snapshot export → accuracy modification",
+        "result": "NOT FOUND — SnapshotWriter 只读 agent 状态, 仅序列化",
+        "verification": "src/research/snapshot/snapshot_writer.py:143 comment"
+      },
+      {
+        "candidate": "PrincipleExtractor._update_existing_principle → accuracy modification",
+        "result": "NOT FOUND — 该方法更新 total_observations/channels/sustained_cycles, 不触碰 accuracy/correct_count/incorrect_count",
+        "verification": "src/research/principles/principle_extractor.py:143-190"
+      }
+    ],
+
+    "accuracy_100cycle_summary": {
+      "all_principles_perfect": true,
+      "total_correct_predictions_per_principle": 93,
+      "total_incorrect_predictions_per_principle": 0,
+      "computed_accuracy_per_principle": 1.0,
+      "root_cause_of_perfection": "G3 _determine_thesis_correctness() 在 synthetic data 中几乎总是返回 True (Signal 3: findings_processed>0 && conflicts==0)，导致所有 prediction outcome 都是 correct, 从不产生 incorrect_count",
+      "structural_concern": "100% accuracy 在真实宏观经济研究中不可能出现 — 说明当前的 assessment signal 不具备区分度"
+    }
+  },
+
+  "p3_framework_formation_audit": {
+    "summary": "100 cycle 后 Framework=0 的唯一原因: PrincipleClusterDetector.MIN_CLUSTER_SIZE=5 > 当前 eligible principles=4。系统在第一道门就退出了，从未到达 co-activation 计算或 DFS 连通分量检测。",
+    "root_cause": "MIN_CLUSTER_SIZE = 5, eligible = 4 → detect_clusters() 在第 70 行返回 []",
+    "failure_level": "GATE_1_CLUSTER_SIZE — 第一道门, 最上游",
+    "blocking_code": "src/research/framework/cluster_detector.py:70-71: if len(eligible) < min_size: return []",
+
+    "full_pipeline_trace": [
+      {
+        "step": 1,
+        "component": "EvolutionPipeline.run() — Step 4: Framework Formation",
+        "source": "src/research/evolution/evolution_pipeline.py:219-237",
+        "action": "收集所有 mature/validated principles (4个) → 调用 orchestrator.attempt_formation()",
+        "data_in": "4 principles (all mature, acc=1.0, obs=328733 each)",
+        "status": "EXECUTED"
+      },
+      {
+        "step": 2,
+        "component": "FrameworkOrchestrator.attempt_formation()",
+        "source": "src/research/framework/framework_orchestrator.py:114-126",
+        "action": "调用 cluster_detector.detect_clusters(principles)",
+        "data_in": "4 eligible principles",
+        "status": "EXECUTED"
+      },
+      {
+        "step": 3,
+        "component": "PrincipleClusterDetector.detect_clusters() — Gate 1: MIN_CLUSTER_SIZE",
+        "source": "src/research/framework/cluster_detector.py:47-71",
+        "action": "检查 len(eligible) >= min_size → 4 < 5 → return []",
+        "data_in": "eligible={p1,p2,p3,p4}, min_size=5",
+        "result": "BLOCKED — 返回空列表, 下游全部短路",
+        "status": "CAUSE_OF_ZERO_FRAMEWORKS"
+      },
+      {
+        "step": 4,
+        "component": "PrincipleClusterDetector.detect_clusters() — Gate 2: MIN_CYCLES",
+        "source": "src/research/framework/cluster_detector.py:58-61",
+        "threshold": "total_cycles >= 5",
+        "status": "NOT_REACHED — Gate 1 已阻断"
+      },
+      {
+        "step": 5,
+        "component": "PrincipleClusterDetector.detect_clusters() — Gate 3: Co-activation Graph",
+        "source": "src/research/framework/cluster_detector.py:73-84",
+        "threshold": "co-activation rate >= 0.60 (MIN_COACTIVATION_RATE)",
+        "status": "NOT_REACHED — 但即使到达此处, 4 个 principle 的 co-activation 均为 1.0 (100%, 因为全部同时激活), 会通过"
+      },
+      {
+        "step": 6,
+        "component": "PrincipleClusterDetector.detect_clusters() — Gate 4: DFS Connected Components",
+        "source": "src/research/framework/cluster_detector.py:86-95",
+        "threshold": "component size >= 5 (min_size)",
+        "status": "NOT_REACHED — 但即使到达, 4 个 principle 形成完整的连通图, component size=4 < 5, 仍会被此 gate 阻断"
+      },
+      {
+        "step": 7,
+        "component": "FrameworkOrchestrator.form_candidate() — Gate 5: Size Check",
+        "source": "src/research/framework/framework_orchestrator.py:59-71",
+        "threshold": "len(principle_ids) >= MIN_CLUSTER_SIZE (5)",
+        "status": "NOT_REACHED — 但这是 cluster_detector 之外的二次确认"
+      },
+      {
+        "step": 8,
+        "component": "FrameworkEvaluator — 评估",
+        "source": "src/research/framework/framework_evaluator.py",
+        "thresholds": "MIN_VALIDATION_CYCLES=30, MIN_VALIDATION_ACCURACY=0.70",
+        "status": "NOT_REACHED"
+      },
+      {
+        "step": 9,
+        "component": "FrameworkStore.save() — 持久化",
+        "source": "src/research/framework/framework_store.py",
+        "action": "存储 framework 到 frameworks dict",
+        "status": "NOT_REACHED"
+      }
+    ],
+
+    "all_gates_summary": [
+      {
+        "gate": "detect_clusters: MIN_CLUSTER_SIZE",
+        "file": "cluster_detector.py:70-71",
+        "threshold": 5,
+        "actual": 4,
+        "result": "FAIL — 此处阻断"
+      },
+      {
+        "gate": "detect_clusters: MIN_CYCLES",
+        "file": "cluster_detector.py:58-61",
+        "threshold": 5,
+        "actual": 100,
+        "result": "PASS (如到达)"
+      },
+      {
+        "gate": "detect_clusters: Co-activation Rate",
+        "file": "cluster_detector.py:73-84",
+        "threshold": 0.60,
+        "actual_estimated": 1.0,
+        "result": "PASS (如到达, 4个principle同时激活)"
+      },
+      {
+        "gate": "detect_clusters: DFS Component Size",
+        "file": "cluster_detector.py:94",
+        "threshold": 5,
+        "actual": 4,
+        "result": "FAIL (如到达 — 第二道防线)"
+      },
+      {
+        "gate": "form_candidate: Size Check",
+        "file": "framework_orchestrator.py:59-71",
+        "threshold": 5,
+        "actual": 4,
+        "result": "FAIL (如到达 — 第三道防线)"
+      },
+      {
+        "gate": "FrameworkEvaluator: MIN_VALIDATION_CYCLES",
+        "file": "framework_evaluator.py",
+        "threshold": 30,
+        "actual_estimated": 100,
+        "result": "PASS (如到达)"
+      },
+      {
+        "gate": "FrameworkEvaluator: MIN_VALIDATION_ACCURACY",
+        "file": "framework_evaluator.py",
+        "threshold": 0.70,
+        "actual_estimated": 1.0,
+        "result": "PASS (如到达)"
+      }
+    ],
+
+    "secondary_factor": {
+      "description": "即使 MIN_CLUSTER_SIZE 从 5 降为 4, 仍有两个下游门会阻止 framework 形成",
+      "remaining_blockers": [
+        "detect_clusters DFS component size check: component size=4, threshold=5 (cluster_detector.py:94)",
+        "form_candidate size check: len(principle_ids)=4, threshold=5 (framework_orchestrator.py:59-71)"
+      ],
+      "all_thresholds_tied_to_MIN_CLUSTER_SIZE": true,
+      "note": "所有三个门都使用 MIN_CLUSTER_SIZE=5 — 同时降低此值即可解除全部阻断"
+    },
+
+    "principle_quality_assessment": {
+      "description": "尽管只有 4 个 principle, 它们的质量指标都满足 framework admission 要求 (如果 size 门槛降低的话)",
+      "metrics": {
+        "avg_observations": 328733,
+        "avg_accuracy": 1.0,
+        "avg_regimes": 3,
+        "avg_sustained_cycles": 179,
+        "contradictions": 0
+      },
+      "co_activation": {
+        "description": "所有 4 个 principle 从 cycle 13 起同时处于 validated/mature 状态, co-activation rate 为 100%",
+        "graph": "完全连通图 (K4), 任意两个 principle 之间的 co-activation = 1.0"
+      }
+    }
+  },
+
+  "final_diagnosis": {
+    "p1_evidence_inflation": "total_observations 中的 99.97% 是非独立信号 — 来自 TransmissionEdge.observation_count 的跨 finding 重复计数。真正的独立验证信号只有 correct_count 和 incorrect_count (G3 record_outcome)。",
+    "p2_accuracy_source": "唯一运行时写入路径是 record_outcome(), 但其 thesis_correct 信号来自内部推导 (Signal 3 在 synthetic data 中几乎恒为 True), 无外部 ground truth, 形成单向正反馈 (永远 correct)。",
+    "p3_zero_frameworks": "MIN_CLUSTER_SIZE=5 且系统仅有 4 个 principle — 在 detect_clusters() 第 70 行被提前阻断。100 cycle 不足以生成第 5 个 eligible principle。",
+    "classification": "F1.6 修复了机制 (去重/生命周期/证据追踪), 但 G3 反馈信号缺乏外部 ground truth, 证据计数严重通胀, Framework 形成门槛与当前 principle 产量不匹配"
+  }
+}

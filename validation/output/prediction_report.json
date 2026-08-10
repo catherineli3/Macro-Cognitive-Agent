@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-07-21T15:43:44.971738+00:00",
+  "total_predictions": 254,
+  "audit_predictions": 44,
+  "execution_predictions": 210,
+  "audit_hit_rate": 0.591,
+  "notes": [
+    "Predictions from 30-day execution: 210 (7 dims x 30 days)",
+    "Predictions from research audit: 44 cases",
+    "Audit hit rate based on expected vs actual direction for historical cases",
+    "Direction comparison is approximate (substring matching)"
+  ]
+}

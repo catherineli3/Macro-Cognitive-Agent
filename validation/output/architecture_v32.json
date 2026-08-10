@@ -1,0 +1,31 @@
+{
+  "version": "3.2",
+  "timestamp": "2026-07-22T03:22:42.281022+00:00",
+  "architecture": {
+    "layers": [
+      "M1: Market Data (Eyes) — unchanged",
+      "M2: Mental Models (Knowledge) — unchanged",
+      "M3: Narrative Engine (UPGRADED V3.2)",
+      "  └─ NarrativeReasoner: Signal → Causal Reasoning",
+      "  └─ NarrativeCompetition: Multi-hypothesis competition",
+      "M4: Belief System (ENHANCED V3.2)",
+      "  └─ BeliefGraph: SUPPORTS/COMPETES/CONTRADICTS/EXPLAINS",
+      "M5: Research Judgment (NEW V3.2)",
+      "  └─ ResearchJudgmentEngine: Conviction + Falsification",
+      "M6: Thesis Generator (UPGRADED V3.2)",
+      "  └─ Uses judgments for confidence/falsification"
+    ],
+    "new_modules": [
+      "src/research/narrative/schemas.py — NarrativeObject",
+      "src/research/narrative/narrative_reasoner.py — NarrativeReasoner",
+      "src/research/narrative/narrative_competition.py — NarrativeCompetition",
+      "src/research/judgment/ — ResearchJudgmentEngine"
+    ],
+    "enhanced_modules": [
+      "src/research/beliefs/belief_graph.py — Auto-discovery V3.2",
+      "src/research/beliefs/belief_engine.py — NarrativeObject support",
+      "src/research_cycle/cycle_engine.py — 14-step V3.2 cycle",
+      "src/research_cycle/thesis_generator.py — Judgment integration"
+    ]
+  }
+}

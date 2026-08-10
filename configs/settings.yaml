@@ -1,0 +1,46 @@
+# Macro Research Agent — Application Settings
+# Sprint 0: Foundation configuration only
+# RC-1: Reliability configuration added
+
+app:
+  name: Macro Research Agent
+  version: "1.0.0"
+  env: development  # development | staging | production
+  debug: true
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+
+database:
+  url: "sqlite+aiosqlite:///./data/macro_research.db"
+  # Postgres override:
+  # url: "postgresql+asyncpg://user:password@localhost:5432/macro_research"
+  pool_size: 5
+  max_overflow: 10
+
+memory:
+  # Agent memory configuration (LangGraph checkpointing)
+  type: sqlite  # sqlite | postgres
+  ttl_seconds: 3600
+
+storage:
+  # Vector store configuration
+  vector:
+    type: chroma  # chroma | qdrant | pgvector
+    collection_name: macro_research
+  cache:
+    ttl_seconds: 1800
+
+# RC-1: Reliability configuration
+reliability:
+  # Per-task execution timeout (seconds)
+  default_timeout_seconds: 30.0
+  # Default max retry attempts (1 = no retries)
+  default_max_retries: 1
+  # Retry backoff: delay multiplier per attempt
+  retry_base_delay: 1.0
+  retry_backoff: 2.0
+  # Whether tasks are critical by default (failure blocks downstream)
+  default_critical: true

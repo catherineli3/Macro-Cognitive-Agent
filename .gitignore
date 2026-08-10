@@ -1,0 +1,105 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Type checking
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+logs/*.log
+logs/*.log.*
+
+# Data (keep directory structure, ignore contents)
+data/raw/*
+data/processed/*
+data/cache/*
+data/snapshot/*
+data/snapshots/*
+data/memory/*
+data/predictions/*
+data/learning/*
+data/baseline_run/*
+data/regression_run/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/cache/.gitkeep
+!data/snapshot/.gitkeep
+!data/memory/.gitkeep
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# JSON data files in data/
+data/*.json
+
+# Data snapshots
+snapshot/
+snapshot_regression/
+snapshot_validation/
+
+# Generated reports
+reports/
+
+# Temporary output files
+*_output.txt
+output.txt
+report_today.txt
+test_output.txt
+test_v2_fixes_output.txt
+_check_cases.py
+
+# Docker
+.dockerignore
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini

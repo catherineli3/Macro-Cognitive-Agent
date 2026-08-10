@@ -1,0 +1,17 @@
+# Macro Research Agent — Prompt Templates
+# LLM prompt configurations for LangGraph nodes.
+# Values will be populated in Sprint 1+.
+#
+# See documentation for prompt variable usage.
+
+hypothesis:
+  system: ""
+  user: ""
+
+critic:
+  system: ""
+  user: ""
+
+report:
+  system: ""
+  user: ""

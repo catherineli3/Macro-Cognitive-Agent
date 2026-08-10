@@ -1,0 +1,7 @@
+3.0.0
+Status: V3 Release — Portfolio Ready
+DDRs: 27 (17 ratified + 10 V3 proposed)
+V3 Core Goal: Hypothesis Generator quality (Prediction = validation instrument)
+V3 Identity: Research System — primary asset is Hypothesis Library, not predictions
+V3 Closed Loop: Market → Data → Signal → Hypothesis → Multi-Prediction → Outcome → Diagnosis → Learning → Calibration → Hypothesis Library
+V3 Modules: Schemas + HypothesisLibrary + BeliefVersioning + LearningUnit + MultiPrediction + Evaluation + Diagnosis + LearningLog + Metrics + Scheduler + Pipeline + CLI + API

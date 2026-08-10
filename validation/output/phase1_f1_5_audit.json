@@ -1,0 +1,862 @@
+{
+  "milestone": "F1.5",
+  "title": "Learning Quality Audit",
+  "audit_1_compression_ratio": {
+    "total_findings_est": 4032,
+    "total_principles_create_events": 672,
+    "compression_ratio": 6.0,
+    "interpretation": "GOOD (<5): principles represent meaningful abstraction from many findings"
+  },
+  "audit_2_survival_curve": {
+    "by_creation_cycle": {
+      "9": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "10": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "11": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "12": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "13": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "14": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "15": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "16": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "17": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "18": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "19": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "20": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "21": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "22": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "23": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "24": {
+        "created": 4,
+        "surviving_to_100": 4,
+        "survival_rate": 1.0
+      },
+      "25": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "26": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "27": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "28": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "29": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "30": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "31": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "32": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "33": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "34": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "35": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "36": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "37": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "38": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "39": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "40": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "41": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "42": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "43": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "44": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "45": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "46": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "47": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "48": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "49": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "50": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "51": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "52": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "53": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "54": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "55": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "56": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "57": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "58": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "59": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "60": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "61": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "62": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "63": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "64": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "65": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "66": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "67": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "68": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "69": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "70": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "71": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "72": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "73": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "74": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "75": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "76": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "77": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "78": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "79": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "80": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "81": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "82": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "83": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "84": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "85": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "86": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "87": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "88": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "89": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "90": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "91": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "92": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "93": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "94": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "95": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "96": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "97": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "98": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "99": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      },
+      "100": {
+        "created": 8,
+        "surviving_to_100": 8,
+        "survival_rate": 1.0
+      }
+    },
+    "early_1_33": "136/136 (100.0%)",
+    "mid_34_66": "264/264 (100.0%)",
+    "late_67_100": "272/272 (100.0%)",
+    "overall_active": 672
+  },
+  "audit_3_cross_regime": {
+    "total_principles": 672,
+    "regime_buckets": {
+      "easing": 0,
+      "tightening": 672,
+      "high_vol": 672,
+      "stable": 672,
+      "other": 0
+    },
+    "cross_regime_distribution": {
+      "single_regime": 0,
+      "two_regimes": 0,
+      "three_plus_regimes": 672
+    },
+    "avg_regimes_per_principle": 3.0
+  },
+  "audit_4_duplication": {
+    "total_principles": 672,
+    "unique_names": 8,
+    "unique_statements": 4,
+    "name_duplication_rate": 0.988,
+    "statement_duplication_rate": 0.994,
+    "exact_duplicate_names_count": 664,
+    "exact_duplicate_statements_count": 668,
+    "exact_duplicate_name_groups": {
+      "USD鈫扜old[dollar_peg]": 92,
+      "credit鈫扴PX[direct]": 92,
+      "growth鈫扷S10Y[direct]": 92,
+      "liquidity鈫扷SD[direct]": 92,
+      "Elevated breaks: USD鈫扜old[dollar_peg] (100% rate)": 76,
+      "Elevated breaks: credit鈫扴PX[direct] (100% rate)": 76,
+      "Elevated breaks: growth鈫扷S10Y[direct] (100% rate)": 76,
+      "Elevated breaks: liquidity鈫扷SD[direct] (100% rate)": 76
+    },
+    "near_duplicate_pairs_count": 225456,
+    "near_duplicate_pairs_sample": [
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Credit signal consistently transmits to markets",
+        "similarity": 0.923
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Growth signal consistently transmits to markets",
+        "similarity": 0.901
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Liquidity signal consistently transmits to markets",
+        "similarity": 0.894
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Usd signal consistently transmits to markets",
+        "similarity": 1.0
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Credit signal consistently transmits to markets",
+        "similarity": 0.923
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Growth signal consistently transmits to markets",
+        "similarity": 0.901
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Liquidity signal consistently transmits to markets",
+        "similarity": 0.894
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Usd signal consistently transmits to markets",
+        "similarity": 1.0
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Credit signal consistently transmits to markets",
+        "similarity": 0.923
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Growth signal consistently transmits to markets",
+        "similarity": 0.901
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Liquidity signal consistently transmits to markets",
+        "similarity": 0.894
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Usd signal consistently transmits to markets",
+        "similarity": 1.0
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Credit signal consistently transmits to markets",
+        "similarity": 0.923
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Growth signal consistently transmits to markets",
+        "similarity": 0.901
+      },
+      {
+        "stmt_a": "Usd signal consistently transmits to markets",
+        "stmt_b": "Liquidity signal consistently transmits to markets",
+        "similarity": 0.894
+      }
+    ],
+    "top_repeated_statements": [
+      [
+        "Usd signal consistently transmits to markets",
+        168
+      ],
+      [
+        "Credit signal consistently transmits to markets",
+        168
+      ],
+      [
+        "Growth signal consistently transmits to markets",
+        168
+      ],
+      [
+        "Liquidity signal consistently transmits to markets",
+        168
+      ]
+    ]
+  },
+  "audit_5_framework_dependency": {
+    "total_frameworks": 78,
+    "total_principle_references": 0,
+    "avg_principles_per_framework": 0.0,
+    "frameworks_with_no_principles": 78,
+    "single_domain_frameworks": 0,
+    "cross_domain_frameworks": 0,
+    "sample_frameworks": [
+      {
+        "fw_id": "fw-f3216897",
+        "name": "Framework-USD-credit-growth",
+        "domain": "",
+        "principle_count": 0,
+        "principle_ids": [],
+        "strength": ""
+      },
+      {
+        "fw_id": "fw-137a56ad",
+        "name": "Framework-USD-credit-growth",
+        "domain": "",
+        "principle_count": 0,
+        "principle_ids": [],
+        "strength": ""
+      },
+      {
+        "fw_id": "fw-37e8e92f",
+        "name": "Framework-USD-credit-growth",
+        "domain": "",
+        "principle_count": 0,
+        "principle_ids": [],
+        "strength": ""
+      },
+      {
+        "fw_id": "fw-386d3ecb",
+        "name": "Framework-USD-credit-growth",
+        "domain": "",
+        "principle_count": 0,
+        "principle_ids": [],
+        "strength": ""
+      },
+      {
+        "fw_id": "fw-beb7e59b",
+        "name": "Framework-USD-credit-growth",
+        "domain": "",
+        "principle_count": 0,
+        "principle_ids": [],
+        "strength": ""
+      }
+    ]
+  },
+  "audit_6_knowledge_pyramid": {
+    "L1_Findings_generated": 4032,
+    "L2_Candidate_Principles": 0,
+    "L3_Validated_Principles": 672,
+    "L4_Mature_Principles": 0,
+    "L5_Frameworks": 78,
+    "ratios": {
+      "findings:candidate": "N/A (0 candidates)",
+      "candidate:validated": "c=0/v=672",
+      "validated:mature": "N/A (0 mature)",
+      "mature:framework": "m=0/f=78"
+    }
+  },
+  "audit_7_quality_deep_dive": {
+    "total_observations": 1308880,
+    "correct_observations": 0,
+    "avg_accuracy": 0.0,
+    "avg_observations_per_principle": 1947.7,
+    "total_contradictions": 0,
+    "avg_sustained_cycles": 259.8,
+    "never_revalidated_count": 672,
+    "principles_with_prerequisites": 0,
+    "principles_with_implications": 0,
+    "principles_composing": 0,
+    "principles_competing": 0,
+    "avg_statement_length_chars": 47.0,
+    "domain_distribution": {
+      "USD": 168,
+      "credit": 168,
+      "growth": 168,
+      "liquidity": 168
+    }
+  },
+  "audit_8_principle_patterns": {
+    "total_raw_principles": 672,
+    "unique_ids": 672,
+    "unique_names": 8,
+    "unique_statements": 4,
+    "name_distribution": {
+      "USD鈫扜old[dollar_peg]": 92,
+      "credit鈫扴PX[direct]": 92,
+      "growth鈫扷S10Y[direct]": 92,
+      "liquidity鈫扷SD[direct]": 92,
+      "Elevated breaks: USD鈫扜old[dollar_peg] (100% rate)": 76,
+      "Elevated breaks: credit鈫扴PX[direct] (100% rate)": 76,
+      "Elevated breaks: growth鈫扷S10Y[direct] (100% rate)": 76,
+      "Elevated breaks: liquidity鈫扷SD[direct] (100% rate)": 76
+    },
+    "statement_distribution": {
+      "Usd signal consistently transmits to markets": 168,
+      "Credit signal consistently transmits to markets": 168,
+      "Growth signal consistently transmits to markets": 168,
+      "Liquidity signal consistently transmits to markets": 168
+    },
+    "strength_distribution": {
+      "validated": 672
+    },
+    "status_distribution": {
+      "active": 672
+    },
+    "domain_distribution": {
+      "USD": 168,
+      "credit": 168,
+      "growth": 168,
+      "liquidity": 168
+    },
+    "principles_with_accuracy_gt_0": 0,
+    "unique_finding_ids_used": 748,
+    "avg_regimes_per_principle": 2.68
+  },
+  "audit_9_framework_deep_dive": {
+    "framework_count": 78,
+    "unique_names": 1,
+    "name_distribution": {
+      "Framework-USD-credit-growth": 78
+    },
+    "domain_distribution": {
+      "": 78
+    },
+    "strength_distribution": {
+      "": 78
+    },
+    "principle_ids_per_fw_distribution": {
+      "0": 78
+    },
+    "all_fw_schema_keys": [
+      "accuracy_trajectory",
+      "competes_with",
+      "created_at",
+      "created_at_cycle",
+      "created_from",
+      "cycle_count",
+      "domain_coverage",
+      "framework_id",
+      "framework_set_id",
+      "name",
+      "parent_framework",
+      "principle_weights",
+      "principles",
+      "retired_at_cycle",
+      "retirement_reason",
+      "status",
+      "synthesis_weight",
+      "thesis"
+    ],
+    "fw_sample": {
+      "framework_id": "fw-f3216897",
+      "name": "Framework-USD-credit-growth",
+      "thesis": "Growth signal consistently transmits to markets. Usd signal consistently transmits to markets. Credit signal consistently transmits to markets.",
+      "status": "candidate",
+      "principles": [
+        "pr-84ae08e9",
+        "pr-91d0edda",
+        "pr-a4b27f51",
+        "pr-c1b828f5",
+        "pr-d3c5794d",
+        "pr-db3dacb9",
+        "pr-e885400d",
+        "pr-eb8a4d26"
+      ],
+      "principle_weights": {
+        "pr-84ae08e9": 0.125,
+        "pr-91d0edda": 0.125,
+        "pr-a4b27f51": 0.125,
+        "pr-c1b828f5": 0.125,
+        "pr-d3c5794d": 0.125,
+        "pr-db3dacb9": 0.125,
+        "pr-e885400d": 0.125,
+        "pr-eb8a4d26": 0.125
+      },
+      "accuracy_trajectory": [
+        0.0
+      ],
+      "cycle_count": 0,
+      "framework_set_id": null,
+      "domain_coverage": {
+        "credit": 0.25,
+        "USD": 0.25,
+        "liquidity": 0.25,
+        "growth": 0.25
+      },
+      "competes_with": [],
+      "synthesis_weight": 0.0,
+      "parent_framework": null,
+      "created_from": "principle_cluster",
+      "created_at_cycle": 23,
+      "retired_at_cycle": null,
+      "retirement_reason": null,
+      "created_at": "2026-07-18T08:53:05.435448+00:00"
+    }
+  },
+  "audit_10_learning_type": {
+    "total_score": -18,
+    "classification": "D: BROKEN_LEARNING_LOOP",
+    "description": "Pipeline runs but produces no meaningful knowledge — all key learning mechanisms are non-functional.",
+    "signal_details": [
+      {
+        "signal": "DUPLICATION_CRITICAL",
+        "score": -3,
+        "detail": "Statement duplication rate 99% — trivial pattern repetition"
+      },
+      {
+        "signal": "PATTERN_REPETITION",
+        "score": -3,
+        "detail": "Only 4 unique statements across 672 principles"
+      },
+      {
+        "signal": "NO_ADMISSION_GATE",
+        "score": -3,
+        "detail": "Bypass cand → directly validated: 0 candidates, 672 validated"
+      },
+      {
+        "signal": "NO_MATURATION",
+        "score": -2,
+        "detail": "0 mature principles despite 672 validated — no evidence accumulation path"
+      },
+      {
+        "signal": "ORPHAN_FRAMEWORKS",
+        "score": -3,
+        "detail": "All 78 frameworks have 0 principle references"
+      },
+      {
+        "signal": "GENERALIZING",
+        "score": 2,
+        "detail": "Avg 3.0 regimes/principle — cross-regime"
+      },
+      {
+        "signal": "ZERO_ACCURACY",
+        "score": -2,
+        "detail": "All principles have 0.0 accuracy — evidence measurement broken"
+      },
+      {
+        "signal": "ISOLATED",
+        "score": -2,
+        "detail": "No inter-principle relationships — flat knowledge base"
+      },
+      {
+        "signal": "NO_RETIREMENT",
+        "score": -2,
+        "detail": "100% survival — no principle retirement ever triggered"
+      }
+    ]
+  }
+}

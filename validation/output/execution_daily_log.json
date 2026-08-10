@@ -1,0 +1,2372 @@
+[
+  {
+    "day": 1,
+    "date": "2026-07-21",
+    "total_latency_ms": 11.996269226074219,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 8.995771408081055,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.9987354278564453,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.9961128234863281,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.0056495666503906,
+        "output_summary": "Saved: day001_2026-07-21.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 2,
+    "date": "2026-07-22",
+    "total_latency_ms": 3.371715545654297,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 1.3623237609863281,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0082721710205078,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.001119613647461,
+        "output_summary": "Saved: day002_2026-07-22.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 3,
+    "date": "2026-07-23",
+    "total_latency_ms": 2.0036697387695312,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Resilience; inflation:Disinflation Trend; monetary",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0154247283935547,
+        "output_summary": "11 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.9882450103759766,
+        "output_summary": "Saved: day003_2026-07-23.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 4,
+    "date": "2026-07-24",
+    "total_latency_ms": 0.9992122650146484,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.9992122650146484,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Saved: day004_2026-07-24.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 5,
+    "date": "2026-07-25",
+    "total_latency_ms": 2.0210742950439453,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.9977817535400391,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.0232925415039062,
+        "output_summary": "Saved: day005_2026-07-25.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 6,
+    "date": "2026-07-26",
+    "total_latency_ms": 0.9818077087402344,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.9818077087402344,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Saved: day006_2026-07-26.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 7,
+    "date": "2026-07-27",
+    "total_latency_ms": 1.9946098327636719,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.9918212890625,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.0027885437011719,
+        "output_summary": "Saved: day007_2026-07-27.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 8,
+    "date": "2026-07-28",
+    "total_latency_ms": 2.0062923431396484,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.9965896606445312,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0097026824951172,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Saved: day008_2026-07-28.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 9,
+    "date": "2026-07-29",
+    "total_latency_ms": 1.9927024841308594,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.9915828704833984,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.001119613647461,
+        "output_summary": "Saved: day009_2026-07-29.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 10,
+    "date": "2026-07-30",
+    "total_latency_ms": 1.0120868682861328,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0120868682861328,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Saved: day010_2026-07-30.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 11,
+    "date": "2026-07-31",
+    "total_latency_ms": 2.9366016387939453,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.9218921661376953,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.01470947265625,
+        "output_summary": "Saved: day011_2026-07-31.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 12,
+    "date": "2026-08-01",
+    "total_latency_ms": 1.352071762084961,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.352071762084961,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Saved: day012_2026-08-01.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 13,
+    "date": "2026-08-02",
+    "total_latency_ms": 2.0978450775146484,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 1.0972023010253906,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.0006427764892578,
+        "output_summary": "Saved: day013_2026-08-02.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 14,
+    "date": "2026-08-03",
+    "total_latency_ms": 1.9986629486083984,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.9973049163818359,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.0013580322265625,
+        "output_summary": "Saved: day014_2026-08-03.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 15,
+    "date": "2026-08-04",
+    "total_latency_ms": 2.001047134399414,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.9996891021728516,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.0013580322265625,
+        "output_summary": "Saved: day015_2026-08-04.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 16,
+    "date": "2026-08-05",
+    "total_latency_ms": 2.0143985748291016,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.008749008178711,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.0056495666503906,
+        "output_summary": "Saved: day016_2026-08-05.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 17,
+    "date": "2026-08-06",
+    "total_latency_ms": 2.0041465759277344,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0077953338623047,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.9963512420654297,
+        "output_summary": "Saved: day017_2026-08-06.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 18,
+    "date": "2026-08-07",
+    "total_latency_ms": 2.996206283569336,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.9937286376953125,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0077953338623047,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.9946823120117188,
+        "output_summary": "Saved: day018_2026-08-07.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 19,
+    "date": "2026-08-08",
+    "total_latency_ms": 2.076864242553711,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0673999786376953,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.0094642639160156,
+        "output_summary": "Saved: day019_2026-08-08.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 20,
+    "date": "2026-08-09",
+    "total_latency_ms": 2.9990673065185547,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 1.0006427764892578,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.9989738464355469,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.99945068359375,
+        "output_summary": "Saved: day020_2026-08-09.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 21,
+    "date": "2026-08-10",
+    "total_latency_ms": 3.004789352416992,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.9996891021728516,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0001659393310547,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Saved: day021_2026-08-10.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 22,
+    "date": "2026-08-11",
+    "total_latency_ms": 1.0924339294433594,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0924339294433594,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Saved: day022_2026-08-11.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 23,
+    "date": "2026-08-12",
+    "total_latency_ms": 2.000570297241211,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.9989738464355469,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.001596450805664,
+        "output_summary": "Saved: day023_2026-08-12.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 24,
+    "date": "2026-08-13",
+    "total_latency_ms": 13.004541397094727,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 12.004613876342773,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.9999275207519531,
+        "output_summary": "Saved: day024_2026-08-13.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 25,
+    "date": "2026-08-14",
+    "total_latency_ms": 1.0018348693847656,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0018348693847656,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Saved: day025_2026-08-14.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 26,
+    "date": "2026-08-15",
+    "total_latency_ms": 1.9962787628173828,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.9934902191162109,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.0027885437011719,
+        "output_summary": "Saved: day026_2026-08-15.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 27,
+    "date": "2026-08-16",
+    "total_latency_ms": 1.0008811950683594,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0008811950683594,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Saved: day027_2026-08-16.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 28,
+    "date": "2026-08-17",
+    "total_latency_ms": 2.001523971557617,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0073184967041016,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.9942054748535156,
+        "output_summary": "Saved: day028_2026-08-17.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 29,
+    "date": "2026-08-18",
+    "total_latency_ms": 0.9958744049072266,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Resilience; inflation:Disinflation Trend; monetary",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 0.9958744049072266,
+        "output_summary": "11 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Saved: day029_2026-08-18.json",
+        "error": ""
+      }
+    ]
+  },
+  {
+    "day": 30,
+    "date": "2026-08-19",
+    "total_latency_ms": 2.0058155059814453,
+    "crash": false,
+    "crash_detail": "",
+    "steps": [
+      {
+        "step_name": "Collector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Simulated: 7 dimensions, 7 domains",
+        "error": ""
+      },
+      {
+        "step_name": "Validator",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Valid: 35, Invalid: 0",
+        "error": ""
+      },
+      {
+        "step_name": "StateVector",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Transformed: 7 dimensions",
+        "error": ""
+      },
+      {
+        "step_name": "MentalModels",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 conclusions from 7 models",
+        "error": ""
+      },
+      {
+        "step_name": "Narrative",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "7 narratives: monetary:Fed Pivot / Dovish Shift; growth:Soft Landing; growth:Growth Scare; inflation:Disinflation Trend; monetary:Doll",
+        "error": ""
+      },
+      {
+        "step_name": "Hypothesis",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Thesis: Early Easing / Growth: Current Early Easing / Growth regime is the dominant macr (conf=0.25)",
+        "error": ""
+      },
+      {
+        "step_name": "Belief",
+        "success": true,
+        "latency_ms": 1.0018348693847656,
+        "output_summary": "12 beliefs updated/generated",
+        "error": ""
+      },
+      {
+        "step_name": "Prediction",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "14 signal mappings across 7 dims",
+        "error": ""
+      },
+      {
+        "step_name": "Validation",
+        "success": true,
+        "latency_ms": 0.0,
+        "output_summary": "Checkpoint recorded",
+        "error": ""
+      },
+      {
+        "step_name": "Snapshot",
+        "success": true,
+        "latency_ms": 1.0039806365966797,
+        "output_summary": "Saved: day030_2026-08-19.json",
+        "error": ""
+      }
+    ]
+  }
+]

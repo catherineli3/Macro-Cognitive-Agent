@@ -1,0 +1,29 @@
+{
+  "2026-07-22": {
+    "date": "2026-07-22",
+    "timestamp": "2026-07-22T04:26:16.474208+00:00",
+    "dominant_narrative": "Bond vigilantes return — fiscal dominance risk",
+    "narrative_confidence": 0.6,
+    "narrative_stage": "",
+    "competing_narratives": [
+      {
+        "title": "Fiscal sustainability crisis",
+        "probability": 0.4
+      },
+      {
+        "title": "Growth still strong, yields justified",
+        "probability": 0.3
+      },
+      {
+        "title": "Fed will cap yields eventually",
+        "probability": 0.3
+      }
+    ],
+    "regime_label": "fiscal_risk",
+    "key_events": [],
+    "key_data_points": {},
+    "narrative_category": "",
+    "narrative_intensity": 0.0053043171406687685,
+    "narrative_entropy": 0.9911594714322187
+  }
+}

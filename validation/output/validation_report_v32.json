@@ -1,0 +1,205 @@
+{
+  "version": "3.2",
+  "timestamp": "2026-07-22T03:22:42.280021+00:00",
+  "overall_status": "PASS",
+  "average_score": 0.976,
+  "maturity": {
+    "version": "V3.2",
+    "maturity_score": 67.0,
+    "maturity_label": "Senior-Intermediate",
+    "previous_v31": 45.0,
+    "improvement": 22.0,
+    "category_scores": {
+      "数据感知 (Eyes/Data)": 0.85,
+      "知识框架 (Mental Models)": 0.75,
+      "研究循环 (Research Cycle)": 0.8,
+      "信念系统 (Belief System)": 0.7,
+      "研究判断 (Research Judgment)": 0.6,
+      "多假设竞争 (Multi-Hypothesis)": 0.55,
+      "反身性思考 (Reflexivity)": 0.35,
+      "证伪机制 (Falsifiability)": 0.7
+    },
+    "weights": {
+      "数据感知 (Eyes/Data)": 0.1,
+      "知识框架 (Mental Models)": 0.1,
+      "研究循环 (Research Cycle)": 0.1,
+      "信念系统 (Belief System)": 0.15,
+      "研究判断 (Research Judgment)": 0.2,
+      "多假设竞争 (Multi-Hypothesis)": 0.15,
+      "反身性思考 (Reflexivity)": 0.05,
+      "证伪机制 (Falsifiability)": 0.15
+    },
+    "v33_recommendation": "Target: Reflexivity + Causal Graph (V3.3 → 75%)"
+  },
+  "acceptance_criteria": {
+    "Narrative生成率>90%": true,
+    "Narrative→Belief>90%": true,
+    "Belief竞争存在": true,
+    "Hypothesis有证伪条件=100%": true
+  },
+  "validations": [
+    {
+      "title": "V1 NarrativeObject",
+      "status": "PASS",
+      "score": 1.0,
+      "details": {
+        "import_ok": true,
+        "field_checks": {
+          "causal_depth": true,
+          "evidence_ratio": true,
+          "is_robust": true,
+          "is_contested": true,
+          "asset_count": true,
+          "has_id": true,
+          "has_title": true
+        },
+        "to_dict_ok": true
+      },
+      "issues": []
+    },
+    {
+      "title": "V2 NarrativeReasoner",
+      "status": "PASS",
+      "score": 1.0,
+      "details": {
+        "has_causal_chain": true,
+        "has_supporting_evidence": true,
+        "has_affected_assets": true,
+        "regime_fit_high": true,
+        "confidence_set": true,
+        "has_description": true,
+        "causal_chain_sample": [
+          "DXY↑ + Real Yield↑",
+          "→ Financial Conditions Tighten",
+          "→ Risk Appetite Declines"
+        ],
+        "affected_assets_sample": [
+          "NASDAQ (-)",
+          "SPX (-)",
+          "UST10Y (+)"
+        ]
+      },
+      "issues": []
+    },
+    {
+      "title": "V3 NarrativeCompetition",
+      "status": "PASS",
+      "score": 1.0,
+      "details": {
+        "multiple_narratives": true,
+        "has_dominant": true,
+        "probabilities_normalized": true,
+        "has_alternatives": true,
+        "competing_ids_set": true,
+        "has_regime": true,
+        "narrative_count": 3,
+        "titles": [
+          "Fed tightening is driving USD and yields higher",
+          "Inflation shock is forcing yields up and strengthening USD",
+          "US exceptionalism: capital inflows drive USD and yields"
+        ],
+        "probabilities": [
+          0.489,
+          0.298,
+          0.213
+        ]
+      },
+      "issues": []
+    },
+    {
+      "title": "V4 BeliefGraph",
+      "status": "PASS",
+      "score": 0.857,
+      "details": {
+        "graph_stats": {
+          "belief_count": 5,
+          "relation_count": 4,
+          "relations_by_type": {
+            "supports": 0,
+            "competes": 1,
+            "contradicts": 1,
+            "explains": 2
+          },
+          "avg_relations_per_belief": 0.8,
+          "competition_clusters": 1,
+          "contradiction_pairs": 1
+        },
+        "new_relations": 0,
+        "relations": [
+          {
+            "source": "13cd619e",
+            "target": "f2cd8c21",
+            "type": "competes",
+            "strength": 0.7,
+            "description": "Same domain (Policy) — competing interpretations"
+          },
+          {
+            "source": "f5ae51e3",
+            "target": "f2cd8c21",
+            "type": "explains",
+            "strength": 0.6,
+            "description": "Domain adjacency (85%) + keyword overlap: hawk, hike, will"
+          },
+          {
+            "source": "f5ae51e3",
+            "target": "13cd619e",
+            "type": "contradicts",
+            "strength": 0.76,
+            "description": "Opposite direction across Liquidity/Policy"
+          },
+          {
+            "source": "f5ae51e3",
+            "target": "4d7354f5",
+            "type": "explains",
+            "strength": 0.6,
+            "description": "Strong domain adjacency (90%)"
+          }
+        ]
+      },
+      "issues": []
+    },
+    {
+      "title": "V5 ResearchJudgment",
+      "status": "PASS",
+      "score": 1.0,
+      "details": {
+        "judgment_count": true,
+        "all_falsifiable": true,
+        "has_macro_stance": true,
+        "has_summary": true,
+        "has_highest_conviction": true,
+        "confidence_label_valid": true,
+        "has_competition_info": true,
+        "macro_stance": "hawkish",
+        "summary_sample": "Macro Stance: HAWKISH; Active Judgments: 2; Highest Conviction: 'Inflation is peaking and will moderate toward target' (76%); Falsifiable Judgments: 2/2; Domain Coverage: Inflation, Policy",
+        "falsifiable_count": 2,
+        "avg_confidence": 0.7073529411764705
+      },
+      "issues": []
+    },
+    {
+      "title": "V6 CycleIntegration",
+      "status": "PASS",
+      "score": 1.0,
+      "details": {
+        "pipeline": {
+          "narrative_count": 3,
+          "belief_count": 3,
+          "judgment_count": 3,
+          "falsifiable_count": 3,
+          "macro_stance": "hawkish",
+          "avg_confidence": 0.791,
+          "graph_relations": 1,
+          "competition_clusters": 0
+        },
+        "targets": {
+          "Narrative生成率": true,
+          "Narrative→Belief (>90%)": true,
+          "Belief竞争存在": true,
+          "Hypothesis有证伪条件": true
+        }
+      },
+      "issues": []
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "version": "V3.0 (before consolidation)",
+  "audit_date": "2026-07-20",
+  "key_findings": {
+    "adaptive_belief_production_refs": 7,
+    "narrative_in_cycle": false,
+    "belief_in_cycle": false,
+    "narrative_bypassed": true,
+    "belief_engine_returns_zero": true,
+    "dual_pipeline": true,
+    "daily_runner_bypasses_pipeline": true
+  },
+  "issues": [
+    "Two parallel Belief systems coexist (AdaptiveBelief + ResearchBelief)",
+    "Narrative never enters ResearchCycleEngine",
+    "BeliefEngine.generate_from_narratives() always returns 0 beliefs",
+    "DailyRunner bypasses full pipeline (raw dict → snapshot)",
+    "EvolutionPipeline directly imports AdaptiveBelief",
+    "No Snapshot support for narratives or beliefs"
+  ]
+}

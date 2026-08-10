@@ -1,0 +1,15 @@
+{
+  "styles": [],
+  "iterations": [
+    {
+      "iteration": 1,
+      "style": "test",
+      "score": 72.5,
+      "top_errors": [],
+      "focus": "Narrative precision"
+    }
+  ],
+  "error_summary": {
+    "wrong_narrative": 1
+  }
+}

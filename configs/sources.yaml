@@ -1,0 +1,111 @@
+# Macro Research Agent — Data Source Configuration
+# Primary market data: Sina Finance (free, works from China)
+# Macro indicators: World Bank API (free, no API key)
+# Yahoo Finance: disabled (rate-limited in China)
+
+sources:
+  # ── PRIMARY: Sina Finance (market data) ────────────────────────────
+  - name: sina
+    type: rest_api
+    base_url: https://hq.sinajs.cn
+    rate_limit:
+      requests_per_minute: 30
+    enabled: true
+    note: "Primary market data source — ETF prices for equity, commodities, rates, credit, volatility"
+    indicators:
+      - symbol: SPY
+        name: S&P 500 ETF
+        category: Equity
+      - symbol: QQQ
+        name: Nasdaq-100 ETF
+        category: Equity
+      - symbol: IWM
+        name: Russell 2000 ETF
+        category: Equity
+      - symbol: NVDA
+        name: NVIDIA
+        category: AI_Semiconductor
+      - symbol: SMH
+        name: Semiconductor ETF
+        category: AI_Semiconductor
+      - symbol: ASML
+        name: ASML
+        category: AI_Semiconductor
+      - symbol: TSM
+        name: TSMC
+        category: AI_Semiconductor
+      - symbol: GLD
+        name: Gold ETF (proxy for Gold Futures)
+        category: Commodities
+      - symbol: USO
+        name: Oil ETF (proxy for WTI Crude)
+        category: Commodities
+      - symbol: COPX
+        name: Copper Miners ETF (proxy for Copper Futures)
+        category: Commodities
+      - symbol: HYG
+        name: High Yield Bond ETF
+        category: Credit
+      - symbol: LQD
+        name: Investment Grade Bond ETF
+        category: Credit
+      - symbol: TLT
+        name: 20+ Year Treasury ETF (proxy for US10Y)
+        category: Rates
+      - symbol: SHY
+        name: 1-3 Year Treasury ETF (proxy for US2Y)
+        category: Rates
+      - symbol: VIXY
+        name: VIX Futures ETF (proxy for VIX)
+        category: Volatility
+      - symbol: DXY
+        name: US Dollar Index
+        category: Currency
+      - symbol: BND
+        name: Total Bond Market ETF
+        category: Fixed_Income
+
+  # ── World Bank API (macro indicators, free, no API key) ───────────
+  - name: world_bank
+    type: rest_api
+    base_url: https://api.worldbank.org/v2
+    rate_limit:
+      requests_per_minute: 60
+    enabled: true
+    indicators:
+      - code: NY.GDP.MKTP.CD
+        name: GDP (current US$)
+      - code: FP.CPI.TOTL.ZG
+        name: Inflation (CPI)
+      - code: SL.UEM.TOTL.ZS
+        name: Unemployment rate
+
+  # ── Yahoo Finance (disabled — rate-limited in China) ──────────────
+  - name: yahoo
+    type: rest_api
+    base_url: https://query1.finance.yahoo.com
+    library: yfinance
+    rate_limit:
+      requests_per_minute: 60
+    enabled: false
+    note: "Disabled — Yahoo blocks requests from China IPs with 'Too Many Requests'"
+
+  # ── FRED (disabled until API key configured) ─────────────────────
+  - name: fred
+    type: rest_api
+    base_url: https://api.stlouisfed.org/fred
+    auth:
+      type: api_key
+      env_var: FRED_API_KEY
+    rate_limit:
+      requests_per_minute: 120
+    enabled: false
+    indicators:
+      - series_id: GDP
+        frequency: quarterly
+      - series_id: CPIAUCSL
+        frequency: monthly
+      - series_id: UNRATE
+        frequency: monthly
+      - series_id: FEDFUNDS
+        frequency: monthly

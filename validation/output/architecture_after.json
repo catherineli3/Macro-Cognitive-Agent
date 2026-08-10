@@ -1,0 +1,27 @@
+{
+  "version": "V3.1 (after consolidation)",
+  "audit_date": "2026-07-21",
+  "key_findings": {
+    "adaptive_belief_production_refs_remaining": 19,
+    "adaptive_belief_critical_refs": {
+      "hypothesis_library_type_hints": 4,
+      "legacy_belief_lifecycle": 8,
+      "schema_definition": 2,
+      "schema_re_export": 2,
+      "comments_only": 3
+    },
+    "research_belief_source_of_truth": true,
+    "narrative_in_cycle": true,
+    "belief_in_cycle": true,
+    "narrative_bypassed": false,
+    "belief_engine_returns_nonzero": true,
+    "unified_belief_store": true,
+    "daily_runner_uses_pipeline": true,
+    "snapshot_has_narratives_beliefs": true
+  },
+  "remaining_work": [
+    "hypothesis_library type hints still reference AdaptiveBelief (non-critical, in type annotations only)",
+    "belief_lifecycle.py is legacy compatibility layer (allowed per acceptance criteria)",
+    "schema definition kept for backward compat (allowed)"
+  ]
+}

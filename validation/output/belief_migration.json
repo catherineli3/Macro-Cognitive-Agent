@@ -1,0 +1,12 @@
+{
+  "migration_status": "COMPLETED",
+  "primary_belief": "ResearchBelief",
+  "legacy_imports_removed": ["EvolutionPipeline no longer imports AdaptiveBelief directly"],
+  "adapter_path": "src/research/beliefs/belief_adapter.py",
+  "adapter_functions": ["to_adaptive", "from_adaptive"],
+  "unified_store": "BeliefStore (src/research/beliefs/belief_store.py)",
+  "legacy_remaining": {
+    "belief_lifecycle_manager": "Kept for principle cascading — not belief storage",
+    "hypothesis_library": "Type hints still reference AdaptiveBelief (low priority)"
+  }
+}

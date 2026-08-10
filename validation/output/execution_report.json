@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-07-21T16:05:28.233502+00:00",
+  "total_days": 30,
+  "successful_days": 30,
+  "crashed_days": 0,
+  "success_rate": 1.0,
+  "crash_rate": 0.0,
+  "step_stats": {
+    "Collector": {
+      "attempts": 30,
+      "successes": 30,
+      "success_rate": 1.0,
+      "avg_latency_ms": 0.1
+    },
+    "Validator": {
+      "attempts": 30,
+      "successes": 30,
+      "success_rate": 1.0,
+      "avg_latency_ms": 0.0
+    },
+    "StateVector": {
+      "attempts": 30,
+      "successes": 30,
+      "success_rate": 1.0,
+      "avg_latency_ms": 0.0
+    },
+    "MentalModels": {
+      "attempts": 30,
+      "successes": 30,
+      "success_rate": 1.0,
+      "avg_latency_ms": 0.1
+    },
+    "Narrative": {
+      "attempts": 30,
+      "successes": 30,
+      "success_rate": 1.0,
+      "avg_latency_ms": 0.1
+    },
+    "Hypothesis": {
+      "attempts": 30,
+      "successes": 30,
+      "success_rate": 1.0,
+      "avg_latency_ms": 0.3
+    },
+    "Belief": {
+      "attempts": 30,
+      "successes": 30,
+      "success_rate": 1.0,
+      "avg_latency_ms": 1.2
+    },
+    "Prediction": {
+      "attempts": 30,
+      "successes": 30,
+      "success_rate": 1.0,
+      "avg_latency_ms": 0.0
+    },
+    "Validation": {
+      "attempts": 30,
+      "successes": 30,
+      "success_rate": 1.0,
+      "avg_latency_ms": 0.0
+    },
+    "Snapshot": {
+      "attempts": 30,
+      "successes": 30,
+      "success_rate": 1.0,
+      "avg_latency_ms": 0.7
+    }
+  },
+  "failed_modules": {},
+  "exception_types": {},
+  "notes": [
+    "7 mental models + 7 domain narratives + belief engine + prediction mapper"
+  ],
+  "sprint_target": {
+    "success_rate_min": 0.99,
+    "crash_count_max": 0
+  },
+  "sprint_result": "PASS"
+}

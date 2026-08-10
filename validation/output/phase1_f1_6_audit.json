@@ -1,0 +1,125 @@
+{
+  "milestone": "F1.6",
+  "title": "Learning Mechanism Repair Audit",
+  "audit_1_duplication": {
+    "total_principles": 4,
+    "unique_ids": 4,
+    "unique_names": 4,
+    "unique_statements": 4,
+    "name_distribution": {
+      "USD鈫扜old[dollar_peg]": 1,
+      "credit鈫扴PX[direct]": 1,
+      "growth鈫扷S10Y[direct]": 1,
+      "liquidity鈫扷SD[direct]": 1
+    },
+    "statement_distribution": {
+      "Usd signal consistently transmits to markets": 1,
+      "Credit signal consistently transmits to markets": 1,
+      "Growth signal consistently transmits to markets": 1,
+      "Liquidity signal consistently transmits to markets": 1
+    },
+    "name_duplication_rate": 0.0,
+    "statement_duplication_rate": 0.0
+  },
+  "audit_2_knowledge_pyramid": {
+    "L1_Findings_Estimated": 4,
+    "L2_Candidate_Principles": 0,
+    "L3_Validated_Principles": 0,
+    "L4_Mature_Principles": 4,
+    "L5_Foundational_Principles": 0,
+    "strength_distribution": {
+      "mature": 4
+    },
+    "status_distribution": {
+      "active": 4
+    },
+    "created_by_cycle": {
+      "8": 4
+    }
+  },
+  "audit_3_survival_lifecycle": {
+    "total_unique_principles": 4,
+    "first_strength_distribution": {
+      "candidate": 4
+    },
+    "final_strength_distribution": {
+      "mature": 4
+    },
+    "lifecycle_transitions": {
+      "candidate->validated": 4,
+      "validated->mature": 4
+    },
+    "days_tracked": 100
+  },
+  "audit_4_cross_regime": {
+    "avg_regimes_per_principle": 3.0,
+    "regime_counts_distribution": {
+      "3": 4
+    },
+    "total_regime_contexts_observed": 0,
+    "regime_contexts": []
+  },
+  "audit_5_evidence_accuracy": {
+    "avg_accuracy": 1.0,
+    "accuracy_zero_count": 0,
+    "avg_correct_count": 93.0,
+    "avg_incorrect_count": 0.0,
+    "avg_total_observations": 328733.0,
+    "accuracy_distribution": {
+      "1.0": 4
+    },
+    "last_validated_cycle_range": "100-100",
+    "last_evaluated_cycle_range": "100-100"
+  },
+  "audit_6_contradictions": {
+    "total_contradictions": 0,
+    "avg_contradictions_per_principle": 0.0,
+    "max_contradictions": 0,
+    "principles_with_contradictions": 0,
+    "total_failure_modes_recorded": 0,
+    "failure_mode_examples": []
+  },
+  "audit_7_framework_dependency": {
+    "total_frameworks": 0,
+    "unique_names": 0,
+    "name_distribution": {},
+    "orphan_frameworks": 0,
+    "avg_principle_refs_per_framework": 0.0,
+    "principle_refs_distribution": {},
+    "real_principle_matches": 0,
+    "orphan_principle_refs": 0,
+    "framework_to_principle_linkage": "orphan"
+  },
+  "audit_8_learning_type": {
+    "total_score": 6,
+    "classification": "A: RESEARCH_LEARNING",
+    "description": "Agent abstracts, deduplicates, and tracks evidence. Principles follow proper lifecycle.",
+    "signal_details": [
+      {
+        "signal": "NO_DUPLICATION",
+        "score": 3,
+        "detail": "4 unique from 4 total — zero duplication"
+      },
+      {
+        "signal": "EVIDENCE_TRACKED",
+        "score": 2,
+        "detail": "Avg accuracy: 1.0000, no zero-accuracy principles"
+      },
+      {
+        "signal": "NO_CONTRADICTIONS",
+        "score": 0,
+        "detail": "No contradictions detected (expected for small principle set)"
+      },
+      {
+        "signal": "FRAMEWORK_ORPHAN",
+        "score": -1,
+        "detail": "Framework-principle link broken"
+      },
+      {
+        "signal": "CROSS_REGIME",
+        "score": 1,
+        "detail": "Avg 3.0 regimes/principle"
+      }
+    ]
+  }
+}

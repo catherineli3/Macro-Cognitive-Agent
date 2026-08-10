@@ -1,0 +1,92 @@
+{
+  "case_id": "COVID-001",
+  "title": "COVID Crash - Fastest Bear Market in History (23 trading days)",
+  "status": "completed",
+  "narratives": [],
+  "beliefs": [
+    {
+      "id": "6b655630f897",
+      "title": "Credit Conditions Are Shifting",
+      "domain": "BeliefDomain.CREDIT",
+      "confidence": 0.8818567394822963,
+      "evidence_count": 20,
+      "narratives": [
+        "Recession signal: credit markets pricing downturn"
+      ]
+    },
+    {
+      "id": "35f40c305fd0",
+      "title": "Credit Conditions Are Shifting",
+      "domain": "BeliefDomain.CREDIT",
+      "confidence": 0.8791584595120417,
+      "evidence_count": 20,
+      "narratives": [
+        "Liquidity stress: funding markets under pressure"
+      ]
+    },
+    {
+      "id": "8c4f11932fe0",
+      "title": "Credit Conditions Are Shifting",
+      "domain": "BeliefDomain.CREDIT",
+      "confidence": 0.8680912808336632,
+      "evidence_count": 18,
+      "narratives": [
+        "Idiosyncratic credit events, not systemic risk"
+      ]
+    }
+  ],
+  "judgments": [
+    {
+      "belief_title": "Credit Conditions Are Shifting",
+      "conviction": "Credit Conditions Are Shifting",
+      "confidence": 0.8818567394822963,
+      "reasoning": [
+        "[Causal] Inversion Deepens / Data Deteriorates → Recession Fear",
+        "[Causal] → Flight to Safety → Treasury Bid",
+        "[Causal] → Credit Spreads Widen → HY Underperform"
+      ],
+      "falsification": [
+        "Spreads break recent range by more than 20% either direction"
+      ],
+      "competing": [],
+      "contradicting": []
+    },
+    {
+      "belief_title": "Credit Conditions Are Shifting",
+      "conviction": "Credit Conditions Are Shifting",
+      "confidence": 0.8791584595120417,
+      "reasoning": [
+        "[Causal] Liquidity Conditions Tighten → Funding Stress",
+        "[Causal] → Credit Spreads Widen",
+        "[Causal] → Risk Appetite Declines"
+      ],
+      "falsification": [
+        "Spreads break recent range by more than 20% either direction"
+      ],
+      "competing": [],
+      "contradicting": []
+    },
+    {
+      "belief_title": "Credit Conditions Are Shifting",
+      "conviction": "Credit Conditions Are Shifting",
+      "confidence": 0.8680912808336632,
+      "reasoning": [
+        "[Causal] Credit Conditions → Corporate Health Signal",
+        "[Causal] → Growth/Macro Implications",
+        "[Evidence] Narrative signal: Idiosyncratic credit events, not systemic risk"
+      ],
+      "falsification": [
+        "Spreads break recent range by more than 20% either direction"
+      ],
+      "competing": [],
+      "contradicting": []
+    }
+  ],
+  "narrative_probabilities": {
+    "Recession signal: credit markets pricing downturn": 0.4000000000000001,
+    "Liquidity stress: funding markets under pressure": 0.3499999999999999,
+    "Idiosyncratic credit events, not systemic risk": 0.25
+  },
+  "dominant_narrative": "Recession signal: credit markets pricing downturn",
+  "macro_stance": "neutral"
+}

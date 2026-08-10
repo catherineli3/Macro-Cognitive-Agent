@@ -1,0 +1,1 @@
+"""Tests — Macro Research Agent."""

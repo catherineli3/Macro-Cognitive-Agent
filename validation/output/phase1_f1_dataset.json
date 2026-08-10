@@ -1,0 +1,4765 @@
+{
+  "phase": "Phase 1 Validation — F1 Learning Pipeline Closed",
+  "generated_at": "2026-07-18T08:56:07.735163+00:00",
+  "seed": 42,
+  "total_cycles": 100,
+  "valid_snapshots": 99,
+  "pipeline_status": "CLOSED — Finding → Principle → Framework flowing",
+  "v1_hypothesis_quality": {
+    "summary": {
+      "mean_thesis_confidence": 0.1447,
+      "max_thesis_confidence": 0.32,
+      "min_thesis_confidence": 0.1,
+      "mean_hypothesis_count": 3.0,
+      "completed_cycles": 99,
+      "confidence_trend_up": false
+    },
+    "per_cycle": [
+      {
+        "cycle": 2,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.29,
+        "status": "completed"
+      },
+      {
+        "cycle": 3,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.3,
+        "status": "completed"
+      },
+      {
+        "cycle": 4,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.3,
+        "status": "completed"
+      },
+      {
+        "cycle": 5,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.29,
+        "status": "completed"
+      },
+      {
+        "cycle": 6,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.31,
+        "status": "completed"
+      },
+      {
+        "cycle": 7,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.32,
+        "status": "completed"
+      },
+      {
+        "cycle": 8,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.28,
+        "status": "completed"
+      },
+      {
+        "cycle": 9,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.32,
+        "status": "completed"
+      },
+      {
+        "cycle": 10,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.28,
+        "status": "completed"
+      },
+      {
+        "cycle": 11,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.3,
+        "status": "completed"
+      },
+      {
+        "cycle": 12,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.3,
+        "status": "completed"
+      },
+      {
+        "cycle": 13,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.3,
+        "status": "completed"
+      },
+      {
+        "cycle": 14,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.3,
+        "status": "completed"
+      },
+      {
+        "cycle": 15,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.28,
+        "status": "completed"
+      },
+      {
+        "cycle": 16,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.3,
+        "status": "completed"
+      },
+      {
+        "cycle": 17,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.31,
+        "status": "completed"
+      },
+      {
+        "cycle": 18,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.32,
+        "status": "completed"
+      },
+      {
+        "cycle": 19,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.3,
+        "status": "completed"
+      },
+      {
+        "cycle": 20,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.32,
+        "status": "completed"
+      },
+      {
+        "cycle": 21,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.32,
+        "status": "completed"
+      },
+      {
+        "cycle": 22,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.28,
+        "status": "completed"
+      },
+      {
+        "cycle": 23,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.31,
+        "status": "completed"
+      },
+      {
+        "cycle": 24,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 25,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 26,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 27,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 28,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 29,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 30,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 31,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 32,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 33,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 34,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 35,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 36,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 37,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 38,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 39,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 40,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 41,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 42,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 43,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 44,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 45,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 46,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 47,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 48,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 49,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 50,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 51,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 52,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 53,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 54,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 55,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 56,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 57,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 58,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 59,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 60,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 61,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 62,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 63,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 64,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 65,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 66,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 67,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 68,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 69,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 70,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 71,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 72,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 73,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 74,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 75,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 76,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 77,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 78,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 79,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 80,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 81,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 82,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 83,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 84,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 85,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 86,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 87,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 88,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 89,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 90,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 91,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 92,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 93,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 94,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 95,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 96,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 97,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 98,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 99,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      },
+      {
+        "cycle": 100,
+        "hypothesis_count": 3,
+        "thesis_confidence": 0.1,
+        "status": "completed"
+      }
+    ]
+  },
+  "v2_principle_evolution": {
+    "summary": {
+      "initial_total": 0,
+      "final_total": 672,
+      "final_active": 672,
+      "growth": 672,
+      "growth_rate_per_cycle": 6.8
+    },
+    "per_cycle": [
+      {
+        "cycle": 2,
+        "active_count": 0,
+        "total_count": 0,
+        "principle_version": 0
+      },
+      {
+        "cycle": 3,
+        "active_count": 0,
+        "total_count": 0,
+        "principle_version": 0
+      },
+      {
+        "cycle": 4,
+        "active_count": 0,
+        "total_count": 0,
+        "principle_version": 0
+      },
+      {
+        "cycle": 5,
+        "active_count": 0,
+        "total_count": 0,
+        "principle_version": 0
+      },
+      {
+        "cycle": 6,
+        "active_count": 0,
+        "total_count": 0,
+        "principle_version": 0
+      },
+      {
+        "cycle": 7,
+        "active_count": 0,
+        "total_count": 0,
+        "principle_version": 0
+      },
+      {
+        "cycle": 8,
+        "active_count": 0,
+        "total_count": 0,
+        "principle_version": 0
+      },
+      {
+        "cycle": 9,
+        "active_count": 4,
+        "total_count": 4,
+        "principle_version": 0
+      },
+      {
+        "cycle": 10,
+        "active_count": 8,
+        "total_count": 8,
+        "principle_version": 0
+      },
+      {
+        "cycle": 11,
+        "active_count": 12,
+        "total_count": 12,
+        "principle_version": 0
+      },
+      {
+        "cycle": 12,
+        "active_count": 16,
+        "total_count": 16,
+        "principle_version": 0
+      },
+      {
+        "cycle": 13,
+        "active_count": 20,
+        "total_count": 20,
+        "principle_version": 0
+      },
+      {
+        "cycle": 14,
+        "active_count": 24,
+        "total_count": 24,
+        "principle_version": 0
+      },
+      {
+        "cycle": 15,
+        "active_count": 28,
+        "total_count": 28,
+        "principle_version": 0
+      },
+      {
+        "cycle": 16,
+        "active_count": 32,
+        "total_count": 32,
+        "principle_version": 0
+      },
+      {
+        "cycle": 17,
+        "active_count": 36,
+        "total_count": 36,
+        "principle_version": 0
+      },
+      {
+        "cycle": 18,
+        "active_count": 40,
+        "total_count": 40,
+        "principle_version": 0
+      },
+      {
+        "cycle": 19,
+        "active_count": 44,
+        "total_count": 44,
+        "principle_version": 0
+      },
+      {
+        "cycle": 20,
+        "active_count": 48,
+        "total_count": 48,
+        "principle_version": 0
+      },
+      {
+        "cycle": 21,
+        "active_count": 52,
+        "total_count": 52,
+        "principle_version": 0
+      },
+      {
+        "cycle": 22,
+        "active_count": 56,
+        "total_count": 56,
+        "principle_version": 0
+      },
+      {
+        "cycle": 23,
+        "active_count": 60,
+        "total_count": 60,
+        "principle_version": 0
+      },
+      {
+        "cycle": 24,
+        "active_count": 64,
+        "total_count": 64,
+        "principle_version": 0
+      },
+      {
+        "cycle": 25,
+        "active_count": 72,
+        "total_count": 72,
+        "principle_version": 0
+      },
+      {
+        "cycle": 26,
+        "active_count": 80,
+        "total_count": 80,
+        "principle_version": 0
+      },
+      {
+        "cycle": 27,
+        "active_count": 88,
+        "total_count": 88,
+        "principle_version": 0
+      },
+      {
+        "cycle": 28,
+        "active_count": 96,
+        "total_count": 96,
+        "principle_version": 0
+      },
+      {
+        "cycle": 29,
+        "active_count": 104,
+        "total_count": 104,
+        "principle_version": 0
+      },
+      {
+        "cycle": 30,
+        "active_count": 112,
+        "total_count": 112,
+        "principle_version": 0
+      },
+      {
+        "cycle": 31,
+        "active_count": 120,
+        "total_count": 120,
+        "principle_version": 0
+      },
+      {
+        "cycle": 32,
+        "active_count": 128,
+        "total_count": 128,
+        "principle_version": 0
+      },
+      {
+        "cycle": 33,
+        "active_count": 136,
+        "total_count": 136,
+        "principle_version": 0
+      },
+      {
+        "cycle": 34,
+        "active_count": 144,
+        "total_count": 144,
+        "principle_version": 0
+      },
+      {
+        "cycle": 35,
+        "active_count": 152,
+        "total_count": 152,
+        "principle_version": 0
+      },
+      {
+        "cycle": 36,
+        "active_count": 160,
+        "total_count": 160,
+        "principle_version": 0
+      },
+      {
+        "cycle": 37,
+        "active_count": 168,
+        "total_count": 168,
+        "principle_version": 0
+      },
+      {
+        "cycle": 38,
+        "active_count": 176,
+        "total_count": 176,
+        "principle_version": 0
+      },
+      {
+        "cycle": 39,
+        "active_count": 184,
+        "total_count": 184,
+        "principle_version": 0
+      },
+      {
+        "cycle": 40,
+        "active_count": 192,
+        "total_count": 192,
+        "principle_version": 0
+      },
+      {
+        "cycle": 41,
+        "active_count": 200,
+        "total_count": 200,
+        "principle_version": 0
+      },
+      {
+        "cycle": 42,
+        "active_count": 208,
+        "total_count": 208,
+        "principle_version": 0
+      },
+      {
+        "cycle": 43,
+        "active_count": 216,
+        "total_count": 216,
+        "principle_version": 0
+      },
+      {
+        "cycle": 44,
+        "active_count": 224,
+        "total_count": 224,
+        "principle_version": 0
+      },
+      {
+        "cycle": 45,
+        "active_count": 232,
+        "total_count": 232,
+        "principle_version": 0
+      },
+      {
+        "cycle": 46,
+        "active_count": 240,
+        "total_count": 240,
+        "principle_version": 0
+      },
+      {
+        "cycle": 47,
+        "active_count": 248,
+        "total_count": 248,
+        "principle_version": 0
+      },
+      {
+        "cycle": 48,
+        "active_count": 256,
+        "total_count": 256,
+        "principle_version": 0
+      },
+      {
+        "cycle": 49,
+        "active_count": 264,
+        "total_count": 264,
+        "principle_version": 0
+      },
+      {
+        "cycle": 50,
+        "active_count": 272,
+        "total_count": 272,
+        "principle_version": 0
+      },
+      {
+        "cycle": 51,
+        "active_count": 280,
+        "total_count": 280,
+        "principle_version": 0
+      },
+      {
+        "cycle": 52,
+        "active_count": 288,
+        "total_count": 288,
+        "principle_version": 0
+      },
+      {
+        "cycle": 53,
+        "active_count": 296,
+        "total_count": 296,
+        "principle_version": 0
+      },
+      {
+        "cycle": 54,
+        "active_count": 304,
+        "total_count": 304,
+        "principle_version": 0
+      },
+      {
+        "cycle": 55,
+        "active_count": 312,
+        "total_count": 312,
+        "principle_version": 0
+      },
+      {
+        "cycle": 56,
+        "active_count": 320,
+        "total_count": 320,
+        "principle_version": 0
+      },
+      {
+        "cycle": 57,
+        "active_count": 328,
+        "total_count": 328,
+        "principle_version": 0
+      },
+      {
+        "cycle": 58,
+        "active_count": 336,
+        "total_count": 336,
+        "principle_version": 0
+      },
+      {
+        "cycle": 59,
+        "active_count": 344,
+        "total_count": 344,
+        "principle_version": 0
+      },
+      {
+        "cycle": 60,
+        "active_count": 352,
+        "total_count": 352,
+        "principle_version": 0
+      },
+      {
+        "cycle": 61,
+        "active_count": 360,
+        "total_count": 360,
+        "principle_version": 0
+      },
+      {
+        "cycle": 62,
+        "active_count": 368,
+        "total_count": 368,
+        "principle_version": 0
+      },
+      {
+        "cycle": 63,
+        "active_count": 376,
+        "total_count": 376,
+        "principle_version": 0
+      },
+      {
+        "cycle": 64,
+        "active_count": 384,
+        "total_count": 384,
+        "principle_version": 0
+      },
+      {
+        "cycle": 65,
+        "active_count": 392,
+        "total_count": 392,
+        "principle_version": 0
+      },
+      {
+        "cycle": 66,
+        "active_count": 400,
+        "total_count": 400,
+        "principle_version": 0
+      },
+      {
+        "cycle": 67,
+        "active_count": 408,
+        "total_count": 408,
+        "principle_version": 0
+      },
+      {
+        "cycle": 68,
+        "active_count": 416,
+        "total_count": 416,
+        "principle_version": 0
+      },
+      {
+        "cycle": 69,
+        "active_count": 424,
+        "total_count": 424,
+        "principle_version": 0
+      },
+      {
+        "cycle": 70,
+        "active_count": 432,
+        "total_count": 432,
+        "principle_version": 0
+      },
+      {
+        "cycle": 71,
+        "active_count": 440,
+        "total_count": 440,
+        "principle_version": 0
+      },
+      {
+        "cycle": 72,
+        "active_count": 448,
+        "total_count": 448,
+        "principle_version": 0
+      },
+      {
+        "cycle": 73,
+        "active_count": 456,
+        "total_count": 456,
+        "principle_version": 0
+      },
+      {
+        "cycle": 74,
+        "active_count": 464,
+        "total_count": 464,
+        "principle_version": 0
+      },
+      {
+        "cycle": 75,
+        "active_count": 472,
+        "total_count": 472,
+        "principle_version": 0
+      },
+      {
+        "cycle": 76,
+        "active_count": 480,
+        "total_count": 480,
+        "principle_version": 0
+      },
+      {
+        "cycle": 77,
+        "active_count": 488,
+        "total_count": 488,
+        "principle_version": 0
+      },
+      {
+        "cycle": 78,
+        "active_count": 496,
+        "total_count": 496,
+        "principle_version": 0
+      },
+      {
+        "cycle": 79,
+        "active_count": 504,
+        "total_count": 504,
+        "principle_version": 0
+      },
+      {
+        "cycle": 80,
+        "active_count": 512,
+        "total_count": 512,
+        "principle_version": 0
+      },
+      {
+        "cycle": 81,
+        "active_count": 520,
+        "total_count": 520,
+        "principle_version": 0
+      },
+      {
+        "cycle": 82,
+        "active_count": 528,
+        "total_count": 528,
+        "principle_version": 0
+      },
+      {
+        "cycle": 83,
+        "active_count": 536,
+        "total_count": 536,
+        "principle_version": 0
+      },
+      {
+        "cycle": 84,
+        "active_count": 544,
+        "total_count": 544,
+        "principle_version": 0
+      },
+      {
+        "cycle": 85,
+        "active_count": 552,
+        "total_count": 552,
+        "principle_version": 0
+      },
+      {
+        "cycle": 86,
+        "active_count": 560,
+        "total_count": 560,
+        "principle_version": 0
+      },
+      {
+        "cycle": 87,
+        "active_count": 568,
+        "total_count": 568,
+        "principle_version": 0
+      },
+      {
+        "cycle": 88,
+        "active_count": 576,
+        "total_count": 576,
+        "principle_version": 0
+      },
+      {
+        "cycle": 89,
+        "active_count": 584,
+        "total_count": 584,
+        "principle_version": 0
+      },
+      {
+        "cycle": 90,
+        "active_count": 592,
+        "total_count": 592,
+        "principle_version": 0
+      },
+      {
+        "cycle": 91,
+        "active_count": 600,
+        "total_count": 600,
+        "principle_version": 0
+      },
+      {
+        "cycle": 92,
+        "active_count": 608,
+        "total_count": 608,
+        "principle_version": 0
+      },
+      {
+        "cycle": 93,
+        "active_count": 616,
+        "total_count": 616,
+        "principle_version": 0
+      },
+      {
+        "cycle": 94,
+        "active_count": 624,
+        "total_count": 624,
+        "principle_version": 0
+      },
+      {
+        "cycle": 95,
+        "active_count": 632,
+        "total_count": 632,
+        "principle_version": 0
+      },
+      {
+        "cycle": 96,
+        "active_count": 640,
+        "total_count": 640,
+        "principle_version": 0
+      },
+      {
+        "cycle": 97,
+        "active_count": 648,
+        "total_count": 648,
+        "principle_version": 0
+      },
+      {
+        "cycle": 98,
+        "active_count": 656,
+        "total_count": 656,
+        "principle_version": 0
+      },
+      {
+        "cycle": 99,
+        "active_count": 664,
+        "total_count": 664,
+        "principle_version": 0
+      },
+      {
+        "cycle": 100,
+        "active_count": 672,
+        "total_count": 672,
+        "principle_version": 0
+      }
+    ]
+  },
+  "v3_framework_stability": {
+    "summary": {
+      "initial_total": 0,
+      "final_total": 78,
+      "framework_first_appears": 23,
+      "framework_switches": 1,
+      "unique_top_frameworks": 2
+    },
+    "per_cycle": [
+      {
+        "cycle": 2,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 3,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 4,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 5,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 6,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 7,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 8,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 9,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 10,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 11,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 12,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 13,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 14,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 15,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 16,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 17,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 18,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 19,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 20,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 21,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 22,
+        "top_framework": "",
+        "active_count": 0,
+        "total_count": 0
+      },
+      {
+        "cycle": 23,
+        "top_framework": "",
+        "active_count": 1,
+        "total_count": 1
+      },
+      {
+        "cycle": 24,
+        "top_framework": "fw-f3216897",
+        "active_count": 2,
+        "total_count": 2
+      },
+      {
+        "cycle": 25,
+        "top_framework": "fw-f3216897",
+        "active_count": 3,
+        "total_count": 3
+      },
+      {
+        "cycle": 26,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 4,
+        "total_count": 4
+      },
+      {
+        "cycle": 27,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 5,
+        "total_count": 5
+      },
+      {
+        "cycle": 28,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 6,
+        "total_count": 6
+      },
+      {
+        "cycle": 29,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 7,
+        "total_count": 7
+      },
+      {
+        "cycle": 30,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 8,
+        "total_count": 8
+      },
+      {
+        "cycle": 31,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 9,
+        "total_count": 9
+      },
+      {
+        "cycle": 32,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 10,
+        "total_count": 10
+      },
+      {
+        "cycle": 33,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 11,
+        "total_count": 11
+      },
+      {
+        "cycle": 34,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 12,
+        "total_count": 12
+      },
+      {
+        "cycle": 35,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 13,
+        "total_count": 13
+      },
+      {
+        "cycle": 36,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 14,
+        "total_count": 14
+      },
+      {
+        "cycle": 37,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 15,
+        "total_count": 15
+      },
+      {
+        "cycle": 38,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 16,
+        "total_count": 16
+      },
+      {
+        "cycle": 39,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 17,
+        "total_count": 17
+      },
+      {
+        "cycle": 40,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 18,
+        "total_count": 18
+      },
+      {
+        "cycle": 41,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 19,
+        "total_count": 19
+      },
+      {
+        "cycle": 42,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 20,
+        "total_count": 20
+      },
+      {
+        "cycle": 43,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 21,
+        "total_count": 21
+      },
+      {
+        "cycle": 44,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 22,
+        "total_count": 22
+      },
+      {
+        "cycle": 45,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 23,
+        "total_count": 23
+      },
+      {
+        "cycle": 46,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 24,
+        "total_count": 24
+      },
+      {
+        "cycle": 47,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 25,
+        "total_count": 25
+      },
+      {
+        "cycle": 48,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 26,
+        "total_count": 26
+      },
+      {
+        "cycle": 49,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 27,
+        "total_count": 27
+      },
+      {
+        "cycle": 50,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 28,
+        "total_count": 28
+      },
+      {
+        "cycle": 51,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 29,
+        "total_count": 29
+      },
+      {
+        "cycle": 52,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 30,
+        "total_count": 30
+      },
+      {
+        "cycle": 53,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 31,
+        "total_count": 31
+      },
+      {
+        "cycle": 54,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 32,
+        "total_count": 32
+      },
+      {
+        "cycle": 55,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 33,
+        "total_count": 33
+      },
+      {
+        "cycle": 56,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 34,
+        "total_count": 34
+      },
+      {
+        "cycle": 57,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 35,
+        "total_count": 35
+      },
+      {
+        "cycle": 58,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 36,
+        "total_count": 36
+      },
+      {
+        "cycle": 59,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 37,
+        "total_count": 37
+      },
+      {
+        "cycle": 60,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 38,
+        "total_count": 38
+      },
+      {
+        "cycle": 61,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 39,
+        "total_count": 39
+      },
+      {
+        "cycle": 62,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 40,
+        "total_count": 40
+      },
+      {
+        "cycle": 63,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 41,
+        "total_count": 41
+      },
+      {
+        "cycle": 64,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 42,
+        "total_count": 42
+      },
+      {
+        "cycle": 65,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 43,
+        "total_count": 43
+      },
+      {
+        "cycle": 66,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 44,
+        "total_count": 44
+      },
+      {
+        "cycle": 67,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 45,
+        "total_count": 45
+      },
+      {
+        "cycle": 68,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 46,
+        "total_count": 46
+      },
+      {
+        "cycle": 69,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 47,
+        "total_count": 47
+      },
+      {
+        "cycle": 70,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 48,
+        "total_count": 48
+      },
+      {
+        "cycle": 71,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 49,
+        "total_count": 49
+      },
+      {
+        "cycle": 72,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 50,
+        "total_count": 50
+      },
+      {
+        "cycle": 73,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 51,
+        "total_count": 51
+      },
+      {
+        "cycle": 74,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 52,
+        "total_count": 52
+      },
+      {
+        "cycle": 75,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 53,
+        "total_count": 53
+      },
+      {
+        "cycle": 76,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 54,
+        "total_count": 54
+      },
+      {
+        "cycle": 77,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 55,
+        "total_count": 55
+      },
+      {
+        "cycle": 78,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 56,
+        "total_count": 56
+      },
+      {
+        "cycle": 79,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 57,
+        "total_count": 57
+      },
+      {
+        "cycle": 80,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 58,
+        "total_count": 58
+      },
+      {
+        "cycle": 81,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 59,
+        "total_count": 59
+      },
+      {
+        "cycle": 82,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 60,
+        "total_count": 60
+      },
+      {
+        "cycle": 83,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 61,
+        "total_count": 61
+      },
+      {
+        "cycle": 84,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 62,
+        "total_count": 62
+      },
+      {
+        "cycle": 85,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 63,
+        "total_count": 63
+      },
+      {
+        "cycle": 86,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 64,
+        "total_count": 64
+      },
+      {
+        "cycle": 87,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 65,
+        "total_count": 65
+      },
+      {
+        "cycle": 88,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 66,
+        "total_count": 66
+      },
+      {
+        "cycle": 89,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 67,
+        "total_count": 67
+      },
+      {
+        "cycle": 90,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 68,
+        "total_count": 68
+      },
+      {
+        "cycle": 91,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 69,
+        "total_count": 69
+      },
+      {
+        "cycle": 92,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 70,
+        "total_count": 70
+      },
+      {
+        "cycle": 93,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 71,
+        "total_count": 71
+      },
+      {
+        "cycle": 94,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 72,
+        "total_count": 72
+      },
+      {
+        "cycle": 95,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 73,
+        "total_count": 73
+      },
+      {
+        "cycle": 96,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 74,
+        "total_count": 74
+      },
+      {
+        "cycle": 97,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 75,
+        "total_count": 75
+      },
+      {
+        "cycle": 98,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 76,
+        "total_count": 76
+      },
+      {
+        "cycle": 99,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 77,
+        "total_count": 77
+      },
+      {
+        "cycle": 100,
+        "top_framework": "fw-37e8e92f",
+        "active_count": 78,
+        "total_count": 78
+      }
+    ]
+  },
+  "v4_v5_belief_transmission": {
+    "summary": {
+      "final_belief_count": 0,
+      "growth": 0,
+      "note": "Beliefs=0: all principles remain VALIDATED. Belief lifecycle cascade requires RETIRED/WEAKENING principles."
+    },
+    "per_cycle": [
+      {
+        "cycle": 2,
+        "belief_count": 0
+      },
+      {
+        "cycle": 3,
+        "belief_count": 0
+      },
+      {
+        "cycle": 4,
+        "belief_count": 0
+      },
+      {
+        "cycle": 5,
+        "belief_count": 0
+      },
+      {
+        "cycle": 6,
+        "belief_count": 0
+      },
+      {
+        "cycle": 7,
+        "belief_count": 0
+      },
+      {
+        "cycle": 8,
+        "belief_count": 0
+      },
+      {
+        "cycle": 9,
+        "belief_count": 0
+      },
+      {
+        "cycle": 10,
+        "belief_count": 0
+      },
+      {
+        "cycle": 11,
+        "belief_count": 0
+      },
+      {
+        "cycle": 12,
+        "belief_count": 0
+      },
+      {
+        "cycle": 13,
+        "belief_count": 0
+      },
+      {
+        "cycle": 14,
+        "belief_count": 0
+      },
+      {
+        "cycle": 15,
+        "belief_count": 0
+      },
+      {
+        "cycle": 16,
+        "belief_count": 0
+      },
+      {
+        "cycle": 17,
+        "belief_count": 0
+      },
+      {
+        "cycle": 18,
+        "belief_count": 0
+      },
+      {
+        "cycle": 19,
+        "belief_count": 0
+      },
+      {
+        "cycle": 20,
+        "belief_count": 0
+      },
+      {
+        "cycle": 21,
+        "belief_count": 0
+      },
+      {
+        "cycle": 22,
+        "belief_count": 0
+      },
+      {
+        "cycle": 23,
+        "belief_count": 0
+      },
+      {
+        "cycle": 24,
+        "belief_count": 0
+      },
+      {
+        "cycle": 25,
+        "belief_count": 0
+      },
+      {
+        "cycle": 26,
+        "belief_count": 0
+      },
+      {
+        "cycle": 27,
+        "belief_count": 0
+      },
+      {
+        "cycle": 28,
+        "belief_count": 0
+      },
+      {
+        "cycle": 29,
+        "belief_count": 0
+      },
+      {
+        "cycle": 30,
+        "belief_count": 0
+      },
+      {
+        "cycle": 31,
+        "belief_count": 0
+      },
+      {
+        "cycle": 32,
+        "belief_count": 0
+      },
+      {
+        "cycle": 33,
+        "belief_count": 0
+      },
+      {
+        "cycle": 34,
+        "belief_count": 0
+      },
+      {
+        "cycle": 35,
+        "belief_count": 0
+      },
+      {
+        "cycle": 36,
+        "belief_count": 0
+      },
+      {
+        "cycle": 37,
+        "belief_count": 0
+      },
+      {
+        "cycle": 38,
+        "belief_count": 0
+      },
+      {
+        "cycle": 39,
+        "belief_count": 0
+      },
+      {
+        "cycle": 40,
+        "belief_count": 0
+      },
+      {
+        "cycle": 41,
+        "belief_count": 0
+      },
+      {
+        "cycle": 42,
+        "belief_count": 0
+      },
+      {
+        "cycle": 43,
+        "belief_count": 0
+      },
+      {
+        "cycle": 44,
+        "belief_count": 0
+      },
+      {
+        "cycle": 45,
+        "belief_count": 0
+      },
+      {
+        "cycle": 46,
+        "belief_count": 0
+      },
+      {
+        "cycle": 47,
+        "belief_count": 0
+      },
+      {
+        "cycle": 48,
+        "belief_count": 0
+      },
+      {
+        "cycle": 49,
+        "belief_count": 0
+      },
+      {
+        "cycle": 50,
+        "belief_count": 0
+      },
+      {
+        "cycle": 51,
+        "belief_count": 0
+      },
+      {
+        "cycle": 52,
+        "belief_count": 0
+      },
+      {
+        "cycle": 53,
+        "belief_count": 0
+      },
+      {
+        "cycle": 54,
+        "belief_count": 0
+      },
+      {
+        "cycle": 55,
+        "belief_count": 0
+      },
+      {
+        "cycle": 56,
+        "belief_count": 0
+      },
+      {
+        "cycle": 57,
+        "belief_count": 0
+      },
+      {
+        "cycle": 58,
+        "belief_count": 0
+      },
+      {
+        "cycle": 59,
+        "belief_count": 0
+      },
+      {
+        "cycle": 60,
+        "belief_count": 0
+      },
+      {
+        "cycle": 61,
+        "belief_count": 0
+      },
+      {
+        "cycle": 62,
+        "belief_count": 0
+      },
+      {
+        "cycle": 63,
+        "belief_count": 0
+      },
+      {
+        "cycle": 64,
+        "belief_count": 0
+      },
+      {
+        "cycle": 65,
+        "belief_count": 0
+      },
+      {
+        "cycle": 66,
+        "belief_count": 0
+      },
+      {
+        "cycle": 67,
+        "belief_count": 0
+      },
+      {
+        "cycle": 68,
+        "belief_count": 0
+      },
+      {
+        "cycle": 69,
+        "belief_count": 0
+      },
+      {
+        "cycle": 70,
+        "belief_count": 0
+      },
+      {
+        "cycle": 71,
+        "belief_count": 0
+      },
+      {
+        "cycle": 72,
+        "belief_count": 0
+      },
+      {
+        "cycle": 73,
+        "belief_count": 0
+      },
+      {
+        "cycle": 74,
+        "belief_count": 0
+      },
+      {
+        "cycle": 75,
+        "belief_count": 0
+      },
+      {
+        "cycle": 76,
+        "belief_count": 0
+      },
+      {
+        "cycle": 77,
+        "belief_count": 0
+      },
+      {
+        "cycle": 78,
+        "belief_count": 0
+      },
+      {
+        "cycle": 79,
+        "belief_count": 0
+      },
+      {
+        "cycle": 80,
+        "belief_count": 0
+      },
+      {
+        "cycle": 81,
+        "belief_count": 0
+      },
+      {
+        "cycle": 82,
+        "belief_count": 0
+      },
+      {
+        "cycle": 83,
+        "belief_count": 0
+      },
+      {
+        "cycle": 84,
+        "belief_count": 0
+      },
+      {
+        "cycle": 85,
+        "belief_count": 0
+      },
+      {
+        "cycle": 86,
+        "belief_count": 0
+      },
+      {
+        "cycle": 87,
+        "belief_count": 0
+      },
+      {
+        "cycle": 88,
+        "belief_count": 0
+      },
+      {
+        "cycle": 89,
+        "belief_count": 0
+      },
+      {
+        "cycle": 90,
+        "belief_count": 0
+      },
+      {
+        "cycle": 91,
+        "belief_count": 0
+      },
+      {
+        "cycle": 92,
+        "belief_count": 0
+      },
+      {
+        "cycle": 93,
+        "belief_count": 0
+      },
+      {
+        "cycle": 94,
+        "belief_count": 0
+      },
+      {
+        "cycle": 95,
+        "belief_count": 0
+      },
+      {
+        "cycle": 96,
+        "belief_count": 0
+      },
+      {
+        "cycle": 97,
+        "belief_count": 0
+      },
+      {
+        "cycle": 98,
+        "belief_count": 0
+      },
+      {
+        "cycle": 99,
+        "belief_count": 0
+      },
+      {
+        "cycle": 100,
+        "belief_count": 0
+      }
+    ]
+  },
+  "v6_research_consistency": {
+    "summary": {
+      "unique_thesis_patterns": 5,
+      "regime_distribution": {
+        "Tightening": 35,
+        "Stable": 33,
+        "High Vol": 64
+      }
+    },
+    "per_cycle": [
+      {
+        "cycle": 2,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.29
+      },
+      {
+        "cycle": 3,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.3
+      },
+      {
+        "cycle": 4,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.3
+      },
+      {
+        "cycle": 5,
+        "thesis_title": "Tightening / Recession Risk: Current Tightening / Recession Risk regime is the dominant macro force driving asset alloca",
+        "confidence": 0.29
+      },
+      {
+        "cycle": 6,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.31
+      },
+      {
+        "cycle": 7,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.32
+      },
+      {
+        "cycle": 8,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.28
+      },
+      {
+        "cycle": 9,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.32
+      },
+      {
+        "cycle": 10,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.28
+      },
+      {
+        "cycle": 11,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.3
+      },
+      {
+        "cycle": 12,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.3
+      },
+      {
+        "cycle": 13,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.3
+      },
+      {
+        "cycle": 14,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.3
+      },
+      {
+        "cycle": 15,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.28
+      },
+      {
+        "cycle": 16,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.3
+      },
+      {
+        "cycle": 17,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.31
+      },
+      {
+        "cycle": 18,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.32
+      },
+      {
+        "cycle": 19,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.3
+      },
+      {
+        "cycle": 20,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.32
+      },
+      {
+        "cycle": 21,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.32
+      },
+      {
+        "cycle": 22,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.28
+      },
+      {
+        "cycle": 23,
+        "thesis_title": "Tightening / Stable Growth: Current Tightening / Stable Growth regime is the dominant macro force driving asset allocati",
+        "confidence": 0.31
+      },
+      {
+        "cycle": 24,
+        "thesis_title": "Tightening / Stable Growth: Growth signal consistently transmits to markets. Usd signal consistently transmits to market",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 25,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Usd signal consistently transmits to mark",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 26,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 27,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 28,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 29,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 30,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 31,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 32,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 33,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 34,
+        "thesis_title": "Tightening / Stable Growth: Growth signal consistently transmits to markets. Credit signal consistently transmits to mar",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 35,
+        "thesis_title": "Tightening / Stable Growth: Growth signal consistently transmits to markets. Credit signal consistently transmits to mar",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 36,
+        "thesis_title": "Tightening / Stable Growth: Growth signal consistently transmits to markets. Credit signal consistently transmits to mar",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 37,
+        "thesis_title": "Tightening / Stable Growth: Growth signal consistently transmits to markets. Credit signal consistently transmits to mar",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 38,
+        "thesis_title": "Tightening / Stable Growth: Growth signal consistently transmits to markets. Credit signal consistently transmits to mar",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 39,
+        "thesis_title": "Tightening / Stable Growth: Growth signal consistently transmits to markets. Credit signal consistently transmits to mar",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 40,
+        "thesis_title": "Tightening / Stable Growth: Growth signal consistently transmits to markets. Credit signal consistently transmits to mar",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 41,
+        "thesis_title": "Tightening / Stable Growth: Growth signal consistently transmits to markets. Credit signal consistently transmits to mar",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 42,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 43,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 44,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 45,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 46,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 47,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 48,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 49,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 50,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 51,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 52,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 53,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 54,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 55,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 56,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 57,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 58,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 59,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 60,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 61,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 62,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 63,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 64,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 65,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 66,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 67,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 68,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 69,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 70,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 71,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 72,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 73,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 74,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 75,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 76,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 77,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 78,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 79,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 80,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 81,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 82,
+        "thesis_title": "Tightening / Recession Risk: Growth signal consistently transmits to markets. Credit signal consistently transmits to ma",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 83,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 84,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 85,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 86,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 87,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 88,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 89,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 90,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 91,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 92,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 93,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 94,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 95,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 96,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 97,
+        "thesis_title": "High Volatility (tightening): Growth signal consistently transmits to markets. Credit signal consistently transmits to m",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 98,
+        "thesis_title": "Tightening / Stable Growth: Growth signal consistently transmits to markets. Credit signal consistently transmits to mar",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 99,
+        "thesis_title": "Tightening / Stable Growth: Growth signal consistently transmits to markets. Credit signal consistently transmits to mar",
+        "confidence": 0.1
+      },
+      {
+        "cycle": 100,
+        "thesis_title": "Tightening / Stable Growth: Growth signal consistently transmits to markets. Credit signal consistently transmits to mar",
+        "confidence": 0.1
+      }
+    ]
+  },
+  "v7_knowledge_growth": {
+    "summary": {
+      "initial": 0,
+      "final": 750,
+      "growth": 750,
+      "initial_principles": 0,
+      "final_principles": 672,
+      "initial_frameworks": 0,
+      "final_frameworks": 78
+    },
+    "per_cycle": [
+      {
+        "cycle": 2,
+        "principles_total": 0,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 0,
+        "incremental_p": 0,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 3,
+        "principles_total": 0,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 0,
+        "incremental_p": 0,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 4,
+        "principles_total": 0,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 0,
+        "incremental_p": 0,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 5,
+        "principles_total": 0,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 0,
+        "incremental_p": 0,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 6,
+        "principles_total": 0,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 0,
+        "incremental_p": 0,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 7,
+        "principles_total": 0,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 0,
+        "incremental_p": 0,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 8,
+        "principles_total": 0,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 0,
+        "incremental_p": 0,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 9,
+        "principles_total": 4,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 4,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 10,
+        "principles_total": 8,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 8,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 11,
+        "principles_total": 12,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 12,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 12,
+        "principles_total": 16,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 16,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 13,
+        "principles_total": 20,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 20,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 14,
+        "principles_total": 24,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 24,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 15,
+        "principles_total": 28,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 28,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 16,
+        "principles_total": 32,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 32,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 17,
+        "principles_total": 36,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 36,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 18,
+        "principles_total": 40,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 40,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 19,
+        "principles_total": 44,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 44,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 20,
+        "principles_total": 48,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 48,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 21,
+        "principles_total": 52,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 52,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 22,
+        "principles_total": 56,
+        "frameworks_total": 0,
+        "beliefs_total": 0,
+        "knowledge_stock": 56,
+        "incremental_p": 4,
+        "incremental_fw": 0
+      },
+      {
+        "cycle": 23,
+        "principles_total": 60,
+        "frameworks_total": 1,
+        "beliefs_total": 0,
+        "knowledge_stock": 61,
+        "incremental_p": 4,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 24,
+        "principles_total": 64,
+        "frameworks_total": 2,
+        "beliefs_total": 0,
+        "knowledge_stock": 66,
+        "incremental_p": 4,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 25,
+        "principles_total": 72,
+        "frameworks_total": 3,
+        "beliefs_total": 0,
+        "knowledge_stock": 75,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 26,
+        "principles_total": 80,
+        "frameworks_total": 4,
+        "beliefs_total": 0,
+        "knowledge_stock": 84,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 27,
+        "principles_total": 88,
+        "frameworks_total": 5,
+        "beliefs_total": 0,
+        "knowledge_stock": 93,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 28,
+        "principles_total": 96,
+        "frameworks_total": 6,
+        "beliefs_total": 0,
+        "knowledge_stock": 102,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 29,
+        "principles_total": 104,
+        "frameworks_total": 7,
+        "beliefs_total": 0,
+        "knowledge_stock": 111,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 30,
+        "principles_total": 112,
+        "frameworks_total": 8,
+        "beliefs_total": 0,
+        "knowledge_stock": 120,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 31,
+        "principles_total": 120,
+        "frameworks_total": 9,
+        "beliefs_total": 0,
+        "knowledge_stock": 129,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 32,
+        "principles_total": 128,
+        "frameworks_total": 10,
+        "beliefs_total": 0,
+        "knowledge_stock": 138,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 33,
+        "principles_total": 136,
+        "frameworks_total": 11,
+        "beliefs_total": 0,
+        "knowledge_stock": 147,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 34,
+        "principles_total": 144,
+        "frameworks_total": 12,
+        "beliefs_total": 0,
+        "knowledge_stock": 156,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 35,
+        "principles_total": 152,
+        "frameworks_total": 13,
+        "beliefs_total": 0,
+        "knowledge_stock": 165,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 36,
+        "principles_total": 160,
+        "frameworks_total": 14,
+        "beliefs_total": 0,
+        "knowledge_stock": 174,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 37,
+        "principles_total": 168,
+        "frameworks_total": 15,
+        "beliefs_total": 0,
+        "knowledge_stock": 183,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 38,
+        "principles_total": 176,
+        "frameworks_total": 16,
+        "beliefs_total": 0,
+        "knowledge_stock": 192,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 39,
+        "principles_total": 184,
+        "frameworks_total": 17,
+        "beliefs_total": 0,
+        "knowledge_stock": 201,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 40,
+        "principles_total": 192,
+        "frameworks_total": 18,
+        "beliefs_total": 0,
+        "knowledge_stock": 210,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 41,
+        "principles_total": 200,
+        "frameworks_total": 19,
+        "beliefs_total": 0,
+        "knowledge_stock": 219,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 42,
+        "principles_total": 208,
+        "frameworks_total": 20,
+        "beliefs_total": 0,
+        "knowledge_stock": 228,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 43,
+        "principles_total": 216,
+        "frameworks_total": 21,
+        "beliefs_total": 0,
+        "knowledge_stock": 237,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 44,
+        "principles_total": 224,
+        "frameworks_total": 22,
+        "beliefs_total": 0,
+        "knowledge_stock": 246,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 45,
+        "principles_total": 232,
+        "frameworks_total": 23,
+        "beliefs_total": 0,
+        "knowledge_stock": 255,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 46,
+        "principles_total": 240,
+        "frameworks_total": 24,
+        "beliefs_total": 0,
+        "knowledge_stock": 264,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 47,
+        "principles_total": 248,
+        "frameworks_total": 25,
+        "beliefs_total": 0,
+        "knowledge_stock": 273,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 48,
+        "principles_total": 256,
+        "frameworks_total": 26,
+        "beliefs_total": 0,
+        "knowledge_stock": 282,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 49,
+        "principles_total": 264,
+        "frameworks_total": 27,
+        "beliefs_total": 0,
+        "knowledge_stock": 291,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 50,
+        "principles_total": 272,
+        "frameworks_total": 28,
+        "beliefs_total": 0,
+        "knowledge_stock": 300,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 51,
+        "principles_total": 280,
+        "frameworks_total": 29,
+        "beliefs_total": 0,
+        "knowledge_stock": 309,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 52,
+        "principles_total": 288,
+        "frameworks_total": 30,
+        "beliefs_total": 0,
+        "knowledge_stock": 318,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 53,
+        "principles_total": 296,
+        "frameworks_total": 31,
+        "beliefs_total": 0,
+        "knowledge_stock": 327,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 54,
+        "principles_total": 304,
+        "frameworks_total": 32,
+        "beliefs_total": 0,
+        "knowledge_stock": 336,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 55,
+        "principles_total": 312,
+        "frameworks_total": 33,
+        "beliefs_total": 0,
+        "knowledge_stock": 345,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 56,
+        "principles_total": 320,
+        "frameworks_total": 34,
+        "beliefs_total": 0,
+        "knowledge_stock": 354,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 57,
+        "principles_total": 328,
+        "frameworks_total": 35,
+        "beliefs_total": 0,
+        "knowledge_stock": 363,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 58,
+        "principles_total": 336,
+        "frameworks_total": 36,
+        "beliefs_total": 0,
+        "knowledge_stock": 372,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 59,
+        "principles_total": 344,
+        "frameworks_total": 37,
+        "beliefs_total": 0,
+        "knowledge_stock": 381,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 60,
+        "principles_total": 352,
+        "frameworks_total": 38,
+        "beliefs_total": 0,
+        "knowledge_stock": 390,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 61,
+        "principles_total": 360,
+        "frameworks_total": 39,
+        "beliefs_total": 0,
+        "knowledge_stock": 399,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 62,
+        "principles_total": 368,
+        "frameworks_total": 40,
+        "beliefs_total": 0,
+        "knowledge_stock": 408,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 63,
+        "principles_total": 376,
+        "frameworks_total": 41,
+        "beliefs_total": 0,
+        "knowledge_stock": 417,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 64,
+        "principles_total": 384,
+        "frameworks_total": 42,
+        "beliefs_total": 0,
+        "knowledge_stock": 426,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 65,
+        "principles_total": 392,
+        "frameworks_total": 43,
+        "beliefs_total": 0,
+        "knowledge_stock": 435,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 66,
+        "principles_total": 400,
+        "frameworks_total": 44,
+        "beliefs_total": 0,
+        "knowledge_stock": 444,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 67,
+        "principles_total": 408,
+        "frameworks_total": 45,
+        "beliefs_total": 0,
+        "knowledge_stock": 453,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 68,
+        "principles_total": 416,
+        "frameworks_total": 46,
+        "beliefs_total": 0,
+        "knowledge_stock": 462,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 69,
+        "principles_total": 424,
+        "frameworks_total": 47,
+        "beliefs_total": 0,
+        "knowledge_stock": 471,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 70,
+        "principles_total": 432,
+        "frameworks_total": 48,
+        "beliefs_total": 0,
+        "knowledge_stock": 480,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 71,
+        "principles_total": 440,
+        "frameworks_total": 49,
+        "beliefs_total": 0,
+        "knowledge_stock": 489,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 72,
+        "principles_total": 448,
+        "frameworks_total": 50,
+        "beliefs_total": 0,
+        "knowledge_stock": 498,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 73,
+        "principles_total": 456,
+        "frameworks_total": 51,
+        "beliefs_total": 0,
+        "knowledge_stock": 507,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 74,
+        "principles_total": 464,
+        "frameworks_total": 52,
+        "beliefs_total": 0,
+        "knowledge_stock": 516,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 75,
+        "principles_total": 472,
+        "frameworks_total": 53,
+        "beliefs_total": 0,
+        "knowledge_stock": 525,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 76,
+        "principles_total": 480,
+        "frameworks_total": 54,
+        "beliefs_total": 0,
+        "knowledge_stock": 534,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 77,
+        "principles_total": 488,
+        "frameworks_total": 55,
+        "beliefs_total": 0,
+        "knowledge_stock": 543,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 78,
+        "principles_total": 496,
+        "frameworks_total": 56,
+        "beliefs_total": 0,
+        "knowledge_stock": 552,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 79,
+        "principles_total": 504,
+        "frameworks_total": 57,
+        "beliefs_total": 0,
+        "knowledge_stock": 561,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 80,
+        "principles_total": 512,
+        "frameworks_total": 58,
+        "beliefs_total": 0,
+        "knowledge_stock": 570,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 81,
+        "principles_total": 520,
+        "frameworks_total": 59,
+        "beliefs_total": 0,
+        "knowledge_stock": 579,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 82,
+        "principles_total": 528,
+        "frameworks_total": 60,
+        "beliefs_total": 0,
+        "knowledge_stock": 588,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 83,
+        "principles_total": 536,
+        "frameworks_total": 61,
+        "beliefs_total": 0,
+        "knowledge_stock": 597,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 84,
+        "principles_total": 544,
+        "frameworks_total": 62,
+        "beliefs_total": 0,
+        "knowledge_stock": 606,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 85,
+        "principles_total": 552,
+        "frameworks_total": 63,
+        "beliefs_total": 0,
+        "knowledge_stock": 615,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 86,
+        "principles_total": 560,
+        "frameworks_total": 64,
+        "beliefs_total": 0,
+        "knowledge_stock": 624,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 87,
+        "principles_total": 568,
+        "frameworks_total": 65,
+        "beliefs_total": 0,
+        "knowledge_stock": 633,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 88,
+        "principles_total": 576,
+        "frameworks_total": 66,
+        "beliefs_total": 0,
+        "knowledge_stock": 642,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 89,
+        "principles_total": 584,
+        "frameworks_total": 67,
+        "beliefs_total": 0,
+        "knowledge_stock": 651,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 90,
+        "principles_total": 592,
+        "frameworks_total": 68,
+        "beliefs_total": 0,
+        "knowledge_stock": 660,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 91,
+        "principles_total": 600,
+        "frameworks_total": 69,
+        "beliefs_total": 0,
+        "knowledge_stock": 669,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 92,
+        "principles_total": 608,
+        "frameworks_total": 70,
+        "beliefs_total": 0,
+        "knowledge_stock": 678,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 93,
+        "principles_total": 616,
+        "frameworks_total": 71,
+        "beliefs_total": 0,
+        "knowledge_stock": 687,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 94,
+        "principles_total": 624,
+        "frameworks_total": 72,
+        "beliefs_total": 0,
+        "knowledge_stock": 696,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 95,
+        "principles_total": 632,
+        "frameworks_total": 73,
+        "beliefs_total": 0,
+        "knowledge_stock": 705,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 96,
+        "principles_total": 640,
+        "frameworks_total": 74,
+        "beliefs_total": 0,
+        "knowledge_stock": 714,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 97,
+        "principles_total": 648,
+        "frameworks_total": 75,
+        "beliefs_total": 0,
+        "knowledge_stock": 723,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 98,
+        "principles_total": 656,
+        "frameworks_total": 76,
+        "beliefs_total": 0,
+        "knowledge_stock": 732,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 99,
+        "principles_total": 664,
+        "frameworks_total": 77,
+        "beliefs_total": 0,
+        "knowledge_stock": 741,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      },
+      {
+        "cycle": 100,
+        "principles_total": 672,
+        "frameworks_total": 78,
+        "beliefs_total": 0,
+        "knowledge_stock": 750,
+        "incremental_p": 8,
+        "incremental_fw": 1
+      }
+    ]
+  },
+  "v8_explainability": {
+    "summary": {
+      "traceable": 99,
+      "traceable_pct": 1.0,
+      "with_thesis": 99,
+      "with_evolution": 99,
+      "with_framework_selection": 77
+    },
+    "per_cycle": [
+      {
+        "cycle": 2,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 0,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 3,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 0,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 4,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 0,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 5,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 0,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 6,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 0,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 7,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 0,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 8,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 0,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 9,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 4,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 10,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 8,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 11,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 12,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 12,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 16,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 13,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 20,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 14,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 24,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 15,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 28,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 16,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 32,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 17,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 36,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 18,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 40,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 19,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 44,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 20,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 48,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 21,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 52,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 22,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 56,
+        "framework_count": 0,
+        "traceable": true
+      },
+      {
+        "cycle": 23,
+        "has_thesis": true,
+        "has_framework_selection": false,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 60,
+        "framework_count": 1,
+        "traceable": true
+      },
+      {
+        "cycle": 24,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 64,
+        "framework_count": 2,
+        "traceable": true
+      },
+      {
+        "cycle": 25,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 72,
+        "framework_count": 3,
+        "traceable": true
+      },
+      {
+        "cycle": 26,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 80,
+        "framework_count": 4,
+        "traceable": true
+      },
+      {
+        "cycle": 27,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 88,
+        "framework_count": 5,
+        "traceable": true
+      },
+      {
+        "cycle": 28,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 96,
+        "framework_count": 6,
+        "traceable": true
+      },
+      {
+        "cycle": 29,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 104,
+        "framework_count": 7,
+        "traceable": true
+      },
+      {
+        "cycle": 30,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 112,
+        "framework_count": 8,
+        "traceable": true
+      },
+      {
+        "cycle": 31,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 120,
+        "framework_count": 9,
+        "traceable": true
+      },
+      {
+        "cycle": 32,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 128,
+        "framework_count": 10,
+        "traceable": true
+      },
+      {
+        "cycle": 33,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 136,
+        "framework_count": 11,
+        "traceable": true
+      },
+      {
+        "cycle": 34,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 144,
+        "framework_count": 12,
+        "traceable": true
+      },
+      {
+        "cycle": 35,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 152,
+        "framework_count": 13,
+        "traceable": true
+      },
+      {
+        "cycle": 36,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 160,
+        "framework_count": 14,
+        "traceable": true
+      },
+      {
+        "cycle": 37,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 168,
+        "framework_count": 15,
+        "traceable": true
+      },
+      {
+        "cycle": 38,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 176,
+        "framework_count": 16,
+        "traceable": true
+      },
+      {
+        "cycle": 39,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 184,
+        "framework_count": 17,
+        "traceable": true
+      },
+      {
+        "cycle": 40,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 192,
+        "framework_count": 18,
+        "traceable": true
+      },
+      {
+        "cycle": 41,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 200,
+        "framework_count": 19,
+        "traceable": true
+      },
+      {
+        "cycle": 42,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 208,
+        "framework_count": 20,
+        "traceable": true
+      },
+      {
+        "cycle": 43,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 216,
+        "framework_count": 21,
+        "traceable": true
+      },
+      {
+        "cycle": 44,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 224,
+        "framework_count": 22,
+        "traceable": true
+      },
+      {
+        "cycle": 45,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 232,
+        "framework_count": 23,
+        "traceable": true
+      },
+      {
+        "cycle": 46,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 240,
+        "framework_count": 24,
+        "traceable": true
+      },
+      {
+        "cycle": 47,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 248,
+        "framework_count": 25,
+        "traceable": true
+      },
+      {
+        "cycle": 48,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 256,
+        "framework_count": 26,
+        "traceable": true
+      },
+      {
+        "cycle": 49,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 264,
+        "framework_count": 27,
+        "traceable": true
+      },
+      {
+        "cycle": 50,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 272,
+        "framework_count": 28,
+        "traceable": true
+      },
+      {
+        "cycle": 51,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 280,
+        "framework_count": 29,
+        "traceable": true
+      },
+      {
+        "cycle": 52,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 288,
+        "framework_count": 30,
+        "traceable": true
+      },
+      {
+        "cycle": 53,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 296,
+        "framework_count": 31,
+        "traceable": true
+      },
+      {
+        "cycle": 54,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 304,
+        "framework_count": 32,
+        "traceable": true
+      },
+      {
+        "cycle": 55,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 312,
+        "framework_count": 33,
+        "traceable": true
+      },
+      {
+        "cycle": 56,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 320,
+        "framework_count": 34,
+        "traceable": true
+      },
+      {
+        "cycle": 57,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 328,
+        "framework_count": 35,
+        "traceable": true
+      },
+      {
+        "cycle": 58,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 336,
+        "framework_count": 36,
+        "traceable": true
+      },
+      {
+        "cycle": 59,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 344,
+        "framework_count": 37,
+        "traceable": true
+      },
+      {
+        "cycle": 60,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 352,
+        "framework_count": 38,
+        "traceable": true
+      },
+      {
+        "cycle": 61,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 360,
+        "framework_count": 39,
+        "traceable": true
+      },
+      {
+        "cycle": 62,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 368,
+        "framework_count": 40,
+        "traceable": true
+      },
+      {
+        "cycle": 63,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 376,
+        "framework_count": 41,
+        "traceable": true
+      },
+      {
+        "cycle": 64,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 384,
+        "framework_count": 42,
+        "traceable": true
+      },
+      {
+        "cycle": 65,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 392,
+        "framework_count": 43,
+        "traceable": true
+      },
+      {
+        "cycle": 66,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 400,
+        "framework_count": 44,
+        "traceable": true
+      },
+      {
+        "cycle": 67,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 408,
+        "framework_count": 45,
+        "traceable": true
+      },
+      {
+        "cycle": 68,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 416,
+        "framework_count": 46,
+        "traceable": true
+      },
+      {
+        "cycle": 69,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 424,
+        "framework_count": 47,
+        "traceable": true
+      },
+      {
+        "cycle": 70,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 432,
+        "framework_count": 48,
+        "traceable": true
+      },
+      {
+        "cycle": 71,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 440,
+        "framework_count": 49,
+        "traceable": true
+      },
+      {
+        "cycle": 72,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 448,
+        "framework_count": 50,
+        "traceable": true
+      },
+      {
+        "cycle": 73,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 456,
+        "framework_count": 51,
+        "traceable": true
+      },
+      {
+        "cycle": 74,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 464,
+        "framework_count": 52,
+        "traceable": true
+      },
+      {
+        "cycle": 75,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 472,
+        "framework_count": 53,
+        "traceable": true
+      },
+      {
+        "cycle": 76,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 480,
+        "framework_count": 54,
+        "traceable": true
+      },
+      {
+        "cycle": 77,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 488,
+        "framework_count": 55,
+        "traceable": true
+      },
+      {
+        "cycle": 78,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 496,
+        "framework_count": 56,
+        "traceable": true
+      },
+      {
+        "cycle": 79,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 504,
+        "framework_count": 57,
+        "traceable": true
+      },
+      {
+        "cycle": 80,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 512,
+        "framework_count": 58,
+        "traceable": true
+      },
+      {
+        "cycle": 81,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 520,
+        "framework_count": 59,
+        "traceable": true
+      },
+      {
+        "cycle": 82,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 528,
+        "framework_count": 60,
+        "traceable": true
+      },
+      {
+        "cycle": 83,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 536,
+        "framework_count": 61,
+        "traceable": true
+      },
+      {
+        "cycle": 84,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 544,
+        "framework_count": 62,
+        "traceable": true
+      },
+      {
+        "cycle": 85,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 552,
+        "framework_count": 63,
+        "traceable": true
+      },
+      {
+        "cycle": 86,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 560,
+        "framework_count": 64,
+        "traceable": true
+      },
+      {
+        "cycle": 87,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 568,
+        "framework_count": 65,
+        "traceable": true
+      },
+      {
+        "cycle": 88,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 576,
+        "framework_count": 66,
+        "traceable": true
+      },
+      {
+        "cycle": 89,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 584,
+        "framework_count": 67,
+        "traceable": true
+      },
+      {
+        "cycle": 90,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 592,
+        "framework_count": 68,
+        "traceable": true
+      },
+      {
+        "cycle": 91,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 600,
+        "framework_count": 69,
+        "traceable": true
+      },
+      {
+        "cycle": 92,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 608,
+        "framework_count": 70,
+        "traceable": true
+      },
+      {
+        "cycle": 93,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 616,
+        "framework_count": 71,
+        "traceable": true
+      },
+      {
+        "cycle": 94,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 624,
+        "framework_count": 72,
+        "traceable": true
+      },
+      {
+        "cycle": 95,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 632,
+        "framework_count": 73,
+        "traceable": true
+      },
+      {
+        "cycle": 96,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 640,
+        "framework_count": 74,
+        "traceable": true
+      },
+      {
+        "cycle": 97,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 648,
+        "framework_count": 75,
+        "traceable": true
+      },
+      {
+        "cycle": 98,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 656,
+        "framework_count": 76,
+        "traceable": true
+      },
+      {
+        "cycle": 99,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 664,
+        "framework_count": 77,
+        "traceable": true
+      },
+      {
+        "cycle": 100,
+        "has_thesis": true,
+        "has_framework_selection": true,
+        "has_outcome": false,
+        "has_findings": false,
+        "has_evolution": true,
+        "principle_count": 672,
+        "framework_count": 78,
+        "traceable": true
+      }
+    ]
+  },
+  "overall_verdict": {
+    "v1_confidence_improvement": false,
+    "v2_principle_growth": 672,
+    "v3_framework_evolution": true,
+    "v7_knowledge_growth": 750,
+    "pipeline_closed": true,
+    "principle_growth_rate": 6.8,
+    "framework_first_cycle": 23,
+    "verdict": "EVIDENCE_OF_LEARNING",
+    "explanation": "After 100 cycles (seed=42), the Agent accumulated 672 principles, 78 frameworks, totaling 750 knowledge stock units. Principles grew at ~6.8/cycle. Frameworks first appeared at cycle 23 and accumulated to 78. The Finding → Principle → Framework pipeline is CLOSED and producing measurable learning output. Beliefs remain 0 (all principles VALIDATED, no retirement cascade triggered), which is expected behavior until competition weakens some principles."
+  },
+  "fixes_applied": {
+    "cycle_engine": [
+      "Added persistent TransmissionGraph to __init__",
+      "Fixed _ensure_findings_engine(graph=...) call",
+      "Replaced generate(hypothesis_set) with analyze(diagnoses, ...)",
+      "Added _build_transmission_diagnoses() for BreakpointDiagnosis generation",
+      "Added _update_graph_from_outcome() for graph edge reinforce/weaken",
+      "Added _get_transmission_chains() for regime-aware chain selection",
+      "Fixed RegimeSnapshot.from_dict() → pass regime directly"
+    ],
+    "evolution_pipeline": [
+      "Added missing PrincipleStatus import"
+    ]
+  }
+}

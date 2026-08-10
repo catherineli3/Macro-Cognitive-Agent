@@ -1,0 +1,54 @@
+{
+  "generated_at": "2026-07-21T15:43:45.339108+00:00",
+  "total_checks": 5,
+  "passed": 2,
+  "failed": 1,
+  "warnings": 2,
+  "overall_status": "FAIL",
+  "sprint_targets": {
+    "evidence_inflation": "< 1.2x",
+    "belief_accuracy": "0 beliefs at 100% confidence",
+    "belief_updates": "Beliefs actually updating daily",
+    "framework_formation": "Frameworks forming over time",
+    "principle_growth": "Principles accumulating"
+  },
+  "checks": [
+    {
+      "check": "EVIDENCE_INFLATION",
+      "status": "PASS",
+      "inflation_ratio": 1.0,
+      "target": "< 1.2x",
+      "detail": "Max evidence weight inflation ratio: 1.00x over 30 days",
+      "weights_range": [
+        0.35,
+        0.35
+      ]
+    },
+    {
+      "check": "BELIEF_ACCURACY",
+      "status": "PASS",
+      "total_beliefs": 0,
+      "overconfident_count": 0,
+      "target": "0 beliefs at 100% confidence",
+      "detail": "0/0 beliefs have confidence >= 1.0"
+    },
+    {
+      "check": "FRAMEWORK_FORMATION",
+      "status": "WARN",
+      "error": "No module named 'src.research.framework.framework_engine'"
+    },
+    {
+      "check": "PRINCIPLE_GROWTH",
+      "status": "WARN",
+      "principle_count": 0,
+      "target": "Principles accumulating over time",
+      "detail": "0 principles stored"
+    },
+    {
+      "check": "BELIEF_UPDATES",
+      "status": "FAIL",
+      "detail": "V1 audit showed BeliefEngine (new system) is NOT called in ResearchCycleEngine.run_cycle(). The old EvolutionPipeline updates AdaptiveBelief but the new ResearchBelief system receives 0 updates during the daily cycle. This was confirmed in V3 research quality audit: generate_from_narratives() returned 0 beliefs for all 44 cases.",
+      "target": "Beliefs updating daily in cycle"
+    }
+  ]
+}

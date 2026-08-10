@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-07-21T15:43:45.409747+00:00",
+  "institutions_benchmarked": 5,
+  "total_comparisons": 5,
+  "average_narrative_similarity": 0.1,
+  "prediction_agreement_rate": 0.4,
+  "sprint_target": {
+    "benchmark_similarity_min": 0.75,
+    "description": "Narrative similarity vs institutional research must be >= 75%"
+  },
+  "status": "FAIL",
+  "note": "Similarity is computed via keyword overlap between Agent expected narrative and institutional research summary. Full automated comparison would require NLP embedding similarity (BERT/SentenceTransformer) which is beyond scope of this sprint. Current method provides directional guidance.",
+  "comparisons": [
+    {
+      "date": "2022-03-15",
+      "event": "Fed begins hiking cycle",
+      "institution": "Goldman Sachs",
+      "institution_narrative": "Aggressive tightening cycle ahead — 50bp+ hikes expected",
+      "agent_narrative": "Late to Act — Fed behind the curve, inflation embedded",
+      "narrative_similarity": 0.125,
+      "institution_prediction": "bearish equities through mid-2022",
+      "agent_prediction": "bearish",
+      "prediction_agreement": true
+    },
+    {
+      "date": "2022-03-15",
+      "event": "Fed begins hiking cycle",
+      "institution": "JPMorgan",
+      "institution_narrative": "Soft landing still achievable — labor market buffer",
+      "agent_narrative": "Late to Act — Fed behind the curve, inflation embedded",
+      "narrative_similarity": 0.125,
+      "institution_prediction": "neutral to cautiously bullish",
+      "agent_prediction": "bearish",
+      "prediction_agreement": false
+    },
+    {
+      "date": "2023-03-10",
+      "event": "SVB Collapse",
+      "institution": "Bridgewater",
+      "institution_narrative": "Systemic risk contained but credit tightening is real",
+      "agent_narrative": "Banking Panic — SVB/Signature/First Republic failures, systemic risk",
+      "narrative_similarity": 0.25,
+      "institution_prediction": "bearish on regional banks, neutral on broad market",
+      "agent_prediction": "bearish",
+      "prediction_agreement": true
+    },
+    {
+      "date": "2024-02-21",
+      "event": "NVIDIA Earnings",
+      "institution": "BlackRock",
+      "institution_narrative": "AI supercycle is real — multi-year capex buildout",
+      "agent_narrative": "",
+      "narrative_similarity": 0.0,
+      "institution_prediction": "bullish on AI/semiconductor",
+      "agent_prediction": "",
+      "prediction_agreement": false
+    },
+    {
+      "date": "2024-09-18",
+      "event": "Fed 50bp Cut",
+      "institution": "Apollo Global",
+      "institution_narrative": "Jumbo cut signals normalization not panic",
+      "agent_narrative": "",
+      "narrative_similarity": 0.0,
+      "institution_prediction": "bullish on risk assets",
+      "agent_prediction": "",
+      "prediction_agreement": false
+    }
+  ]
+}

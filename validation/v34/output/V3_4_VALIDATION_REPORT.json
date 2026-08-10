@@ -1,0 +1,542 @@
+{
+  "validation_id": "V3.4",
+  "timestamp": "2026-07-22T04:26:16.475207+00:00",
+  "metrics": {
+    "module_availability": {
+      "llm_brain": true,
+      "reflexivity": true,
+      "narrative_memory": true,
+      "expert_debate": true
+    },
+    "llm_brain": {
+      "memo_generation_rate": 1.0,
+      "memo_structure_completeness": 0.571,
+      "avg_memo_confidence": 0.0,
+      "falsification_presence_rate": 0.0,
+      "avg_causal_depth": 0.0
+    },
+    "reflexivity": {
+      "active_cycles_detected": 19,
+      "avg_reinforcement_score": 0.356,
+      "avg_vulnerability_score": 0.0,
+      "extreme_cycle_rate": 0.5
+    },
+    "narrative_memory": {
+      "entries_recorded": 1,
+      "transitions_detected": 0,
+      "avg_narrative_entropy": 0.991
+    },
+    "expert_debate": {
+      "debate_consensus_score": 0.275,
+      "persona_coverage": 4,
+      "avg_synthesis_confidence": 0.435
+    },
+    "overall": {
+      "total_cases": 10,
+      "total_duration_ms": 13.0,
+      "overall_score": 0.404
+    }
+  },
+  "per_case": [
+    {
+      "case_id": "V34-001",
+      "label": "2022Q3 Stagflation",
+      "metrics": {
+        "memo": {
+          "title": "宏观研究报告: stagflation_lite regime",
+          "conviction": "low",
+          "structure_completeness": 0.5714285714285714,
+          "regime_confidence": 0.7,
+          "narrative_confidence": 0.6,
+          "has_falsification": false,
+          "has_causal_chain": false,
+          "overall_confidence": 0.0
+        },
+        "reflexivity": {
+          "cycles_count": 3,
+          "reflexivity_score": 0.34,
+          "warnings": [
+            "VIX高位(>30) — 恐慌可能自我强化，关注流动性风险"
+          ],
+          "extreme_cycles": 0,
+          "cycle_stages": [
+            "accelerating",
+            "accelerating",
+            "accelerating"
+          ],
+          "belief_count": 4
+        },
+        "memory": {
+          "date": "2026-07-22",
+          "narrative_entropy": 0.9077556599985014,
+          "narrative_intensity": 0.05534660400089917
+        },
+        "debate": {
+          "personas": 4,
+          "consensus_score": 0.25,
+          "consensus_items": [
+            "多数专家识别到反身性过程"
+          ],
+          "divergence_count": 2,
+          "persona_weights": {
+            "ptj": 0.26,
+            "dalio": 0.26,
+            "soros": 0.35,
+            "bridgewater": 0.13
+          },
+          "synthesis_confidence": 0.42,
+          "debate_mode": "rule-based"
+        }
+      }
+    },
+    {
+      "case_id": "V34-002",
+      "label": "2023Q4 Goldilocks",
+      "metrics": {
+        "memo": {
+          "title": "宏观研究报告: goldilocks regime",
+          "conviction": "low",
+          "structure_completeness": 0.5714285714285714,
+          "regime_confidence": 0.7,
+          "narrative_confidence": 0.6,
+          "has_falsification": false,
+          "has_causal_chain": false,
+          "overall_confidence": 0.0
+        },
+        "reflexivity": {
+          "cycles_count": 2,
+          "reflexivity_score": 0.6,
+          "warnings": [
+            "[强美元周期] 处于极端阶段 — 自强化分数 0.80，脆弱性 0.20",
+            "[风险偏好泡沫] 处于极端阶段 — 自强化分数 0.80，脆弱性 0.20",
+            "脆弱信念: [Risk On Everything] — 如果被证伪，反转幅度可能为 [moderate]"
+          ],
+          "extreme_cycles": 2,
+          "cycle_stages": [
+            "extreme",
+            "extreme"
+          ],
+          "belief_count": 5
+        },
+        "memory": {
+          "date": "2026-07-22",
+          "narrative_entropy": 0.8649735207179272,
+          "narrative_intensity": 0.08101588756924367
+        },
+        "debate": {
+          "personas": 4,
+          "consensus_score": 0.25,
+          "consensus_items": [
+            "多数专家识别到反身性过程"
+          ],
+          "divergence_count": 2,
+          "persona_weights": {
+            "ptj": 0.33,
+            "dalio": 0.19,
+            "soros": 0.24,
+            "bridgewater": 0.24
+          },
+          "synthesis_confidence": 0.43,
+          "debate_mode": "rule-based"
+        }
+      }
+    },
+    {
+      "case_id": "V34-003",
+      "label": "2020Q1 COVID Crash",
+      "metrics": {
+        "memo": {
+          "title": "宏观研究报告: crisis regime",
+          "conviction": "low",
+          "structure_completeness": 0.5714285714285714,
+          "regime_confidence": 0.7,
+          "narrative_confidence": 0.6,
+          "has_falsification": false,
+          "has_causal_chain": false,
+          "overall_confidence": 0.0
+        },
+        "reflexivity": {
+          "cycles_count": 2,
+          "reflexivity_score": 0.35,
+          "warnings": [
+            "VIX高位(>30) — 恐慌可能自我强化，关注流动性风险",
+            "脆弱信念: [Inflation Transitory] — 如果被证伪，反转幅度可能为 [moderate]"
+          ],
+          "extreme_cycles": 0,
+          "cycle_stages": [
+            "accelerating",
+            "accelerating"
+          ],
+          "belief_count": 3
+        },
+        "memory": {
+          "date": "2026-07-22",
+          "narrative_entropy": 0.9976834773764092,
+          "narrative_intensity": 0.0013899135741544998
+        },
+        "debate": {
+          "personas": 4,
+          "consensus_score": 0.25,
+          "consensus_items": [
+            "多数专家识别到反身性过程"
+          ],
+          "divergence_count": 2,
+          "persona_weights": {
+            "ptj": 0.26,
+            "dalio": 0.26,
+            "soros": 0.35,
+            "bridgewater": 0.13
+          },
+          "synthesis_confidence": 0.42,
+          "debate_mode": "rule-based"
+        }
+      }
+    },
+    {
+      "case_id": "V34-004",
+      "label": "2024Q2 AI Boom",
+      "metrics": {
+        "memo": {
+          "title": "宏观研究报告: ai_boom regime",
+          "conviction": "low",
+          "structure_completeness": 0.5714285714285714,
+          "regime_confidence": 0.7,
+          "narrative_confidence": 0.6,
+          "has_falsification": false,
+          "has_causal_chain": false,
+          "overall_confidence": 0.0
+        },
+        "reflexivity": {
+          "cycles_count": 3,
+          "reflexivity_score": 0.57,
+          "warnings": [
+            "[强美元周期] 处于极端阶段 — 自强化分数 0.76，脆弱性 0.24",
+            "[风险偏好泡沫] 处于极端阶段 — 自强化分数 0.76，脆弱性 0.24",
+            "[AI叙事驱动循环] 处于极端阶段 — 自强化分数 0.76，脆弱性 0.24"
+          ],
+          "extreme_cycles": 3,
+          "cycle_stages": [
+            "extreme",
+            "extreme",
+            "extreme"
+          ],
+          "belief_count": 4
+        },
+        "memory": {
+          "date": "2026-07-22",
+          "narrative_entropy": 0.9372305632161295,
+          "narrative_intensity": 0.03766166207032229
+        },
+        "debate": {
+          "personas": 4,
+          "consensus_score": 0.5,
+          "consensus_items": [
+            "所有专家均识别到低波动率环境",
+            "多数专家识别到反身性过程"
+          ],
+          "divergence_count": 2,
+          "persona_weights": {
+            "ptj": 0.27,
+            "dalio": 0.18,
+            "soros": 0.36,
+            "bridgewater": 0.18
+          },
+          "synthesis_confidence": 0.56,
+          "debate_mode": "rule-based"
+        }
+      }
+    },
+    {
+      "case_id": "V34-005",
+      "label": "2015 EM Crisis",
+      "metrics": {
+        "memo": {
+          "title": "宏观研究报告: em_crisis regime",
+          "conviction": "low",
+          "structure_completeness": 0.5714285714285714,
+          "regime_confidence": 0.7,
+          "narrative_confidence": 0.6,
+          "has_falsification": false,
+          "has_causal_chain": false,
+          "overall_confidence": 0.0
+        },
+        "reflexivity": {
+          "cycles_count": 1,
+          "reflexivity_score": 0.34,
+          "warnings": [
+            "脆弱信念: [Inflation Transitory] — 如果被证伪，反转幅度可能为 [moderate]"
+          ],
+          "extreme_cycles": 0,
+          "cycle_stages": [
+            "accelerating"
+          ],
+          "belief_count": 2
+        },
+        "memory": {
+          "date": "2026-07-22",
+          "narrative_entropy": 0.9713107216099229,
+          "narrative_intensity": 0.01721356703404624
+        },
+        "debate": {
+          "personas": 4,
+          "consensus_score": 0.25,
+          "consensus_items": [
+            "多数专家识别到反身性过程"
+          ],
+          "divergence_count": 2,
+          "persona_weights": {
+            "ptj": 0.24,
+            "dalio": 0.33,
+            "soros": 0.24,
+            "bridgewater": 0.19
+          },
+          "synthesis_confidence": 0.42,
+          "debate_mode": "rule-based"
+        }
+      }
+    },
+    {
+      "case_id": "V34-006",
+      "label": "2019Q3 Fed Pivot",
+      "metrics": {
+        "memo": {
+          "title": "宏观研究报告: dovish_turn regime",
+          "conviction": "low",
+          "structure_completeness": 0.5714285714285714,
+          "regime_confidence": 0.7,
+          "narrative_confidence": 0.6,
+          "has_falsification": false,
+          "has_causal_chain": false,
+          "overall_confidence": 0.0
+        },
+        "reflexivity": {
+          "cycles_count": 0,
+          "reflexivity_score": 0.1,
+          "warnings": [
+            "脆弱信念: [Inflation Transitory] — 如果被证伪，反转幅度可能为 [moderate]",
+            "脆弱信念: [Fed Cutting] — 如果被证伪，反转幅度可能为 [moderate]"
+          ],
+          "extreme_cycles": 0,
+          "cycle_stages": [],
+          "belief_count": 3
+        },
+        "memory": {
+          "date": "2026-07-22",
+          "narrative_entropy": 0.9372305632161295,
+          "narrative_intensity": 0.03766166207032229
+        },
+        "debate": {
+          "personas": 4,
+          "consensus_score": 0.25,
+          "consensus_items": [
+            "多数专家识别到反身性过程"
+          ],
+          "divergence_count": 2,
+          "persona_weights": {
+            "ptj": 0.32,
+            "dalio": 0.27,
+            "soros": 0.23,
+            "bridgewater": 0.18
+          },
+          "synthesis_confidence": 0.42,
+          "debate_mode": "rule-based"
+        }
+      }
+    },
+    {
+      "case_id": "V34-007",
+      "label": "2008Q4 GFC",
+      "metrics": {
+        "memo": {
+          "title": "宏观研究报告: financial_crisis regime",
+          "conviction": "low",
+          "structure_completeness": 0.5714285714285714,
+          "regime_confidence": 0.7,
+          "narrative_confidence": 0.6,
+          "has_falsification": false,
+          "has_causal_chain": false,
+          "overall_confidence": 0.0
+        },
+        "reflexivity": {
+          "cycles_count": 2,
+          "reflexivity_score": 0.35,
+          "warnings": [
+            "VIX高位(>30) — 恐慌可能自我强化，关注流动性风险",
+            "脆弱信念: [Inflation Transitory] — 如果被证伪，反转幅度可能为 [moderate]"
+          ],
+          "extreme_cycles": 0,
+          "cycle_stages": [
+            "accelerating",
+            "accelerating"
+          ],
+          "belief_count": 4
+        },
+        "memory": {
+          "date": "2026-07-22",
+          "narrative_entropy": 0.9835386311891134,
+          "narrative_intensity": 0.009876821286531933
+        },
+        "debate": {
+          "personas": 4,
+          "consensus_score": 0.25,
+          "consensus_items": [
+            "多数专家识别到反身性过程"
+          ],
+          "divergence_count": 2,
+          "persona_weights": {
+            "ptj": 0.26,
+            "dalio": 0.26,
+            "soros": 0.35,
+            "bridgewater": 0.13
+          },
+          "synthesis_confidence": 0.42,
+          "debate_mode": "rule-based"
+        }
+      }
+    },
+    {
+      "case_id": "V34-008",
+      "label": "2021Q2 Reflation",
+      "metrics": {
+        "memo": {
+          "title": "宏观研究报告: reflation regime",
+          "conviction": "low",
+          "structure_completeness": 0.5714285714285714,
+          "regime_confidence": 0.7,
+          "narrative_confidence": 0.6,
+          "has_falsification": false,
+          "has_causal_chain": false,
+          "overall_confidence": 0.0
+        },
+        "reflexivity": {
+          "cycles_count": 2,
+          "reflexivity_score": 0.34,
+          "warnings": [],
+          "extreme_cycles": 0,
+          "cycle_stages": [
+            "accelerating",
+            "accelerating"
+          ],
+          "belief_count": 2
+        },
+        "memory": {
+          "date": "2026-07-22",
+          "narrative_entropy": 0.9077556599985014,
+          "narrative_intensity": 0.05534660400089917
+        },
+        "debate": {
+          "personas": 4,
+          "consensus_score": 0.25,
+          "consensus_items": [
+            "多数专家识别到反身性过程"
+          ],
+          "divergence_count": 2,
+          "persona_weights": {
+            "ptj": 0.24,
+            "dalio": 0.33,
+            "soros": 0.24,
+            "bridgewater": 0.19
+          },
+          "synthesis_confidence": 0.42,
+          "debate_mode": "rule-based"
+        }
+      }
+    },
+    {
+      "case_id": "V34-009",
+      "label": "2025H1 Tariff Shock",
+      "metrics": {
+        "memo": {
+          "title": "宏观研究报告: tariff_shock regime",
+          "conviction": "low",
+          "structure_completeness": 0.5714285714285714,
+          "regime_confidence": 0.7,
+          "narrative_confidence": 0.6,
+          "has_falsification": false,
+          "has_causal_chain": false,
+          "overall_confidence": 0.0
+        },
+        "reflexivity": {
+          "cycles_count": 3,
+          "reflexivity_score": 0.32,
+          "warnings": [],
+          "extreme_cycles": 0,
+          "cycle_stages": [
+            "accelerating",
+            "accelerating",
+            "accelerating"
+          ],
+          "belief_count": 4
+        },
+        "memory": {
+          "date": "2026-07-22",
+          "narrative_entropy": 0.9713107216099229,
+          "narrative_intensity": 0.01721356703404624
+        },
+        "debate": {
+          "personas": 4,
+          "consensus_score": 0.25,
+          "consensus_items": [
+            "多数专家识别到反身性过程"
+          ],
+          "divergence_count": 2,
+          "persona_weights": {
+            "ptj": 0.25,
+            "dalio": 0.25,
+            "soros": 0.25,
+            "bridgewater": 0.25
+          },
+          "synthesis_confidence": 0.42,
+          "debate_mode": "rule-based"
+        }
+      }
+    },
+    {
+      "case_id": "V34-010",
+      "label": "Bond Vigilantes Return",
+      "metrics": {
+        "memo": {
+          "title": "宏观研究报告: fiscal_risk regime",
+          "conviction": "low",
+          "structure_completeness": 0.5714285714285714,
+          "regime_confidence": 0.7,
+          "narrative_confidence": 0.6,
+          "has_falsification": false,
+          "has_causal_chain": false,
+          "overall_confidence": 0.0
+        },
+        "reflexivity": {
+          "cycles_count": 1,
+          "reflexivity_score": 0.25,
+          "warnings": [],
+          "extreme_cycles": 0,
+          "cycle_stages": [
+            "forming"
+          ],
+          "belief_count": 1
+        },
+        "memory": {
+          "date": "2026-07-22",
+          "narrative_entropy": 0.9911594714322187,
+          "narrative_intensity": 0.0053043171406687685
+        },
+        "debate": {
+          "personas": 4,
+          "consensus_score": 0.25,
+          "consensus_items": [
+            "多数专家识别到反身性过程"
+          ],
+          "divergence_count": 2,
+          "persona_weights": {
+            "ptj": 0.24,
+            "dalio": 0.24,
+            "soros": 0.19,
+            "bridgewater": 0.33
+          },
+          "synthesis_confidence": 0.42,
+          "debate_mode": "rule-based"
+        }
+      }
+    }
+  ]
+}

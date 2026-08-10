@@ -1,0 +1,470 @@
+{
+  "v1_architecture": {
+    "title": "V1 Architecture Audit",
+    "status": "FAIL",
+    "metrics": {
+      "production_adaptive_belief_refs": 19,
+      "adapter_adaptive_belief_refs": 11,
+      "research_belief_refs": 92,
+      "narrative_imported": true,
+      "narrative_in_research_cycle": true,
+      "belief_in_research_cycle": true,
+      "dead_modules": 0,
+      "all_pass": false
+    },
+    "issues": [
+      "[FAIL] 19 production AdaptiveBelief references remain",
+      "   - src\\hypothesis_library\\__init__.py:23: from src.schemas.belief_version import AdaptiveBelief",
+      "   - src\\hypothesis_library\\__init__.py:91: def compute_learning_history(belief: Optional[AdaptiveBelief]) -> tuple[float, f",
+      "   - src\\hypothesis_library\\__init__.py:112: belief: Optional[AdaptiveBelief] = None,",
+      "   - src\\hypothesis_library\\__init__.py:218: belief: Optional[AdaptiveBelief] = None,",
+      "   - src\\research\\beliefs\\schemas.py:3: Contract First: ResearchBelief replaces AdaptiveBelief.",
+      "   - src\\research\\beliefs\\schemas.py:132: \"\"\"Core belief object — replaces AdaptiveBelief from legacy system.",
+      "   - src\\research\\evolution\\belief_lifecycle.py:18: from src.schemas.belief_version import AdaptiveBelief, BeliefVersion",
+      "   - src\\research\\evolution\\belief_lifecycle.py:53: self._beliefs: dict[str, AdaptiveBelief] = {}",
+      "   - src\\research\\evolution\\belief_lifecycle.py:56: def register_belief(self, belief: AdaptiveBelief) -> str:",
+      "   - src\\research\\evolution\\belief_lifecycle.py:194: def _determine_stage(self, belief: AdaptiveBelief) -> BeliefLifecycleStage:",
+      "   - src\\research\\evolution\\belief_lifecycle.py:211: def _update_belief_status(belief: AdaptiveBelief,",
+      "   - src\\research\\evolution\\belief_lifecycle.py:224: def get_belief(self, belief_id: str) -> AdaptiveBelief | None:",
+      "   - src\\research\\evolution\\belief_lifecycle.py:227: def get_mature_beliefs(self) -> list[AdaptiveBelief]:",
+      "   - src\\research\\evolution\\belief_lifecycle.py:235: def get_active_beliefs(self) -> list[AdaptiveBelief]:",
+      "   - src\\schemas\\belief_version.py:79: class AdaptiveBelief(BaseModel):",
+      "   - src\\schemas\\belief_version.py:164: f\"<AdaptiveBelief [{self.dimension}] v{self.current_version} \"",
+      "   - src\\schemas\\__init__.py:14: → DiagnosisReport → LearningUnit → AdaptiveBelief → BeliefVersion",
+      "   - src\\schemas\\__init__.py:64: from src.schemas.belief_version import AdaptiveBelief, BeliefVersion",
+      "   - src\\schemas\\__init__.py:155: \"AdaptiveBelief\","
+    ],
+    "details": {
+      "adaptive_belief_refs": [
+        {
+          "file": "src\\hypothesis_library\\__init__.py",
+          "line": 23,
+          "code": "from src.schemas.belief_version import AdaptiveBelief",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\hypothesis_library\\__init__.py",
+          "line": 91,
+          "code": "def compute_learning_history(belief: Optional[AdaptiveBelief]) -> tuple[float, float, int]:",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\hypothesis_library\\__init__.py",
+          "line": 112,
+          "code": "belief: Optional[AdaptiveBelief] = None,",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\hypothesis_library\\__init__.py",
+          "line": 218,
+          "code": "belief: Optional[AdaptiveBelief] = None,",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 1,
+          "code": "\"\"\"BeliefAdapter — Convert between ResearchBelief (V3.1) and AdaptiveBelief (legacy).",
+          "purpose": "ADAPTER (allowed)",
+          "can_replace": "N/A — Adapter is the compatibility layer"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 6,
+          "code": "that still expects AdaptiveBelief (e.g., BeliefLifecycleManager).",
+          "purpose": "ADAPTER (allowed)",
+          "can_replace": "N/A — Adapter is the compatibility layer"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 15,
+          "code": "\"\"\"Bidirectional converter between ResearchBelief and AdaptiveBelief.",
+          "purpose": "ADAPTER (allowed)",
+          "can_replace": "N/A — Adapter is the compatibility layer"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 19,
+          "code": "a = BeliefAdapter.to_adaptive(r)   # ResearchBelief → AdaptiveBelief",
+          "purpose": "ADAPTER (allowed)",
+          "can_replace": "N/A — Adapter is the compatibility layer"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 20,
+          "code": "r2 = BeliefAdapter.from_adaptive(a)  # AdaptiveBelief → ResearchBelief",
+          "purpose": "ADAPTER (allowed)",
+          "can_replace": "N/A — Adapter is the compatibility layer"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 37,
+          "code": "def to_adaptive(belief) -> \"AdaptiveBelief\":",
+          "purpose": "ADAPTER (allowed)",
+          "can_replace": "N/A — Adapter is the compatibility layer"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 38,
+          "code": "\"\"\"Convert ResearchBelief → AdaptiveBelief for legacy compatibility.\"\"\"",
+          "purpose": "ADAPTER (allowed)",
+          "can_replace": "N/A — Adapter is the compatibility layer"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 39,
+          "code": "from src.schemas.belief_version import AdaptiveBelief",
+          "purpose": "ADAPTER (allowed)",
+          "can_replace": "N/A — Adapter is the compatibility layer"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 47,
+          "code": "return AdaptiveBelief(",
+          "purpose": "ADAPTER (allowed)",
+          "can_replace": "N/A — Adapter is the compatibility layer"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 64,
+          "code": "def from_adaptive(adaptive_belief: \"AdaptiveBelief\") -> \"ResearchBelief\":",
+          "purpose": "ADAPTER (allowed)",
+          "can_replace": "N/A — Adapter is the compatibility layer"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 65,
+          "code": "\"\"\"Convert AdaptiveBelief → ResearchBelief.\"\"\"",
+          "purpose": "ADAPTER (allowed)",
+          "can_replace": "N/A — Adapter is the compatibility layer"
+        },
+        {
+          "file": "src\\research\\beliefs\\schemas.py",
+          "line": 3,
+          "code": "Contract First: ResearchBelief replaces AdaptiveBelief.",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\research\\beliefs\\schemas.py",
+          "line": 132,
+          "code": "\"\"\"Core belief object — replaces AdaptiveBelief from legacy system.",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\research\\evolution\\belief_lifecycle.py",
+          "line": 18,
+          "code": "from src.schemas.belief_version import AdaptiveBelief, BeliefVersion",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\research\\evolution\\belief_lifecycle.py",
+          "line": 53,
+          "code": "self._beliefs: dict[str, AdaptiveBelief] = {}",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\research\\evolution\\belief_lifecycle.py",
+          "line": 56,
+          "code": "def register_belief(self, belief: AdaptiveBelief) -> str:",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\research\\evolution\\belief_lifecycle.py",
+          "line": 194,
+          "code": "def _determine_stage(self, belief: AdaptiveBelief) -> BeliefLifecycleStage:",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\research\\evolution\\belief_lifecycle.py",
+          "line": 211,
+          "code": "def _update_belief_status(belief: AdaptiveBelief,",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\research\\evolution\\belief_lifecycle.py",
+          "line": 224,
+          "code": "def get_belief(self, belief_id: str) -> AdaptiveBelief | None:",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\research\\evolution\\belief_lifecycle.py",
+          "line": 227,
+          "code": "def get_mature_beliefs(self) -> list[AdaptiveBelief]:",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\research\\evolution\\belief_lifecycle.py",
+          "line": 235,
+          "code": "def get_active_beliefs(self) -> list[AdaptiveBelief]:",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\schemas\\belief_version.py",
+          "line": 79,
+          "code": "class AdaptiveBelief(BaseModel):",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\schemas\\belief_version.py",
+          "line": 164,
+          "code": "f\"<AdaptiveBelief [{self.dimension}] v{self.current_version} \"",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\schemas\\__init__.py",
+          "line": 14,
+          "code": "→ DiagnosisReport → LearningUnit → AdaptiveBelief → BeliefVersion",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\schemas\\__init__.py",
+          "line": 64,
+          "code": "from src.schemas.belief_version import AdaptiveBelief, BeliefVersion",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        },
+        {
+          "file": "src\\schemas\\__init__.py",
+          "line": 155,
+          "code": "\"AdaptiveBelief\",",
+          "purpose": "PRODUCTION — needs migration",
+          "can_replace": "Yes — should migrate to ResearchBelief"
+        }
+      ],
+      "research_belief_refs": [
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 1,
+          "code": "\"\"\"BeliefAdapter — Convert between ResearchBelief (V3.1) and AdaptiveBelief (legacy)."
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 4,
+          "code": "ResearchBelief is the SINGLE source of truth."
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 15,
+          "code": "\"\"\"Bidirectional converter between ResearchBelief and AdaptiveBelief."
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 18,
+          "code": "r = ResearchBelief(...)"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 19,
+          "code": "a = BeliefAdapter.to_adaptive(r)   # ResearchBelief → AdaptiveBelief"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 20,
+          "code": "r2 = BeliefAdapter.from_adaptive(a)  # AdaptiveBelief → ResearchBelief"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 38,
+          "code": "\"\"\"Convert ResearchBelief → AdaptiveBelief for legacy compatibility.\"\"\""
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 64,
+          "code": "def from_adaptive(adaptive_belief: \"AdaptiveBelief\") -> \"ResearchBelief\":"
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 65,
+          "code": "\"\"\"Convert AdaptiveBelief → ResearchBelief.\"\"\""
+        },
+        {
+          "file": "src\\research\\beliefs\\belief_adapter.py",
+          "line": 66,
+          "code": "from src.research.beliefs.schemas import ResearchBelief, BeliefDomain, BeliefStage"
+        }
+      ],
+      "dead_modules": []
+    }
+  },
+  "v2_execution": {
+    "title": "V2 Execution Validation",
+    "status": "PASS",
+    "metrics": {
+      "total_days": 30,
+      "successful_days": 30,
+      "crashed_days": 0,
+      "success_rate": 1.0,
+      "crash_rate": 0.0,
+      "avg_step_duration_ms": 0.0,
+      "all_pass": true
+    },
+    "issues": [],
+    "details": {}
+  },
+  "v3_research_quality": {
+    "title": "V3 Research Quality Audit",
+    "status": "FAIL",
+    "metrics": {
+      "total_cases": 19,
+      "chain_complete_cases": 8,
+      "chain_complete_ratio": 0.42105263157894735,
+      "total_narratives": 16,
+      "total_beliefs": 24,
+      "avg_narratives_per_case": 0.8421052631578947,
+      "avg_beliefs_per_case": 1.263157894736842
+    },
+    "issues": [
+      "Only 8/19 cases have complete Narrative → Belief chain"
+    ],
+    "details": {
+      "case_details": [
+        {
+          "case": "2022 Inflation Peak — CPI Hits 8.5%",
+          "narratives": 2,
+          "beliefs": 3,
+          "chain_complete": true
+        },
+        {
+          "case": "Peak Inflation Narrative Emerges",
+          "narratives": 2,
+          "beliefs": 3,
+          "chain_complete": true
+        },
+        {
+          "case": "Disinflation Takes Hold — CPI Falls to 3%",
+          "narratives": 2,
+          "beliefs": 3,
+          "chain_complete": true
+        },
+        {
+          "case": "Sticky Core — Services Inflation Persists",
+          "narratives": 2,
+          "beliefs": 3,
+          "chain_complete": true
+        },
+        {
+          "case": "Fed Begins Hiking Cycle — First 25bp Hike",
+          "narratives": 2,
+          "beliefs": 3,
+          "chain_complete": true
+        },
+        {
+          "case": "Powell Pivot — 'A Long Way from Neutral' to Patient",
+          "narratives": 0,
+          "beliefs": 0,
+          "chain_complete": false
+        },
+        {
+          "case": "Fed Cuts 50bp — First Cut Since 2020",
+          "narratives": 2,
+          "beliefs": 3,
+          "chain_complete": true
+        },
+        {
+          "case": "First Rate Hike After Zero — Liftoff",
+          "narratives": 0,
+          "beliefs": 0,
+          "chain_complete": false
+        },
+        {
+          "case": "SVB Collapse — US Regional Banking Crisis",
+          "narratives": 0,
+          "beliefs": 0,
+          "chain_complete": false
+        },
+        {
+          "case": "COVID Crash — Fastest Bear Market in History",
+          "narratives": 0,
+          "beliefs": 0,
+          "chain_complete": false
+        },
+        {
+          "case": "UK Gilt Crisis — LDI Meltdown",
+          "narratives": 0,
+          "beliefs": 0,
+          "chain_complete": false
+        },
+        {
+          "case": "Soft Landing — GDP 4.9% Q3 Amid Tightening",
+          "narratives": 2,
+          "beliefs": 3,
+          "chain_complete": true
+        },
+        {
+          "case": "Technical Recession — Two Negative GDP Quarters",
+          "narratives": 2,
+          "beliefs": 3,
+          "chain_complete": true
+        },
+        {
+          "case": "King Dollar — DXY Hits 114, 20-Year High",
+          "narratives": 0,
+          "beliefs": 0,
+          "chain_complete": false
+        },
+        {
+          "case": "Dollar Weakness — DXY Falls Below 101 Ahead of Fed Cut",
+          "narratives": 0,
+          "beliefs": 0,
+          "chain_complete": false
+        },
+        {
+          "case": "Credit Spreads Widen — HY Spread Hits 550bp",
+          "narratives": 0,
+          "beliefs": 0,
+          "chain_complete": false
+        },
+        {
+          "case": "NVIDIA Blowout — $22B Revenue, AI Capex Inflection",
+          "narratives": 0,
+          "beliefs": 0,
+          "chain_complete": false
+        },
+        {
+          "case": "DeepSeek Shock — Chinese AI Lab Claims US-Level Performance at Fraction of Cost",
+          "narratives": 0,
+          "beliefs": 0,
+          "chain_complete": false
+        },
+        {
+          "case": "Liberation Day — US Announces Sweeping Tariffs",
+          "narratives": 0,
+          "beliefs": 0,
+          "chain_complete": false
+        }
+      ]
+    }
+  },
+  "v5_learning": {
+    "title": "V5 Learning Audit",
+    "status": "PASS",
+    "metrics": {
+      "beliefs_generated": 1,
+      "initial_confidence": 0.5,
+      "final_confidence": 0.6428571428571429,
+      "initial_stage": "hypothesis",
+      "final_stage": "hypothesis",
+      "evidence_count": 1,
+      "belief_updated": true,
+      "evidence_inflation_risk": "low"
+    },
+    "issues": [],
+    "details": {}
+  }
+}

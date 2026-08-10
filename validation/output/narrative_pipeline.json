@@ -1,0 +1,32 @@
+{
+  "pipeline_status": "UNIFIED",
+  "pipeline_steps": [
+    "Collector → Validator → Normalizer → FeatureEngine → StateVector",
+    "SnapshotBuilder → MentalModels → NarrativeDetector → BeliefEngine",
+    "ResearchCycle { FrameworkSelect → ThesisGenerate → HypothesisCompete → Predict → Postmortem → Evolve }",
+    "SnapshotWriter → { cycles, beliefs, narratives, mental_models }"
+  ],
+  "narrative_integration": {
+    "status": "COMPLETE",
+    "entry_point": "ResearchCycleEngine._detect_narratives() (Step 3/10)",
+    "detector": "src/research/narrative/narrative_detector.py:NarrativeDetector",
+    "input": "M1 StateVector + ResearchConclusion[]",
+    "output": "Narrative[] stored in CycleResult.narratives"
+  },
+  "belief_integration": {
+    "status": "COMPLETE",
+    "entry_point": "ResearchCycleEngine._generate_beliefs() (Step 4/10)",
+    "engine": "src/research/beliefs/belief_engine.py:BeliefEngine",
+    "method": "generate_from_narratives(narratives, state_vector)",
+    "output": "ResearchBelief[] stored in CycleResult.beliefs",
+    "min_output": ">=1 belief per active narrative"
+  },
+  "daily_runners": {
+    "m1_daily_runner": "Scripts/run_m1_daily.py — uses MacroPipeline + ResearchCycleEngine (full path)",
+    "daily_runner": "Src/runtime/daily_runner.py — now prefers MacroPipeline, falls back to heuristic"
+  },
+  "snapshot": {
+    "new_files": ["narratives.json", "mental_models.json"],
+    "new_fields_in_cycle_result": ["narratives", "beliefs", "narrative_count", "belief_count"]
+  }
+}

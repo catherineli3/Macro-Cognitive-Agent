@@ -1,0 +1,1 @@
+"""Tests — Analyzer module."""

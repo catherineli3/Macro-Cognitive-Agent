@@ -1,0 +1,2241 @@
+{
+  "generated_at": "2026-07-21T15:42:15.065081+00:00",
+  "total_cases": 44,
+  "scores": {
+    "narrative_accuracy": 0.159,
+    "narrative_total": 7,
+    "narrative_evaluated": 44,
+    "hypothesis_accuracy": 0.0,
+    "hypothesis_total": 0,
+    "hypothesis_evaluated": 44,
+    "prediction_accuracy": 0.0,
+    "prediction_total": 0,
+    "prediction_evaluated": 44,
+    "error_rate": 0.0,
+    "overall_quality_score": 0.053
+  },
+  "sprint_target": {
+    "research_quality_min": 0.8,
+    "description": "Narrative + Hypothesis + Prediction accuracy must be >= 80%"
+  },
+  "category_breakdown": {
+    "Inflation": {
+      "total": 7,
+      "narrative_correct": 1,
+      "hypothesis_correct": 0
+    },
+    "Policy": {
+      "total": 11,
+      "narrative_correct": 2,
+      "hypothesis_correct": 0
+    },
+    "Crisis": {
+      "total": 5,
+      "narrative_correct": 0,
+      "hypothesis_correct": 0
+    },
+    "Growth": {
+      "total": 6,
+      "narrative_correct": 0,
+      "hypothesis_correct": 0
+    },
+    "Dollar": {
+      "total": 6,
+      "narrative_correct": 4,
+      "hypothesis_correct": 0
+    },
+    "Credit": {
+      "total": 3,
+      "narrative_correct": 0,
+      "hypothesis_correct": 0
+    },
+    "AI/Tech": {
+      "total": 6,
+      "narrative_correct": 0,
+      "hypothesis_correct": 0
+    }
+  },
+  "details": [
+    {
+      "case_id": "INF-001",
+      "title": "2022 Inflation Peak — CPI Hits 8.5%",
+      "period": "2022-03",
+      "category": "Inflation",
+      "expected_narrative": "Inflation Crisis — 40-year high CPI forcing aggressive Fed tightening cycle",
+      "expected_hypothesis": [
+        "Inflation has not peaked",
+        "Fed will deliver 50bp+ hikes",
+        "Growth will slow sharply"
+      ],
+      "expected_prediction_direction": "bearish",
+      "actual_outcome": "CPI peaked June 2022 at 9.1%. Fed hiked 75bp four consecutive times. S&P bottomed October 2022.",
+      "actual_direction": "bearish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Inflation",
+          "Policy",
+          "Growth",
+          "Liquidity"
+        ],
+        "narratives": [
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.425
+          },
+          {
+            "category": "inflation",
+            "title": "Inflation Reacceleration",
+            "confidence": 0.75
+          },
+          {
+            "category": "growth",
+            "title": "Soft Landing",
+            "confidence": 0.35
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          },
+          {
+            "category": "growth",
+            "title": "Growth Resilience",
+            "confidence": 0.65
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 422.47867584228516
+    },
+    {
+      "case_id": "INF-002",
+      "title": "Peak Inflation Narrative Emerges",
+      "period": "2022-10",
+      "category": "Inflation",
+      "expected_narrative": "Peak Inflation — CPI moderating, market pricing in pivot hopes",
+      "expected_hypothesis": [
+        "Inflation has peaked",
+        "Fed may slow pace",
+        "Risk assets rally on pivot hopes"
+      ],
+      "expected_prediction_direction": "cautiously_bullish",
+      "actual_outcome": "S&P rallied 14% Oct-Dec 2022 on peak inflation narrative. Fed did slow to 50bp Dec, then 25bp.",
+      "actual_direction": "bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Inflation",
+          "Policy",
+          "Growth",
+          "Liquidity"
+        ],
+        "narratives": [
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.425
+          },
+          {
+            "category": "inflation",
+            "title": "Inflation Reacceleration",
+            "confidence": 0.75
+          },
+          {
+            "category": "growth",
+            "title": "Soft Landing",
+            "confidence": 0.35
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          },
+          {
+            "category": "growth",
+            "title": "Growth Resilience",
+            "confidence": 0.65
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "INF-003",
+      "title": "Disinflation Takes Hold — CPI Falls to 3%",
+      "period": "2023-06",
+      "category": "Inflation",
+      "expected_narrative": "Disinflation Trend — headline CPI collapsing, core sticky",
+      "expected_hypothesis": [
+        "Headline disinflation real but core stubborn",
+        "Fed near terminal rate",
+        "Soft landing possible"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "Continued disinflation through 2023. S&P rallied 24% for full year. Fed held rates at 5.25-5.5%.",
+      "actual_direction": "bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Inflation",
+          "Policy",
+          "Growth",
+          "Dollar"
+        ],
+        "narratives": [
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.425
+          },
+          {
+            "category": "inflation",
+            "title": "Inflation Reacceleration",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Dollar Strength Regime",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Higher for Longer",
+            "confidence": 0.35
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 1.0073184967041016
+    },
+    {
+      "case_id": "INF-004",
+      "title": "Sticky Core — Services Inflation Persists",
+      "period": "2024-01",
+      "category": "Inflation",
+      "expected_narrative": "Sticky Services — shelter inflation keeping core elevated, delaying cuts",
+      "expected_hypothesis": [
+        "Shelter disinflation is lagged",
+        "Rate cuts delayed but still coming",
+        "Growth resilient despite high rates"
+      ],
+      "expected_prediction_direction": "neutral",
+      "actual_outcome": "Rate cut expectations pushed from March to September. S&P still rallied on AI enthusiasm.",
+      "actual_direction": "neutral_to_bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Inflation",
+          "Policy",
+          "Growth",
+          "Dollar"
+        ],
+        "narratives": [
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.425
+          },
+          {
+            "category": "inflation",
+            "title": "Inflation Reacceleration",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Dollar Strength Regime",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "POL-001",
+      "title": "Fed Begins Hiking Cycle — First 25bp Hike",
+      "period": "2022-03",
+      "category": "Policy",
+      "expected_narrative": "Late to Act — Fed behind the curve, inflation embedded",
+      "expected_hypothesis": [
+        "Fed will accelerate to 50bp+ hikes",
+        "Dot plot will shift dramatically higher"
+      ],
+      "expected_prediction_direction": "bearish",
+      "actual_outcome": "Fed hiked 425bp total in 2022, fastest pace since 1980s. Dot plot rose to 5.1% terminal.",
+      "actual_direction": "bearish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Policy",
+          "Inflation",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.425
+          },
+          {
+            "category": "inflation",
+            "title": "Inflation Reacceleration",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "POL-002",
+      "title": "Powell Pivot — 'A Long Way from Neutral' to Patient",
+      "period": "2018-12",
+      "category": "Policy",
+      "expected_narrative": "Powell Pivot — Fed capitulates on tightening, signals patience",
+      "expected_hypothesis": [
+        "Hiking cycle is over",
+        "Balance sheet runoff may slow",
+        "Risk assets to rally"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "S&P rallied 28% in 2019 after Powell pivot. Fed cut rates 3 times in 2019.",
+      "actual_direction": "bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Policy",
+          "Growth",
+          "Liquidity",
+          "Dollar"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Higher for Longer",
+            "confidence": 0.35
+          },
+          {
+            "category": "monetary",
+            "title": "Dollar Weakness / EM Revival",
+            "confidence": 0.7
+          },
+          {
+            "category": "growth",
+            "title": "Growth Resilience",
+            "confidence": 0.65
+          },
+          {
+            "category": "growth",
+            "title": "Soft Landing",
+            "confidence": 0.35
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "POL-003",
+      "title": "Fed Cuts 50bp — First Cut Since 2020",
+      "period": "2024-09",
+      "category": "Policy",
+      "expected_narrative": "Jumbo Cut — Fed goes big to front-load easing, soft landing signal",
+      "expected_hypothesis": [
+        "50bp cut is normalization not panic",
+        "Soft landing achievable",
+        "More cuts to follow"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "S&P hit all-time highs post-cut. Fed cut another 25bp in November and December 2024.",
+      "actual_direction": "bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Policy",
+          "Inflation",
+          "Growth",
+          "Liquidity"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.65
+          },
+          {
+            "category": "growth",
+            "title": "Soft Landing",
+            "confidence": 0.35
+          },
+          {
+            "category": "inflation",
+            "title": "Disinflation Trend",
+            "confidence": 0.7
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": true,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "POL-004",
+      "title": "First Rate Hike After Zero — Liftoff",
+      "period": "2015-12",
+      "category": "Policy",
+      "expected_narrative": "Liftoff — historic first hike in 7 years, fragile markets",
+      "expected_hypothesis": [
+        "Gradual hiking path",
+        "Dollar to strengthen",
+        "EM vulnerable"
+      ],
+      "expected_prediction_direction": "neutral_to_bearish",
+      "actual_outcome": "S&P was flat for 2015-2016. Dollar surged 25% over two years. EM sell-off in early 2016.",
+      "actual_direction": "neutral",
+      "agent_output": {
+        "macro_state_domains": [
+          "Policy",
+          "Inflation",
+          "Growth",
+          "Dollar"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.65
+          },
+          {
+            "category": "growth",
+            "title": "Soft Landing",
+            "confidence": 0.35
+          },
+          {
+            "category": "inflation",
+            "title": "Disinflation Trend",
+            "confidence": 0.7
+          },
+          {
+            "category": "monetary",
+            "title": "Dollar Weakness / EM Revival",
+            "confidence": 0.7
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "CRISIS-001",
+      "title": "SVB Collapse — US Regional Banking Crisis",
+      "period": "2023-03",
+      "category": "Crisis",
+      "expected_narrative": "Banking Panic — SVB/Signature/First Republic failures, systemic risk",
+      "expected_hypothesis": [
+        "Contagion contained by Fed/Treasury",
+        "Credit tightening ahead",
+        "Rate cuts possible earlier"
+      ],
+      "expected_prediction_direction": "bearish",
+      "actual_outcome": "BTFP facility stabilized banks. Regional bank index never fully recovered. Credit tightened. No recession followed.",
+      "actual_direction": "bearish_short_term",
+      "agent_output": {
+        "macro_state_domains": [
+          "Credit",
+          "Policy",
+          "Liquidity",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "CRISIS-002",
+      "title": "COVID Crash — Fastest Bear Market in History",
+      "period": "2020-03",
+      "category": "Crisis",
+      "expected_narrative": "COVID Crash — pandemic-induced recession, unprecedented policy response",
+      "expected_hypothesis": [
+        "Policy bazooka will stabilize markets",
+        "Recovery will be V-shaped",
+        "Tech resilient"
+      ],
+      "expected_prediction_direction": "bearish_short_term_bullish_medium",
+      "actual_outcome": "S&P fell 34% in 23 trading days. Then rallied 68% in 2020. Historic V-shaped recovery.",
+      "actual_direction": "bearish_then_bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Liquidity",
+          "Policy",
+          "Growth",
+          "Credit"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "CRISIS-003",
+      "title": "UK Gilt Crisis — LDI Meltdown",
+      "period": "2022-09",
+      "category": "Crisis",
+      "expected_narrative": "UK Fiscal Crisis — Truss mini-budget triggers LDI doom loop, BoE intervenes",
+      "expected_hypothesis": [
+        "BoE buying will stabilize",
+        "Political resolution required",
+        "GBP undervalued at parity zone"
+      ],
+      "expected_prediction_direction": "bearish",
+      "actual_outcome": "BoE intervention stabilized markets. Truss resigned after 44 days. GBP recovered to 1.20+.",
+      "actual_direction": "bearish_then_recovery",
+      "agent_output": {
+        "macro_state_domains": [
+          "Credit",
+          "Policy",
+          "Dollar",
+          "Liquidity"
+        ],
+        "narratives": [],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "GRW-001",
+      "title": "Soft Landing — GDP 4.9% Q3 Amid Tightening",
+      "period": "2023-Q4",
+      "category": "Growth",
+      "expected_narrative": "Defying Gravity — US economy accelerates despite 525bp of hikes",
+      "expected_hypothesis": [
+        "Soft landing increasingly likely",
+        "Consumer remains strong",
+        "No recession in 2024"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "No recession in 2024. GDP grew 2.8% in 2024. Soft landing achieved.",
+      "actual_direction": "bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Growth",
+          "Policy",
+          "Inflation",
+          "Liquidity"
+        ],
+        "narratives": [
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.425
+          },
+          {
+            "category": "inflation",
+            "title": "Inflation Reacceleration",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "GRW-002",
+      "title": "Technical Recession — Two Negative GDP Quarters",
+      "period": "2022-Q2",
+      "category": "Growth",
+      "expected_narrative": "Technical Recession — two negative quarters but labor market strong",
+      "expected_hypothesis": [
+        "Not a real recession",
+        "Labor market will prevent downturn",
+        "Fed will continue hiking"
+      ],
+      "expected_prediction_direction": "neutral",
+      "actual_outcome": "Not declared recession. Labor market remained strong with 3.5% unemployment.",
+      "actual_direction": "neutral",
+      "agent_output": {
+        "macro_state_domains": [
+          "Growth",
+          "Policy",
+          "Inflation",
+          "Liquidity"
+        ],
+        "narratives": [
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.425
+          },
+          {
+            "category": "inflation",
+            "title": "Inflation Reacceleration",
+            "confidence": 0.75
+          },
+          {
+            "category": "growth",
+            "title": "Soft Landing",
+            "confidence": 0.35
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          },
+          {
+            "category": "growth",
+            "title": "Growth Resilience",
+            "confidence": 0.65
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "USD-001",
+      "title": "King Dollar — DXY Hits 114, 20-Year High",
+      "period": "2022-09",
+      "category": "Dollar",
+      "expected_narrative": "King Dollar — aggressive Fed + global slowdown = dollar strength tsunami",
+      "expected_hypothesis": [
+        "Dollar strength unsustainable",
+        "Japan intervention risk",
+        "EM FX crisis brewing"
+      ],
+      "expected_prediction_direction": "bearish_on_dollar_peaks",
+      "actual_outcome": "DXY peaked at 114.8 in Sept 2022. Fell to 101 by Jan 2023. BOJ intervened in Oct 2022.",
+      "actual_direction": "dollar_peaked",
+      "agent_output": {
+        "macro_state_domains": [
+          "Dollar",
+          "Policy",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Strength Regime",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": true,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "USD-002",
+      "title": "Dollar Weakness — DXY Falls Below 101 Ahead of Fed Cut",
+      "period": "2024-08",
+      "category": "Dollar",
+      "expected_narrative": "Dollar Decline — rate cuts + growth convergence = weaker dollar",
+      "expected_hypothesis": [
+        "Dollar to continue weakening",
+        "EM assets benefit",
+        "Gold should rally"
+      ],
+      "expected_prediction_direction": "bearish_on_dollar",
+      "actual_outcome": "DXY fell to 99.5 in Sept 2024. EM stocks outperformed. Gold hit all-time high $2600+.",
+      "actual_direction": "dollar_weakened",
+      "agent_output": {
+        "macro_state_domains": [
+          "Dollar",
+          "Policy",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Strength Regime",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": true,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "CRD-001",
+      "title": "Credit Spreads Widen — HY Spread Hits 550bp",
+      "period": "2022-10",
+      "category": "Credit",
+      "expected_narrative": "Credit Stress — recession fears driving spreads wider",
+      "expected_hypothesis": [
+        "Spreads will normalize after inflation peak",
+        "No systemic credit event",
+        "IG safer than HY"
+      ],
+      "expected_prediction_direction": "cautiously_bullish_on_credit",
+      "actual_outcome": "Spreads tightened sharply from Oct 2022 to Feb 2023. HY spread fell to 380bp.",
+      "actual_direction": "credit_rallied",
+      "agent_output": {
+        "macro_state_domains": [
+          "Credit",
+          "Policy",
+          "Liquidity"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "AI-001",
+      "title": "NVIDIA Blowout — $22B Revenue, AI Capex Inflection",
+      "period": "2024-02",
+      "category": "AI/Tech",
+      "expected_narrative": "AI Supercycle — NVIDIA earnings confirm capex inflection, AI is real",
+      "expected_hypothesis": [
+        "AI capex has years to run",
+        "Semiconductor cycle supercharged",
+        "Productivity boost coming"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "NVDA rallied 170% in 2024. SMH +40%. AI capex continued accelerating into 2025.",
+      "actual_direction": "bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "AiCapex",
+          "Growth",
+          "Liquidity"
+        ],
+        "narratives": [],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "AI-002",
+      "title": "DeepSeek Shock — Chinese AI Lab Claims US-Level Performance at Fraction of Cost",
+      "period": "2025-01",
+      "category": "AI/Tech",
+      "expected_narrative": "AI Efficiency Shock — DeepSeek challenges GPU-intensive paradigm, capex sustainability questioned",
+      "expected_hypothesis": [
+        "GPU demand may not be linear",
+        "Efficiency innovations will accelerate",
+        "Capex ROI under scrutiny"
+      ],
+      "expected_prediction_direction": "bearish_short_term",
+      "actual_outcome": "NVDA fell 17% in one day. Recovered within weeks. Capex continued rising. Jevons paradox applied.",
+      "actual_direction": "bearish_then_bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "AiCapex",
+          "Liquidity",
+          "Growth"
+        ],
+        "narratives": [],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "TRD-001",
+      "title": "Liberation Day — US Announces Sweeping Tariffs",
+      "period": "2025-04",
+      "category": "Policy",
+      "expected_narrative": "Trade War 2.0 — sweeping tariffs threaten global growth, stagflation risk",
+      "expected_hypothesis": [
+        "Growth to slow significantly",
+        "Inflation to resurge from tariffs",
+        "Fed in policy dilemma"
+      ],
+      "expected_prediction_direction": "bearish",
+      "actual_outcome": "S&P fell ~10% in April. Trade negotiations began. Tariffs partially rolled back.",
+      "actual_direction": "bearish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Policy",
+          "Growth",
+          "Liquidity",
+          "Dollar"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Weakness / EM Revival",
+            "confidence": 0.7
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.9970664978027344
+    },
+    {
+      "case_id": "INF-005",
+      "title": "Oil Crash — WTI Falls from $107 to $44",
+      "period": "2014-2015",
+      "category": "Inflation",
+      "expected_narrative": "Disinflation/Deflation Fears — oil crash threatens inflation expectations",
+      "expected_hypothesis": [
+        "Fed to delay liftoff",
+        "Deflation risk overblown",
+        "Consumer benefits from lower gas"
+      ],
+      "expected_prediction_direction": "neutral",
+      "actual_outcome": "Fed delayed liftoff from June to December 2015. Core inflation remained 2%.",
+      "actual_direction": "neutral",
+      "agent_output": {
+        "macro_state_domains": [
+          "Inflation",
+          "Policy",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.65
+          },
+          {
+            "category": "growth",
+            "title": "Soft Landing",
+            "confidence": 0.35
+          },
+          {
+            "category": "inflation",
+            "title": "Disinflation Trend",
+            "confidence": 0.7
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "INF-006",
+      "title": "Gold Peaks at $1,900 — Inflation Hedge Mania",
+      "period": "2011-09",
+      "category": "Inflation",
+      "expected_narrative": "Inflation Fears — gold at record highs on QE-driven inflation expectations",
+      "expected_hypothesis": [
+        "Gold to continue higher",
+        "QE will cause inflation",
+        "Dollar debasement"
+      ],
+      "expected_prediction_direction": "bullish_on_gold",
+      "actual_outcome": "Gold fell 30% over the next 2 years. Inflation averaged 1.6%. Fear was overblown.",
+      "actual_direction": "bearish_on_gold",
+      "agent_output": {
+        "macro_state_domains": [
+          "Inflation",
+          "Policy",
+          "Dollar"
+        ],
+        "narratives": [
+          {
+            "category": "inflation",
+            "title": "Inflation Reacceleration",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Dollar Weakness / EM Revival",
+            "confidence": 0.7
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          },
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.425
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": true,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "POL-005",
+      "title": "Powell at Brookings — Signals Step Down to 50bp",
+      "period": "2022-11",
+      "category": "Policy",
+      "expected_narrative": "Pivot Signal — Powell confirms slowing pace, market euphoria",
+      "expected_hypothesis": [
+        "Terminal rate close",
+        "Pause mid-2023",
+        "Risk rally to continue"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "S&P rallied 8% in a single day. Continued rallying into Q1 2023.",
+      "actual_direction": "bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Policy",
+          "Inflation",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.425
+          },
+          {
+            "category": "inflation",
+            "title": "Inflation Reacceleration",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "CRISIS-004",
+      "title": "Lehman Collapse — Global Financial Crisis Peak",
+      "period": "2008-09",
+      "category": "Crisis",
+      "expected_narrative": "GFC Peak — systemic collapse, unprecedented government intervention",
+      "expected_hypothesis": [
+        "TARP will stabilize",
+        "Deep recession inevitable",
+        "Recovery will be slow"
+      ],
+      "expected_prediction_direction": "bearish",
+      "actual_outcome": "S&P bottomed March 2009 at 666. But TARP was profitable. 10-year bull market followed.",
+      "actual_direction": "bearish_then_bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Credit",
+          "Policy",
+          "Liquidity",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "CRISIS-005",
+      "title": "US Debt Downgrade — S&P Strips AAA",
+      "period": "2011-08",
+      "category": "Crisis",
+      "expected_narrative": "Fiscal Crisis — US loses AAA, paradoxically treasuries rally",
+      "expected_hypothesis": [
+        "No real default risk",
+        "Treasury still safe haven",
+        "Equity volatility temporary"
+      ],
+      "expected_prediction_direction": "neutral",
+      "actual_outcome": "Treasuries rallied (flight to quality). S&P fell 19% then recovered within months.",
+      "actual_direction": "equity_weak_treasury_strong",
+      "agent_output": {
+        "macro_state_domains": [
+          "Credit",
+          "Policy",
+          "Liquidity",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "growth",
+            "title": "Growth Resilience",
+            "confidence": 0.65
+          },
+          {
+            "category": "growth",
+            "title": "Soft Landing",
+            "confidence": 0.35
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "GRW-003",
+      "title": "Services Boom — ISM Services Hits 54.9, Manufacturing Contracting",
+      "period": "2023-Q3",
+      "category": "Growth",
+      "expected_narrative": "Two-Speed Economy — services strong, manufacturing weak, overall resilient",
+      "expected_hypothesis": [
+        "Services will keep economy expanding",
+        "Manufacturing recession contained",
+        "Labor market key"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "GDP grew 4.9% in Q3 2023. Two-speed economy persisted through 2024.",
+      "actual_direction": "bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Growth",
+          "Policy",
+          "Inflation"
+        ],
+        "narratives": [
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.85
+          },
+          {
+            "category": "inflation",
+            "title": "Inflation Reacceleration",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          },
+          {
+            "category": "growth",
+            "title": "Growth Scare",
+            "confidence": 0.4
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "USD-003",
+      "title": "Dollar Top — DXY Falls from 103, Trump Weak Dollar Rhetoric",
+      "period": "2017-01",
+      "category": "Dollar",
+      "expected_narrative": "Dollar Peak — Trump administration favors weak dollar, Fed tightening priced in",
+      "expected_hypothesis": [
+        "Dollar to weaken",
+        "EM to benefit",
+        "Commodities to rally"
+      ],
+      "expected_prediction_direction": "bearish_on_dollar",
+      "actual_outcome": "DXY fell from 103 to 88 by Jan 2018. EM stocks rallied 37% in 2017.",
+      "actual_direction": "dollar_weakened",
+      "agent_output": {
+        "macro_state_domains": [
+          "Dollar",
+          "Policy",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Strength Regime",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "AI-003",
+      "title": "ChatGPT Moment — AI Hype Begins, NVIDIA Surges Past $1T",
+      "period": "2023-05",
+      "category": "AI/Tech",
+      "expected_narrative": "AI Inflection — generative AI captures public imagination, capex cycle begins",
+      "expected_hypothesis": [
+        "AI will drive multi-year tech cycle",
+        "NVIDIA is primary beneficiary",
+        "Productivity gains real"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "NVDA became $3T company by mid-2024. AI drove 70% of S&P 500 gains in 2023.",
+      "actual_direction": "bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "AiCapex",
+          "Liquidity",
+          "Growth"
+        ],
+        "narratives": [],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "TRD-002",
+      "title": "Trade War Begins — Trump Announces Steel/Aluminum Tariffs",
+      "period": "2018-03",
+      "category": "Policy",
+      "expected_narrative": "Trade War 1.0 — protectionism returns, global supply chain disruption risk",
+      "expected_hypothesis": [
+        "Trade uncertainty to weigh on growth",
+        "China retaliation to escalate",
+        "Fed may be forced to cut"
+      ],
+      "expected_prediction_direction": "bearish",
+      "actual_outcome": "Trade war escalated through 2019. S&P was flat in 2018. Fed cut 3 times in 2019 partially due to trade uncertainty.",
+      "actual_direction": "neutral_to_bearish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Policy",
+          "Growth",
+          "Liquidity",
+          "Dollar"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Weakness / EM Revival",
+            "confidence": 0.7
+          },
+          {
+            "category": "growth",
+            "title": "Growth Resilience",
+            "confidence": 0.65
+          },
+          {
+            "category": "growth",
+            "title": "Soft Landing",
+            "confidence": 0.35
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "INF-007",
+      "title": "Deflation Scare — 10Y Treasury Hits 1.37%",
+      "period": "2015-2016",
+      "category": "Inflation",
+      "expected_narrative": "Deflation Fears — oil crash + global slowdown = deflation risk",
+      "expected_hypothesis": [
+        "Deflation risk overstated",
+        "Oil will recover",
+        "Fed hiking cycle may pause"
+      ],
+      "expected_prediction_direction": "neutral",
+      "actual_outcome": "Oil recovered to $50+. Inflation normalized. Fed hiked only once in 2016.",
+      "actual_direction": "inflation_recovered",
+      "agent_output": {
+        "macro_state_domains": [
+          "Inflation",
+          "Policy",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.65
+          },
+          {
+            "category": "growth",
+            "title": "Soft Landing",
+            "confidence": 0.35
+          },
+          {
+            "category": "inflation",
+            "title": "Disinflation Trend",
+            "confidence": 0.7
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "POL-006",
+      "title": "Transitory Is Dead — Powell Retires the Word",
+      "period": "2021-11",
+      "category": "Policy",
+      "expected_narrative": "Policy Shift — Fed admits inflation not transitory, accelerates taper",
+      "expected_hypothesis": [
+        "Hikes coming sooner",
+        "Inflation more persistent than thought",
+        "Growth to slow on tightening"
+      ],
+      "expected_prediction_direction": "bearish",
+      "actual_outcome": "Fed ended taper by March 2022. First hike March 2022. 425bp of hikes in 2022.",
+      "actual_direction": "bearish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Policy",
+          "Inflation",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.425
+          },
+          {
+            "category": "inflation",
+            "title": "Inflation Reacceleration",
+            "confidence": 0.75
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "POL-007",
+      "title": "Average Inflation Targeting — Fed's Historic Framework Shift",
+      "period": "2020-08",
+      "category": "Policy",
+      "expected_narrative": "Dovish Shift — Fed commits to letting inflation run hot, zero rates for years",
+      "expected_hypothesis": [
+        "Rates at zero until 2024+",
+        "Risk assets benefit",
+        "Inflation to eventually rise"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "Massive asset inflation followed. Inflation was 7% by end of 2021. S&P doubled from 2020 lows.",
+      "actual_direction": "bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "Policy",
+          "Inflation",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.65
+          },
+          {
+            "category": "growth",
+            "title": "Soft Landing",
+            "confidence": 0.35
+          },
+          {
+            "category": "inflation",
+            "title": "Disinflation Trend",
+            "confidence": 0.7
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": true,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "GRW-004",
+      "title": "Pre-COVID Peak — S&P at All-Time High, Unemployment 3.5%",
+      "period": "2019-12",
+      "category": "Growth",
+      "expected_narrative": "Goldilocks — low unemployment, low inflation, low rates, high asset prices",
+      "expected_hypothesis": [
+        "Expansion to continue",
+        "No recession in sight",
+        "Earnings growth sustainable"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "COVID crashed markets within 3 months. No one predicted pandemic. A lesson in tail risk.",
+      "actual_direction": "crash_from_exogenous_shock",
+      "agent_output": {
+        "macro_state_domains": [
+          "Growth",
+          "Policy",
+          "Liquidity"
+        ],
+        "narratives": [
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.425
+          },
+          {
+            "category": "growth",
+            "title": "Growth Scare",
+            "confidence": 0.4
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "CRD-002",
+      "title": "Credit Freeze — HY Spread Blows Out to 1100 bp",
+      "period": "2020-03",
+      "category": "Credit",
+      "expected_narrative": "Credit Panic — historic spread widening, Fed forced to buy corporate bonds",
+      "expected_hypothesis": [
+        "Fed facility will cap spreads",
+        "Credit to recover with stimulus",
+        "Distressed opportunity"
+      ],
+      "expected_prediction_direction": "bullish_on_credit_recovery",
+      "actual_outcome": "Fed SMCCF worked. HY spreads narrowed to 400bp by year-end. Historic credit rally.",
+      "actual_direction": "credit_recovered",
+      "agent_output": {
+        "macro_state_domains": [
+          "Credit",
+          "Policy",
+          "Liquidity"
+        ],
+        "narratives": [],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "GRW-005",
+      "title": "China Devaluation Panic — Yuan Falls, Global Selloff",
+      "period": "2016-01",
+      "category": "Growth",
+      "expected_narrative": "China Panic — yuan devaluation triggers global growth fears",
+      "expected_hypothesis": [
+        "China growth fears overblown",
+        "Policy response coming",
+        "EM pain temporary"
+      ],
+      "expected_prediction_direction": "neutral",
+      "actual_outcome": "S&P fell 11% in 6 weeks then recovered. China stimulated. EM stabilized.",
+      "actual_direction": "temporary_correction",
+      "agent_output": {
+        "macro_state_domains": [
+          "Growth",
+          "Liquidity",
+          "Dollar"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Weakness / EM Revival",
+            "confidence": 0.7
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "USD-004",
+      "title": "Dollar Weakens — DXY Falls from 103 to 93 on Massive Stimulus",
+      "period": "2020-Q2",
+      "category": "Dollar",
+      "expected_narrative": "Dollar Bear Market — massive fiscal + monetary expansion, reserve currency concerns",
+      "expected_hypothesis": [
+        "Dollar decline structural",
+        "Gold to benefit",
+        "EM assets attractive"
+      ],
+      "expected_prediction_direction": "bearish_on_dollar",
+      "actual_outcome": "DXY fell to 89 by Jan 2021. Gold broke $2000. EM stocks rallied strongly.",
+      "actual_direction": "dollar_weakened",
+      "agent_output": {
+        "macro_state_domains": [
+          "Dollar",
+          "Policy",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Weakness / EM Revival",
+            "confidence": 0.7
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.9963512420654297
+    },
+    {
+      "case_id": "AI-004",
+      "title": "AI Capex Arms Race — Microsoft, Amazon, Google, Meta Spend $200B+",
+      "period": "2024-Q4",
+      "category": "AI/Tech",
+      "expected_narrative": "Capex Supercycle — Big Tech spending $200B+ on AI infrastructure",
+      "expected_hypothesis": [
+        "Capex sustainable given revenue visibility",
+        "Infrastructure buildout multi-year",
+        "ROI questions emerging"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "Capex continued accelerating into 2025. ROI scrutiny increased with DeepSeek event.",
+      "actual_direction": "bullish_with_risks",
+      "agent_output": {
+        "macro_state_domains": [
+          "AiCapex",
+          "Growth",
+          "Liquidity"
+        ],
+        "narratives": [],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "USD-005",
+      "title": "Dollar Surge — DXY Rallies 25% Over 6 Months",
+      "period": "2014-Q3",
+      "category": "Dollar",
+      "expected_narrative": "Dollar Bull Run — Fed tapering while ECB eases, policy divergence drives dollar",
+      "expected_hypothesis": [
+        "Dollar strength to persist",
+        "EM FX crisis possible",
+        "Oil to fall"
+      ],
+      "expected_prediction_direction": "bullish_on_dollar",
+      "actual_outcome": "DXY hit 100 by March 2015. EM currencies fell sharply. Oil crashed from $107 to $44.",
+      "actual_direction": "dollar_strengthened",
+      "agent_output": {
+        "macro_state_domains": [
+          "Dollar",
+          "Policy",
+          "Growth"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Weakness / EM Revival",
+            "confidence": 0.7
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": true,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "POL-008",
+      "title": "Trump 2.0 — Markets Price in Pro-Growth, Inflationary Policies",
+      "period": "2024-12",
+      "category": "Policy",
+      "expected_narrative": "Trump Trade 2.0 — growth optimism + inflation fears + stronger dollar",
+      "expected_hypothesis": [
+        "Deregulation bullish for equities",
+        "Tariffs inflationary",
+        "Fiscal deficit expands"
+      ],
+      "expected_prediction_direction": "bullish_short_term",
+      "actual_outcome": "S&P rallied post-election. Bond yields rose on fiscal concerns. Dollar strengthened.",
+      "actual_direction": "bullish_equities",
+      "agent_output": {
+        "macro_state_domains": [
+          "Policy",
+          "Growth",
+          "Inflation",
+          "Dollar"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Strength Regime",
+            "confidence": 0.75
+          },
+          {
+            "category": "growth",
+            "title": "Soft Landing",
+            "confidence": 0.35
+          },
+          {
+            "category": "inflation",
+            "title": "Disinflation Trend",
+            "confidence": 0.7
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "AI-005",
+      "title": "AI Revenue Inflection — Microsoft Azure AI Revenue Surges",
+      "period": "2023-Q2",
+      "category": "AI/Tech",
+      "expected_narrative": "AI Monetization — AI is generating real revenue, not just hype, enterprise adoption real",
+      "expected_hypothesis": [
+        "AI will boost software sector revenue",
+        "Platform companies benefit most",
+        "Capex ROI improving"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "Microsoft reached $3T market cap. Enterprise AI spending continued accelerating through 2025.",
+      "actual_direction": "bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "AiCapex",
+          "Growth",
+          "Liquidity"
+        ],
+        "narratives": [],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "TRD-003",
+      "title": "Phase One Deal — US & China Agree to Trade Truce",
+      "period": "2019-12",
+      "category": "Policy",
+      "expected_narrative": "De-escalation — trade war pause reduces uncertainty, growth to recover",
+      "expected_hypothesis": [
+        "Trade uncertainty reduced",
+        "Manufacturing to recover",
+        "China growth to stabilize"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "Pre-COVID, markets rallied on de-escalation. Manufacturing was recovering before pandemic hit.",
+      "actual_direction": "bullish_pre_covid",
+      "agent_output": {
+        "macro_state_domains": [
+          "Policy",
+          "Growth",
+          "Dollar"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Weakness / EM Revival",
+            "confidence": 0.7
+          },
+          {
+            "category": "growth",
+            "title": "Stagflation Risk",
+            "confidence": 0.425
+          },
+          {
+            "category": "growth",
+            "title": "Growth Scare",
+            "confidence": 0.4
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "CRD-003",
+      "title": "High Yield Crisis — Third Avenue Blocks Redemptions",
+      "period": "2015-12",
+      "category": "Credit",
+      "expected_narrative": "Credit Stress — energy sector distress spills into HY market, liquidity concerns",
+      "expected_hypothesis": [
+        "Energy defaults contained",
+        "Fed will be cautious hiking",
+        "HY spreads to normalize"
+      ],
+      "expected_prediction_direction": "cautiously_bullish",
+      "actual_outcome": "HY spreads peaked at 850bp in Feb 2016, then normalized. Fed hiked only once in 2016.",
+      "actual_direction": "credit_recovered",
+      "agent_output": {
+        "macro_state_domains": [
+          "Credit",
+          "Policy",
+          "Dollar"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Weakness / EM Revival",
+            "confidence": 0.7
+          },
+          {
+            "category": "monetary",
+            "title": "Fed Pivot / Dovish Shift",
+            "confidence": 0.325
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "GRW-006",
+      "title": "Taper Tantrum — 10Y Yield Surges from 1.6% to 2.7%",
+      "period": "2013-Q2",
+      "category": "Growth",
+      "expected_narrative": "Taper Tantrum — market panics at prospect of QE reduction, EM vulnerable",
+      "expected_hypothesis": [
+        "Taper delay possible",
+        "EM at risk of capital outflows",
+        "Yields may overshoot"
+      ],
+      "expected_prediction_direction": "bearish_on_EM",
+      "actual_outcome": "EM currencies and stocks sold off sharply. India, Brazil, Turkey hit hard. Fed didn't actually taper until Dec 2013.",
+      "actual_direction": "em_sold_off",
+      "agent_output": {
+        "macro_state_domains": [
+          "Policy",
+          "Growth",
+          "Liquidity",
+          "Dollar"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Weakness / EM Revival",
+            "confidence": 0.7
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "AI-006",
+      "title": "Stargate — $500B AI Infrastructure Initiative Announced",
+      "period": "2025-Q1",
+      "category": "AI/Tech",
+      "expected_narrative": "AI Manhattan Project — $500B infrastructure buildout signals government-level commitment",
+      "expected_hypothesis": [
+        "AI infrastructure spending multi-decade",
+        "Energy sector benefits",
+        "Construction boom ahead"
+      ],
+      "expected_prediction_direction": "bullish",
+      "actual_outcome": "Markets reacted positively. AI infrastructure spending expectations increased across the sector.",
+      "actual_direction": "bullish",
+      "agent_output": {
+        "macro_state_domains": [
+          "AiCapex",
+          "Policy",
+          "Growth"
+        ],
+        "narratives": [],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": false,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    },
+    {
+      "case_id": "USD-006",
+      "title": "Dollar Spike — Global Dash for Dollars in GFC",
+      "period": "2008-Q4",
+      "category": "Dollar",
+      "expected_narrative": "Dollar Squeeze — global dollar shortage, Fed forced to provide swap lines",
+      "expected_hypothesis": [
+        "Swap lines will ease stress",
+        "Dollar spike temporary",
+        "EM dollar debt at risk"
+      ],
+      "expected_prediction_direction": "neutral",
+      "actual_outcome": "Swap lines stabilized dollar funding. DXY peaked at 89 then fell to 74 by 2011. EM recovered.",
+      "actual_direction": "dollar_normalized",
+      "agent_output": {
+        "macro_state_domains": [
+          "Dollar",
+          "Policy",
+          "Liquidity",
+          "Credit"
+        ],
+        "narratives": [
+          {
+            "category": "monetary",
+            "title": "Dollar Weakness / EM Revival",
+            "confidence": 0.7
+          }
+        ],
+        "beliefs_count": 0,
+        "prediction_directions": [
+          "default",
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      "scores": {
+        "narrative_accurate": true,
+        "hypothesis_domain_coverage": 0.0,
+        "hypothesis_accurate": false,
+        "prediction_correct": false
+      },
+      "errors": [],
+      "latency_ms": 0.0
+    }
+  ]
+}

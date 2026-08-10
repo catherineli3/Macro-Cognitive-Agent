@@ -1,0 +1,2699 @@
+{
+  "milestone": "F1.6.5",
+  "title": "Learning Quality Verification",
+  "generated_at": "2026-07-18T12:56:39.595332+00:00",
+  "final_classification": "C: STILL_STRUCTURAL_LEARNING_ONLY",
+  "q1_principle_granularity": {
+    "q1_principle_count": 4,
+    "q1_unique_names": 4,
+    "q1_unique_statements": 4,
+    "q1_domains": [
+      "USD",
+      "credit",
+      "growth",
+      "liquidity"
+    ],
+    "q1_domain_count": 4,
+    "q1_distinct_channels": 4,
+    "q1_has_name_duplicates": false,
+    "q1_compression_curve": [
+      {
+        "cycle": 8,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 9,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 10,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 11,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 12,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 13,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 14,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 15,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 16,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 17,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 18,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 19,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 20,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 21,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 22,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 23,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 24,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 25,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 26,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 27,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 28,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 29,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 30,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 31,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 32,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 33,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 34,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 35,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 36,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 37,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 38,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 39,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 40,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 41,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 42,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 43,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 44,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 45,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 46,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 47,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 48,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 49,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 50,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 51,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 52,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 53,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 54,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 55,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 56,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 57,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 58,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 59,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 60,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 61,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 62,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 63,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 64,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 65,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 66,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 67,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 68,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 69,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 70,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 71,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 72,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 73,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 74,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 75,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 76,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 77,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 78,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 79,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 80,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 81,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 82,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 83,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 84,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 85,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 86,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 87,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 88,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 89,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 90,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 91,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 92,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 93,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 94,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 95,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 96,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 97,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 98,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 99,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      },
+      {
+        "cycle": 100,
+        "total": 4,
+        "unique_names": 4,
+        "unique_statements": 4,
+        "domains": [
+          "USD",
+          "credit",
+          "growth",
+          "liquidity"
+        ],
+        "name_distribution": {
+          "USD→Gold[dollar_peg]": 1,
+          "credit→SPX[direct]": 1,
+          "growth→US10Y[direct]": 1,
+          "liquidity→USD[direct]": 1
+        }
+      }
+    ],
+    "q1_first_appearance_cycle": 8,
+    "q1_assessment": "HEALTHY: appropriate count with causal diversity"
+  },
+  "q2_mature_principle_audit": {
+    "q2_mature_count": 4,
+    "q2_all_criteria_met": true,
+    "q2_principles_audited": [
+      {
+        "principle_id": "pr-4d14f3f3",
+        "name": "USD→Gold[dollar_peg]",
+        "domain": "USD",
+        "created_at_cycle": 8,
+        "promoted_candidate_to_validated_at": 13,
+        "promoted_validated_to_mature_at": 82,
+        "criteria_check": {
+          "observations": {
+            "value": 328733,
+            "required": 100,
+            "met": true
+          },
+          "regimes": {
+            "value": 3,
+            "required": 3,
+            "met": true
+          },
+          "accuracy": {
+            "computed": 1.0,
+            "stored": 1.0,
+            "required": 0.6,
+            "met": true
+          },
+          "contradictions": {
+            "value": 0,
+            "max_allowed": 2,
+            "met": true
+          }
+        },
+        "all_criteria_met": true,
+        "raw_evidence": {
+          "total_observations": 328733,
+          "correct_count": 93,
+          "incorrect_count": 0,
+          "regimes_validated": [
+            "tightening|neutral|elevated|stable|stable",
+            "tightening|neutral|high|stable|stable",
+            "tightening|neutral|high|decelerating|stable"
+          ],
+          "sustained_cycles": 179,
+          "last_validated_cycle": 100,
+          "last_evaluated_cycle": 100,
+          "failure_modes": []
+        }
+      },
+      {
+        "principle_id": "pr-72de321b",
+        "name": "credit→SPX[direct]",
+        "domain": "credit",
+        "created_at_cycle": 8,
+        "promoted_candidate_to_validated_at": 13,
+        "promoted_validated_to_mature_at": 82,
+        "criteria_check": {
+          "observations": {
+            "value": 328733,
+            "required": 100,
+            "met": true
+          },
+          "regimes": {
+            "value": 3,
+            "required": 3,
+            "met": true
+          },
+          "accuracy": {
+            "computed": 1.0,
+            "stored": 1.0,
+            "required": 0.6,
+            "met": true
+          },
+          "contradictions": {
+            "value": 0,
+            "max_allowed": 2,
+            "met": true
+          }
+        },
+        "all_criteria_met": true,
+        "raw_evidence": {
+          "total_observations": 328733,
+          "correct_count": 93,
+          "incorrect_count": 0,
+          "regimes_validated": [
+            "tightening|neutral|elevated|stable|stable",
+            "tightening|neutral|high|stable|stable",
+            "tightening|neutral|high|decelerating|stable"
+          ],
+          "sustained_cycles": 179,
+          "last_validated_cycle": 100,
+          "last_evaluated_cycle": 100,
+          "failure_modes": []
+        }
+      },
+      {
+        "principle_id": "pr-9ca0337e",
+        "name": "growth→US10Y[direct]",
+        "domain": "growth",
+        "created_at_cycle": 8,
+        "promoted_candidate_to_validated_at": 13,
+        "promoted_validated_to_mature_at": 82,
+        "criteria_check": {
+          "observations": {
+            "value": 328733,
+            "required": 100,
+            "met": true
+          },
+          "regimes": {
+            "value": 3,
+            "required": 3,
+            "met": true
+          },
+          "accuracy": {
+            "computed": 1.0,
+            "stored": 1.0,
+            "required": 0.6,
+            "met": true
+          },
+          "contradictions": {
+            "value": 0,
+            "max_allowed": 2,
+            "met": true
+          }
+        },
+        "all_criteria_met": true,
+        "raw_evidence": {
+          "total_observations": 328733,
+          "correct_count": 93,
+          "incorrect_count": 0,
+          "regimes_validated": [
+            "tightening|neutral|elevated|stable|stable",
+            "tightening|neutral|high|stable|stable",
+            "tightening|neutral|high|decelerating|stable"
+          ],
+          "sustained_cycles": 179,
+          "last_validated_cycle": 100,
+          "last_evaluated_cycle": 100,
+          "failure_modes": []
+        }
+      },
+      {
+        "principle_id": "pr-94d1cf4e",
+        "name": "liquidity→USD[direct]",
+        "domain": "liquidity",
+        "created_at_cycle": 8,
+        "promoted_candidate_to_validated_at": 13,
+        "promoted_validated_to_mature_at": 82,
+        "criteria_check": {
+          "observations": {
+            "value": 328733,
+            "required": 100,
+            "met": true
+          },
+          "regimes": {
+            "value": 3,
+            "required": 3,
+            "met": true
+          },
+          "accuracy": {
+            "computed": 1.0,
+            "stored": 1.0,
+            "required": 0.6,
+            "met": true
+          },
+          "contradictions": {
+            "value": 0,
+            "max_allowed": 2,
+            "met": true
+          }
+        },
+        "all_criteria_met": true,
+        "raw_evidence": {
+          "total_observations": 328733,
+          "correct_count": 93,
+          "incorrect_count": 0,
+          "regimes_validated": [
+            "tightening|neutral|elevated|stable|stable",
+            "tightening|neutral|high|stable|stable",
+            "tightening|neutral|high|decelerating|stable"
+          ],
+          "sustained_cycles": 179,
+          "last_validated_cycle": 100,
+          "last_evaluated_cycle": 100,
+          "failure_modes": []
+        }
+      }
+    ],
+    "q2_has_promotion_history": true,
+    "q2_assessment": "PASS"
+  },
+  "q3_evidence_independence": {
+    "q3_principles": 4,
+    "q3_total_raw_observations": 1314932,
+    "q3_total_independent_validations": 372,
+    "q3_total_regime_confirmations": 12,
+    "q3_overall_inflation_ratio": 3534.76,
+    "q3_inflated_principles": 4,
+    "q3_per_principle": [
+      {
+        "principle_id": "pr-4d14f3f3",
+        "name": "USD→Gold[dollar_peg]",
+        "raw_observations": 328733,
+        "independent_validations": 93,
+        "regime_confirmations": 3,
+        "inflation_ratio": 3534.76,
+        "is_inflated": true,
+        "breakdown": {
+          "correct_predictions": 93,
+          "incorrect_predictions": 0,
+          "unexplained_observations": 328640
+        }
+      },
+      {
+        "principle_id": "pr-72de321b",
+        "name": "credit→SPX[direct]",
+        "raw_observations": 328733,
+        "independent_validations": 93,
+        "regime_confirmations": 3,
+        "inflation_ratio": 3534.76,
+        "is_inflated": true,
+        "breakdown": {
+          "correct_predictions": 93,
+          "incorrect_predictions": 0,
+          "unexplained_observations": 328640
+        }
+      },
+      {
+        "principle_id": "pr-9ca0337e",
+        "name": "growth→US10Y[direct]",
+        "raw_observations": 328733,
+        "independent_validations": 93,
+        "regime_confirmations": 3,
+        "inflation_ratio": 3534.76,
+        "is_inflated": true,
+        "breakdown": {
+          "correct_predictions": 93,
+          "incorrect_predictions": 0,
+          "unexplained_observations": 328640
+        }
+      },
+      {
+        "principle_id": "pr-94d1cf4e",
+        "name": "liquidity→USD[direct]",
+        "raw_observations": 328733,
+        "independent_validations": 93,
+        "regime_confirmations": 3,
+        "inflation_ratio": 3534.76,
+        "is_inflated": true,
+        "breakdown": {
+          "correct_predictions": 93,
+          "incorrect_predictions": 0,
+          "unexplained_observations": 328640
+        }
+      }
+    ],
+    "q3_assessment": "CRITICAL: evidence counts are structurally inflated"
+  },
+  "q4_lifecycle_dynamics": {
+    "q4_total_distinct_principles": 4,
+    "q4_candidate_to_validated_transitions": 4,
+    "q4_validated_to_mature_transitions": 4,
+    "q4_retired_count": 0,
+    "q4_has_lifecycle_transitions": true,
+    "q4_max_strength_distribution": {
+      "mature": 4,
+      "retired": 0
+    },
+    "q4_per_principle": [
+      {
+        "principle_id": "pr-4d14f3f3",
+        "transitions": [
+          {
+            "cycle": 8,
+            "strength": "candidate"
+          },
+          {
+            "cycle": 13,
+            "strength": "validated"
+          },
+          {
+            "cycle": 82,
+            "strength": "mature"
+          }
+        ],
+        "has_candidate_phase": true,
+        "has_validated_phase": true,
+        "has_mature_phase": true,
+        "has_retired": false
+      },
+      {
+        "principle_id": "pr-72de321b",
+        "transitions": [
+          {
+            "cycle": 8,
+            "strength": "candidate"
+          },
+          {
+            "cycle": 13,
+            "strength": "validated"
+          },
+          {
+            "cycle": 82,
+            "strength": "mature"
+          }
+        ],
+        "has_candidate_phase": true,
+        "has_validated_phase": true,
+        "has_mature_phase": true,
+        "has_retired": false
+      },
+      {
+        "principle_id": "pr-9ca0337e",
+        "transitions": [
+          {
+            "cycle": 8,
+            "strength": "candidate"
+          },
+          {
+            "cycle": 13,
+            "strength": "validated"
+          },
+          {
+            "cycle": 82,
+            "strength": "mature"
+          }
+        ],
+        "has_candidate_phase": true,
+        "has_validated_phase": true,
+        "has_mature_phase": true,
+        "has_retired": false
+      },
+      {
+        "principle_id": "pr-94d1cf4e",
+        "transitions": [
+          {
+            "cycle": 8,
+            "strength": "candidate"
+          },
+          {
+            "cycle": 13,
+            "strength": "validated"
+          },
+          {
+            "cycle": 82,
+            "strength": "mature"
+          }
+        ],
+        "has_candidate_phase": true,
+        "has_validated_phase": true,
+        "has_mature_phase": true,
+        "has_retired": false
+      }
+    ],
+    "q4_assessment": "PASS: lifecycle transitions observed"
+  },
+  "q5_anti_self_confirmation": {
+    "q5_total_principles": 4,
+    "q5_with_independent_predictions": 4,
+    "q5_without_independent_predictions": 0,
+    "q5_circular_validation_risks": 0,
+    "q5_all_accuracy_perfect": true,
+    "q5_accuracy_zero_incorrect": true,
+    "q5_suspicious_perfect_accuracy_reason": "all principles have 0 incorrect predictions",
+    "q5_per_principle": [
+      {
+        "principle_id": "pr-4d14f3f3",
+        "name": "USD→Gold[dollar_peg]",
+        "strength": "mature",
+        "accuracy": {
+          "correct_count": 93,
+          "incorrect_count": 0,
+          "stored_accuracy": 1.0,
+          "computed_accuracy": 1.0,
+          "has_independent_predictions": true,
+          "source": "prediction_outcome"
+        },
+        "circular_validation_risk": {
+          "framework_linked": false,
+          "at_risk": false
+        }
+      },
+      {
+        "principle_id": "pr-72de321b",
+        "name": "credit→SPX[direct]",
+        "strength": "mature",
+        "accuracy": {
+          "correct_count": 93,
+          "incorrect_count": 0,
+          "stored_accuracy": 1.0,
+          "computed_accuracy": 1.0,
+          "has_independent_predictions": true,
+          "source": "prediction_outcome"
+        },
+        "circular_validation_risk": {
+          "framework_linked": false,
+          "at_risk": false
+        }
+      },
+      {
+        "principle_id": "pr-9ca0337e",
+        "name": "growth→US10Y[direct]",
+        "strength": "mature",
+        "accuracy": {
+          "correct_count": 93,
+          "incorrect_count": 0,
+          "stored_accuracy": 1.0,
+          "computed_accuracy": 1.0,
+          "has_independent_predictions": true,
+          "source": "prediction_outcome"
+        },
+        "circular_validation_risk": {
+          "framework_linked": false,
+          "at_risk": false
+        }
+      },
+      {
+        "principle_id": "pr-94d1cf4e",
+        "name": "liquidity→USD[direct]",
+        "strength": "mature",
+        "accuracy": {
+          "correct_count": 93,
+          "incorrect_count": 0,
+          "stored_accuracy": 1.0,
+          "computed_accuracy": 1.0,
+          "has_independent_predictions": true,
+          "source": "prediction_outcome"
+        },
+        "circular_validation_risk": {
+          "framework_linked": false,
+          "at_risk": false
+        }
+      }
+    ],
+    "q5_evaluation_progression": {
+      "pr-4d14f3f3": [
+        {
+          "cycle": 96,
+          "last_evaluated": 96
+        },
+        {
+          "cycle": 97,
+          "last_evaluated": 97
+        },
+        {
+          "cycle": 98,
+          "last_evaluated": 98
+        },
+        {
+          "cycle": 99,
+          "last_evaluated": 99
+        },
+        {
+          "cycle": 100,
+          "last_evaluated": 100
+        }
+      ],
+      "pr-72de321b": [
+        {
+          "cycle": 96,
+          "last_evaluated": 96
+        },
+        {
+          "cycle": 97,
+          "last_evaluated": 97
+        },
+        {
+          "cycle": 98,
+          "last_evaluated": 98
+        },
+        {
+          "cycle": 99,
+          "last_evaluated": 99
+        },
+        {
+          "cycle": 100,
+          "last_evaluated": 100
+        }
+      ],
+      "pr-9ca0337e": [
+        {
+          "cycle": 96,
+          "last_evaluated": 96
+        },
+        {
+          "cycle": 97,
+          "last_evaluated": 97
+        },
+        {
+          "cycle": 98,
+          "last_evaluated": 98
+        },
+        {
+          "cycle": 99,
+          "last_evaluated": 99
+        },
+        {
+          "cycle": 100,
+          "last_evaluated": 100
+        }
+      ],
+      "pr-94d1cf4e": [
+        {
+          "cycle": 96,
+          "last_evaluated": 96
+        },
+        {
+          "cycle": 97,
+          "last_evaluated": 97
+        },
+        {
+          "cycle": 98,
+          "last_evaluated": 98
+        },
+        {
+          "cycle": 99,
+          "last_evaluated": 99
+        },
+        {
+          "cycle": 100,
+          "last_evaluated": 100
+        }
+      ]
+    },
+    "q5_assessment": "SUSPICIOUS: all predictions correct (potential zero-difficulty test)"
+  },
+  "q6_knowledge_pyramid": {
+    "q6_pyramid": {
+      "findings": 1426,
+      "candidate": 0,
+      "validated": 0,
+      "mature": 4,
+      "retired": 0,
+      "frameworks": 0
+    },
+    "q6_is_pyramid_shape": false,
+    "q6_finding_growth_curve": [
+      {
+        "cycle": 1,
+        "count": 1
+      },
+      {
+        "cycle": 2,
+        "count": 2
+      },
+      {
+        "cycle": 3,
+        "count": 3
+      },
+      {
+        "cycle": 4,
+        "count": 11
+      },
+      {
+        "cycle": 5,
+        "count": 19
+      },
+      {
+        "cycle": 6,
+        "count": 30
+      },
+      {
+        "cycle": 7,
+        "count": 41
+      },
+      {
+        "cycle": 8,
+        "count": 52
+      },
+      {
+        "cycle": 9,
+        "count": 63
+      },
+      {
+        "cycle": 10,
+        "count": 74
+      },
+      {
+        "cycle": 11,
+        "count": 89
+      },
+      {
+        "cycle": 12,
+        "count": 104
+      },
+      {
+        "cycle": 13,
+        "count": 119
+      },
+      {
+        "cycle": 14,
+        "count": 134
+      },
+      {
+        "cycle": 15,
+        "count": 149
+      },
+      {
+        "cycle": 16,
+        "count": 164
+      },
+      {
+        "cycle": 17,
+        "count": 179
+      },
+      {
+        "cycle": 18,
+        "count": 194
+      },
+      {
+        "cycle": 19,
+        "count": 209
+      },
+      {
+        "cycle": 20,
+        "count": 224
+      },
+      {
+        "cycle": 21,
+        "count": 239
+      },
+      {
+        "cycle": 22,
+        "count": 254
+      },
+      {
+        "cycle": 23,
+        "count": 269
+      },
+      {
+        "cycle": 24,
+        "count": 284
+      },
+      {
+        "cycle": 25,
+        "count": 298
+      },
+      {
+        "cycle": 26,
+        "count": 312
+      },
+      {
+        "cycle": 27,
+        "count": 326
+      },
+      {
+        "cycle": 28,
+        "count": 340
+      },
+      {
+        "cycle": 29,
+        "count": 354
+      },
+      {
+        "cycle": 30,
+        "count": 368
+      },
+      {
+        "cycle": 31,
+        "count": 382
+      },
+      {
+        "cycle": 32,
+        "count": 396
+      },
+      {
+        "cycle": 33,
+        "count": 410
+      },
+      {
+        "cycle": 34,
+        "count": 424
+      },
+      {
+        "cycle": 35,
+        "count": 438
+      },
+      {
+        "cycle": 36,
+        "count": 452
+      },
+      {
+        "cycle": 37,
+        "count": 466
+      },
+      {
+        "cycle": 38,
+        "count": 480
+      },
+      {
+        "cycle": 39,
+        "count": 494
+      },
+      {
+        "cycle": 40,
+        "count": 508
+      },
+      {
+        "cycle": 41,
+        "count": 522
+      },
+      {
+        "cycle": 42,
+        "count": 536
+      },
+      {
+        "cycle": 43,
+        "count": 550
+      },
+      {
+        "cycle": 44,
+        "count": 564
+      },
+      {
+        "cycle": 45,
+        "count": 578
+      },
+      {
+        "cycle": 46,
+        "count": 592
+      },
+      {
+        "cycle": 47,
+        "count": 606
+      },
+      {
+        "cycle": 48,
+        "count": 620
+      },
+      {
+        "cycle": 49,
+        "count": 634
+      },
+      {
+        "cycle": 50,
+        "count": 649
+      },
+      {
+        "cycle": 51,
+        "count": 664
+      },
+      {
+        "cycle": 52,
+        "count": 679
+      },
+      {
+        "cycle": 53,
+        "count": 694
+      },
+      {
+        "cycle": 54,
+        "count": 709
+      },
+      {
+        "cycle": 55,
+        "count": 724
+      },
+      {
+        "cycle": 56,
+        "count": 739
+      },
+      {
+        "cycle": 57,
+        "count": 754
+      },
+      {
+        "cycle": 58,
+        "count": 769
+      },
+      {
+        "cycle": 59,
+        "count": 784
+      },
+      {
+        "cycle": 60,
+        "count": 799
+      },
+      {
+        "cycle": 61,
+        "count": 814
+      },
+      {
+        "cycle": 62,
+        "count": 829
+      },
+      {
+        "cycle": 63,
+        "count": 844
+      },
+      {
+        "cycle": 64,
+        "count": 859
+      },
+      {
+        "cycle": 65,
+        "count": 874
+      },
+      {
+        "cycle": 66,
+        "count": 889
+      },
+      {
+        "cycle": 67,
+        "count": 904
+      },
+      {
+        "cycle": 68,
+        "count": 919
+      },
+      {
+        "cycle": 69,
+        "count": 934
+      },
+      {
+        "cycle": 70,
+        "count": 949
+      },
+      {
+        "cycle": 71,
+        "count": 964
+      },
+      {
+        "cycle": 72,
+        "count": 979
+      },
+      {
+        "cycle": 73,
+        "count": 994
+      },
+      {
+        "cycle": 74,
+        "count": 1009
+      },
+      {
+        "cycle": 75,
+        "count": 1025
+      },
+      {
+        "cycle": 76,
+        "count": 1041
+      },
+      {
+        "cycle": 77,
+        "count": 1057
+      },
+      {
+        "cycle": 78,
+        "count": 1073
+      },
+      {
+        "cycle": 79,
+        "count": 1089
+      },
+      {
+        "cycle": 80,
+        "count": 1105
+      },
+      {
+        "cycle": 81,
+        "count": 1121
+      },
+      {
+        "cycle": 82,
+        "count": 1137
+      },
+      {
+        "cycle": 83,
+        "count": 1153
+      },
+      {
+        "cycle": 84,
+        "count": 1169
+      },
+      {
+        "cycle": 85,
+        "count": 1185
+      },
+      {
+        "cycle": 86,
+        "count": 1201
+      },
+      {
+        "cycle": 87,
+        "count": 1217
+      },
+      {
+        "cycle": 88,
+        "count": 1233
+      },
+      {
+        "cycle": 89,
+        "count": 1249
+      },
+      {
+        "cycle": 90,
+        "count": 1265
+      },
+      {
+        "cycle": 91,
+        "count": 1281
+      },
+      {
+        "cycle": 92,
+        "count": 1297
+      },
+      {
+        "cycle": 93,
+        "count": 1313
+      },
+      {
+        "cycle": 94,
+        "count": 1329
+      },
+      {
+        "cycle": 95,
+        "count": 1345
+      },
+      {
+        "cycle": 96,
+        "count": 1361
+      },
+      {
+        "cycle": 97,
+        "count": 1377
+      },
+      {
+        "cycle": 98,
+        "count": 1393
+      },
+      {
+        "cycle": 99,
+        "count": 1409
+      },
+      {
+        "cycle": 100,
+        "count": 1426
+      }
+    ],
+    "q6_strength_progression": [
+      {
+        "cycle": 1,
+        "candidate": 0,
+        "validated": 0,
+        "mature": 0
+      },
+      {
+        "cycle": 5,
+        "candidate": 0,
+        "validated": 0,
+        "mature": 0
+      },
+      {
+        "cycle": 10,
+        "candidate": 4,
+        "validated": 0,
+        "mature": 0
+      },
+      {
+        "cycle": 25,
+        "candidate": 0,
+        "validated": 4,
+        "mature": 0
+      },
+      {
+        "cycle": 50,
+        "candidate": 0,
+        "validated": 4,
+        "mature": 0
+      },
+      {
+        "cycle": 75,
+        "candidate": 0,
+        "validated": 4,
+        "mature": 0
+      },
+      {
+        "cycle": 100,
+        "candidate": 0,
+        "validated": 0,
+        "mature": 4
+      }
+    ],
+    "q6_bottom_layer": "findings",
+    "q6_has_frameworks": false,
+    "q6_assessment": "GRADUATED_PYRAMID: all principles reached mature (lifecycle was healthy but no intermediate layers visible at snapshot time)"
+  },
+  "classification_signals": {
+    "q1_granularity": "HEALTHY: appropriate count with causal diversity",
+    "q1_principle_count": 4,
+    "q1_has_duplicates": false,
+    "q2_criteria_met": true,
+    "q3_inflation_ratio": 3534.76,
+    "q3_assessment": "CRITICAL: evidence counts are structurally inflated",
+    "q4_transitions": true,
+    "q5_independent_predictions": 4,
+    "q5_circular_risks": 0,
+    "q5_all_perfect": true,
+    "q6_is_pyramid": false,
+    "q6_has_frameworks": false
+  }
+}

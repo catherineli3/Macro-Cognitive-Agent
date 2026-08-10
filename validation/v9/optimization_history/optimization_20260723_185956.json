@@ -1,0 +1,26 @@
+{
+  "styles": [
+    {
+      "version": "v1",
+      "name": "Standard Macro Analyst",
+      "description": "Baseline multi-factor macro framework. Analyzes monetary, fiscal, growth, inflation, and positions within cycle framework."
+    },
+    {
+      "version": "v2",
+      "name": "Causal Chain Analyst",
+      "description": "v2 improvement: Force agent to trace causal chains. Every prediction must include A→B→C reasoning."
+    }
+  ],
+  "iterations": [
+    {
+      "iteration": 1,
+      "style": "test",
+      "score": 72.5,
+      "top_errors": [],
+      "focus": "Narrative precision"
+    }
+  ],
+  "error_summary": {
+    "wrong_narrative": 1
+  }
+}

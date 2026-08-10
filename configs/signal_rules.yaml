@@ -1,0 +1,211 @@
+# Macro Signal Rules — Sprint 2
+#
+# All signal logic lives here. Python code MUST NOT hardcode thresholds.
+#
+# Rule structure:
+#   rule_id:        Unique identifier
+#   description:    Human-readable rule description
+#   indicator:      Symbol this rule applies to (e.g. "DXY")
+#   dimension:      HypothesisDimension value (Liquidity/Credit/Growth/Risk_Appetite/Inflation)
+#   type:           Rule type — Sprint 2: threshold only
+#   condition:
+#     operator:     gt | lt | gte | lte
+#     field:        value (the only field for Sprint 2)
+#     threshold:    Numeric threshold value
+#   signal:
+#     direction:    bullish | bearish | neutral
+#     strength:     strong | moderate | weak
+#     confidence:   0.0–1.0
+#   interpretation: Plain-language financial meaning
+#
+# Sprint 2 scope: THRESHOLD rules only.
+# Reserved rule types for future: trend, momentum, spread, correlation, regime
+
+rules:
+  # ── Liquidity Dimension ──────────────────────────────────────────
+
+  - rule_id: "dxy_strong_dollar"
+    description: "DXY exceeds 105 — broad USD strength signaling tightening financial conditions"
+    indicator: "DXY"
+    dimension: "Liquidity"
+    type: "threshold"
+    condition:
+      operator: "gt"
+      field: "value"
+      threshold: 105.0
+    signal:
+      direction: "bearish"
+      strength: "moderate"
+      confidence: 0.75
+    interpretation: "USD strengthening — financial conditions tightening, liquidity draining from global markets"
+
+  - rule_id: "dxy_weak_dollar"
+    description: "DXY below 100 — broad USD weakness signaling accommodative conditions"
+    indicator: "DXY"
+    dimension: "Liquidity"
+    type: "threshold"
+    condition:
+      operator: "lt"
+      field: "value"
+      threshold: 100.0
+    signal:
+      direction: "bullish"
+      strength: "moderate"
+      confidence: 0.75
+    interpretation: "USD weakening — financial conditions easing, dollar liquidity expanding"
+
+  - rule_id: "us10y_elevated"
+    description: "US 10Y yield above 5.0% — high rates environment"
+    indicator: "US10Y"
+    dimension: "Liquidity"
+    type: "threshold"
+    condition:
+      operator: "gt"
+      field: "value"
+      threshold: 5.0
+    signal:
+      direction: "bearish"
+      strength: "strong"
+      confidence: 0.85
+    interpretation: "Elevated long-end rates — restrictive monetary environment, cost of capital rising"
+
+  - rule_id: "us10y_low"
+    description: "US 10Y yield below 3.0% — low rates environment"
+    indicator: "US10Y"
+    dimension: "Liquidity"
+    type: "threshold"
+    condition:
+      operator: "lt"
+      field: "value"
+      threshold: 3.0
+    signal:
+      direction: "bullish"
+      strength: "moderate"
+      confidence: 0.70
+    interpretation: "Low long-end rates — accommodative monetary backdrop"
+
+  - rule_id: "us2y_elevated"
+    description: "US 2Y yield above 5.5% — aggressive front-end tightening"
+    indicator: "US2Y"
+    dimension: "Liquidity"
+    type: "threshold"
+    condition:
+      operator: "gt"
+      field: "value"
+      threshold: 5.5
+    signal:
+      direction: "bearish"
+      strength: "strong"
+      confidence: 0.85
+    interpretation: "Front-end rates elevated — near-term policy is highly restrictive"
+
+  # ── Credit Dimension ─────────────────────────────────────────────
+
+  - rule_id: "hyg_stress"
+    description: "HYG below 70 — high yield stress signaling credit contraction"
+    indicator: "HYG"
+    dimension: "Credit"
+    type: "threshold"
+    condition:
+      operator: "lt"
+      field: "value"
+      threshold: 70.0
+    signal:
+      direction: "bearish"
+      strength: "strong"
+      confidence: 0.90
+    interpretation: "High yield stress — credit markets contracting, risk aversion in corporate debt"
+
+  - rule_id: "hyg_healthy"
+    description: "HYG above 78 — credit markets healthy and expanding"
+    indicator: "HYG"
+    dimension: "Credit"
+    type: "threshold"
+    condition:
+      operator: "gt"
+      field: "value"
+      threshold: 78.0
+    signal:
+      direction: "bullish"
+      strength: "moderate"
+      confidence: 0.70
+    interpretation: "Credit markets healthy — high yield spreads benign, risk appetite present"
+
+  # ── Risk Appetite Dimension ───────────────────────────────────────
+
+  - rule_id: "vix_elevated"
+    description: "VIX above 25 — elevated fear and uncertainty"
+    indicator: "^VIX"
+    dimension: "Risk_Appetite"
+    type: "threshold"
+    condition:
+      operator: "gt"
+      field: "value"
+      threshold: 25.0
+    signal:
+      direction: "bearish"
+      strength: "strong"
+      confidence: 0.90
+    interpretation: "Fear elevated — market uncertainty high, risk appetite collapsing"
+
+  - rule_id: "vix_complacency"
+    description: "VIX below 12 — extremely low volatility, potential complacency"
+    indicator: "^VIX"
+    dimension: "Risk_Appetite"
+    type: "threshold"
+    condition:
+      operator: "lt"
+      field: "value"
+      threshold: 12.0
+    signal:
+      direction: "bullish"
+      strength: "weak"
+      confidence: 0.55
+    interpretation: "Volatility extremely low — risk appetite elevated but complacency risk present"
+
+  - rule_id: "gold_surge"
+    description: "Gold above 2500 — safe-haven demand elevated"
+    indicator: "GC=F"
+    dimension: "Risk_Appetite"
+    type: "threshold"
+    condition:
+      operator: "gt"
+      field: "value"
+      threshold: 2500.0
+    signal:
+      direction: "bearish"
+      strength: "moderate"
+      confidence: 0.70
+    interpretation: "Gold surging — safe-haven demand elevated, underlying risk concerns"
+
+  # ── Growth Dimension ─────────────────────────────────────────────
+
+  - rule_id: "copper_growth"
+    description: "Copper above 4.5 — industrial demand signaling growth"
+    indicator: "HG=F"
+    dimension: "Growth"
+    type: "threshold"
+    condition:
+      operator: "gt"
+      field: "value"
+      threshold: 4.5
+    signal:
+      direction: "bullish"
+      strength: "moderate"
+      confidence: 0.70
+    interpretation: "Copper strength — industrial demand robust, growth cycle expansion signal"
+
+  - rule_id: "copper_contraction"
+    description: "Copper below 3.5 — industrial demand weakness"
+    indicator: "HG=F"
+    dimension: "Growth"
+    type: "threshold"
+    condition:
+      operator: "lt"
+      field: "value"
+      threshold: 3.5
+    signal:
+      direction: "bearish"
+      strength: "moderate"
+      confidence: 0.70
+    interpretation: "Copper weakness — industrial demand softening, growth cycle warning"

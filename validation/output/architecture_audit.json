@@ -1,0 +1,222 @@
+{
+  "generated_at": "2026-07-21T00:00:00Z",
+  "overall_status": "FAIL",
+  "total_checks": 10,
+  "passed": 2,
+  "failed": 7,
+  "warnings": 1,
+  "dead_modules": [
+    {
+      "file": "src/analyzer/__init__.py",
+      "status": "DEAD_PACKAGE",
+      "reason": "DEPRECATED — docstring says 'replaced by signal/hypothesis engine'. No imports from src/."
+    },
+    {
+      "file": "src/report/",
+      "status": "DEAD_PACKAGE",
+      "reason": "Empty __init__.py, never imported by any src/ module."
+    },
+    {
+      "file": "src/scheduler/v3_scheduler.py",
+      "status": "DEAD",
+      "reason": "Never imported by any module in src/ or tests/."
+    },
+    {
+      "file": "src/migrations/",
+      "status": "DEAD_PACKAGE",
+      "reason": "Alembic migration directory, never imported by Python application code."
+    },
+    {
+      "file": "src/tools/",
+      "status": "TEST_ONLY",
+      "reason": "Only imported by test files, not used in production src/ code."
+    },
+    {
+      "file": "src/learning_unit/",
+      "status": "TEST_ONLY",
+      "reason": "Only imported by test files; src/belief_versioning imports from src.schemas.learning_unit instead."
+    },
+    {
+      "file": "src/normalizer/",
+      "status": "TEST_ONLY",
+      "reason": "Only imported by test files; data_pipeline has its own normalizer.py."
+    },
+    {
+      "file": "src/validation/",
+      "status": "TEST_ONLY",
+      "reason": "Only imported by test files; not used in production validation."
+    },
+    {
+      "file": "src/belief_versioning/contextual_belief.py",
+      "status": "TEST_ONLY",
+      "reason": "Only directly imported in tests via src.belief_versioning."
+    }
+  ],
+  "findings": [
+    {
+      "check_name": "SINGLE_SOURCE_OF_TRUTH_BELIEF",
+      "status": "FAIL",
+      "detail": "Two parallel Belief systems coexist. AdaptiveBelief (old, defined in schemas/belief_version.py) is actively used by EvolutionPipeline and BeliefLifecycleManager (evolution/). ResearchBelief (new, defined in research/beliefs/schemas.py) exists but is NOT integrated into ResearchCycleEngine.run_cycle(). The EvolutionPipeline which ResearchCycleEngine relies on for Step 8 (Evolution) uses AdaptiveBelief — meaning the production code path never touches ResearchBelief or the new BeliefEngine.",
+      "evidence": [
+        "AdaptiveBelief defined in: src/schemas/belief_version.py",
+        "AdaptiveBelief consumed in src/: research/evolution/evolution_pipeline.py, research/evolution/belief_lifecycle.py, belief_versioning/__, hypothesis_library/__",
+        "ResearchBelief defined in: src/research/beliefs/schemas.py",
+        "ResearchBelief consumed in src/ (non-test): only beliefs/ sub-package internals",
+        "ResearchCycleEngine uses: AdaptiveBelief=NO (indirectly via EvolutionPipeline), ResearchBelief=NO, EvolutionPipeline=YES",
+        "EvolutionPipeline uses: AdaptiveBelief=YES, ResearchBelief=NO"
+      ],
+      "call_chain": [
+        "ResearchCycleEngine.run_cycle() → EvolutionPipeline.run() → AdaptiveBelief (OLD system)",
+        "ResearchBelief + BeliefEngine (new system) → NOT in ResearchCycleEngine call chain → ISOLATED"
+      ]
+    },
+    {
+      "check_name": "SINGLE_SOURCE_OF_TRUTH_BLM",
+      "status": "WARN",
+      "detail": "Two BeliefLifecycleManager classes exist: one in src/research/evolution/belief_lifecycle.py (old, used by EvolutionPipeline in production) and one in src/research/beliefs/belief_lifecycle.py (new, only used by BeliefEngine which is not in the production cycle).",
+      "evidence": [
+        "Old BLM: src/research/evolution/belief_lifecycle.py → used by EvolutionPipeline (production path)",
+        "New BLM: src/research/beliefs/belief_lifecycle.py → only consumed by BeliefEngine (isolated)"
+      ]
+    },
+    {
+      "check_name": "BYPASS_DAILY_RUNNER_M1_PIPELINE",
+      "status": "FAIL",
+      "detail": "DailyRunner.run_today() bypasses the entire M1 data pipeline (Collector → Validator → Normalizer → FeatureEngine → StateVector). It builds MacroSnapshot directly from a user-provided dict[str, float] instead of running MacroPipeline.build_daily_macro_snapshot(). This means the DailyRunner has ZERO real data validation.",
+      "evidence": [
+        "daily_runner.py L141: _build_snapshot(macro_data) creates MacroSnapshot from raw dict",
+        "daily_runner.py: NO call to MacroPipeline, CollectorManager, DataQualityValidator, or StateVectorBuilder",
+        "M1DailyRunner (run_m1_daily.py) correctly uses the full pipeline — but DailyRunner does not"
+      ],
+      "call_chain": [
+        "CONCEPTUAL: Collector → Validator → StateVector → Snapshot",
+        "DailyRunner ACTUAL: raw dict → MacroSnapshot (BYPASS — zero data validation)"
+      ]
+    },
+    {
+      "check_name": "BYPASS_NARRATIVE",
+      "status": "FAIL",
+      "detail": "Narrative is NEVER called in ResearchCycleEngine.run_cycle(). The 8-step cycle goes: Framework → Thesis → Hypothesis → Transmission → Prediction → Postmortem → Evolution. No NarrativeEngine or NarrativeDetector is invoked. The src/research/narrative/ package exists but is not in the research/__init__.py exports and is never called.",
+      "evidence": [
+        "cycle_engine.py run_cycle(): 8 documented steps, none call NarrativeEngine",
+        "src/research/narrative/ exists with narrative_engine.py but not exported by research/__init__.py",
+        "DailyRunner also does not reference Narrative"
+      ],
+      "call_chain": [
+        "EXPECTED: MentalModels → Narrative → Hypothesis",
+        "ACTUAL: Framework → Thesis → Hypothesis (Narrative MISSING)"
+      ]
+    },
+    {
+      "check_name": "BYPASS_BELIEF_ENGINE",
+      "status": "FAIL",
+      "detail": "BeliefEngine (the new V3 system with ResearchBelief) is NEVER called in ResearchCycleEngine.run_cycle(). The old EvolutionPipeline operates on AdaptiveBelief, while the new BeliefEngine operates on ResearchBelief but is never integrated. The beliefs/ sub-package is entirely isolated from the main cycle.",
+      "evidence": [
+        "cycle_engine.py: No import of BeliefEngine or anything from src.research.beliefs",
+        "belief_engine.py: defined but only consumed by beliefs/__init__.py (self-package) and tests",
+        "EvolutionPipeline uses AdaptiveBelief, not ResearchBelief",
+        "research/__init__.py does NOT export beliefs/ sub-package"
+      ],
+      "call_chain": [
+        "EXPECTED: Hypothesis → BeliefEngine.update() → Prediction",
+        "ACTUAL: Hypothesis → Prediction (BeliefEngine MISSING — beliefs updated via old EvolutionPipeline only)"
+      ]
+    },
+    {
+      "check_name": "BYPASS_MENTALMODEL_TO_NARRATIVE",
+      "status": "FAIL",
+      "detail": "M1DailyRunner correctly runs MentalModelRegistry.evaluate_all() producing ResearchConclusion[], but these conclusions are only collected for the report — they are NOT passed into any Narrative engine or BeliefEngine. The MentalModel → Narrative link is broken.",
+      "evidence": [
+        "run_m1_daily.py: MentalModelRegistry.evaluate_all() → conclusions only used in report",
+        "No NarrativeDetector or NarrativeEngine call after mental model evaluation",
+        "No BeliefEngine call after mental model evaluation"
+      ],
+      "call_chain": [
+        "MentalModels → Report (BYPASS: should go to → Narrative → Hypothesis → Belief)"
+      ]
+    },
+    {
+      "check_name": "BYPASS_FRAMEWORK_CHECK",
+      "status": "PASS",
+      "detail": "FrameworkSelector is correctly invoked in ResearchCycleEngine.run_cycle() (Step 2). When no active frameworks exist, it returns an empty selection with a fallback rationale — acceptable cold-start behavior.",
+      "evidence": [
+        "cycle_engine.py L271: FrameworkSelector.select() called with macro_snapshot",
+        "framework_selector.py L105-110: graceful fallback when _get_active_frameworks() returns empty"
+      ],
+      "call_chain": [
+        "MacroSnapshot → FrameworkSelector.select() → FrameworkSelection ✅"
+      ]
+    },
+    {
+      "check_name": "DEAD_MODULE_DETECTION",
+      "status": "FAIL",
+      "detail": "Found 9 dead/test-only modules. 4 are completely dead (never imported), 5 are test-only (never used in production code). Dead modules add maintenance overhead and violate architecture freeze principles.",
+      "evidence": [
+        "DEAD: src/analyzer/ — DEPRECATED, replaced by signal/hypothesis engine",
+        "DEAD: src/report/ — Empty init, never imported",
+        "DEAD: src/scheduler/v3_scheduler.py — Never imported by any module",
+        "DEAD: src/migrations/ — Alembic directory, not used by app code",
+        "TEST_ONLY: src/tools/ — Only in test imports",
+        "TEST_ONLY: src/learning_unit/ — Only in test imports",
+        "TEST_ONLY: src/normalizer/ — Only in test imports",
+        "TEST_ONLY: src/validation/ — Only in test imports",
+        "TEST_ONLY: src/belief_versioning/contextual_belief.py — Only in tests"
+      ]
+    },
+    {
+      "check_name": "EXPORT_COVERAGE_RESEARCH",
+      "status": "FAIL",
+      "detail": "src/research/__init__.py does NOT export beliefs/, narrative/, snapshot/, models/ sub-packages. These packages exist but are NOT part of the public API. External code must use full dotted paths, and integration into the main cycle depends on bottom-level awareness that these packages exist.",
+      "evidence": [
+        "Exported by research/__init__.py: findings/, principles/, framework/, evolution/",
+        "Not exported: beliefs/, narrative/, snapshot/, models/"
+      ]
+    },
+    {
+      "check_name": "EXPORT_COVERAGE_PIPELINE",
+      "status": "PASS",
+      "detail": "Pipeline imports cover all major modules. No critical gaps found in pipeline integration.",
+      "evidence": [
+        "Pipeline imports: calibration, diagnosis, evaluation, executor, handlers, hypothesis, hypothesis_library, learning, learning_log, memory, metrics, outcome, planning, prediction, renderer, research, schemas, shared, signal"
+      ]
+    }
+  ],
+  "two_system_conflicts": [
+    {
+      "system": "OLD",
+      "belief_class": "AdaptiveBelief",
+      "lifecycle_manager": "src/research/evolution/belief_lifecycle.py",
+      "used_by": ["EvolutionPipeline", "ResearchCycleEngine (via EvolutionPipeline)"],
+      "production_active": true
+    },
+    {
+      "system": "NEW",
+      "belief_class": "ResearchBelief",
+      "lifecycle_manager": "src/research/beliefs/belief_lifecycle.py",
+      "used_by": ["BeliefEngine (isolated)", "belief_store (isolated)"],
+      "production_active": false
+    }
+  ],
+  "bypass_paths": [
+    {
+      "path": "DailyRunner → raw dict → MacroSnapshot",
+      "skipped": ["Collector", "Validator", "Normalizer", "FeatureEngine", "StateVectorBuilder"],
+      "severity": "HIGH"
+    },
+    {
+      "path": "ResearchCycleEngine → Framework → Thesis → Hypothesis",
+      "skipped": ["MentalModels", "Narrative"],
+      "severity": "HIGH"
+    },
+    {
+      "path": "ResearchCycleEngine → Hypothesis → Prediction",
+      "skipped": ["BeliefEngine (new system)"],
+      "severity": "HIGH"
+    },
+    {
+      "path": "M1DailyRunner → MentalModelRegistry → Report",
+      "skipped": ["NarrativeEngine", "BeliefEngine"],
+      "severity": "MEDIUM"
+    }
+  ]
+}

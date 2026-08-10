@@ -1,0 +1,13 @@
+{
+  "case_id": "INF-001",
+  "title": "Inflation Surges Past 7% - Fed Still at Zero, Behind the Curve",
+  "status": "completed",
+  "narratives": [],
+  "beliefs": [],
+  "judgments": [],
+  "narrative_probabilities": {
+    "Market in transition — no clear narrative dominance": 1.0
+  },
+  "dominant_narrative": "Market in transition — no clear narrative dominance",
+  "macro_stance": ""
+}

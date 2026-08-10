@@ -1,0 +1,13 @@
+{
+  "case_id": "AI-001",
+  "title": "NVIDIA Blowout Earnings - AI Capex Cycle Begins",
+  "status": "completed",
+  "narratives": [],
+  "beliefs": [],
+  "judgments": [],
+  "narrative_probabilities": {
+    "Market in transition — no clear narrative dominance": 1.0
+  },
+  "dominant_narrative": "Market in transition — no clear narrative dominance",
+  "macro_stance": ""
+}

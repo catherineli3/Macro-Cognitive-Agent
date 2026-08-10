@@ -1,0 +1,40 @@
+{
+  "benchmark": {
+    "completed": 5,
+    "errors": 0,
+    "narrative_detection": 0.0,
+    "narrative_reasoning": 0.0,
+    "competition": 0.2,
+    "falsifiability": 1.0
+  },
+  "quality": {
+    "avg": 0.073,
+    "status": "FAIL",
+    "dim_avgs": {
+      "narrative_accuracy": 0.02,
+      "causal_completeness": 0.009,
+      "falsifiability": 0.028,
+      "confidence_calibration": 0.297,
+      "regime_recognition": 0.006
+    },
+    "acceptance": {
+      "narrative_accuracy_70pct": false,
+      "causal_completeness_70pct": false,
+      "falsifiability_80pct": false,
+      "confidence_calibrated": false,
+      "regime_recognition_70pct": false,
+      "overall_pass_rate_70pct": false
+    }
+  },
+  "log": [
+    "Running benchmark on 5 cases...",
+    "Done: 5 completed, 0 errors",
+    "Narrative detection: 0.0%",
+    "Narrative reasoning: 0.0%",
+    "Narrative->Belief: 0.0%",
+    "Competition: 20.0%",
+    "Falsifiability: 100.0%",
+    "Avg judgment conf: 0.88",
+    "Quality avg: 7.3%, status: FAIL"
+  ]
+}
