@@ -68,6 +68,9 @@ class PipelineResult:
     diagnosis_report: Optional[Any] = None        # DiagnosisReport
     kpi_report: Optional[Any] = None              # FourKPIReport
 
+    # ── v3.5 LLM fields ──────────────────────────────────────────────────
+    llm_narrative_result: Optional[Any] = None    # LLMNarrativeResult
+
 
 # ── Pipeline ───────────────────────────────────────────────────────────────
 
@@ -194,19 +197,31 @@ class MacroResearchPipeline:
         self,
         goal: str = "macro environment analysis",
         indicators: list[str] | None = None,
+        use_llm: bool = False,
     ) -> PipelineResult:
         """Execute a full macro research cycle.
 
         v1.0 Flow: Plan → Execute (7-step DAG) → Extract Narrative → Render
         v2.0 Flow: Same + Outcome Tracking → Learning → Calibration → Composite Signals
+        v3.5: + optional LLM narrative (use_llm=True, reads settings.yaml llm.enabled)
 
         Args:
             goal: Natural language goal (e.g., "liquidity analysis").
             indicators: Optional list of indicators to focus on.
+            use_llm: Enable LLM-powered narrative generation. Defaults to value
+                     from settings.yaml (llm.enabled).
 
         Returns:
             PipelineResult with status, MacroNarrative, learning data, and v2.0 artifacts.
         """
+        # Resolve use_llm from settings if not explicitly set
+        if not use_llm:
+            try:
+                from src.shared.config import get_settings
+                settings = get_settings()
+                use_llm = bool(settings.get("llm", {}).get("enabled", False))
+            except Exception:
+                use_llm = False
         try:
             self._ensure_handlers()
             self._ensure_v2_engines()
@@ -341,6 +356,21 @@ class MacroResearchPipeline:
                 rendered = md_renderer.render(narrative_obj)
                 rendered_json = json_renderer.render(narrative_obj)
 
+            # ── v3.5: LLM Narrative Generation ──────────────────────────
+            llm_narrative = None
+            if use_llm:
+                try:
+                    from src.llm.narrative import LLMNarrativeEngine
+                    llm_engine = LLMNarrativeEngine()
+                    llm_narrative = llm_engine.generate(narrative=narrative_obj)
+                    logger.info(
+                        "LLM narrative generated, degraded=%s",
+                        llm_narrative.degraded,
+                    )
+                except Exception as exc:
+                    logger.warning("LLM narrative engine failed: %s", exc)
+                    llm_narrative = None
+
             result = PipelineResult(
                 status=exec_result.status,
                 narrative=rendered,
@@ -352,6 +382,8 @@ class MacroResearchPipeline:
                 calibrated_confidence=calibrated_set,
                 composite_signals=composite_snapshot,
                 outcome_summary=outcome_summary,
+                # v3.5 LLM
+                llm_narrative_result=llm_narrative,
             )
 
             logger.info(

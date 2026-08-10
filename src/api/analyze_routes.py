@@ -8,7 +8,7 @@ GET  /api/reports/latest — Get the most recent analysis report.
 GET  /api/beliefs       — Get current belief state from memory.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 
 from src.pipeline import MacroResearchPipeline
 from src.schemas.narrative import MacroNarrative
@@ -296,3 +296,39 @@ def _summarize_artifacts(artifacts: dict) -> dict:
         else:
             summary[key] = type(value).__name__
     return summary
+
+
+# ── v3.5: LLM Narrative endpoint ──────────────────────────────────────────
+
+
+@router.get("/v2/narrative/llm")
+async def get_llm_narrative(
+    goal: str = Query(default="macro environment analysis"),
+    use_llm: bool = Query(default=True),
+):
+    """Generate narrative via LLM (Kimi), with degradation on failure.
+
+    Returns LLMNarrativeResult with degraded=True if LLM unavailable.
+    The original template-based endpoint (POST /api/analyze) is unaffected.
+    """
+    pipeline = MacroResearchPipeline()
+    result = await pipeline.run(goal=goal, use_llm=use_llm)
+
+    llm_result = getattr(result, "llm_narrative_result", None)
+    if llm_result is None:
+        return {
+            "status": "no_llm_result",
+            "message": "LLM is disabled or failed, no narrative generated",
+        }
+
+    data = llm_result.data
+    return {
+        "status": "degraded" if llm_result.degraded else "ok",
+        "degraded": llm_result.degraded,
+        "data": (
+            data.model_dump()
+            if hasattr(data, "model_dump")
+            else str(data)
+        ),
+        "error": llm_result.error,
+    }

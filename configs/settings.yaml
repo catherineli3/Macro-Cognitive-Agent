@@ -33,6 +33,11 @@ storage:
   cache:
     ttl_seconds: 1800
 
+# LLM configuration (optional — pipeline runs deterministically without LLM)
+llm:
+  enabled: false  # Set to true to enable LLM-powered narrative generation
+  provider: kimi  # kimi (Moonshot API)
+
 # RC-1: Reliability configuration
 reliability:
   # Per-task execution timeout (seconds)
