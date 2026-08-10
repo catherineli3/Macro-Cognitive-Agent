@@ -22,6 +22,10 @@ class LLMError(Exception):
     """Unified exception for all LLM-related failures (network, auth, schema, etc.)."""
 
 
+class LLMRetryableError(LLMError):
+    """Transient failures that warrant a retry: timeout, network hiccup, HTTP 429."""
+
+
 class LLMClient:
     """Minimal Kimi API wrapper with 10s timeout + 1 automatic retry."""
 
@@ -86,14 +90,16 @@ class LLMClient:
         for attempt in range(self._max_retries + 1):
             try:
                 return self._do_request(method, url, json, extract_key)
-            except LLMError:
-                raise  # don't retry auth/schema errors
-            except Exception as exc:
+            except LLMRetryableError as exc:
                 last_error = exc
                 if attempt < self._max_retries:
                     time.sleep(0.5 * (attempt + 1))
-
-        raise LLMError(f"LLM request failed after {self._max_retries + 1} attempts: {last_error}")
+                    continue
+                raise LLMError(
+                    f"LLM request failed after {self._max_retries + 1} attempts"
+                ) from exc
+            except LLMError:
+                raise  # non-retryable: auth, schema, etc.
 
     def _do_request(
         self,
@@ -116,9 +122,9 @@ class LLMClient:
                 timeout=self._timeout,
             )
         except httpx.TimeoutException as exc:
-            raise LLMError(f"LLM request timed out after {self._timeout}s") from exc
+            raise LLMRetryableError(f"LLM request timed out after {self._timeout}s") from exc
         except httpx.RequestError as exc:
-            raise LLMError(f"LLM network error: {exc}") from exc
+            raise LLMRetryableError(f"LLM network error: {exc}") from exc
 
         if response.status_code != 200:
             self._raise_status(response)
@@ -137,7 +143,7 @@ class LLMClient:
         if status == 401 or status == 403:
             raise LLMError(f"LLM authentication failed (HTTP {status}): {detail}")
         if status == 429:
-            raise LLMError(f"LLM rate limited (HTTP 429): {detail}")
+            raise LLMRetryableError(f"LLM rate limited (HTTP 429): {detail}")
         raise LLMError(f"LLM API error (HTTP {status}): {detail}")
 
     @staticmethod

@@ -16,6 +16,7 @@ Integration:
 from __future__ import annotations
 
 import json
+import re
 from typing import Optional
 
 from pydantic import BaseModel, Field, ValidationError
@@ -223,9 +224,21 @@ class LLMNarrativeEngine:
 
     @staticmethod
     def _validate(raw: str) -> LLMNarrativeData:
-        """Parse + validate LLM output against Pydantic schema."""
-        obj = json.loads(raw)
+        """Parse + validate LLM output against Pydantic schema.
+
+        Handles markdown code fences (```json ... ```) that some models emit.
+        """
+        obj = LLMNarrativeEngine._parse_json(raw)
         return LLMNarrativeData(**obj)
+
+    @staticmethod
+    def _parse_json(raw: str) -> dict:
+        """Extract and parse JSON from LLM output, stripping markdown fences."""
+        # Strip markdown code fences: ```json ... ``` or ``` ... ```
+        fence_match = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", raw, re.DOTALL)
+        if fence_match:
+            raw = fence_match.group(1).strip()
+        return json.loads(raw)
 
     # ------------------------------------------------------------------
     # Internal — fallback

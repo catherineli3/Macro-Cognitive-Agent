@@ -6,12 +6,13 @@ Design:
   - LLM failure auto-degrades to template-based engine, pipeline never crashes.
 """
 
-from src.llm.client import LLMClient, LLMError
+from src.llm.client import LLMClient, LLMError, LLMRetryableError
 from src.llm.narrative import LLMNarrativeEngine, LLMNarrativeResult
 
 __all__ = [
     "LLMClient",
     "LLMError",
+    "LLMRetryableError",
     "LLMNarrativeEngine",
     "LLMNarrativeResult",
 ]
