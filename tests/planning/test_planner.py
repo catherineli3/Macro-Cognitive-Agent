@@ -106,7 +106,7 @@ class TestMultiRuleMerging:
         )
         # Should have tasks from all 3 rules
         task_ids = {t.id for t in plan.tasks}
-        assert "retrieve_market_data" in task_ids  # macro
+        assert "collect_market_data" in task_ids  # macro
         assert "retrieve_liquidity_data" in task_ids  # liquidity
         assert "retrieve_risk_data" in task_ids  # risk
 
