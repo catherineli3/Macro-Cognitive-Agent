@@ -1,23 +1,16 @@
-# Macro Research Agent v3.0 — Macro Cognitive Agent
+# Macro Research Agent — 规则驱动的宏观研究流水线
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Architecture](https://img.shields.io/badge/architecture-9.3%2F10-brightgreen.svg)](docs/ARCHITECTURE_WHITEPAPER.md)
 
-> **Version**: 3.0.0 | **Status**: Portfolio Release | Python 3.11+
-> **Architecture Maturity**: 9.3/10 | **Tests**: 93 files, 148+ test cases | **DDRs**: 27 ratified
+> **Version**: 3.5 | Python 3.11+
+> **Tests**: 821 用例 | 93 测试文件
 
-## What is this?
+## 项目定位
 
-A **Macro Cognitive Agent** — not a demo, not a script, not an LLM wrapper. It's an enterprise-grade AI system with a defined cognitive architecture that performs automated macroeconomic research through a **10-engine closed loop**:
+一个规则驱动的宏观研究流水线实验项目。用确定性引擎（阈值规则、模板推理、回测校准）处理数据与计算，保证结果可复现、可验证；LLM 层负责表达与历史判断关联。
 
-```
-Data → Signal → Hypothesis → Reflection → Memory → Outcome → Learning → Calibration → Narrative
-```
-
-It generates professional **MacroNarrative** reports with scenario analysis, confidence assessment, belief change tracking, learning insights, and action recommendations — all from market data, with zero LLM dependency.
-
----
+本项目是作者探索 AI 系统工程化的练习作品：核心架构与引擎设计由作者主导，部分实现由 AI 编程工具辅助生成。
 
 ## 5-Minute Setup
 
@@ -37,11 +30,14 @@ pip install -e ".[dev]"
 python -c "from src.pipeline import MacroResearchPipeline; print('OK')"
 ```
 
-## 5-Minute First Run
+## Quick Start
 
 ```bash
 # Generate a macro research report
 macro-agent analyze --goal "macro environment analysis"
+
+# Generate daily CIO macro brief (V11 summary engine)
+python run_daily_memo.py
 
 # See JSON output
 macro-agent analyze --goal "liquidity analysis" --format json
@@ -50,13 +46,13 @@ macro-agent analyze --goal "liquidity analysis" --format json
 macro-agent --help
 ```
 
-**Expected output**: A Markdown report with sections including Executive Summary, Scenario Analysis, Confidence Assessment, What We Learned, Prediction Accuracy, and Action Items.
+**Expected output**: A Markdown report with Executive Summary, Scenario Analysis, Confidence Assessment, Belief Changes, Learning Insights, and Action Recommendations.
 
 ---
 
 ## Architecture at a Glance
 
-### Cognitive Closed Loop (v2.0)
+### Cognitive Closed Loop
 
 ```
 Observation → Signal → Hypothesis → Reflection → Memory
@@ -74,31 +70,37 @@ Observation → Signal → Hypothesis → Reflection → Memory
                 └───────────┬───────────────────┘
                             ↓
                   Narrative Engine v2
-             (含 What We Learned /
-              Prediction Accuracy /
-              Confidence Calibration 章节)
 ```
 
-### 10 Cognitive Engines
+### Core Engines
 
-| Engine | Role | Version |
-|--------|------|---------|
-| **Signal Engine** | Threshold rules → structured signals | v1.0 |
-| **Hypothesis Engine** | Template-based reasoning → explanations | v1.0 |
-| **Reflection Engine** | 3-question belief review | v1.0 |
-| **Belief Memory** | Persistent belief state + transition tracking | v1.0 |
-| **Narrative Engine** | Synthesize full cognitive chain → MacroNarrative | v2.0 |
-| **Outcome Tracking** | Prediction vs actual evaluation (Hit Rate, Brier Score) | v2.0 |
-| **Learning Engine** | EMA weight updates + Pattern Mining | v2.0 |
-| **Confidence Calibrator** | Weighted blend: raw×0.50 + historical×0.30 + weight×0.20 | v2.0 |
-| **Composite Signals** | Cross-indicator reasoning → 8 MacroThemes | v2.0 |
-| **Tool Layer** | Unified abstraction for all external data sources | v1.0 |
+| Engine | Role |
+|--------|------|
+| **Signal Engine** | Threshold rules → structured signals |
+| **Hypothesis Engine** | Template-based reasoning → explanations |
+| **Reflection Engine** | Belief review via 3-question framework |
+| **Belief Memory** | Persistent belief state + transition tracking |
+| **Narrative Engine** | Synthesize cognitive chain → MacroNarrative |
+| **Outcome Tracking** | Prediction vs actual evaluation |
+| **Learning Engine** | EMA weight updates + Pattern Mining |
+| **Confidence Calibrator** | Weighted blend confidence scoring |
+| **Composite Signals** | Cross-indicator reasoning → MacroThemes |
+
+### V11 Summary Engine (Daily CIO Brief)
+
+| Phase | Module | Purpose |
+|-------|--------|---------|
+| Phase 1 | `MacroStateLayer` | Build 5-dimension macro state (growth, inflation, liquidity, credit, risk) |
+| Phase 2 | `ChangeDetector` | Detect momentum, divergence, regime shifts |
+| Phase 3 | `NarrativeGenerator` | Generate dominant narrative with supporting/contradicting evidence |
+| Phase 4 | `CIOBriefGenerator` | Produce 7-section CIO Macro Brief |
+| Phase 5 | `SummaryEvaluator` | 5-dimension quality scoring (target >85/100) |
 
 ### Key Design Principles
 
-1. **Schema First**: All modules communicate via typed Pydantic Schemas — no `dict`, `Any`, or raw strings cross module boundaries (DDR-010)
-2. **Deterministic**: All cognitive engines produce identical output for identical input — no LLM, no randomness
-3. **Graceful Degradation**: v2.0 engines wrapped in try/except; single failure never crashes the pipeline
+1. **Schema First**: All modules communicate via typed Pydantic schemas — no `dict`, `Any`, or raw strings cross module boundaries
+2. **Deterministic**: Core engines produce identical output for identical input — no LLM, no randomness
+3. **Graceful Degradation**: Engines wrapped in try/except; single failure never crashes the pipeline
 4. **Pipeline owns everything**: `MacroResearchPipeline.run()` is the only entry point
 
 ---
@@ -107,14 +109,14 @@ Observation → Signal → Hypothesis → Reflection → Memory
 
 | Document | Purpose |
 |----------|---------|
-| **[Architecture Whitepaper](docs/ARCHITECTURE_WHITEPAPER.md)** ★ | Formal V2 seal — full system architecture, cognitive model, design decisions |
-| **[V3 Architecture Freeze](docs/V3_ARCHITECTURE.md)** ★ | V3 v2.2 Final: 10 DDRs, Learning Unit, Belief Versioning, Multi-Prediction, Hypothesis Library & Score; 4-KPI |
-| **[Architecture Decisions](docs/ddr/ARCHITECTURE_DECISIONS.md)** | Consolidated 27 DDRs (17 ratified + 10 V3 v2.2 proposed) |
+| **[Architecture Whitepaper](docs/ARCHITECTURE_WHITEPAPER.md)** | Full system architecture, cognitive model, design decisions |
+| **[V3 Architecture](docs/V3_ARCHITECTURE.md)** | DDR documentation, Learning Unit, Belief Versioning |
+| **[Architecture Decisions](docs/ddr/ARCHITECTURE_DECISIONS.md)** | Consolidated DDRs |
 | **[Developer Guide](docs/DEVELOPER_GUIDE.md)** | How to extend: data sources, tools, handlers, engines, pipeline, API |
-| **[V3 Roadmap](docs/V3_ROADMAP.md)** | 5 research intelligence capabilities + 2 engineering upgrades |
-| [Architecture History](docs/architecture.md) | Sprint-by-sprint architecture evolution (S0–S8) |
+| **[V3 Roadmap](docs/V3_ROADMAP.md)** | Research intelligence capability roadmap |
+| [Architecture History](docs/architecture.md) | Sprint-by-sprint architecture evolution |
 | [Release Roadmap](docs/roadmap.md) | MVP → V1 → V2 delivery history |
-| [v2.0 DDR Details](docs/ddr_v2.md) | Detailed v2.0 design decision records |
+| [Archive Reports](docs/archive/) | Historical milestone reports (V3.3, V3.4, V3.5) |
 
 ---
 
@@ -133,6 +135,7 @@ Observation → Signal → Hypothesis → Reflection → Memory
 ### API Endpoints
 
 **v1.0:**
+
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
 | GET | `/health` | System health |
@@ -141,6 +144,7 @@ Observation → Signal → Hypothesis → Reflection → Memory
 | GET | `/api/beliefs` | Belief memory |
 
 **v2.0:**
+
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
 | GET | `/v2/beliefs` | Belief weights per dimension |
@@ -154,28 +158,24 @@ Observation → Signal → Hypothesis → Reflection → Memory
 
 | File | Purpose |
 |------|---------|
-| `configs/signal_rules.yaml` | 12 threshold signal rules (4 dimensions) |
-| `configs/planning_rules.yaml` | 6 DAG decomposition rules |
+| `configs/signal_rules.yaml` | Threshold signal rules (4 dimensions) |
+| `configs/planning_rules.yaml` | DAG decomposition rules |
 | `configs/settings.yaml` | App configuration |
-| `configs/prompts.yaml` | LLM prompt templates (future use) |
+| `configs/prompts.yaml` | LLM prompt templates |
 
 ---
 
 ## Testing
 
 ```bash
-# All tests (148 total: 86 v1.0 + 62 v2.0)
+# All tests (821 collected)
 pytest
-
-# v2.0 suite only
-pytest tests/unit/test_outcome.py tests/unit/test_learning.py -v
-
-# E2E cognitive loop
-pytest tests/integration/test_v2_e2e_learning.py -v
 
 # With coverage
 pytest --cov=src --cov-report=term -q
 ```
+
+**Known issue**: `tests/planning/test_planner.py::TestMultiRuleMerging::test_multi_match_merges` — test expects task ID `retrieve_market_data` but planning rule uses `collect_market_data` (naming mismatch after rule rename). All other tests pass.
 
 ---
 
@@ -195,4 +195,4 @@ pytest --cov=src --cov-report=term -q
 
 ---
 
-> **V3 Architecture** | July 2026 | **Core Documentation**: [Architecture Whitepaper](docs/ARCHITECTURE_WHITEPAPER.md)
+> **July 2026** | Core Documentation: [Architecture Whitepaper](docs/ARCHITECTURE_WHITEPAPER.md)

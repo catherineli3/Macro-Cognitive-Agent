@@ -1,8 +1,20 @@
 # Macro Research Agent — Prompt Templates
-# LLM prompt configurations for LangGraph nodes.
-# Values will be populated in Sprint 1+.
+# LLM prompt configurations for the research pipeline.
 #
-# See documentation for prompt variable usage.
+# Usage plan (to be implemented in Phase 3 — RAG historical memory retrieval):
+#
+#   hypothesis.*  — 用于 Hypothesis Engine 的 LLM 增强推理
+#                    (当 use_llm=true 时，LLM Hypothesizer 替代模板推理)
+#
+#   critic.*      — 用于 Critic Engine 的 LLM 批判性审查
+#                    (LLM 扮演 Dalio/PTJ 角色交叉审视假设)
+#
+#   report.*      — 用于 LLMNarrativeEngine 的结构化研报生成
+#                    (集中管理 system/user prompt，供 src/llm/narrative.py 加载；
+#                    Prompt 变量: {indicators}, {state_vector}, {history})
+#
+# Template variables use {variable_name} syntax.
+# All templates must constrain LLM output to structured JSON matching Pydantic schemas.
 
 hypothesis:
   system: ""
