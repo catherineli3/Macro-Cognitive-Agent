@@ -16,6 +16,8 @@ import sys
 import tempfile
 import json
 
+import pytest
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pathlib import Path
@@ -34,6 +36,7 @@ from src.runtime import (
 # Test 1: Quick smoke test (5 cycles)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+@pytest.mark.slow
 def test_smoke_5_cycles():
     """Ensure basic plumbing works before the 100-cycle run."""
     print("\n=== Test 1: Smoke test (5 cycles) ===")
@@ -104,6 +107,7 @@ def test_smoke_5_cycles():
 # Test 2: Fast-feedback 50-cycle test (short horizons)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+@pytest.mark.slow
 def test_fast_50_cycles():
     """50 cycles with short horizons — verifies evaluation + evolution loop."""
     print("\n=== Test 2: Fast-feedback 50-cycle test ===")
@@ -162,6 +166,7 @@ def test_fast_50_cycles():
 # Test 3: Full 100-cycle Paper Trader
 # ═══════════════════════════════════════════════════════════════════════════════
 
+@pytest.mark.slow
 def test_100_cycles():
     """THE definitive Milestone E test.
 
@@ -302,6 +307,7 @@ def test_100_cycles():
 # Test 4: Traceable Learning (any Belief change → Finding → Principle)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+@pytest.mark.slow
 def test_traceable_learning():
     """Verify that learning is fully traceable.
 
@@ -360,6 +366,7 @@ def test_traceable_learning():
 # Test 5: Evolution hooks fire correctly
 # ═══════════════════════════════════════════════════════════════════════════════
 
+@pytest.mark.slow
 def test_evolution_hooks():
     """Verify that the Evolution Pipeline is called when predictions fail.
 

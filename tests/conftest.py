@@ -139,3 +139,19 @@ def sample_history() -> list[MacroDataSchema]:
         for i, day in enumerate(range(8, 13))
     ]
 
+
+@pytest.fixture(autouse=True)
+def _disable_rate_limit_sleeps(monkeypatch):
+    """Neutralize collector rate-limit sleeps (3-6s per Yahoo indicator) in tests.
+
+    collector_manager staggers Yahoo/Sina requests with time.sleep(random.uniform(...))
+    to be polite to live APIs. In tests this serves no purpose and dominates runtime.
+    """
+    from types import SimpleNamespace
+
+    try:
+        import src.data_pipeline.collector_manager as cm
+
+        monkeypatch.setattr(cm, "random", SimpleNamespace(uniform=lambda a, b: 0.0))
+    except Exception:
+        pass
