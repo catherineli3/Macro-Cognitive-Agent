@@ -2,10 +2,11 @@
 
 Tests the full path: yfinance raw data → MacroDataSchema (canonical).
 
-Unit tests mock the yfinance call. Integration tests (marked 'external_api')
-test against live Yahoo Finance.
+Unit tests mock the yfinance call. Integration tests (marked 'network')
+test against live Yahoo Finance — skipped by default in offline environments.
 """
 import asyncio
+import socket
 from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
@@ -15,6 +16,19 @@ import pytest
 from src.domain.tool import ToolResultStatus
 from src.schemas.macro_data import MacroDataSchema
 from src.tools.yahoo_tool import YahooMacroTool
+
+
+# ── Helpers ──────────────────────────────────────────────────────────────
+
+
+def _has_internet() -> bool:
+    """Cheap connectivity check — resolves a well-known host."""
+    try:
+        s = socket.create_connection(("8.8.8.8", 53), timeout=2)
+        s.close()
+        return True
+    except OSError:
+        return False
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────
@@ -237,6 +251,7 @@ class TestYahooMacroToolIntegration:
     """Live Yahoo Finance access — requires internet."""
 
     @pytest.mark.asyncio
+    @pytest.mark.skipif("not _has_internet()", reason="No internet — skipping live Yahoo API test")
     async def test_live_fetch_returns_canonical_data(self):
         """Live fetch → ToolResult with MacroDataSchema artifacts."""
         tool = YahooMacroTool()
@@ -256,6 +271,7 @@ class TestYahooMacroToolIntegration:
             assert r.timestamp.tzinfo is not None
 
     @pytest.mark.asyncio
+    @pytest.mark.skipif("not _has_internet()", reason="No internet — skipping live Yahoo API test")
     async def test_live_invalid_symbol(self):
         """Invalid symbol → FAILED with helpful error."""
         tool = YahooMacroTool()

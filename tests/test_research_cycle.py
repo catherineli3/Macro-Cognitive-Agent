@@ -434,7 +434,7 @@ class TestResearchMemory:
         memory.record_entry(entry)
         summary = memory.summary()
         assert "Research Memory" in summary
-        assert "Test" in summary
+        assert "1 total entries" in summary
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -820,13 +820,19 @@ class TestArchitectureCompliance:
                 mod = sys.modules[name]
                 source = mod.__file__ if hasattr(mod, '__file__') else ''
                 if source and source.endswith('.py'):
-                    with open(source) as f:
+                    with open(source, encoding='utf-8') as f:
                         content = f.read()
-                    # No flask, fastapi, streamlit, gradio
-                    assert "flask" not in content.lower()
-                    assert "fastapi" not in content.lower()
-                    assert "streamlit" not in content.lower()
-                    assert "gradio" not in content.lower()
+                    # Only check actual import lines — comments may reference
+                    # UI frameworks as context (e.g. "like Flask").
+                    for line in content.splitlines():
+                        s = line.strip()
+                        if not (s.startswith("import ") or s.startswith("from ")):
+                            continue
+                        lower = s.lower()
+                        assert "flask" not in lower, line
+                        assert "fastapi" not in lower, line
+                        assert "streamlit" not in lower, line
+                        assert "gradio" not in lower, line
 
     def test_d1_cycle_engine_exists(self):
         from src.research_cycle import ResearchCycleEngine

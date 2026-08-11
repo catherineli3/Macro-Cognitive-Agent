@@ -101,6 +101,12 @@ class AdaptiveBelief(BaseModel):
     valid_horizon: str = Field(default="5d")
     supporting_evidence: list[str] = Field(default_factory=list)
 
+    # ── Principle lineage ─────────────────────────────────────────────────
+    founded_on_principles: list[str] = Field(
+        default_factory=list,
+        description="Principle IDs this belief was derived from",
+    )
+
     # ── Full version history (append-only, oldest first) ────────────────
     version_history: list[BeliefVersion] = Field(default_factory=list)
 
@@ -116,6 +122,21 @@ class AdaptiveBelief(BaseModel):
         if self.cycle_count == 0:
             return 0.5
         return self.correct_count / self.cycle_count
+
+    @property
+    def id(self) -> str:
+        """Alias for belief_id — compatibility with code that expects .id."""
+        return self.belief_id
+
+    @property
+    def domain(self) -> str:
+        """Alias for dimension — compatibility with BeliefStore(domain=...)."""
+        return self.dimension
+
+    @property
+    def stage(self) -> str:
+        """Alias for status — compatibility with BeliefStore(stage=...)."""
+        return self.status
 
     @property
     def is_deprecated(self) -> bool:

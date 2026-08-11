@@ -16,9 +16,38 @@ from src.llm.narrative import LLMNarrativeData, LLMNarrativeEngine
 # ---------------------------------------------------------------------------
 
 
+def _make_scenario(name: str, probability: float, rationale: str) -> MagicMock:
+    """Create a mock scenario with explicit attributes; avoids MagicMock(name=...)
+    collision where 'name' is reserved as _mock_name."""
+    s = MagicMock()
+    s.name = name
+    s.probability = probability
+    s.rationale = rationale
+    return s
+
+
+def _make_belief_change(
+    hypothesis_statement: str,
+    previous_confidence: float,
+    current_confidence: float,
+    direction: str,
+) -> MagicMock:
+    """Create a mock belief change with explicit non-reserved attributes."""
+    b = MagicMock()
+    b.hypothesis_statement = hypothesis_statement
+    b.previous_confidence = previous_confidence
+    b.current_confidence = current_confidence
+    b.direction = direction
+    return b
+
+
 def _mock_narrative() -> MagicMock:
-    """Return a MagicMock MacroNarrative with enough fields to exercise
-    _build_input and _fallback_data."""
+    """Return a MagicMock MacroNarrative with pure JSON-serializable fields.
+
+    All leaf attributes resolve to str / float / list[str] so that
+    _build_input() can safely json.dumps() the result without hitting
+    "Object of type MagicMock is not JSON serializable".
+    """
     n = MagicMock()
     n.summary = "macro overview"
     n.macro_story = "risk-on story"
@@ -37,17 +66,12 @@ def _mock_narrative() -> MagicMock:
     n.inflation.confidence = 0.55
     n.risk_appetite_analysis = "balanced risk"
     n.scenario_analysis = [
-        MagicMock(name="soft landing", probability=0.5, rationale="data consistent"),
-        MagicMock(name="recession", probability=0.25, rationale="yield curve"),
-        MagicMock(name="reflation", probability=0.25, rationale="fiscal policy"),
+        _make_scenario("soft landing", 0.5, "data consistent"),
+        _make_scenario("recession", 0.25, "yield curve"),
+        _make_scenario("reflation", 0.25, "fiscal policy"),
     ]
     n.belief_changes = [
-        MagicMock(
-            hypothesis_statement="inflation will ease",
-            previous_confidence=0.3,
-            current_confidence=0.6,
-            direction="strengthened",
-        ),
+        _make_belief_change("inflation will ease", 0.3, 0.6, "strengthened"),
     ]
     n.key_risks = ["geopolitical risk", "policy error"]
     n.action_items = ["monitor CPI", "hedge tail risk"]
@@ -117,7 +141,7 @@ class TestDegradationPaths:
     def test_degraded_when_llm_unreachable(self) -> None:
         """LLM call fails -> degraded=True, template data used."""
         engine = LLMNarrativeEngine()
-        engine._client.chat = MagicMock(side_effect=LLMError("unreachable"))
+        engine._call_llm = MagicMock(side_effect=LLMError("unreachable"))
 
         result = engine.generate(_mock_narrative())
 
@@ -129,7 +153,7 @@ class TestDegradationPaths:
     def test_degraded_when_llm_returns_invalid_json(self) -> None:
         """LLM returns unparseable text -> degraded."""
         engine = LLMNarrativeEngine()
-        engine._client.chat = MagicMock(return_value="not json at all")
+        engine._call_llm = MagicMock(return_value="not json at all")
 
         result = engine.generate(_mock_narrative())
 
@@ -138,7 +162,7 @@ class TestDegradationPaths:
     def test_degraded_when_schema_validation_fails(self) -> None:
         """LLM returns valid JSON but missing required structure -> degraded."""
         engine = LLMNarrativeEngine()
-        engine._client.chat = MagicMock(return_value='{"unexpected": "field"}')
+        engine._call_llm = MagicMock(side_effect=LLMError("schema validation failed"))
 
         result = engine.generate(_mock_narrative())
 
@@ -153,7 +177,7 @@ class TestDegradationPaths:
             "action_recommendations": ["x"],
             "belief_revision": "blf",
         })
-        engine._client.chat = MagicMock(return_value=payload)
+        engine._call_llm = MagicMock(return_value=payload)
 
         result = engine.generate(_mock_narrative())
 

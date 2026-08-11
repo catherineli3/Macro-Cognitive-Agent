@@ -196,10 +196,13 @@ class Postmortem:
         belief = thesis.core_belief.lower()
 
         # Check diagnosis notes for known patterns
-        if "transmission" in notes or "chain" in notes:
-            return "transmission_blocked"
+        # NOTE: "credit" must be checked BEFORE "transmission" because
+        # "Credit transmission broke" matches both; we want the more
+        # specific "credit_channel_failed".
         if "credit" in notes or "spread" in notes:
             return "credit_channel_failed"
+        if "transmission" in notes or "chain" in notes:
+            return "transmission_blocked"
         if "fx" in notes or "currency" in notes or "dollar" in notes:
             return "currency_interference"
         if "shock" in notes or "event" in notes or "geopolitical" in notes:

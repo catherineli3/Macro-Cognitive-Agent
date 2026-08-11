@@ -263,11 +263,20 @@ class OutcomeTracker:
 
     @staticmethod
     def _extract_number(text: str) -> float | None:
-        """Extract a numeric threshold from a condition string."""
+        """Extract a numeric threshold from a condition string.
+
+        Heuristic: returns the LAST number that is not part of a bond
+        maturity label (e.g. "10Y"). Thresholds tend to appear near the
+        end of conditions ("S&P 500 drops below 4,680") while proper-name
+        numbers ("S&P 500") appear earlier.
+        """
         import re
-        # Match patterns like "4.75%", "$4,680", "30", etc.
         matches = re.findall(r'[\d,.]+', text)
-        for m in matches:
+        for m in reversed(matches):
+            m_pos = text.find(m)
+            after = text[m_pos + len(m):m_pos + len(m) + 2].strip()
+            if after.startswith("Y"):          # "10Y Treasury"
+                continue
             cleaned = m.replace(",", "").replace("$", "")
             try:
                 return float(cleaned)

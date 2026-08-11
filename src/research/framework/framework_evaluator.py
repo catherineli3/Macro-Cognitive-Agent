@@ -52,7 +52,7 @@ class FrameworkEvaluator:
                 recent = history[-self.MIN_VALIDATION_CYCLES:]
                 avg = sum(recent) / len(recent)
                 if avg >= self.MIN_VALIDATION_ACCURACY:
-                    logger.info("Framework %s validated: %.1%% accuracy over %d cycles",
+                    logger.info("Framework %s validated: %.1f%% accuracy over %d cycles",
                                 framework.framework_id, avg * 100, self.MIN_VALIDATION_CYCLES)
                     return FrameworkStatus.ACTIVE
 
@@ -62,7 +62,7 @@ class FrameworkEvaluator:
                 avg = sum(recent) / len(recent)
                 if avg < self.RETIREMENT_ACCURACY_THRESHOLD:
                     logger.warning(
-                        "Framework %s retirement signal: %.1%% accuracy over %d cycles",
+                        "Framework %s retirement signal: %.1f%% accuracy over %d cycles",
                         framework.framework_id, avg * 100, self.RETIREMENT_CYCLES,
                     )
                     return FrameworkStatus.RETIRED

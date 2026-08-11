@@ -290,7 +290,7 @@ class EvolutionPipeline:
         for backward compatibility with principle linking.
         """
         # ── Primary: store in BeliefStore (ResearchBelief) ─────────
-        bid = self.belief_store.add_belief(belief)
+        bid = self.belief_store.add(belief)
 
         # ── Sync to legacy BeliefLifecycleManager for principle linking ──
         try:

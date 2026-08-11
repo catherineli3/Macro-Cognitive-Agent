@@ -85,7 +85,7 @@ class CycleResult:
     def summary(self) -> str:
         lines = [
             f"=== Cycle #{self.cycle_number} [{self.cycle_id}] ===",
-            f"Status: {self.status.value}",
+            f"Status: {self.status}",
         ]
         if self.error:
             lines.append(f"ERROR: {self.error}")

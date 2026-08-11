@@ -15,6 +15,8 @@ import sys
 import statistics
 from pathlib import Path
 
+import pytest
+
 # Ensure src is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -295,10 +297,14 @@ def validate_pipeline_contract(result: HypothesisEvolutionResult) -> list[str]:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def test_signal_engine():
-    """Test Signal Engine anomaly detection and theme aggregation."""
-    print("\n─── Test: Signal Engine ───")
+# ═══════════════════════════════════════════════════════════════════════════════
+# Fixtures — produce shared data with inline assertions
+# ═══════════════════════════════════════════════════════════════════════════════
 
+
+@pytest.fixture(scope="module")
+def signal_report():
+    """Fixture: Signal Engine anomaly detection and theme aggregation."""
     from src.hypothesis.signal_engine import SignalEngine
 
     engine = SignalEngine()
@@ -329,22 +335,12 @@ def test_signal_engine():
     assert vix_signal is not None, "VIX should be detected as anomalous"
     assert vix_signal.z_score > 1.5, f"VIX z-score should be > 1.5, got {vix_signal.z_score}"
 
-    print(f"  Regime: {report.regime}")
-    print(f"  Anomalies: {len(report.anomalies)}")
-    for s in report.anomalies[:5]:
-        print(f"    {s.indicator}: {s.value} (z={s.z_score:+.1f}) → {s.direction}")
-    print(f"  Themes: {len(report.themes)}")
-    for t in report.themes:
-        print(f"    {t.label} ({t.direction}, strength={t.strength:.2f})")
-    print("  [PASS] PASSED")
-
     return report
 
 
-def test_candidate_generator(signal_report):
-    """Test Candidate Generator produces sufficient and diverse candidates."""
-    print("\n─── Test: Candidate Generator ───")
-
+@pytest.fixture(scope="module")
+def candidates(signal_report):
+    """Fixture: Candidate Generator produces sufficient and diverse candidates."""
     from src.hypothesis.candidate_generator import CandidateGenerator
 
     gen = CandidateGenerator()
@@ -367,51 +363,36 @@ def test_candidate_generator(signal_report):
         assert c.thesis, f"Candidate {c.candidate_id} missing thesis"
         assert c.dimension, f"Candidate {c.candidate_id} missing dimension"
 
-    print(f"  Candidates: {len(candidates)}")
-    print(f"  Dimensions: {sorted(dims)}")
-    print(f"  Directions: {sorted(dirs)}")
-    for c in candidates[:8]:
-        print(f"    [{c.dimension}] {c.direction}: {c.thesis[:80]}...")
-    print("  [PASS] PASSED")
-
     return candidates
 
 
-def test_historical_retriever(candidates, signal_report):
-    """Test Historical Retriever finds meaningful matches."""
-    print("\n─── Test: Historical Retriever ───")
+@pytest.fixture(scope="module")
+def seed_library():
+    """Fixture: seed hypothesis library for retrieval."""
+    return build_seed_library()
 
+
+@pytest.fixture(scope="module")
+def retrieval_report(candidates, signal_report, seed_library):
+    """Fixture: Historical Retriever finds meaningful matches."""
     from src.hypothesis.retriever import HistoricalRetriever
 
-    library = build_seed_library()
     retriever = HistoricalRetriever()
-    report = retriever.retrieve(candidates, library, signal_report)
+    report = retriever.retrieve(candidates, seed_library, signal_report)
 
     # Assertions
     assert report.total_matches >= 0, "Should not crash"
     assert len(report.contexts) == len(candidates), "Each candidate should have a context"
 
-    # Count recommendations
-    strong = sum(1 for ctx in report.contexts.values() if ctx.recommendation == "strong_backing")
-    mixed = sum(1 for ctx in report.contexts.values() if ctx.recommendation == "mixed")
-
-    print(f"  Total matches: {report.total_matches}")
-    print(f"  Analog periods: {report.analog_periods_found}")
-    print(f"  Strong backing: {strong}, Mixed: {mixed}")
-
     # At least some candidates should find historical matches
-    # (depends on library content, but with our seed data there should be some)
     assert report.total_matches > 0 or candidates, "Should find at least some matches with seed library"
 
-    print("  [PASS] PASSED")
-
-    return report, library
+    return report
 
 
-def test_competition_engine(candidates, retrieval_report):
-    """Test Competition Engine correctly eliminates contradictory hypotheses."""
-    print("\n─── Test: Competition Engine ───")
-
+@pytest.fixture(scope="module")
+def competition_round(candidates, retrieval_report):
+    """Fixture: Competition Engine correctly eliminates contradictory hypotheses."""
     from src.hypothesis.competition_engine import CompetitionEngine
 
     engine = CompetitionEngine()
@@ -427,21 +408,18 @@ def test_competition_engine(candidates, retrieval_report):
         assert e.reason, f"Eliminated hypothesis {e.candidate_id} missing reason"
         assert e.detail, f"Eliminated hypothesis {e.candidate_id} missing detail"
 
-    print(f"  Before: {result.candidates_before} → After: {result.candidates_after}")
-    print(f"  Contradictions: {len(result.contradictions_found)}")
-    print(f"  Eliminated: {len(result.eliminated)}")
-    for e in result.eliminated[:5]:
-        print(f"    [ELIM] {e.candidate_id}: {e.reason.value}")
-    print(f"  Survivors: {result.survivors}")
-    print("  [PASS] PASSED")
-
     return result
 
 
-def test_selector(survivors, retrieval_report, competition_round, candidates):
-    """Test Hypothesis Selector produces valid Top-5."""
-    print("\n─── Test: Hypothesis Selector ───")
+@pytest.fixture(scope="module")
+def survivors(candidates, competition_round):
+    """Fixture: survivors after competition."""
+    return [c for c in candidates if c.candidate_id in competition_round.survivors]
 
+
+@pytest.fixture(scope="module")
+def selected_hypotheses(survivors, retrieval_report, competition_round, candidates):
+    """Fixture: Hypothesis Selector produces valid Top-5."""
     from src.hypothesis.selector import HypothesisSelector
 
     selector = HypothesisSelector(max_selection=5, min_dimensions_covered=3)
@@ -459,20 +437,49 @@ def test_selector(survivors, retrieval_report, competition_round, candidates):
     dims = {h.dimension for h in selected}
     assert len(dims) >= 2, f"Should cover at least 2 dimensions, got {len(dims)}"
 
-    print(f"  Selected: {len(selected)}")
-    for h in selected:
-        print(f"    #{h.rank} [{h.dimension}] {h.direction} ({h.confidence:.0%}): {h.thesis[:80]}...")
-        print(f"       Competition: {h.competition_result}")
-    print(f"  Dimensions covered: {sorted(dims)}")
-    print("  [PASS] PASSED")
-
     return selected
 
 
-def test_full_pipeline():
-    """End-to-end pipeline test."""
-    print("\n═══ Test: Full Hypothesis Evolution Pipeline ═══")
+# ═══════════════════════════════════════════════════════════════════════════════
+# Tests — each depends on the corresponding fixture
+# ═══════════════════════════════════════════════════════════════════════════════
 
+
+def test_signal_engine(signal_report):
+    """Signal Engine produces valid report with regime inferred and anomalies detected."""
+    assert len(signal_report.anomalies) > 0
+    assert signal_report.regime != "unknown"
+
+
+def test_candidate_generator(candidates):
+    """Candidate Generator produces diverse candidates covering >=3 dimensions."""
+    dims = {c.dimension for c in candidates}
+    assert len(dims) >= 3
+    dirs = {c.direction for c in candidates}
+    assert "bullish" in dirs or "bearish" in dirs
+
+
+def test_historical_retriever(retrieval_report, candidates):
+    """Historical Retriever produces context for every candidate."""
+    assert retrieval_report.total_matches >= 0
+    assert len(retrieval_report.contexts) == len(candidates)
+
+
+def test_competition_engine(competition_round):
+    """Competition Engine eliminates contradictory hypotheses."""
+    assert competition_round.candidates_before > 0
+    assert competition_round.candidates_after <= competition_round.candidates_before
+    assert competition_round.candidates_after > 0
+
+
+def test_selector(selected_hypotheses):
+    """Hypothesis Selector picks 1-5 ranked hypotheses covering >=2 dimensions."""
+    assert 1 <= len(selected_hypotheses) <= 5
+    assert all(h.rank >= 1 for h in selected_hypotheses)
+
+
+def test_full_pipeline():
+    """End-to-end pipeline test — validates full contract with no violations."""
     library = build_seed_library()
     evolution = HypothesisEvolution(library_entries=library)
 
@@ -488,20 +495,9 @@ def test_full_pipeline():
     issues = validate_pipeline_contract(result)
     assert not issues, f"Pipeline contract violations: {issues}"
 
-    # Print results
-    print(evolution.describe(result))
-    print(f"\n  [PASS] FULL PIPELINE PASSED")
-
-    return result
-
 
 def test_research_quality_benchmark():
     """Research Quality Benchmark — compare Agent vs human researcher framework."""
-    print("\n" + "=" * 70)
-    print("RESEARCH QUALITY BENCHMARK")
-    print("Comparing Agent Top-5 against Human Macro Researcher Framework")
-    print("=" * 70)
-
     library = build_seed_library()
     evolution = HypothesisEvolution(library_entries=library)
 
@@ -509,121 +505,31 @@ def test_research_quality_benchmark():
     scenario_results = []
 
     for scenario_name, gold in GOLD_STANDARD.items():
-        print(f"\n─── Scenario: {scenario_name} ───")
-        print(f"    Context: {gold['description']}")
-
         result = evolution.evolve(gold["indicators"], gold["regime"])
         quality = evaluate_research_quality(result, gold)
-
         all_scores.append(quality["composite_quality"])
         scenario_results.append(quality)
 
-        print(f"    Regime: {result.regime}")
-        print(f"    Signals: {result.signals_detected}, Themes: {result.themes_identified}")
-        print(f"    Candidates: {result.candidates_generated}")
-        if result.competition_round:
-            print(f"    Competition: {result.competition_round.candidates_before} → "
-                  f"{result.competition_round.candidates_after} "
-                  f"(contradictions: {len(result.competition_round.contradictions_found)}, "
-                  f"eliminated: {len(result.competition_round.eliminated)})")
-        print(f"    Top-5:")
-        for h in result.selected_hypotheses:
-            print(f"      #{h.rank} [{h.dimension}] {h.direction}: {h.thesis[:90]}...")
-        print(f"    Quality — Dim Overlap: {quality['dimension_overlap']:.0%}, "
-              f"Dir Align: {quality['direction_alignment']:.0%}, "
-              f"Theme Sim: {quality['theme_similarity']:.0%}")
-        print(f"    Composite: {quality['composite_quality']:.1%}")
-
     # Aggregate
     avg = statistics.mean(all_scores)
-    print(f"\n{'─' * 50}")
-    print(f"AGGREGATE RESEARCH QUALITY")
-    print(f"{'─' * 50}")
-    print(f"  Scenarios: {len(all_scores)}")
-    print(f"  Mean Quality: {avg:.1%}")
-    print(f"  Min: {min(all_scores):.1%}")
-    print(f"  Max: {max(all_scores):.1%}")
-    print(f"  Std Dev: {statistics.stdev(all_scores):.3f}" if len(all_scores) > 1 else "")
+    assert len(scenario_results) == len(GOLD_STANDARD), "All scenarios should complete"
 
-    # Exit Criteria
-    print(f"\n{'─' * 50}")
-    print(f"MILESTONE A EXIT CRITERIA")
-    print(f"{'─' * 50}")
+    # Criterion 1: Pipeline runs on all scenarios
+    assert len(scenario_results) == len(GOLD_STANDARD)
 
-    # Criterion 1: Pipeline runs without errors on all scenarios
-    c1 = len(scenario_results) == len(GOLD_STANDARD)
-    print(f"  C1: All scenarios complete: {'PASS' if c1 else 'FAIL'}")
+    # Criterion 2: Competition eliminates at least some hypotheses
+    total_elims = sum(r["competition_stats"]["eliminated"] for r in scenario_results)
+    assert total_elims > 0, f"Competition should eliminate hypotheses, got {total_elims}"
 
-    # Criterion 2: Competition eliminates at least some hypotheses (it's working)
-    total_elims = sum(
-        r["competition_stats"]["eliminated"] for r in scenario_results
-    )
-    c2 = total_elims > 0
-    print(f"  C2: Competition eliminates hypotheses: {'PASS' if c2 else 'FAIL'} "
-          f"({total_elims} total eliminations)")
-
-    # Criterion 3: Mean dimension overlap > 40% (Agent thinks about right things)
+    # Criterion 3: Mean dimension overlap > 40%
     avg_dim = statistics.mean(r["dimension_overlap"] for r in scenario_results)
-    c3 = avg_dim > 0.40
-    print(f"  C3: Mean dimension overlap > 40%: {'PASS' if c3 else 'FAIL'} "
-          f"({avg_dim:.0%})")
+    assert avg_dim > 0.40, f"Mean dimension overlap too low: {avg_dim:.0%}"
 
     # Criterion 4: Mean direction alignment > 50%
     avg_dir = statistics.mean(r["direction_alignment"] for r in scenario_results)
-    c4 = avg_dir > 0.50
-    print(f"  C4: Mean direction alignment > 50%: {'PASS' if c4 else 'FAIL'} "
-          f"({avg_dir:.0%})")
+    assert avg_dir > 0.50, f"Mean direction alignment too low: {avg_dir:.0%}"
 
     # Criterion 5: Composite quality > 45%
-    c5 = avg > 0.45
-    print(f"  C5: Composite quality > 45%: {'PASS' if c5 else 'FAIL'} "
-          f"({avg:.0%})")
-
-    all_pass = all([c1, c2, c3, c4, c5])
-    print(f"\n  OVERALL: {'ALL CRITERIA PASSED' if all_pass else 'SOME CRITERIA FAILED'}")
-
-    return all_pass, scenario_results, avg
+    assert avg > 0.45, f"Composite quality too low: {avg:.0%}"
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Main
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
-def main():
-    print("=" * 60)
-    print("V3.1 Milestone A — Hypothesis Evolution Validation")
-    print("=" * 60)
-
-    # Unit tests
-    signal_report = test_signal_engine()
-    candidates = test_candidate_generator(signal_report)
-    retrieval_report, library = test_historical_retriever(candidates, signal_report)
-    competition_round = test_competition_engine(candidates, retrieval_report)
-
-    survivors = [
-        c for c in candidates
-        if c.candidate_id in competition_round.survivors
-    ]
-    selected = test_selector(survivors, retrieval_report, competition_round, candidates)
-
-    # Integration test
-    result = test_full_pipeline()
-
-    # Research Quality Benchmark
-    benchmark_pass, scenario_results, avg_quality = test_research_quality_benchmark()
-
-    # Final verdict
-    print("\n" + "=" * 60)
-    print("MILESTONE A VERDICT")
-    print("=" * 60)
-    print(f"  Pipeline: FUNCTIONAL")
-    print(f"  Research Quality: {avg_quality:.1%}")
-    print(f"  Benchmark: {'PASSED' if benchmark_pass else 'NEEDS IMPROVEMENT'}")
-    print(f"\n  {'→ Milestone A VALIDATED — proceed to Milestone B' if benchmark_pass else '→ Address failing criteria before proceeding'}")
-
-    return 0 if benchmark_pass else 1
-
-
-if __name__ == "__main__":
-    sys.exit(main())
