@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 > **Version**: 3.5 | Python 3.11+
-> **Tests**: 821 用例 | 93 测试文件
+> **Tests**: 663 用例默认 / 870 全量 | 93 测试文件
 
 ## 项目定位
 
@@ -168,12 +168,35 @@ Observation → Signal → Hypothesis → Reflection → Memory
 ## Testing
 
 ```bash
-# All tests (821 collected)
+# Default run: 663 tests (network + integration excluded, 全部绿灯)
 pytest
 
 # With coverage
 pytest --cov=src --cov-report=term -q
+
+# Full suite including network-dependent tests (on‑line only)
+pytest -m "external_api"
+pytest tests/integration/
+
+# Everything (870 collected, requires internet)
+pytest --override-ini="addopts="
 ```
+
+**默认排除策略**（裸跑 `pytest` 不卡）：
+
+| 排除项 | 数量 | 方式 |
+|--------|------|------|
+| `tests/integration/` 目录 | ~202 例 | `--ignore=tests/integration`（`pyproject.toml` addopts） |
+| `external_api` 标记用例 | 5 例 | `-m "not external_api"`（`pyproject.toml` addopts） |
+
+**5 个网络依赖用例**（collector 3 + integration 2，标记 `@pytest.mark.external_api`）：
+
+| 文件 | 用例 |
+|------|------|
+| `tests/collector/test_yahoo_collector.py` | `test_collect_dxy` / `test_health_check` / `test_collect_invalid_ticker` |
+| `tests/tools/test_yahoo_tool.py` | `test_live_fetch_returns_canonical_data` / `test_live_invalid_symbol` |
+
+联网时可用 `-m external_api` 或显式路径单独运行。
 
 **Known issue**: `tests/planning/test_planner.py::TestMultiRuleMerging::test_multi_match_merges` — test expects task ID `retrieve_market_data` but planning rule uses `collect_market_data` (naming mismatch after rule rename). All other tests pass.
 

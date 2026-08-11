@@ -159,21 +159,35 @@ class NumberTraceReport:
     total_numbers: int = 0
     sourced: int = 0
     unsourced: list[tuple[str, float]] = field(default_factory=list)
+    planted_caught: list[tuple[str, float]] = field(default_factory=list)
+
+    @property
+    def real_total(self) -> int:
+        """Total excluding positive controls (planted fake numbers)."""
+        return self.total_numbers - len(self.planted_caught)
 
     @property
     def pass_rate(self) -> float:
-        if self.total_numbers == 0:
+        if self.real_total == 0:
             return 1.0
-        return self.sourced / self.total_numbers
+        return self.sourced / self.real_total
 
     def summary(self) -> str:
         lines = [f"  Numbers extracted: {self.total_numbers}"]
         lines.append(f"  Numbers sourced:   {self.sourced}")
-        lines.append(f"  Pass rate:         {self.pass_rate:.0%}")
+        if self.planted_caught:
+            lines.append(f"  检查器正确识别 {len(self.planted_caught)} 个植入假数字")
+            lines.append(f"  Real pass rate:    {self.pass_rate:.0%} ({self.sourced}/{self.real_total})")
+        else:
+            lines.append(f"  Pass rate:         {self.pass_rate:.0%}")
         if self.unsourced:
             lines.append(f"  Unsourced ({len(self.unsourced)}):")
             for raw, val in self.unsourced:
                 lines.append(f"    - '{raw}' ({val})")
+        if self.planted_caught:
+            lines.append(f"  Planted caught ({len(self.planted_caught)}):")
+            for raw, val in self.planted_caught:
+                lines.append(f"    - '{raw}' ({val}) — 阳性对照，正确识别")
         return "\n".join(lines)
 
 
@@ -181,8 +195,16 @@ def check_number_traceability(
     llm_output: str,
     structured_input: dict,
     history_records: list[HistoryRecord],
+    planted_numbers: set[str] | None = None,
 ) -> NumberTraceReport:
-    """Check every number in LLM output can be traced to input or history."""
+    """Check every number in LLM output can be traced to input or history.
+
+    Args:
+        planted_numbers: Set of raw number strings known to be fakes
+                         (positive controls).  Matched unsourced numbers
+                         are reported separately as "planted_caught".
+    """
+    planted_set = planted_numbers or set()
     numbers = _extract_numbers(llm_output)
     sources = _build_source_pool(structured_input, history_records)
 
@@ -205,6 +227,8 @@ def check_number_traceability(
                 break
         if found:
             report.sourced += 1
+        elif raw in planted_set:
+            report.planted_caught.append((raw, val))
         else:
             report.unsourced.append((raw, val))
 
@@ -435,6 +459,7 @@ def check_degradation_correctness() -> DegradationReport:
         report.mismatches.append("LLM garbage: fallback data should not be None")
 
     # Case 3: Retriever fails + LLM OK → NOT degraded
+    print("  [dry-run] 历史检索已模拟失败，验证静默降级")
     from tests.unit.llm.test_narrative_prompt import (
         FakeLLMClientSuccess,
         FakeRetrieverFails,
@@ -512,13 +537,15 @@ def run_all_checks(runs: int = 10, real_llm: bool = True) -> dict[str, Any]:
     # ── Check 1: Number Traceability ──
     if llm_output:
         num_report = check_number_traceability(
-            llm_output, structured_input, history_records
+            llm_output, structured_input, history_records,
+            planted_numbers={"67%"} if not real_llm else None,
         )
         results["number_traceability"] = {
             "pass_rate": num_report.pass_rate,
             "total": num_report.total_numbers,
             "sourced": num_report.sourced,
             "unsourced": [(r, v) for r, v in num_report.unsourced],
+            "planted_caught": num_report.planted_caught,
         }
 
     # ── Check 2: Conclusion Consistency ──
@@ -592,7 +619,12 @@ def print_report(results: dict[str, Any]) -> None:
         print(f"    Pass Rate: {pr:.0%}")
 
         if "total" in data:
-            print(f"    Numbers:   {data['sourced']}/{data['total']} sourced")
+            planted_info = data.get("planted_caught", [])
+            if planted_info:
+                print(f"    Numbers:   {data['sourced']}/{data['total'] - len(planted_info)} sourced "
+                      f"(检查器正确识别 {len(planted_info)} 个植入假数字)")
+            else:
+                print(f"    Numbers:   {data['sourced']}/{data['total']} sourced")
         if "checks" in data:
             print(f"    Checks:    {data['checks']} total, {data.get('violations', 0)} violations")
         if "total_runs" in data:

@@ -143,7 +143,7 @@ class LLMNarrativeEngine:
         try:
             history_records = self._retriever.retrieve(structured_input)
         except Exception:
-            logger.warning("history_retrieval_failed_degrading_silently", exc_info=True)
+            logger.warning("history_retrieval_failed_degrading_silently")
             history_records = []
 
         history_context, _token_count = assemble_history_prompt(history_records)

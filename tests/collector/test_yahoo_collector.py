@@ -81,6 +81,7 @@ class TestYahooCollector:
         assert result.timestamp.tzinfo is not None
 
     @pytest.mark.asyncio
+    @pytest.mark.external_api  # Depends on Yahoo Finance
     async def test_health_check(self, collector: YahooCollector) -> None:
         """Health check should be able to reach Yahoo."""
         ok = await collector.health_check()
@@ -88,6 +89,7 @@ class TestYahooCollector:
         assert isinstance(ok, bool)
 
     @pytest.mark.asyncio
+    @pytest.mark.external_api  # Depends on Yahoo Finance
     async def test_collect_invalid_ticker(self, collector: YahooCollector) -> None:
         """Invalid ticker should raise CollectionError."""
         from src.shared.exceptions import CollectionError

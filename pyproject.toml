@@ -87,6 +87,7 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+addopts = "--ignore=tests/integration -m \"not external_api\""
 markers = [
     "external_api: tests that depend on live external APIs (may be skipped when offline)",
 ]

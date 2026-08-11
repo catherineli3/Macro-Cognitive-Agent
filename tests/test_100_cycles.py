@@ -97,7 +97,7 @@ def test_smoke_5_cycles():
             pass
 
     print("  PASS: 5 cycles completed successfully")
-    return True
+    assert len(results) == 5, f"Expected 5 results, got {len(results)}"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -155,7 +155,7 @@ def test_fast_50_cycles():
     _rmtree(tmp)
 
     print("  PASS: 50 cycles with fast feedback")
-    return True
+    assert result.stats.total_days == 50, f"Expected 50 days, got {result.stats.total_days}"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -295,7 +295,7 @@ def test_100_cycles():
     _rmtree(tmp)
 
     print(f"\n  PASS: 100-cycle paper trader completed")
-    return True
+    assert stats.completed_cycles >= 90, f"Expected >=90 completed, got {stats.completed_cycles}"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -353,7 +353,7 @@ def test_traceable_learning():
     _rmtree(tmp)
 
     print("  PASS: Learning is traceable")
-    return True
+    assert stats["total"] > 0, "Expected at least 1 registered prediction"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -434,7 +434,7 @@ def test_evolution_hooks():
     print("  PASS: Evolution infrastructure verified")
 
     _rmtree(tmp)
-    return True
+    assert has_pipeline, "EvolutionPipeline must be initialized"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
