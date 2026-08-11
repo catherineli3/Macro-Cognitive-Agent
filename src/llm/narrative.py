@@ -214,7 +214,9 @@ class LLMNarrativeEngine:
         system_prompt = self._prompts["system"]
         user_template = self._prompts["user"]
         input_str = json.dumps(structured_input, ensure_ascii=False, indent=2)
-        user_prompt = user_template.format(input_json=input_str)
+        # Use .replace() instead of .format() because the template contains
+        # JSON example braces {} that conflict with str.format placeholders.
+        user_prompt = user_template.replace("{input_json}", input_str)
 
         messages = [
             {"role": "system", "content": system_prompt},
