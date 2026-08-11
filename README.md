@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 > **Version**: 3.5 | Python 3.11+
-> **Tests**: 663 用例默认 / 870 全量 | 93 测试文件
+> **Tests**: 658 用例默认 / 870 全量（5 压力测试 + 5 网络用例默认排除，按需运行） | 93 测试文件
 
 ## 项目定位
 
@@ -168,7 +168,7 @@ Observation → Signal → Hypothesis → Reflection → Memory
 ## Testing
 
 ```bash
-# Default run: 663 tests (network + integration excluded, 全部绿灯)
+# Default run: 658 tests (slow 压力测试 + network + integration excluded，全部绿灯)
 pytest
 
 # With coverage
@@ -187,7 +187,8 @@ pytest --override-ini="addopts="
 | 排除项 | 数量 | 方式 |
 |--------|------|------|
 | `tests/integration/` 目录 | ~202 例 | `--ignore=tests/integration`（`pyproject.toml` addopts） |
-| `external_api` 标记用例 | 5 例 | `-m "not external_api"`（`pyproject.toml` addopts） |
+| `external_api` 标记用例 | 5 例 | `-m` 排除（`pyproject.toml` addopts） |
+| `slow` 标记压力测试（test_100_cycles.py 5 例） | 5 例 | `-m` 排除（默认套件保持分钟级，按需 `pytest -m slow` 运行） |
 
 **5 个网络依赖用例**（collector 3 + integration 2，标记 `@pytest.mark.external_api`）：
 
@@ -196,7 +197,7 @@ pytest --override-ini="addopts="
 | `tests/collector/test_yahoo_collector.py` | `test_collect_dxy` / `test_health_check` / `test_collect_invalid_ticker` |
 | `tests/tools/test_yahoo_tool.py` | `test_live_fetch_returns_canonical_data` / `test_live_invalid_symbol` |
 
-联网时可用 `-m external_api` 或显式路径单独运行。
+联网时可用 `-m external_api` 或显式路径单独运行；压力测试用 `pytest -m slow` 按需运行。
 
 **Known issue**: `tests/planning/test_planner.py::TestMultiRuleMerging::test_multi_match_merges` — test expects task ID `retrieve_market_data` but planning rule uses `collect_market_data` (naming mismatch after rule rename). All other tests pass.
 
