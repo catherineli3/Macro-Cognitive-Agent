@@ -35,7 +35,7 @@ storage:
 
 # LLM configuration (optional — pipeline runs deterministically without LLM)
 llm:
-  enabled: false  # Set to true to enable LLM-powered narrative generation
+  enabled: true  # Set to true to enable LLM-powered narrative generation
   provider: kimi  # kimi (Moonshot API)
 
 # RC-1: Reliability configuration

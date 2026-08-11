@@ -22,8 +22,12 @@ from typing import Optional
 from pydantic import BaseModel, Field, ValidationError
 
 from src.llm.client import LLMClient, LLMError
+from src.llm.retriever import HistoryRetriever, assemble_history_prompt
 from src.schemas.narrative import MacroNarrative
 from src.shared.config import load_yaml
+from src.shared.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -90,23 +94,30 @@ class LLMNarrativeEngine:
 
     _SYSTEM_PROMPT = (
         "你是一位宏观研究撰稿人，负责将结构化引擎数据转化为专业的宏观研报。"
+        "当提供历史参考时，须标注引用来源、不得将历史数据与当日数据混淆。"
     )
 
     _USER_TEMPLATE = (
         "根据以下结构化宏观分析数据，生成一份专业研究报告。\n"
         "\n"
         "【严格规则】\n"
-        "1. 只可使用输入数据中已有的结论与数字，不得新增任何数据、预测或观点。\n"
+        "1. 只可使用输入数据与历史参考中已有的结论与数字，不得新增任何数据、预测或观点。\n"
         "2. 输出严格 JSON，格式示例：\n"
         '  {"executive_summary": "summary here", "scenario_analysis": "analysis here", '
         '"action_recommendations": ["item1", "item2"], "belief_revision": "belief here"}\n'
         "\n"
+        "{history_context}"
         "【输入数据】\n"
         "{input_json}\n"
     )
 
-    def __init__(self, client: LLMClient | None = None) -> None:
+    def __init__(
+        self,
+        client: LLMClient | None = None,
+        retriever: HistoryRetriever | None = None,
+    ) -> None:
         self._client = client or LLMClient()
+        self._retriever = retriever  # lazy-init on first generate() if None
         self._prompts = self._load_prompts()
 
     # ------------------------------------------------------------------
@@ -124,8 +135,21 @@ class LLMNarrativeEngine:
         """
         structured_input = self._build_input(narrative)
 
+        # --- RAG: retrieve historical context (silent degradation) ---
+        if self._retriever is None:
+            self._retriever = HistoryRetriever()
+
+        history_records: list = []
         try:
-            raw = self._call_llm(structured_input)
+            history_records = self._retriever.retrieve(structured_input)
+        except Exception:
+            logger.warning("history_retrieval_failed_degrading_silently", exc_info=True)
+            history_records = []
+
+        history_context, _token_count = assemble_history_prompt(history_records)
+
+        try:
+            raw = self._call_llm(structured_input, history_context)
             data = self._validate(raw)
             return LLMNarrativeResult(
                 degraded=False,
@@ -209,14 +233,23 @@ class LLMNarrativeEngine:
     # Internal — LLM call + validation
     # ------------------------------------------------------------------
 
-    def _call_llm(self, structured_input: dict[str, object]) -> str:
-        """Send structured input to LLM, return raw response text."""
+    def _call_llm(
+        self, structured_input: dict[str, object], history_context: str = ""
+    ) -> str:
+        """Send structured input to LLM, return raw response text.
+
+        When history_context is non-empty, it is injected before the input
+        data block as 【历史参考】.  The template uses {input_json} and
+        {history_context} placeholders; .replace() is used to avoid JSON
+        brace collision with str.format().
+        """
         system_prompt = self._prompts["system"]
         user_template = self._prompts["user"]
         input_str = json.dumps(structured_input, ensure_ascii=False, indent=2)
         # Use .replace() instead of .format() because the template contains
         # JSON example braces {} that conflict with str.format placeholders.
         user_prompt = user_template.replace("{input_json}", input_str)
+        user_prompt = user_prompt.replace("{history_context}", history_context)
 
         messages = [
             {"role": "system", "content": system_prompt},
