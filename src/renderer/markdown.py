@@ -16,6 +16,7 @@ Consumes: MacroNarrative (never raw artifacts)
 Output:  Markdown string
 """
 
+from src.narrative.engine import _smart_truncate
 from src.schemas.narrative import MacroNarrative
 from src.shared.logging import get_logger
 
@@ -186,7 +187,7 @@ class MarkdownRenderer:
                 arrow = {"increased": "↑", "decreased": "↓", "unchanged": "→", "reversed": "⇄", "new": "🆕"}.get(bc.direction, "→")
                 dim_label = f"**[{bc.dimension}]** " if bc.dimension else ""
                 lines.append(
-                    f"- {arrow} {dim_label}{bc.hypothesis_statement[:120]} "
+                    f"- {arrow} {dim_label}{_smart_truncate(bc.hypothesis_statement, 120)} "
                     f"({bc.previous_confidence:.0%} → {bc.current_confidence:.0%})"
                 )
                 if bc.prior_summary:

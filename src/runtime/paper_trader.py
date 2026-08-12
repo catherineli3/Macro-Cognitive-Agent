@@ -459,7 +459,7 @@ class PaperTrader:
             "stats": result.stats.to_dict(),
             "error_count": len(result.errors),
         }
-        path.write_text(json.dumps(summary, indent=2, ensure_ascii=False))
+        path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
         logger.info("Summary saved to %s", path)
 
     def _save_predictions_csv(self, runner) -> None:

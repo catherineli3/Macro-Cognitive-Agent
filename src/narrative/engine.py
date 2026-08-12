@@ -35,6 +35,47 @@ logger = get_logger(__name__)
 
 _DIMENSION_NAMES = ["liquidity", "credit", "growth", "inflation"]
 
+def _reflection_sentence(refs) -> str:
+    """Build an evidence-accurate reflection sentence from actual review counts.
+
+    Replaces the previously hardcoded 'Reflection confirms the majority of
+    hypotheses.' which contradicted reports where 0 hypotheses were confirmed.
+    """
+    count = getattr(refs, "count", 0) or 0
+    if count <= 0:
+        return "No belief-review data is available for this cycle."
+    confirmed = len(refs.confirmed)
+    refuted = len(refs.refuted)
+    if confirmed > refuted:
+        return (f"Reflection supports the prevailing view "
+                f"({confirmed} confirmed, {refuted} refuted of {count} reviewed).")
+    if refuted > confirmed:
+        return (f"Reflection challenges the prevailing view "
+                f"({confirmed} confirmed, {refuted} refuted of {count} reviewed).")
+    return (f"Reflection is split "
+            f"({confirmed} confirmed, {refuted} refuted of {count} reviewed).")
+
+
+def _smart_truncate(text: str, limit: int) -> str:
+    """Truncate at a sentence or word boundary instead of mid-word.
+
+    Falls back to a hard cut with an ellipsis only when no boundary exists.
+    """
+    if len(text) <= limit:
+        return text
+    window = text[:limit]
+    # Prefer the last sentence boundary
+    for sep in (". ", "! ", "? ", "; "):
+        idx = window.rfind(sep)
+        if idx >= limit * 0.4:
+            return window[: idx + 1]
+    # Otherwise cut at the last word boundary
+    idx = window.rfind(" ")
+    if idx >= limit * 0.4:
+        return window[:idx].rstrip(",;:") + "…"
+    return window.rstrip() + "…"
+
+
 _SCENARIO_TEMPLATES = [
     {
         "name": "Soft Landing",
@@ -45,7 +86,7 @@ _SCENARIO_TEMPLATES = [
         ),
         "base_probability": 0.55,
         "rationale": "Growth signals remain supportive while inflation pressures ease. "
-                      "Reflection confirms the majority of hypotheses. "
+                      "{reflection} "
                       "This is consistent with a controlled slowdown toward trend growth.",
         "watch": ["PMI", "CPI", "NFP", "Retail Sales"],
     },
@@ -370,17 +411,17 @@ class NarrativeEngine:
         if confirmed > refuted:
             base = (
                 f"Macro analysis confirms {confirmed} hypotheses ({dims}) with "
-                f"dominant theme: {top.statement[:120]}"
+                f"dominant theme: {_smart_truncate(top.statement, 120)}"
             )
         elif refuted > confirmed:
             base = (
                 f"Macro analysis challenges prevailing views: {refuted} hypotheses refuted "
-                f"across {dims}. Dominant finding: {top.statement[:120]}"
+                f"across {dims}. Dominant finding: {_smart_truncate(top.statement, 120)}"
             )
         else:
             base = (
                 f"Macro outlook is uncertain across {dims}. "
-                f"Key open question: {top.statement[:120]}"
+                f"Key open question: {_smart_truncate(top.statement, 120)}"
             )
 
         # v2.0: Append accuracy context
@@ -489,7 +530,7 @@ class NarrativeEngine:
                     dim = bc.dimension or "macro"
                     arrow = {"increased": "↑", "decreased": "↓", "reversed": "⇄", "new": "🆕"}.get(bc.direction, "→")
                     items.append(
-                        f"{arrow} **{dim.title()}**: {bc.hypothesis_statement[:100]} "
+                        f"{arrow} **{dim.title()}**: {_smart_truncate(bc.hypothesis_statement, 100)} "
                         f"({bc.previous_confidence:.0%} → {bc.current_confidence:.0%})"
                     )
                 parts.append("### What Changed Today\n" + "\n".join(items))
@@ -638,7 +679,12 @@ class NarrativeEngine:
                 supporting = [f"Signal pattern matches {tmpl['name']} conditions"]
                 contradicting = []
             prob = round(max(0.05, min(0.95, prob)), 2)
-            scenarios.append(ScenarioProbability(name=tmpl["name"], probability=prob, rationale=tmpl["rationale"], supporting_signals=supporting, contradicting_signals=contradicting, key_indicators_to_watch=tmpl["watch"]))
+            if matches:
+                rationale = tmpl["rationale"].replace("{reflection}", _reflection_sentence(reflections))
+            else:
+                rationale = (f"Pattern conditions are not currently met. "
+                             f"{_reflection_sentence(reflections)}")
+            scenarios.append(ScenarioProbability(name=tmpl["name"], probability=prob, rationale=rationale, supporting_signals=supporting, contradicting_signals=contradicting, key_indicators_to_watch=tmpl["watch"]))
         if scenarios and all(s.probability < 0.30 for s in scenarios):
             best = max(scenarios, key=lambda s: s.probability)
             best.probability = min(0.95, best.probability * 2.0)
@@ -663,14 +709,14 @@ class NarrativeEngine:
                 continue
             delta = hyp.confidence - prior.confidence
             direction = "unchanged" if abs(delta) < 0.05 else "increased" if delta > 0 else "decreased"
-            prior_summary = f"Prior: {prior.statement[:120]} (direction={prior.direction.value}, confidence={prior.confidence:.0%})"
+            prior_summary = f"Prior: {_smart_truncate(prior.statement, 120)} (direction={prior.direction.value}, confidence={prior.confidence:.0%})"
             if hasattr(hyp, 'direction') and hasattr(prior, 'direction') and hyp.direction != prior.direction:
                 direction = "reversed"
-                note = f"Direction reversed from {prior.direction.value} to {hyp.direction.value} in {hyp.dimension}. Prior: \"{prior.statement[:100]}\""
+                note = f"Direction reversed from {prior.direction.value} to {hyp.direction.value} in {hyp.dimension}. Prior: \"{_smart_truncate(prior.statement, 100)}\""
             elif direction == "increased":
                 note = f"Confidence strengthened: {prior.confidence:.0%} → {hyp.confidence:.0%}. Prior evidence: {prior.evidence_summary}"
             elif direction == "decreased":
-                note = f"Confidence weakened: {prior.confidence:.0%} → {hyp.confidence:.0%}. Review: {prior.review_summary[:100] if prior.review_summary else 'No review available'}"
+                note = f"Confidence weakened: {prior.confidence:.0%} → {hyp.confidence:.0%}. Review: {_smart_truncate(prior.review_summary, 100) if prior.review_summary else 'No review available'}"
             else:
                 note = f"Belief stable at {hyp.confidence:.0%} confidence."
             changes.append(BeliefChangeNote(hypothesis_statement=hyp.statement, previous_confidence=prior.confidence, current_confidence=hyp.confidence, direction=direction, note=note, prior_summary=prior_summary, dimension=hyp.dimension))
@@ -685,21 +731,21 @@ class NarrativeEngine:
                 continue
             arrow = {"increased": "↑ Strengthened", "decreased": "↓ Weakened", "reversed": "⇄ Reversed", "new": "🆕 New"}.get(bc.direction, "→")
             dim_label = f"[{bc.dimension}] " if bc.dimension else ""
-            lines.append(f"{arrow}: {dim_label}{bc.hypothesis_statement[:120]}\n  {bc.previous_confidence:.0%} → {bc.current_confidence:.0%} | {bc.note}")
+            lines.append(f"{arrow}: {dim_label}{_smart_truncate(bc.hypothesis_statement, 120)}\n  {bc.previous_confidence:.0%} → {bc.current_confidence:.0%} | {bc.note}")
         return "\n".join(lines) if lines else "All beliefs are stable (no significant changes)."
 
     def _extract_risks(self, reflections):
         risks = []
         for report in reflections.reports:
             if report.verdict.value == "refuted":
-                risks.append(RiskItem(category="hypothesis_refuted", description=f"Hypothesis '{report.statement[:120]}' was refuted after belief review. Original confidence: {report.original_confidence:.0%}.", severity="medium", related_hypothesis=report.hypothesis_id))
+                risks.append(RiskItem(category="hypothesis_refuted", description=f"Hypothesis '{_smart_truncate(report.statement, 120)}' was refuted after belief review. Original confidence: {report.original_confidence:.0%}.", severity="medium", related_hypothesis=report.hypothesis_id))
             for finding in report.findings:
                 if finding.severity.value in ("critical", "major"):
                     risks.append(RiskItem(category=finding.type, description=finding.description, severity="high" if finding.severity.value == "critical" else "medium", related_hypothesis=report.hypothesis_id))
             if report.evidence_sufficiency == "low":
-                risks.append(RiskItem(category="insufficient_evidence", description=f"Insufficient evidence for hypothesis: '{report.statement[:120]}'. Assessment may be unreliable.", severity="high", related_hypothesis=report.hypothesis_id))
+                risks.append(RiskItem(category="insufficient_evidence", description=f"Insufficient evidence for hypothesis: '{_smart_truncate(report.statement, 120)}'. Assessment may be unreliable.", severity="high", related_hypothesis=report.hypothesis_id))
             if report.evidence_consistency == "conflicting":
-                risks.append(RiskItem(category="conflicting_evidence", description=f"Conflicting evidence detected for: '{report.statement[:120]}'. Directional bias may be unreliable.", severity="medium", related_hypothesis=report.hypothesis_id))
+                risks.append(RiskItem(category="conflicting_evidence", description=f"Conflicting evidence detected for: '{_smart_truncate(report.statement, 120)}'. Directional bias may be unreliable.", severity="medium", related_hypothesis=report.hypothesis_id))
         if not risks:
             risks.append(RiskItem(category="no_risks_identified", description="No significant risks identified in the current analysis cycle.", severity="low"))
         return risks
@@ -709,19 +755,19 @@ class NarrativeEngine:
         if belief_records:
             for rec in belief_records:
                 if rec.is_reversal:
-                    items.append(f"Reassess: Belief in {rec.dimension} reversed from {rec.transition.value}. Review '{rec.statement[:80]}' with additional data before committing.")
+                    items.append(f"Reassess: Belief in {rec.dimension} reversed from {rec.transition.value}. Review '{_smart_truncate(rec.statement, 80)}' with additional data before committing.")
         for report in reflections.uncertain[:3]:
-            items.append(f"Monitor: Hypothesis '{report.statement[:80]}' is uncertain — seek additional evidence before acting.")
+            items.append(f"Monitor: Hypothesis '{_smart_truncate(report.statement, 80)}' is uncertain — seek additional evidence before acting.")
         for report in reflections.confirmed:
             if report.updated_confidence > 0.7:
-                items.append(f"Act: Hypothesis '{report.statement[:80]}' is confirmed with high confidence ({report.updated_confidence:.0%}). Consider incorporating into positioning framework.")
+                items.append(f"Act: Hypothesis '{_smart_truncate(report.statement, 80)}' is confirmed with high confidence ({report.updated_confidence:.0%}). Consider incorporating into positioning framework.")
         if hypotheses.count == 0:
             items.append("Collect more data to enable hypothesis generation.")
         if reflections.count == 0:
             items.append("Complete belief review cycle before drawing conclusions.")
         if not items:
             for hyp in hypotheses.hypotheses[:3]:
-                items.append(f"Continue monitoring {hyp.dimension}: '{hyp.statement[:60]}' (confidence: {hyp.confidence:.0%})")
+                items.append(f"Continue monitoring {hyp.dimension}: '{_smart_truncate(hyp.statement, 60)}' (confidence: {hyp.confidence:.0%})")
         return items
 
     def _compute_overall_confidence(self, hypotheses, reflections):
@@ -758,9 +804,9 @@ class NarrativeEngine:
             why_low = " ".join(reasons)
         else:
             why_low = ""
-        supporting_parts = [f"Confirmed: \"{report.statement[:100]}\" (confidence adjusted from {report.original_confidence:.0%} to {report.updated_confidence:.0%})" for report in reflections.confirmed[:2]]
+        supporting_parts = [f"Confirmed: \"{_smart_truncate(report.statement, 100)}\" (confidence adjusted from {report.original_confidence:.0%} to {report.updated_confidence:.0%})" for report in reflections.confirmed[:2]]
         supporting_summary = "; ".join(supporting_parts) if supporting_parts else "No strongly confirmed hypotheses."
-        contradicting_parts = [f"Refuted: \"{report.statement[:100]}\" (original confidence {report.original_confidence:.0%} → {report.updated_confidence:.0%} after review)" for report in reflections.refuted[:2]]
+        contradicting_parts = [f"Refuted: \"{_smart_truncate(report.statement, 100)}\" (original confidence {report.original_confidence:.0%} → {report.updated_confidence:.0%} after review)" for report in reflections.refuted[:2]]
         contradicting_summary = "; ".join(contradicting_parts) if contradicting_parts else "No refuted hypotheses."
         all_findings = []
         for report in reflections.reports:
