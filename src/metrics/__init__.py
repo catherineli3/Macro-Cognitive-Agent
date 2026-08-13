@@ -36,7 +36,7 @@ class KPIMetricsEngine:
     """
 
     def __init__(self) -> None:
-        self._baseline: Optional[FourKPIReport] = None
+        self._baseline: FourKPIReport | None = None
 
     async def compute_kpi1(
         self,
@@ -166,23 +166,20 @@ class KPIMetricsEngine:
         curr = current
 
         check.kpi1_degraded = (
-            prev.kpi1_hypothesis_accuracy.composite_score -
-            curr.kpi1_hypothesis_accuracy.composite_score
+            prev.kpi1_hypothesis_accuracy.composite_score
+            - curr.kpi1_hypothesis_accuracy.composite_score
         ) > threshold
 
         check.kpi2_degraded = (
-            prev.kpi2_prediction_error.composite_score -
-            curr.kpi2_prediction_error.composite_score
+            prev.kpi2_prediction_error.composite_score - curr.kpi2_prediction_error.composite_score
         ) > threshold
 
         check.kpi3_degraded = (
-            prev.kpi3_calibration.composite_score -
-            curr.kpi3_calibration.composite_score
+            prev.kpi3_calibration.composite_score - curr.kpi3_calibration.composite_score
         ) > threshold
 
         check.kpi4_degraded = (
-            prev.kpi4_learning_speed.composite_score -
-            curr.kpi4_learning_speed.composite_score
+            prev.kpi4_learning_speed.composite_score - curr.kpi4_learning_speed.composite_score
         ) > threshold
 
         if check.any_degraded:

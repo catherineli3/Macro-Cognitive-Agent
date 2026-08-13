@@ -11,8 +11,6 @@ AND the Agent's historical track record.
 
 from __future__ import annotations
 
-from typing import Optional
-
 from src.learning.learning_engine import LearningEngine
 from src.schemas.calibration import CalibratedConfidenceSet, ConfidenceCalibration
 from src.schemas.hypothesis import HypothesisSchema, HypothesisSet
@@ -47,7 +45,7 @@ class ConfidenceCalibrator:
         → downward adjustment of -0.18
     """
 
-    def __init__(self, learning_engine: Optional[LearningEngine] = None) -> None:
+    def __init__(self, learning_engine: LearningEngine | None = None) -> None:
         self._learning = learning_engine
 
     def set_learning_engine(self, engine: LearningEngine) -> None:
@@ -99,7 +97,12 @@ class ConfidenceCalibrator:
 
         # Build rationale
         rationale = self._build_rationale(
-            reflection_confidence, historical_acc, dim_weight, calibrated, delta, dim,
+            reflection_confidence,
+            historical_acc,
+            dim_weight,
+            calibrated,
+            delta,
+            dim,
         )
 
         return ConfidenceCalibration(
@@ -203,15 +206,16 @@ class ConfidenceCalibrator:
             parts.append("Raw reflection confidence has been tempered by the track record.")
         elif delta < -0.02:
             parts.append(
-                f"Confidence adjusted UP from {raw:.0%} to {calibrated:.0%} "
-                f"(Δ={delta:+.0%}). "
+                f"Confidence adjusted UP from {raw:.0%} to {calibrated:.0%} " f"(Δ={delta:+.0%}). "
             )
             if historical > 0.65:
                 parts.append(
                     f"Historical accuracy on {dimension} is {historical:.0%} "
                     f"— the Agent has a solid track record here. "
                 )
-            parts.append("Historical performance supports stronger conviction than reflection alone suggests.")
+            parts.append(
+                "Historical performance supports stronger conviction than reflection alone suggests."
+            )
         else:
             parts.append(
                 f"Confidence slightly adjusted from {raw:.0%} to {calibrated:.0%} "

@@ -14,11 +14,14 @@ Key rules:
 
 from __future__ import annotations
 
-from src.schemas.research import (
-    ResearchPrinciple, CompetingPrinciple, ConflictRecord,
-    ConflictResolution, PrincipleStatus, PrincipleStrength,
-)
 from src.research.principles.principle_store import PrincipleStore
+from src.schemas.research import (
+    CompetingPrinciple,
+    ConflictRecord,
+    ConflictResolution,
+    PrincipleStatus,
+    ResearchPrinciple,
+)
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -50,7 +53,7 @@ class ConflictResolver:
         detected: list[CompetingPrinciple] = []
 
         for i, p_a in enumerate(active):
-            for p_b in active[i + 1:]:
+            for p_b in active[i + 1 :]:
                 if self._are_contradictory(p_a, p_b):
                     pair_key = self._pair_key(p_a.principle_id, p_b.principle_id)
                     if pair_key not in self._active_competitions:
@@ -68,13 +71,17 @@ class ConflictResolver:
                         p_b.competes_with.append(p_a.principle_id)
 
                         detected.append(competition)
-                        logger.info("Detected competing principles: %s vs %s",
-                                    p_a.principle_id[:8], p_b.principle_id[:8])
+                        logger.info(
+                            "Detected competing principles: %s vs %s",
+                            p_a.principle_id[:8],
+                            p_b.principle_id[:8],
+                        )
 
         return detected
 
-    def record_evidence(self, principle_id: str, correct: bool,
-                        cycle: int = 0) -> list[ConflictResolution]:
+    def record_evidence(
+        self, principle_id: str, correct: bool, cycle: int = 0
+    ) -> list[ConflictResolution]:
         """Record evidence for/against a principle in its active competitions.
 
         Returns list of resolved competitions (if any resolution occurred).
@@ -94,9 +101,21 @@ class ConflictResolver:
             # Check resolution conditions
             if comp.cycles_since_start >= self.RESOLUTION_MIN_CYCLES:
                 if comp.is_decisive:
-                    winner = comp.principle_a_id if comp.a_win_rate >= self.RESOLUTION_WIN_RATE else comp.principle_b_id
-                    loser = comp.principle_b_id if winner == comp.principle_a_id else comp.principle_a_id
-                    resolution = ConflictResolution.A_WINS if winner == comp.principle_a_id else ConflictResolution.B_WINS
+                    winner = (
+                        comp.principle_a_id
+                        if comp.a_win_rate >= self.RESOLUTION_WIN_RATE
+                        else comp.principle_b_id
+                    )
+                    loser = (
+                        comp.principle_b_id
+                        if winner == comp.principle_a_id
+                        else comp.principle_a_id
+                    )
+                    resolution = (
+                        ConflictResolution.A_WINS
+                        if winner == comp.principle_a_id
+                        else ConflictResolution.B_WINS
+                    )
                     comp.resolution = resolution
                     comp.winner_id = winner
                     comp.loser_id = loser
@@ -122,10 +141,12 @@ class ConflictResolver:
                     comp.resolved_at_cycle = cycle
 
                     # Both archived as regime-dependent
-                    self._store.retire(comp.principle_a_id,
-                                       "Competition stalemate — regime-dependent")
-                    self._store.retire(comp.principle_b_id,
-                                       "Competition stalemate — regime-dependent")
+                    self._store.retire(
+                        comp.principle_a_id, "Competition stalemate — regime-dependent"
+                    )
+                    self._store.retire(
+                        comp.principle_b_id, "Competition stalemate — regime-dependent"
+                    )
 
                     self._resolved_competitions[pair_key] = ConflictRecord(
                         competing_pair=comp,
@@ -139,8 +160,7 @@ class ConflictResolver:
 
         return resolved
 
-    def _apply_resolution(self, comp: CompetingPrinciple,
-                           resolution: ConflictResolution) -> None:
+    def _apply_resolution(self, comp: CompetingPrinciple, resolution: ConflictResolution) -> None:
         """Apply resolution: update principle statuses."""
         if resolution == ConflictResolution.A_WINS:
             self._store.weaken(comp.principle_b_id)
@@ -151,9 +171,7 @@ class ConflictResolver:
             p_a = self._store.get(comp.principle_a_id)
             if p_a:
                 p_a.status = PrincipleStatus.ACTIVE
-                p_a.competes_with = [
-                    pid for pid in p_a.competes_with if pid != comp.principle_b_id
-                ]
+                p_a.competes_with = [pid for pid in p_a.competes_with if pid != comp.principle_b_id]
                 p_a.competition_resolution = resolution
 
         elif resolution == ConflictResolution.B_WINS:
@@ -164,18 +182,18 @@ class ConflictResolver:
             p_b = self._store.get(comp.principle_b_id)
             if p_b:
                 p_b.status = PrincipleStatus.ACTIVE
-                p_b.competes_with = [
-                    pid for pid in p_b.competes_with if pid != comp.principle_a_id
-                ]
+                p_b.competes_with = [pid for pid in p_b.competes_with if pid != comp.principle_a_id]
                 p_b.competition_resolution = resolution
 
-    def get_competition(self, principle_a_id: str,
-                         principle_b_id: str) -> CompetingPrinciple | None:
+    def get_competition(
+        self, principle_a_id: str, principle_b_id: str
+    ) -> CompetingPrinciple | None:
         return self._active_competitions.get(self._pair_key(principle_a_id, principle_b_id))
 
     def get_competitions_for(self, principle_id: str) -> list[CompetingPrinciple]:
         return [
-            comp for comp in self._active_competitions.values()
+            comp
+            for comp in self._active_competitions.values()
             if principle_id in (comp.principle_a_id, comp.principle_b_id)
         ]
 
@@ -189,8 +207,7 @@ class ConflictResolver:
             return 0.5  # Standard penalty
         return 1.0
 
-    def get_double_penalty(self, principle_a_id: str,
-                            principle_b_id: str) -> float:
+    def get_double_penalty(self, principle_a_id: str, principle_b_id: str) -> float:
         """If a belief cites two competing principles, apply double penalty."""
         comp = self.get_competition(principle_a_id, principle_b_id)
         if comp:
@@ -211,13 +228,15 @@ class ConflictResolver:
         stmt_b = p_b.statement.lower()
 
         # Simplistic but effective: look for directional opposites
-        if ("increases" in stmt_a and "decreases" in stmt_b) or \
-           ("decreases" in stmt_a and "increases" in stmt_b):
+        if ("increases" in stmt_a and "decreases" in stmt_b) or (
+            "decreases" in stmt_a and "increases" in stmt_b
+        ):
             if ConflictResolver._share_subject(stmt_a, stmt_b):
                 return True
 
-        if ("reliable" in stmt_a and "unreliable" in stmt_b) or \
-           ("unreliable" in stmt_a and "reliable" in stmt_b):
+        if ("reliable" in stmt_a and "unreliable" in stmt_b) or (
+            "unreliable" in stmt_a and "reliable" in stmt_b
+        ):
             if ConflictResolver._share_subject(stmt_a, stmt_b):
                 return True
 
@@ -247,5 +266,7 @@ class ConflictResolver:
         return len(self._resolved_competitions)
 
     def summary(self) -> str:
-        return (f"ConflictResolver: {self.active_competition_count} active competitions, "
-                f"{self.total_resolved} resolved")
+        return (
+            f"ConflictResolver: {self.active_competition_count} active competitions, "
+            f"{self.total_resolved} resolved"
+        )

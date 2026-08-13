@@ -21,13 +21,12 @@ Design:
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Optional
 
 from src.calibration.confidence_calibrator import ConfidenceCalibrator
 from src.learning.learning_engine import LearningEngine
 from src.schemas.calibration import CalibratedConfidenceSet, ConfidenceCalibration
 from src.schemas.hypothesis import HypothesisSchema, HypothesisSet
-from src.schemas.outcome import OutcomeDirection, OutcomeSummary, PredictionOutcome
+from src.schemas.outcome import PredictionOutcome
 from src.schemas.reflection import ReflectionSet
 from src.shared.logging import get_logger
 
@@ -37,7 +36,7 @@ logger = get_logger(__name__)
 
 # Buckets for reliability diagram: bin predicted confidence into ranges
 _RELIABILITY_BUCKETS = [
-    (0.0, 0.20),   # Bucket 1: 0-20%
+    (0.0, 0.20),  # Bucket 1: 0-20%
     (0.20, 0.40),  # Bucket 2: 20-40%
     (0.40, 0.60),  # Bucket 3: 40-60%
     (0.60, 0.80),  # Bucket 4: 60-80%
@@ -69,8 +68,8 @@ class CalibrationEngine:
 
     def __init__(
         self,
-        learning_engine: Optional[LearningEngine] = None,
-        calibrator: Optional[ConfidenceCalibrator] = None,
+        learning_engine: LearningEngine | None = None,
+        calibrator: ConfidenceCalibrator | None = None,
     ) -> None:
         self._learning = learning_engine
         self._calibrator = calibrator or ConfidenceCalibrator(learning_engine)
@@ -194,9 +193,7 @@ class CalibrationEngine:
         overconfidence_sum = 0.0
         for b in bucket_summaries:
             if b["count"] > 0:
-                overconfidence_sum += (
-                    (b["predicted_mean"] - b["observed_accuracy"]) * b["count"]
-                )
+                overconfidence_sum += (b["predicted_mean"] - b["observed_accuracy"]) * b["count"]
         self._overconfidence_index = (
             round(overconfidence_sum / total_count, 4) if total_count > 0 else 0.0
         )
@@ -205,14 +202,16 @@ class CalibrationEngine:
         self._update_dim_accuracy(evaluated)
 
         # Snapshot history
-        self._history.append({
-            "ece": self._ece,
-            "mce": self._mce,
-            "overconfidence_index": self._overconfidence_index,
-            "total_outcomes": total_count,
-            "bucket_count": len(bucket_summaries),
-            "bucket_summaries": bucket_summaries,
-        })
+        self._history.append(
+            {
+                "ece": self._ece,
+                "mce": self._mce,
+                "overconfidence_index": self._overconfidence_index,
+                "total_outcomes": total_count,
+                "bucket_count": len(bucket_summaries),
+                "bucket_summaries": bucket_summaries,
+            }
+        )
 
         self._curve = curve_data
 
@@ -342,9 +341,7 @@ class CalibrationEngine:
                             "observed_accuracy": round(merged_acc, 4),
                             "count": total,
                             "calibration_error": round(error, 4),
-                            "status": self._bucket_status(
-                                merged_pred_mean, merged_acc, total
-                            ),
+                            "status": self._bucket_status(merged_pred_mean, merged_acc, total),
                         }
 
             # Recompute aggregate metrics
@@ -357,7 +354,7 @@ class CalibrationEngine:
     def platt_scale(
         self,
         raw_confidence: float,
-        dimension: Optional[str] = None,
+        dimension: str | None = None,
     ) -> float:
         """Apply Platt scaling to adjust a raw confidence.
 
@@ -409,7 +406,7 @@ class CalibrationEngine:
         saved_oi = self._overconfidence_index
 
         # Build from new outcomes
-        result = self.build_calibration_curve(outcomes)
+        _result = self.build_calibration_curve(outcomes)
 
         # Restore previous state (caller handles merging)
         # Actually, build_calibration_curve updates state — let's save the new curve and restore
@@ -435,9 +432,7 @@ class CalibrationEngine:
             max_error = max(max_error, error)
             total_count += count
             if count > 0:
-                overconfidence_sum += (
-                    (data["predicted_mean"] - data["observed_accuracy"]) * count
-                )
+                overconfidence_sum += (data["predicted_mean"] - data["observed_accuracy"]) * count
 
         if total_count > 0:
             self._ece = round(total_weighted_error / total_count, 4)
@@ -526,8 +521,7 @@ class CalibrationEngine:
 
         if health_status in ("excellent", "good"):
             recs.append(
-                "Calibration is healthy. Continue collecting outcomes "
-                "to maintain the curve."
+                "Calibration is healthy. Continue collecting outcomes " "to maintain the curve."
             )
             return recs
 

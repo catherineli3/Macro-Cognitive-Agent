@@ -84,9 +84,7 @@ class LearningUnitValidator:
         # ── Attribute 4: Horizon value ───────────────────────────────
         if unit.horizon_change is not None:
             if unit.horizon_change not in VALID_HORIZONS:
-                violations.append(
-                    f"horizon '{unit.horizon_change}' not in {VALID_HORIZONS}"
-                )
+                violations.append(f"horizon '{unit.horizon_change}' not in {VALID_HORIZONS}")
 
         # ── Attribute 5: Evidence action ─────────────────────────────
         if unit.evidence_change is not None:
@@ -102,14 +100,13 @@ class LearningUnitValidator:
         if not is_valid:
             logger.warning(
                 "learning_unit_invalid belief=%s violations=%s",
-                unit.belief_id, violations,
+                unit.belief_id,
+                violations,
             )
 
         return is_valid, violations
 
-    def is_modification_permitted(
-        self, attribute_name: str
-    ) -> bool:
+    def is_modification_permitted(self, attribute_name: str) -> bool:
         """Check if an attribute is in the permitted Learning Unit set."""
         permitted = {"weight", "confidence", "preconditions", "horizon", "evidence"}
         return attribute_name in permitted

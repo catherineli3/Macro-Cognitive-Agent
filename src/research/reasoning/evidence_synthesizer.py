@@ -16,19 +16,16 @@ evidence cluster produced here. No floating claims.
 from __future__ import annotations
 
 import uuid
-from typing import Any, Optional
 
-from src.research.reasoning.schemas import EvidenceCluster, EvidenceAssessment
-from src.research.reasoning.evidence_source_registry import (
-    COVERAGE_DIMENSIONS,
-    EVIDENCE_SOURCES,
-    EvidenceSource,
-    get_sources_by_coverage,
-)
 from src.research.reasoning.evidence_gap_planner import (
     EvidenceGapAnalyzer,
     SourcePlanner,
 )
+from src.research.reasoning.evidence_source_registry import (
+    COVERAGE_DIMENSIONS,
+    EVIDENCE_SOURCES,
+)
+from src.research.reasoning.schemas import EvidenceAssessment, EvidenceCluster
 
 
 class EvidenceSynthesizer:
@@ -41,13 +38,21 @@ class EvidenceSynthesizer:
     """
 
     CLUSTER_THEMES = [
-        "growth_momentum", "inflation_dynamics", "labor_market",
-        "monetary_policy", "fiscal_policy", "global_trade",
-        "capital_flows", "credit_conditions", "corporate_earnings",
-        "geopolitical_risk", "currency_markets", "commodity_markets",
+        "growth_momentum",
+        "inflation_dynamics",
+        "labor_market",
+        "monetary_policy",
+        "fiscal_policy",
+        "global_trade",
+        "capital_flows",
+        "credit_conditions",
+        "corporate_earnings",
+        "geopolitical_risk",
+        "currency_markets",
+        "commodity_markets",
     ]
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
         self._visited_sources: set[str] = set()
 
@@ -58,12 +63,12 @@ class EvidenceSynthesizer:
         market_data: dict,
         narratives: list,
         beliefs: list,
-        capital_flow_result: Optional[dict] = None,
-        regime_result: Optional[dict] = None,
-        news_events: Optional[list[dict]] = None,
+        capital_flow_result: dict | None = None,
+        regime_result: dict | None = None,
+        news_events: list[dict] | None = None,
         retry_attempt: int = 0,
-        visited_sources: Optional[set[str]] = None,
-        hypotheses_json: Optional[dict] = None,
+        visited_sources: set[str] | None = None,
+        hypotheses_json: dict | None = None,
     ) -> EvidenceAssessment:
         """Synthesize all evidence into unified assessment.
 
@@ -79,14 +84,20 @@ class EvidenceSynthesizer:
         self._register_input_sources(market_data, news_events, capital_flow_result)
 
         raw = self._extract_evidence(
-            market_data, narratives, beliefs,
-            capital_flow_result, regime_result, news_events,
+            market_data,
+            narratives,
+            beliefs,
+            capital_flow_result,
+            regime_result,
+            news_events,
         )
 
         # ── V10.1: Source-based retry ──
         if retry_attempt > 0 and hypotheses_json:
             raw = self._retry_collect_new_sources(
-                raw, hypotheses_json, retry_attempt,
+                raw,
+                hypotheses_json,
+                retry_attempt,
             )
 
         clusters = self._cluster_evidence(raw, beliefs)
@@ -98,8 +109,9 @@ class EvidenceSynthesizer:
 
     # ── Evidence Extraction ────────────────────────────────────────
 
-    def _extract_evidence(self, market_data, narratives, beliefs,
-                          capital_flow_result, regime_result, news_events):
+    def _extract_evidence(
+        self, market_data, narratives, beliefs, capital_flow_result, regime_result, news_events
+    ):
         """Extract atomic evidence from all sources."""
         evidence = []
         evidence.extend(self._from_market(market_data))
@@ -112,17 +124,23 @@ class EvidenceSynthesizer:
             evidence.extend(self._from_regime(regime_result))
         if news_events:
             for evt in news_events:
-                d = evt if isinstance(evt, dict) else evt.to_dict() if hasattr(evt, "to_dict") else {}
+                d = (
+                    evt
+                    if isinstance(evt, dict)
+                    else evt.to_dict() if hasattr(evt, "to_dict") else {}
+                )
                 src_name = d.get("source", "news_wire")
                 self._visited_sources.add(src_name)
-                evidence.append({
-                    "theme": d.get("category", self._map_theme(d.get("event", ""))),
-                    "description": d.get("event", str(d)),
-                    "direction": d.get("market_impact", "neutral"),
-                    "strength": d.get("confidence", 0.5),
-                    "source": src_name,
-                    "raw": d,
-                })
+                evidence.append(
+                    {
+                        "theme": d.get("category", self._map_theme(d.get("event", ""))),
+                        "description": d.get("event", str(d)),
+                        "direction": d.get("market_impact", "neutral"),
+                        "strength": d.get("confidence", 0.5),
+                        "source": src_name,
+                        "raw": d,
+                    }
+                )
         return evidence
 
     def _register_input_sources(self, market_data, news_events, capital_flow_result):
@@ -142,13 +160,15 @@ class EvidenceSynthesizer:
         items = []
         for sig_name, sig in md.get("signals", {}).items():
             if isinstance(sig, dict):
-                items.append({
-                    "theme": self._map_theme(sig.get("description", sig_name)),
-                    "description": sig.get("description", sig_name),
-                    "direction": sig.get("direction", "neutral"),
-                    "strength": sig.get("strength", 0.5),
-                    "source": "Bloomberg",
-                })
+                items.append(
+                    {
+                        "theme": self._map_theme(sig.get("description", sig_name)),
+                        "description": sig.get("description", sig_name),
+                        "direction": sig.get("direction", "neutral"),
+                        "strength": sig.get("strength", 0.5),
+                        "source": "Bloomberg",
+                    }
+                )
         for asset, changes in md.get("prices", {}).items():
             if isinstance(changes, dict):
                 for period, val in changes.items():
@@ -157,13 +177,15 @@ class EvidenceSynthesizer:
                     except (ValueError, TypeError):
                         continue
                     if abs(v) > 0.001:
-                        items.append({
-                            "theme": "market_price",
-                            "description": f"{asset} {period}: {v:+.2%}{'' if abs(v) < 1 else ''}",
-                            "direction": "bullish" if v > 0 else "bearish",
-                            "strength": min(abs(v) * 5, 1.0),
-                            "source": "Bloomberg",
-                        })
+                        items.append(
+                            {
+                                "theme": "market_price",
+                                "description": f"{asset} {period}: {v:+.2%}{'' if abs(v) < 1 else ''}",
+                                "direction": "bullish" if v > 0 else "bearish",
+                                "strength": min(abs(v) * 5, 1.0),
+                                "source": "Bloomberg",
+                            }
+                        )
         return items
 
     def _from_narratives(self, narratives):
@@ -171,14 +193,20 @@ class EvidenceSynthesizer:
         for n in narratives:
             nd = n if isinstance(n, dict) else n.to_dict() if hasattr(n, "to_dict") else {}
             text = nd.get("summary") or nd.get("content") or ""
-            items.append({
-                "theme": self._map_theme(text),
-                "description": text[:200],
-                "direction": nd.get("direction", nd.get("sentiment", "neutral")),
-                "strength": float(nd.get("strength", nd.get("intensity", 0.5))) if nd.get("strength", nd.get("intensity")) else 0.5,
-                "source": "Reuters",
-                "raw": nd,
-            })
+            items.append(
+                {
+                    "theme": self._map_theme(text),
+                    "description": text[:200],
+                    "direction": nd.get("direction", nd.get("sentiment", "neutral")),
+                    "strength": (
+                        float(nd.get("strength", nd.get("intensity", 0.5)))
+                        if nd.get("strength", nd.get("intensity"))
+                        else 0.5
+                    ),
+                    "source": "Reuters",
+                    "raw": nd,
+                }
+            )
         return items
 
     def _from_beliefs(self, beliefs):
@@ -190,28 +218,38 @@ class EvidenceSynthesizer:
                 direction = "bearish"
             elif bd.get("direction"):
                 direction = bd.get("direction")
-            items.append({
-                "theme": "macro_view",
-                "description": f"Active belief: {bd.get('name', bd.get('label', ''))}",
-                "direction": direction,
-                "strength": float(bd.get("confidence", bd.get("prior_mean", 0.5))) if bd.get("confidence", bd.get("prior_mean")) else 0.5,
-                "source": "belief",
-                "belief_id": bd.get("id", bd.get("belief_id", "")),
-                "raw": bd,
-            })
+            items.append(
+                {
+                    "theme": "macro_view",
+                    "description": f"Active belief: {bd.get('name', bd.get('label', ''))}",
+                    "direction": direction,
+                    "strength": (
+                        float(bd.get("confidence", bd.get("prior_mean", 0.5)))
+                        if bd.get("confidence", bd.get("prior_mean"))
+                        else 0.5
+                    ),
+                    "source": "belief",
+                    "belief_id": bd.get("id", bd.get("belief_id", "")),
+                    "raw": bd,
+                }
+            )
         return items
 
     def _from_capital_flow(self, cf):
         items = []
         fd = cf.get("flow_data", cf)
         if isinstance(fd, dict):
-            items.append({
-                "theme": "capital_flows",
-                "description": str(fd.get("summary", fd.get("description", "Capital flow signal"))),
-                "direction": fd.get("direction", fd.get("flow_direction", "neutral")),
-                "strength": self._strength_map(fd),
-                "source": "ETF Flow",
-            })
+            items.append(
+                {
+                    "theme": "capital_flows",
+                    "description": str(
+                        fd.get("summary", fd.get("description", "Capital flow signal"))
+                    ),
+                    "direction": fd.get("direction", fd.get("flow_direction", "neutral")),
+                    "strength": self._strength_map(fd),
+                    "source": "ETF Flow",
+                }
+            )
         return items
 
     def _from_regime(self, rr):
@@ -219,32 +257,38 @@ class EvidenceSynthesizer:
         self._visited_sources.add("Macro Calendar")
         rl = rr.get("regime_label", rr.get("regime_type", ""))
         confidence = rr.get("confidence", 0.5)
-        items.append({
-            "theme": "macro_regime",
-            "description": f"Current regime: {rl}",
-            "direction": self._regime_dir(rl),
-            "strength": confidence,
-            "source": "Macro Calendar",
-        })
+        items.append(
+            {
+                "theme": "macro_regime",
+                "description": f"Current regime: {rl}",
+                "direction": self._regime_dir(rl),
+                "strength": confidence,
+                "source": "Macro Calendar",
+            }
+        )
         analog = rr.get("historical_analog", rr.get("analog", {}))
         if analog and isinstance(analog, dict):
-            items.append({
-                "theme": "macro_regime",
-                "description": f"Historical analog: {analog.get('period', '')} - {analog.get('label', '')}",
-                "direction": "neutral",
-                "strength": analog.get("similarity_score", 0.5),
-                "source": "Macro Calendar",
-            })
+            items.append(
+                {
+                    "theme": "macro_regime",
+                    "description": f"Historical analog: {analog.get('period', '')} - {analog.get('label', '')}",
+                    "direction": "neutral",
+                    "strength": analog.get("similarity_score", 0.5),
+                    "source": "Macro Calendar",
+                }
+            )
         trans = rr.get("transition", {})
         if trans and isinstance(trans, dict):
             risk = trans.get("probability", trans.get("risk", 0))
-            items.append({
-                "theme": "macro_regime",
-                "description": f"Regime transition risk: {risk}",
-                "direction": "neutral",
-                "strength": float(risk) if risk else 0.3,
-                "source": "Regime",
-            })
+            items.append(
+                {
+                    "theme": "macro_regime",
+                    "description": f"Regime transition risk: {risk}",
+                    "direction": "neutral",
+                    "strength": float(risk) if risk else 0.3,
+                    "source": "Regime",
+                }
+            )
         return items
 
     # ═══════════════════════════════════════════════════════════════
@@ -383,8 +427,12 @@ class EvidenceSynthesizer:
 
         clusters = []
         belief_map = {
-            (b if isinstance(b, dict) else b.to_dict() if hasattr(b, "to_dict") else {}).get("id",
-             (b if isinstance(b, dict) else b.to_dict() if hasattr(b, "to_dict") else {}).get("belief_id", "")): b
+            (b if isinstance(b, dict) else b.to_dict() if hasattr(b, "to_dict") else {}).get(
+                "id",
+                (b if isinstance(b, dict) else b.to_dict() if hasattr(b, "to_dict") else {}).get(
+                    "belief_id", ""
+                ),
+            ): b
             for b in beliefs
         }
 
@@ -487,7 +535,7 @@ class EvidenceSynthesizer:
 
         # V10.1: Evidence Coverage
         evidence_coverage = self._compute_evidence_coverage(clusters)
-        coverage_score = evidence_coverage.get("overall_coverage_pct", 0.0)
+        _coverage_score = evidence_coverage.get("overall_coverage_pct", 0.0)
 
         # Contradictory signals
         contradictory = []
@@ -560,7 +608,11 @@ class EvidenceSynthesizer:
         # Which dimensions do our clusters cover?
         cluster_dims: set[str] = set()
         for c in clusters:
-            theme = getattr(c, "theme", c.get("theme", "")) if not isinstance(c, EvidenceCluster) else c.theme
+            theme = (
+                getattr(c, "theme", c.get("theme", ""))
+                if not isinstance(c, EvidenceCluster)
+                else c.theme
+            )
             dim = self._theme_to_coverage_dim(theme)
             cluster_dims.add(dim)
 
@@ -575,14 +627,18 @@ class EvidenceSynthesizer:
         dim_coverage = {}
         for dim in COVERAGE_DIMENSIONS:
             # Dimension is "covered" if we have both cluster evidence AND source data
-            has_cluster = dim in cluster_dims
+            _has_cluster = dim in cluster_dims
             has_source = dim in source_dims
             # Multiple clusters in same dim → stronger coverage
             cluster_count = sum(
-                1 for c in clusters
+                1
+                for c in clusters
                 if self._theme_to_coverage_dim(
-                    getattr(c, "theme", "") if isinstance(c, EvidenceCluster) else c.get("theme", "")
-                ) == dim
+                    getattr(c, "theme", "")
+                    if isinstance(c, EvidenceCluster)
+                    else c.get("theme", "")
+                )
+                == dim
             )
             cluster_strength = min(cluster_count / 2.0, 1.0)
             dim_coverage[dim] = round(
@@ -598,9 +654,7 @@ class EvidenceSynthesizer:
             "overall_coverage_pct": overall,
             "evidence_complete": overall >= 85.0,
             "covered_dimensions": sorted(cluster_dims & source_dims),
-            "missing_dimensions": sorted(
-                set(COVERAGE_DIMENSIONS) - (cluster_dims & source_dims)
-            ),
+            "missing_dimensions": sorted(set(COVERAGE_DIMENSIONS) - (cluster_dims & source_dims)),
             "visited_source_count": len(self._visited_sources),
             "visited_sources": sorted(self._visited_sources),
         }
@@ -645,8 +699,25 @@ class EvidenceSynthesizer:
         theme_map = [
             (["gdp", "growth", "pmi", "industrial", "manufacturing", "retail"], "growth_momentum"),
             (["cpi", "ppi", "inflation", "deflator", "price"], "inflation_dynamics"),
-            (["employment", "unemployment", "payroll", "nfp", "wage", "job", "labor"], "labor_market"),
-            (["fed", "fomc", "rate hike", "rate cut", "tightening", "easing", "central bank", "ecb", "boj", "pboc"], "monetary_policy"),
+            (
+                ["employment", "unemployment", "payroll", "nfp", "wage", "job", "labor"],
+                "labor_market",
+            ),
+            (
+                [
+                    "fed",
+                    "fomc",
+                    "rate hike",
+                    "rate cut",
+                    "tightening",
+                    "easing",
+                    "central bank",
+                    "ecb",
+                    "boj",
+                    "pboc",
+                ],
+                "monetary_policy",
+            ),
             (["fiscal", "deficit", "spending", "stimulus", "budget", "treasury"], "fiscal_policy"),
             (["trade", "export", "import", "tariff", "shipping"], "global_trade"),
             (["flow", "etf", "allocation", "positioning", "rotation"], "capital_flows"),

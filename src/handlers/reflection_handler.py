@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """ReflectionHandler — Executor adapter for the Belief Review Engine.
 
 Capability: "macro.reflection"
@@ -14,7 +12,9 @@ Design:
     - Never mutates Hypothesis objects.
 """
 
-from datetime import datetime, timezone
+from __future__ import annotations
+
+from datetime import UTC, datetime
 
 from src.critic.engine import ReflectionEngine
 from src.domain.execution import TaskResultStatus
@@ -65,25 +65,21 @@ class ReflectionHandler(TaskHandlerInterface):
             TaskResult with ReflectionSet in artifacts["reflections"].
             Returns FAILED if hypotheses are missing or review fails.
         """
-        started = datetime.now(timezone.utc)
+        started = datetime.now(UTC)
 
         try:
             # Read hypotheses from context (produced by HypothesisHandler)
             hypotheses_raw = context.get_artifact("hypotheses", None)
 
             if hypotheses_raw is None:
-                logger.warning(
-                    "reflection_handler_no_hypotheses — producing empty set"
-                )
-                result_set = ReflectionSet(
-                    summary="No hypotheses available for review."
-                )
+                logger.warning("reflection_handler_no_hypotheses — producing empty set")
+                result_set = ReflectionSet(summary="No hypotheses available for review.")
             else:
                 # Re-hydrate if needed
                 hypothesis_set = self._parse_hypotheses(hypotheses_raw)
                 result_set = self._engine.review(hypothesis_set)
 
-            completed = datetime.now(timezone.utc)
+            completed = datetime.now(UTC)
 
             return TaskResult(
                 task_id=task.id,
@@ -95,7 +91,7 @@ class ReflectionHandler(TaskHandlerInterface):
             )
 
         except Exception as exc:
-            completed = datetime.now(timezone.utc)
+            completed = datetime.now(UTC)
             logger.error(
                 "reflection_handler_failed task=%s error=%s",
                 task.name,

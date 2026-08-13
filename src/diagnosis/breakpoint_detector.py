@@ -18,24 +18,17 @@ because of Z, which means I should reduce reliability of X→Y in this context."
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
-from uuid import uuid4
-
-from src.schemas.diagnosis import DiagnosisReport, ErrorClassification, ErrorCategory
+from src.schemas.diagnosis import DiagnosisReport
 from src.schemas.evaluation_v3 import EvaluationReport
-from src.schemas.hypothesis_v3_1 import CandidateHypothesis, SelectedHypothesis, TransmissionSegment
+from src.schemas.hypothesis_v3_1 import CandidateHypothesis, SelectedHypothesis
 from src.schemas.prediction_v3 import V3PredictionOutcome
 from src.schemas.transmission_v3_1 import (
     BreakpointDiagnosis,
-    BreakpointSeverity,
-    FailureMode,
     FailureModeCategory,
-    SegmentDiagnosis,
     TransmissionAction,
 )
-from src.transmission.transmission_graph import TransmissionGraph
 from src.shared.logging import get_logger
+from src.transmission.transmission_graph import TransmissionGraph
 
 logger = get_logger(__name__)
 
@@ -56,8 +49,8 @@ class BreakpointDetector:
     def diagnose_prediction(
         self,
         outcome: V3PredictionOutcome,
-        hypothesis: Optional[CandidateHypothesis] = None,
-        selected: Optional[SelectedHypothesis] = None,
+        hypothesis: CandidateHypothesis | None = None,
+        selected: SelectedHypothesis | None = None,
         context_key: str = "",
     ) -> BreakpointDiagnosis:
         """Diagnose a single failed prediction to find the breakpoint.
@@ -135,7 +128,9 @@ class BreakpointDetector:
         healthy_count = sum(1 for d in results if d.all_segments_healthy)
         logger.info(
             "breakpoint_diagnosis_complete total=%d breaks=%d healthy=%d",
-            len(results), break_count, healthy_count,
+            len(results),
+            break_count,
+            healthy_count,
         )
 
         return results
@@ -144,7 +139,7 @@ class BreakpointDetector:
 
     def _build_expected_chain(
         self,
-        hypothesis: Optional[CandidateHypothesis],
+        hypothesis: CandidateHypothesis | None,
         channel: str,
     ) -> list[str]:
         """Build the expected transmission chain from hypothesis + channel.
@@ -274,7 +269,9 @@ class DiagnosisUpgrader:
         actions = sum(1 for b in enriched.values() if b.is_actionable)
         logger.info(
             "diagnosis_upgrade predictions=%d breakpoints_found=%d actionable=%d",
-            len(enriched), breaks, actions,
+            len(enriched),
+            breaks,
+            actions,
         )
 
         return enriched

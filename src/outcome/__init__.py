@@ -1,6 +1,6 @@
 """Outcome module — v2.0 Outcome Tracking Engine.
 
-    engine.py   — OutcomeEngine, OutcomeTracker, OutcomeEvaluator, OutcomeMetrics
+engine.py   — OutcomeEngine, OutcomeTracker, OutcomeEvaluator, OutcomeMetrics
 """
 
 from src.outcome.engine import (

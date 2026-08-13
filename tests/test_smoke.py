@@ -1,5 +1,4 @@
 """(Smoke) Verify the Sprint 1 test infrastructure works."""
-import pytest
 
 
 def test_trivial() -> None:

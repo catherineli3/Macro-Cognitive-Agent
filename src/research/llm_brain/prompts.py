@@ -16,8 +16,7 @@ Design principles:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any
+from datetime import UTC, datetime
 
 # ==========================================================================
 # V10 RESEARCHER SYSTEM PROMPT
@@ -105,7 +104,7 @@ You DO NOT know:
 - What policy decisions will be made
 - How markets will ultimately move
 
-You MUST make your best judgment using ONLY information available at {test_date}. 
+You MUST make your best judgment using ONLY information available at {test_date}.
 Do NOT use any hindsight knowledge of subsequent events.
 
 Case: **{case_title}**
@@ -140,11 +139,11 @@ MACRO_REASONING_PROMPT = """{blind_test_preamble}
 
 ## Task
 
-As a senior macro strategist, perform deep analysis following this **10-step reasoning chain**. 
+As a senior macro strategist, perform deep analysis following this **10-step reasoning chain**.
 **DO NOT skip any step.**
 
 ### Step 1 — Observation
-Coldly list all objective facts and data you observe. No judgment yet. Tag each data point: value, 
+Coldly list all objective facts and data you observe. No judgment yet. Tag each data point: value,
 historical percentile, trend direction. This is your "evidence base."
 
 ### Step 2 — Narrative Detection
@@ -352,36 +351,44 @@ Output in the following JSON format (**every field must be populated, no blanks*
 FEWSHOT_STAGFLATION = {
     "scenario": "2022 Q3 — High Inflation + Slowing Growth + Aggressive Fed Hikes",
     "state": {
-        "cpi_yoy": 8.2, "core_pce": 5.1, "gdp_qoq": -0.6,
-        "unemployment": 3.5, "us10y": 3.8, "us2y": 4.3,
-        "dxy": 112, "spx_ytd": -25, "vix": 32, "gold": 1670,
-        "oil": 85, "hyg_spread": 550,
+        "cpi_yoy": 8.2,
+        "core_pce": 5.1,
+        "gdp_qoq": -0.6,
+        "unemployment": 3.5,
+        "us10y": 3.8,
+        "us2y": 4.3,
+        "dxy": 112,
+        "spx_ytd": -25,
+        "vix": 32,
+        "gold": 1670,
+        "oil": 85,
+        "hyg_spread": 550,
     },
     "reasoning": """
-**Regime**: Classic Stagflation-Lite. CPI 8.2% far above target, GDP turning negative (-0.6% QoQ), 
-but labor market still tight at 3.5% unemployment. This is NOT 1970s full stagflation — labor 
-resilience is real — but direction is concerning. Regime transition risk HIGH (0.65), key 
+**Regime**: Classic Stagflation-Lite. CPI 8.2% far above target, GDP turning negative (-0.6% QoQ),
+but labor market still tight at 3.5% unemployment. This is NOT 1970s full stagflation — labor
+resilience is real — but direction is concerning. Regime transition risk HIGH (0.65), key
 variable is whether Fed overtightens.
 
-**Narrative**: Dominant narrative is "Fed will break something" — market does not believe in 
-soft landing. But this narrative is already crowded (VIX 32, extreme equity put/call). Competing 
-narrative "soft landing still possible" is severely underpriced (labor market resilience is a 
+**Narrative**: Dominant narrative is "Fed will break something" — market does not believe in
+soft landing. But this narrative is already crowded (VIX 32, extreme equity put/call). Competing
+narrative "soft landing still possible" is severely underpriced (labor market resilience is a
 REAL signal, not noise). Narrative at consensus stage, potentially overextended.
 
-**Causal Chain**: High inflation → aggressive Fed hikes → financial conditions tighten → demand 
-slows → earnings downgrades → equity repricing → wealth effect reversal → consumption further 
-slows → recession. BUT this chain has a fracture point at "labor market" — if unemployment 
+**Causal Chain**: High inflation → aggressive Fed hikes → financial conditions tighten → demand
+slows → earnings downgrades → equity repricing → wealth effect reversal → consumption further
+slows → recession. BUT this chain has a fracture point at "labor market" — if unemployment
 doesn't rise, consumption resilience may surprise.
 
-**Falsification**: If core CPI drops below 4.5% for 3 consecutive months within next 3 months, 
+**Falsification**: If core CPI drops below 4.5% for 3 consecutive months within next 3 months,
 "hard landing" narrative is falsified. Reassess to "soft landing + policy pivot" regime.
 
-**Portfolio**: Favored: short-term Treasuries (high carry + policy pivot optionality), gold 
-(real yield peaking), USD (rate differential). Unfavored: high-valuation growth (duration risk 
+**Portfolio**: Favored: short-term Treasuries (high carry + policy pivot optionality), gold
+(real yield peaking), USD (rate differential). Unfavored: high-valuation growth (duration risk
 + earnings downgrades), EM (strong USD + capital outflows).
 
-**Confidence**: Overall 0.65. Regime judgment higher confidence (0.75) as inflation and growth 
-data are clear. Directional trade confidence lower (0.50) as policy path is highly uncertain. 
+**Confidence**: Overall 0.65. Regime judgment higher confidence (0.75) as inflation and growth
+data are clear. Directional trade confidence lower (0.50) as policy path is highly uncertain.
 Biggest unknown-unknown: systemic financial risk we haven't spotted yet (UK pension crisis type event)?
 """,
 }
@@ -389,35 +396,42 @@ Biggest unknown-unknown: systemic financial risk we haven't spotted yet (UK pens
 FEWSHOT_SOFT_LANDING = {
     "scenario": "2023 Q4 — Disinflation + Growth Resilience + Fed Pause",
     "state": {
-        "cpi_yoy": 3.1, "core_pce": 3.5, "gdp_qoq": 4.9,
-        "unemployment": 3.7, "us10y": 4.2, "dxy": 104,
-        "spx_ytd": 24, "vix": 13, "gold": 2050, "hyg_spread": 350,
+        "cpi_yoy": 3.1,
+        "core_pce": 3.5,
+        "gdp_qoq": 4.9,
+        "unemployment": 3.7,
+        "us10y": 4.2,
+        "dxy": 104,
+        "spx_ytd": 24,
+        "vix": 13,
+        "gold": 2050,
+        "hyg_spread": 350,
     },
     "reasoning": """
-**Regime**: Goldilocks-Soft Landing. Inflation has fallen from 9% to 3%, GDP surprised to upside 
-at 4.9%, unemployment near lows. Ideal "disinflation + growth" combination. But regime transition 
-risk still exists (0.30): if Q1 2024 growth drops sharply, we rapidly switch back to "recession 
+**Regime**: Goldilocks-Soft Landing. Inflation has fallen from 9% to 3%, GDP surprised to upside
+at 4.9%, unemployment near lows. Ideal "disinflation + growth" combination. But regime transition
+risk still exists (0.30): if Q1 2024 growth drops sharply, we rapidly switch back to "recession
 fear" regime. Current regime likely persists to 2024 Q2.
 
-**Narrative**: Dominant narrative shifted from "hard landing" to "soft landing", now further to 
-"no landing". Narrative at consensus → stretched transition — everyone is saying soft landing, 
-this is a risk signal. Competing narrative "Fed may declare victory too early (inflation 
+**Narrative**: Dominant narrative shifted from "hard landing" to "soft landing", now further to
+"no landing". Narrative at consensus → stretched transition — everyone is saying soft landing,
+this is a risk signal. Competing narrative "Fed may declare victory too early (inflation
 resurgence risk)" is being ignored in market pricing.
 
-**Causal Chain**: Supply recovery + labor participation up → inflation slows while growth holds 
-→ Fed can stop hiking → financial conditions ease → growth accelerates further. BUT reflexivity 
-risk: financial conditions ease too fast → demand rebounds → inflation re-accelerates → Fed 
+**Causal Chain**: Supply recovery + labor participation up → inflation slows while growth holds
+→ Fed can stop hiking → financial conditions ease → growth accelerates further. BUT reflexivity
+risk: financial conditions ease too fast → demand rebounds → inflation re-accelerates → Fed
 forced to re-hike.
 
-**Falsification**: If core PCE rebounds above 3.8% in Q1 2024, or unemployment jumps above 
+**Falsification**: If core PCE rebounds above 3.8% in Q1 2024, or unemployment jumps above
 4.2%, current "soft/no landing" thesis needs reassessment.
 
-**Portfolio**: Regime favors equities (earnings-driven, not multiple expansion), credit (carry + 
-low default), EM (USD peaking). BUT cross-asset contradiction: Gold at 2050 + VIX at 13 = 
+**Portfolio**: Regime favors equities (earnings-driven, not multiple expansion), credit (carry +
+low default), EM (USD peaking). BUT cross-asset contradiction: Gold at 2050 + VIX at 13 =
 market is split between hedging and going long.
 
-**Confidence**: Overall 0.70. Regime judgment higher confidence (growth resilient, disinflation 
-persistent). Market pricing judgment more cautious (0.55) — "soft landing" story already well-priced, 
+**Confidence**: Overall 0.70. Regime judgment higher confidence (growth resilient, disinflation
+persistent). Market pricing judgment more cautious (0.55) — "soft landing" story already well-priced,
 risk/reward of chasing is asymmetric.
 """,
 }
@@ -441,7 +455,6 @@ Analyze with focus on:
 - What trade has the best risk/reward?
 - Where is the market's "pain point"? What move hurts the most people?
 - How much room does the current trend have left? What signal tells you it's ending?""",
-
     "dalio": """You are a Ray Dalio-style macro thinker.
 
 Your traits:
@@ -456,7 +469,6 @@ Analyze with focus on:
 - Is monetary policy transmission functioning properly?
 - What historical analogies illuminate the current situation?
 - What is the biggest structural risk we face?""",
-
     "soros": """You are a George Soros-style reflexivity philosopher.
 
 Your traits:
@@ -471,13 +483,12 @@ Analyze with focus on:
 - Where is the dominant narrative's "fallibility"?
 - What stage of the boom-bust sequence are we in?
 - What belief, once falsified, triggers violent market reversal?""",
-
     "bridgewater": """You are a Bridgewater All-Weather framework systematic researcher.
 
 Your traits:
 1. You think in "four quadrants": growth up/down x inflation up/down
 2. Environment matters more than assets — different environments favor different assets
-3. You hunt "environment shifts" — when growth or inflation inflection points arrive, all 
+3. You hunt "environment shifts" — when growth or inflation inflection points arrive, all
    asset relationships change
 4. You focus on correlations — in what environments do correlations shift?
 5. Style: systematic, environment-based, risk parity thinking
@@ -531,15 +542,18 @@ Analyze:
 # PROMPT ARCHITECTURE CLASS
 # ==========================================================================
 
+
 @dataclass
 class PromptArchitecture:
     """V10 composable prompt builder with blind test support."""
 
     system_prompt: str = RESEARCHER_SYSTEM_PROMPT
-    few_shot_examples: list[dict] = field(default_factory=lambda: [
-        FEWSHOT_STAGFLATION,
-        FEWSHOT_SOFT_LANDING,
-    ])
+    few_shot_examples: list[dict] = field(
+        default_factory=lambda: [
+            FEWSHOT_STAGFLATION,
+            FEWSHOT_SOFT_LANDING,
+        ]
+    )
     blind_test_preamble: str = ""  # Only set for blind historical tests
 
     def build_reasoning_prompt(
@@ -567,7 +581,7 @@ class PromptArchitecture:
             blind_test_date: If set, this is a blind historical test at this date
             blind_test_title: Title of the historical case
         """
-        timestamp = timestamp or datetime.now(timezone.utc).isoformat()
+        timestamp = timestamp or datetime.now(UTC).isoformat()
 
         prompt_parts = []
 

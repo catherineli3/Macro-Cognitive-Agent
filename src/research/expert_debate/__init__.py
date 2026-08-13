@@ -23,11 +23,11 @@ from __future__ import annotations
 import json
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from typing import Any, Optional
 
-from src.research.llm_brain.prompts import EXPERT_PERSONAS, PromptArchitecture
 from src.research.llm_brain.llm_client import LLMClient, LLMResponse, extract_json_from_text
+from src.research.llm_brain.prompts import EXPERT_PERSONAS, PromptArchitecture
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -121,7 +121,7 @@ def _rule_based_persona_analysis(
     cpi = float(market_data.get("cpi_yoy", 3))
     vix = float(market_data.get("vix", 18))
     spx_ytd = float(market_data.get("spx_ytd", 0) or market_data.get("nasdaq_ytd", 0))
-    dxy = float(market_data.get("dxy", 100))
+    _dxy = float(market_data.get("dxy", 100))
     us10y = float(market_data.get("us10y", 4))
     hyg = float(market_data.get("hyg_spread", 400))
 
@@ -144,7 +144,11 @@ def _rule_based_persona_analysis(
 
     elif persona == "dalio":
         # Dalio: Focus on long/short debt cycles, productivity, transmission
-        cpi_assess = "above equilibrium" if cpi > 4 else ("near equilibrium" if 2 < cpi <= 3.5 else "below target")
+        cpi_assess = (
+            "above equilibrium"
+            if cpi > 4
+            else ("near equilibrium" if 2 < cpi <= 3.5 else "below target")
+        )
         debt_cycle = "late long-term debt cycle" if cpi > 4 or us10y > 4.5 else "mid-cycle"
 
         return ExpertView(
@@ -162,46 +166,59 @@ def _rule_based_persona_analysis(
     elif persona == "soros":
         # Soros: Focus on reflexivity, fallibility, boom-bust
         boom_signals = []
-        if vix < 13: boom_signals.append("低波动率(自满)")
-        if spx_ytd > 20: boom_signals.append("强劲动量(自我强化)")
-        if hyg < 350: boom_signals.append("信用极度宽松")
+        if vix < 13:
+            boom_signals.append("低波动率(自满)")
+        if spx_ytd > 20:
+            boom_signals.append("强劲动量(自我强化)")
+        if hyg < 350:
+            boom_signals.append("信用极度宽松")
 
         return ExpertView(
             persona="soros",
             persona_name="George Soros",
             regime_view=(
-                "市场状态: " +
-                ("繁荣期(boom)——市场信念正在改变基本面" if boom_signals
-                 else "正常/均衡——但任何均衡都是暂时的")
+                "市场状态: "
+                + (
+                    "繁荣期(boom)——市场信念正在改变基本面"
+                    if boom_signals
+                    else "正常/均衡——但任何均衡都是暂时的"
+                )
             ),
             highest_conviction=(
-                "当前" + ("存在" if boom_signals else "可能存在未发现的") +
-                "反身性过程: 叙事→资本→价格→叙事强化"
+                "当前"
+                + ("存在" if boom_signals else "可能存在未发现的")
+                + "反身性过程: 叙事→资本→价格→叙事强化"
             ),
             key_risk=(
-                "主导叙事\"" + dominant_narrative[:40] + "\"的可错性: " +
-                ("共识叙事总是包含系统性错误——问题是：错误在哪里？" if vix < 15
-                 else "正受到检验")
+                '主导叙事"'
+                + dominant_narrative[:40]
+                + '"的可错性: '
+                + ("共识叙事总是包含系统性错误——问题是：错误在哪里？" if vix < 15 else "正受到检验")
             ),
             trade_idea=(
-                ("做多" if spx_ytd > 0 else "做空") + "趋势但" +
-                ("准备反转仓位" if vix < 15 else "继续持有") +
-                "——我知道我的判断可能是错的"
+                ("做多" if spx_ytd > 0 else "做空")
+                + "趋势但"
+                + ("准备反转仓位" if vix < 15 else "继续持有")
+                + "——我知道我的判断可能是错的"
             ),
             disagreement_with_consensus=(
-                "市场共识\"" + dominant_narrative[:40] + "\"是一个便利的简化——但现实远比这复杂"
+                '市场共识"' + dominant_narrative[:40] + '"是一个便利的简化——但现实远比这复杂'
             ),
             reflexivity_observation=(
-                "当前核心反身性: " + dominant_narrative[:50] +
-                " → 市场行为 → 经济结果 → " + dominant_narrative[:30] +
-                "被证实 → 更多相同行为"
+                "当前核心反身性: "
+                + dominant_narrative[:50]
+                + " → 市场行为 → 经济结果 → "
+                + dominant_narrative[:30]
+                + "被证实 → 更多相同行为"
             ),
             confidence=0.50,  # Soros is always uncertain
         )
 
     else:  # bridgewater
         # Bridgewater: Focus on four regimes, environment → assets
-        growth_signal = "above trend" if spx_ytd > 10 else ("below trend" if spx_ytd < -5 else "trend")
+        growth_signal = (
+            "above trend" if spx_ytd > 10 else ("below trend" if spx_ytd < -5 else "trend")
+        )
         infl_signal = "rising" if cpi > 4 else ("falling" if cpi < 2.5 else "stable")
         quadrant = f"Growth {growth_signal} × Inflation {infl_signal}"
 
@@ -315,7 +332,7 @@ class ExpertDebate:
             DebateResult with all four expert views + synthesis.
         """
         t0 = time.time()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         debate_id = f"debate-{now.strftime('%Y%m%d-%H%M')}"
 
         # Build market context
@@ -325,9 +342,13 @@ class ExpertDebate:
         expert_views: dict[str, ExpertView] = {}
         for persona in self.PERSONAS:
             if self.llm_available:
-                view = self._get_llm_view(persona, market_context, market_data, regime_label, dominant_narrative)
+                view = self._get_llm_view(
+                    persona, market_context, market_data, regime_label, dominant_narrative
+                )
             else:
-                view = _rule_based_persona_analysis(persona, market_data, regime_label, dominant_narrative)
+                view = _rule_based_persona_analysis(
+                    persona, market_data, regime_label, dominant_narrative
+                )
             expert_views[persona] = view
 
         # Synthesize
@@ -388,18 +409,18 @@ class ExpertDebate:
 
     # ── Synthesis ─────────────────────────────────────────────────────
 
-    def _synthesize(
-        self, views: dict[str, ExpertView], market_data: dict
-    ) -> DebateSynthesis:
+    def _synthesize(self, views: dict[str, ExpertView], market_data: dict) -> DebateSynthesis:
         """Synthesize the four-persona debate into consensus + divergence."""
         synthesis = DebateSynthesis(
-            synthesis_timestamp=datetime.now(timezone.utc).isoformat(),
+            synthesis_timestamp=datetime.now(UTC).isoformat(),
         )
 
         # ── Find consensus ──
         consensus_items = self._find_consensus(views, market_data)
         synthesis.consensus_views = consensus_items
-        synthesis.consensus_score = min(len(consensus_items) / 4.0, 1.0)  # Max 1.0 at 4+ agreement items
+        synthesis.consensus_score = min(
+            len(consensus_items) / 4.0, 1.0
+        )  # Max 1.0 at 4+ agreement items
 
         # ── Find divergence ──
         synthesis.divergence_views = self._find_divergence(views)
@@ -421,21 +442,23 @@ class ExpertDebate:
 
         return synthesis
 
-    def _find_consensus(
-        self, views: dict[str, ExpertView], market_data: dict
-    ) -> list[str]:
+    def _find_consensus(self, views: dict[str, ExpertView], market_data: dict) -> list[str]:
         """Identify points of agreement across personas."""
         consensus = []
 
         # Check regime agreement
-        regimes = {p: v.regime_view[:50] for p, v in views.items()}
+        _regimes = {p: v.regime_view[:50] for p, v in views.items()}
         cpi = float(market_data.get("cpi_yoy", 3))
         vix = float(market_data.get("vix", 18))
 
         # Simple heuristic: check for shared keywords
-        if cpi > 4 and all("通胀" in v.regime_view or "inflation" in v.regime_view.lower() for v in views.values()):
+        if cpi > 4 and all(
+            "通胀" in v.regime_view or "inflation" in v.regime_view.lower() for v in views.values()
+        ):
             consensus.append("所有专家一致认为通胀是当前核心关注")
-        if vix > 25 and all("风险" in v.regime_view or "risk" in v.regime_view.lower() for v in views.values()):
+        if vix > 25 and all(
+            "风险" in v.regime_view or "risk" in v.regime_view.lower() for v in views.values()
+        ):
             consensus.append("所有专家一致认为市场处于避险模式")
         if vix < 13:
             consensus.append("所有专家均识别到低波动率环境")
@@ -445,15 +468,15 @@ class ExpertDebate:
             consensus.append("风险认知高度一致")
 
         # Check reflexivity agreement
-        reflex_views = [v.reflexivity_observation for v in views.values() if v.reflexivity_observation]
+        reflex_views = [
+            v.reflexivity_observation for v in views.values() if v.reflexivity_observation
+        ]
         if len(reflex_views) >= 3:
             consensus.append("多数专家识别到反身性过程")
 
         return consensus
 
-    def _find_divergence(
-        self, views: dict[str, ExpertView]
-    ) -> list[dict]:
+    def _find_divergence(self, views: dict[str, ExpertView]) -> list[dict]:
         """Identify key disagreements."""
         divergence = []
 
@@ -462,21 +485,25 @@ class ExpertDebate:
             ptj_trade = views["ptj"].trade_idea[:60]
             dalio_trade = views["dalio"].trade_idea[:60]
             if ptj_trade != dalio_trade:
-                divergence.append({
-                    "topic": "交易/配置视角",
-                    "ptj": ptj_trade,
-                    "dalio": dalio_trade,
-                    "comment": "PTJ关注短期动量，Dalio关注长期结构——时间框架分歧",
-                })
+                divergence.append(
+                    {
+                        "topic": "交易/配置视角",
+                        "ptj": ptj_trade,
+                        "dalio": dalio_trade,
+                        "comment": "PTJ关注短期动量，Dalio关注长期结构——时间框架分歧",
+                    }
+                )
 
         # Soros vs Bridgewater: reflexivity vs environment
         if views.get("soros") and views.get("bridgewater"):
-            divergence.append({
-                "topic": "反身性 vs 均衡",
-                "soros": views["soros"].reflexivity_observation[:80],
-                "bridgewater": views["bridgewater"].regime_view[:80],
-                "comment": "Soros相信反身性主导，Bridgewater相信环境回归均值",
-            })
+            divergence.append(
+                {
+                    "topic": "反身性 vs 均衡",
+                    "soros": views["soros"].reflexivity_observation[:80],
+                    "bridgewater": views["bridgewater"].regime_view[:80],
+                    "comment": "Soros相信反身性主导，Bridgewater相信环境回归均值",
+                }
+            )
 
         return divergence
 
@@ -484,7 +511,8 @@ class ExpertDebate:
         """Integrate regime views."""
         return "综合判断: " + " | ".join(
             f"{self.PERSONA_NAMES[p]}: {v.regime_view[:40]}"
-            for p, v in views.items() if v.regime_view
+            for p, v in views.items()
+            if v.regime_view
         )
 
     def _integrate_narrative(self, views: dict[str, ExpertView]) -> str:
@@ -508,9 +536,7 @@ class ExpertDebate:
             return "未识别共同风险"
         return risks[0][:150]  # Primary risk
 
-    def _compute_persona_weights(
-        self, views: dict[str, ExpertView], market_data: dict
-    ) -> dict:
+    def _compute_persona_weights(self, views: dict[str, ExpertView], market_data: dict) -> dict:
         """Determine which persona's advice is most relevant right now.
 
         In trending markets → PTJ gets more weight

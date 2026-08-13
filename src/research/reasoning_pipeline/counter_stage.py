@@ -12,13 +12,12 @@ Self-criticism is not optional in macro research.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from src.research.reasoning_pipeline.schemas import (
-    ObservationOutput,
+    CounterOutput,
     EvidenceOutput,
     HypothesisOutput,
-    CounterOutput,
+    ObservationOutput,
     StageStatus,
 )
 
@@ -27,19 +26,19 @@ class CounterStage:
     """Stage 6: Mandatory counterargument generation."""
 
     COUNTER_DIMENSIONS = [
-        "data_quality",            # Could the data be wrong/misleading?
-        "model_risk",              # Is our framework appropriate?
-        "regime_change",           # Are we in a new regime where history doesn't apply?
-        "policy_error",            # Could policymakers make the wrong call?
-        "exogenous_shock",         # What external shocks could hit?
-        "market_positioning",      # Is consensus too one-sided?
-        "correlation_breakdown",   # Could assumed correlations break?
-        "liquidity_event",         # Could liquidity suddenly dry up?
-        "geopolitical_tail",       # What geopolitical events could disrupt?
-        "measurement_error",       # Are our indicators measuring what we think?
+        "data_quality",  # Could the data be wrong/misleading?
+        "model_risk",  # Is our framework appropriate?
+        "regime_change",  # Are we in a new regime where history doesn't apply?
+        "policy_error",  # Could policymakers make the wrong call?
+        "exogenous_shock",  # What external shocks could hit?
+        "market_positioning",  # Is consensus too one-sided?
+        "correlation_breakdown",  # Could assumed correlations break?
+        "liquidity_event",  # Could liquidity suddenly dry up?
+        "geopolitical_tail",  # What geopolitical events could disrupt?
+        "measurement_error",  # Are our indicators measuring what we think?
     ]
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def execute(
@@ -66,36 +65,26 @@ class CounterStage:
         )
 
         # 1. Generate counterarguments from each dimension
-        output.counter_arguments = self._generate_counters(
-            observation, evidence, hypothesis
-        )
+        output.counter_arguments = self._generate_counters(observation, evidence, hypothesis)
 
         # 2. Select primary counter
         if output.counter_arguments:
             # Most severe/fatal counter
-            fatal_counters = [
-                c for c in output.counter_arguments
-                if c.get("severity") == "fatal"
-            ]
+            fatal_counters = [c for c in output.counter_arguments if c.get("severity") == "fatal"]
             if fatal_counters:
                 output.primary_counter = fatal_counters[0]["claim"]
                 output.most_concerning_counter = fatal_counters[0]["claim"]
             else:
                 output.primary_counter = output.counter_arguments[0]["claim"]
                 output.most_concerning_counter = max(
-                    output.counter_arguments,
-                    key=lambda c: c.get("probability", 0)
+                    output.counter_arguments, key=lambda c: c.get("probability", 0)
                 )["claim"]
 
         # 3. Define invalidation conditions
-        output.invalidation_conditions = self._define_invalidation(
-            observation, hypothesis
-        )
+        output.invalidation_conditions = self._define_invalidation(observation, hypothesis)
 
         # 4. Explain why we still prefer our hypothesis
-        output.why_still_preferred = self._explain_preference(
-            output, evidence, hypothesis
-        )
+        output.why_still_preferred = self._explain_preference(output, evidence, hypothesis)
 
         # 5. Generate trace
         output.reasoning_trace = self._generate_trace(output)
@@ -114,77 +103,91 @@ class CounterStage:
 
         # 1. Data quality
         if observation.data_surprises:
-            counters.append({
-                "claim": (
-                    f"Data quality risk: Recent data surprises may reflect "
-                    f"measurement noise or seasonal distortions rather than "
-                    f"genuine economic shifts. Revision risk is elevated."
-                ),
-                "evidence": observation.data_surprises[:2],
-                "severity": "minor",
-                "probability": 0.3,
-            })
+            counters.append(
+                {
+                    "claim": (
+                        "Data quality risk: Recent data surprises may reflect "
+                        "measurement noise or seasonal distortions rather than "
+                        "genuine economic shifts. Revision risk is elevated."
+                    ),
+                    "evidence": observation.data_surprises[:2],
+                    "severity": "minor",
+                    "probability": 0.3,
+                }
+            )
 
         # 2. Contradicting evidence
         if evidence.contradicting_evidence:
-            counters.append({
-                "claim": (
-                    f"Contradicting evidence exists: "
-                    f"{evidence.contradicting_evidence[0][:100]}"
-                ),
-                "evidence": evidence.contradicting_evidence[:2],
-                "severity": "major" if len(evidence.contradicting_evidence) > 2 else "minor",
-                "probability": min(
-                    0.5, len(evidence.contradicting_evidence) / max(len(evidence.supporting_evidence), 1)
-                ),
-            })
+            counters.append(
+                {
+                    "claim": (
+                        f"Contradicting evidence exists: "
+                        f"{evidence.contradicting_evidence[0][:100]}"
+                    ),
+                    "evidence": evidence.contradicting_evidence[:2],
+                    "severity": "major" if len(evidence.contradicting_evidence) > 2 else "minor",
+                    "probability": min(
+                        0.5,
+                        len(evidence.contradicting_evidence)
+                        / max(len(evidence.supporting_evidence), 1),
+                    ),
+                }
+            )
 
         # 3. Regime change risk
-        counters.append({
-            "claim": (
-                "Regime change risk: We may be observing a structural break "
-                "rather than a cyclical pattern. Post-COVID, post-QE, post-globalization "
-                "dynamics may make historical analogies unreliable."
-            ),
-            "evidence": ["Structural shifts in inflation dynamics", "Deglobalization trends"],
-            "severity": "fatal",
-            "probability": 0.25,
-        })
+        counters.append(
+            {
+                "claim": (
+                    "Regime change risk: We may be observing a structural break "
+                    "rather than a cyclical pattern. Post-COVID, post-QE, post-globalization "
+                    "dynamics may make historical analogies unreliable."
+                ),
+                "evidence": ["Structural shifts in inflation dynamics", "Deglobalization trends"],
+                "severity": "fatal",
+                "probability": 0.25,
+            }
+        )
 
         # 4. Policy error
-        counters.append({
-            "claim": (
-                "Policy error risk: Central banks could over-tighten (causing recession) "
-                "or under-tighten (allowing inflation to re-accelerate). The path to "
-                "a perfect soft landing is narrow."
-            ),
-            "evidence": ["Historical precedent of policy errors"],
-            "severity": "major",
-            "probability": 0.3,
-        })
+        counters.append(
+            {
+                "claim": (
+                    "Policy error risk: Central banks could over-tighten (causing recession) "
+                    "or under-tighten (allowing inflation to re-accelerate). The path to "
+                    "a perfect soft landing is narrow."
+                ),
+                "evidence": ["Historical precedent of policy errors"],
+                "severity": "major",
+                "probability": 0.3,
+            }
+        )
 
         # 5. Market positioning / consensus risk
-        counters.append({
-            "claim": (
-                "Consensus crowding risk: If the market is already positioned "
-                "for this scenario, even a correct call may not generate alpha. "
-                "The trade is consensus; the surprise would be the opposite."
-            ),
-            "evidence": [],
-            "severity": "minor" if hypothesis.hypothesis_confidence > 0.6 else "major",
-            "probability": 0.35,
-        })
+        counters.append(
+            {
+                "claim": (
+                    "Consensus crowding risk: If the market is already positioned "
+                    "for this scenario, even a correct call may not generate alpha. "
+                    "The trade is consensus; the surprise would be the opposite."
+                ),
+                "evidence": [],
+                "severity": "minor" if hypothesis.hypothesis_confidence > 0.6 else "major",
+                "probability": 0.35,
+            }
+        )
 
         # 6. Exogenous shock
-        counters.append({
-            "claim": (
-                "Exogenous shock risk: Geopolitical events, natural disasters, "
-                "or financial accidents could override the macro picture entirely."
-            ),
-            "evidence": ["Geopolitical uncertainty", "Cyber risk", "Pandemic risk"],
-            "severity": "major",
-            "probability": 0.15,
-        })
+        counters.append(
+            {
+                "claim": (
+                    "Exogenous shock risk: Geopolitical events, natural disasters, "
+                    "or financial accidents could override the macro picture entirely."
+                ),
+                "evidence": ["Geopolitical uncertainty", "Cyber risk", "Pandemic risk"],
+                "severity": "major",
+                "probability": 0.15,
+            }
+        )
 
         return counters
 

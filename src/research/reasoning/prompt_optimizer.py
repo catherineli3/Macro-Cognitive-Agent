@@ -15,15 +15,15 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
 
 @dataclass
 class PromptVariant:
     """A prompt variant with performance metrics."""
+
     variant_id: str = ""
-    module_name: str = ""                     # Which module this prompt is for
+    module_name: str = ""  # Which module this prompt is for
     prompt_text: str = ""
     version: int = 1
 
@@ -44,8 +44,9 @@ class PromptVariant:
 @dataclass
 class PromptOptimizationReport:
     """Report of prompt optimization actions."""
+
     report_id: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     variant_changes: list[dict] = field(default_factory=list)
     # [{module, old_prompt_summary, new_prompt_summary, reason}]
@@ -95,11 +96,13 @@ class PromptOptimizer:
         if causal_errors:
             key = f"{module_name}_causal"
             self._update_variant(key, accuracy=1 - (len(causal_errors) / total))
-            changes.append({
-                "module": module_name,
-                "improvement": "Strengthen causal chain requirements in reasoning prompt",
-                "reason": f"{len(causal_errors)} causal logic errors detected",
-            })
+            changes.append(
+                {
+                    "module": module_name,
+                    "improvement": "Strengthen causal chain requirements in reasoning prompt",
+                    "reason": f"{len(causal_errors)} causal logic errors detected",
+                }
+            )
             recommendations.append(
                 "Add explicit causal chain verification step: "
                 "'Before concluding, verify: (1) Is each link testable? "
@@ -110,11 +113,13 @@ class PromptOptimizer:
         # 3. Confidence calibration errors → adjust confidence guidance
         conf_errors = [f for f in errors if f.error_source == "confidence_calibration"]
         if conf_errors:
-            changes.append({
-                "module": module_name,
-                "improvement": "Add confidence calibration guardrails to prompt",
-                "reason": f"{len(conf_errors)} overconfidence errors detected",
-            })
+            changes.append(
+                {
+                    "module": module_name,
+                    "improvement": "Add confidence calibration guardrails to prompt",
+                    "reason": f"{len(conf_errors)} overconfidence errors detected",
+                }
+            )
             recommendations.append(
                 "Add confidence scaffolding: 'For each hypothesis, state: "
                 "(1) What would make you more confident? "
@@ -125,11 +130,13 @@ class PromptOptimizer:
         # 4. Data quality errors → tighten evidence requirements
         data_errors = [f for f in errors if f.error_source == "data_quality"]
         if data_errors:
-            changes.append({
-                "module": module_name,
-                "improvement": "Increase minimum evidence requirements in prompt",
-                "reason": f"{len(data_errors)} insufficient-evidence predictions failed",
-            })
+            changes.append(
+                {
+                    "module": module_name,
+                    "improvement": "Increase minimum evidence requirements in prompt",
+                    "reason": f"{len(data_errors)} insufficient-evidence predictions failed",
+                }
+            )
             recommendations.append(
                 "Require minimum 3 independent evidence sources before making "
                 "directional predictions. Flag predictions with <3 sources as 'speculative'."
@@ -160,7 +167,9 @@ class PromptOptimizer:
 
         return report
 
-    def get_best_prompt_variant(self, module_name: str, scenario: str = "general") -> Optional[PromptVariant]:
+    def get_best_prompt_variant(
+        self, module_name: str, scenario: str = "general"
+    ) -> PromptVariant | None:
         """Get the best-performing prompt variant for a module/scenario.
 
         Returns the variant with highest accuracy, falling back to default.
@@ -168,9 +177,7 @@ class PromptOptimizer:
         key = f"{module_name}_{scenario}"
         return self.variants.get(key, self.variants.get(f"{module_name}_default"))
 
-    def record_prediction(
-        self, module_name: str, variant_id: str, was_correct: bool
-    ):
+    def record_prediction(self, module_name: str, variant_id: str, was_correct: bool):
         """Record a single prediction outcome against a prompt variant."""
         if variant_id in self.variants:
             v = self.variants[variant_id]
@@ -187,20 +194,20 @@ class PromptOptimizer:
             "macro_reasoner_default": {
                 "module": "macro_reasoner",
                 "text": "Analyze the macro evidence and produce a research memo with causal reasoning. "
-                        "For each conclusion, cite specific evidence. For each hypothesis, provide "
-                        "a counter-argument. Calibrate confidence based on evidence strength.",
+                "For each conclusion, cite specific evidence. For each hypothesis, provide "
+                "a counter-argument. Calibrate confidence based on evidence strength.",
             },
             "hypothesis_builder_default": {
                 "module": "hypothesis_builder",
                 "text": "Build causal hypotheses from evidence clusters. Each hypothesis must have: "
-                        "(1) A clear causal chain, (2) Named assumptions, (3) Falsification conditions. "
-                        "Distinguish structural from cyclical factors.",
+                "(1) A clear causal chain, (2) Named assumptions, (3) Falsification conditions. "
+                "Distinguish structural from cyclical factors.",
             },
             "counter_argument_default": {
                 "module": "counter_argument_generator",
                 "text": "Generate counter-arguments for each hypothesis. Ask: "
-                        "\"What could make this wrong? What is the market missing? "
-                        "What historical precedent contradicts this view?\"",
+                '"What could make this wrong? What is the market missing? '
+                'What historical precedent contradicts this view?"',
             },
         }
 
@@ -232,4 +239,4 @@ class PromptOptimizer:
         if accuracy > 0.5:
             v.times_correct += 1
         v.accuracy = v.times_correct / v.times_used if v.times_used > 0 else 0.0
-        v.last_used = datetime.now(timezone.utc).isoformat()
+        v.last_used = datetime.now(UTC).isoformat()

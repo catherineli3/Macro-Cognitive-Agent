@@ -6,9 +6,6 @@ Each candidate carries evidence claims, a thesis statement, and a transmission c
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
-
 from src.hypothesis.signal_engine import AnomalousSignal, SignalReport, SignalTheme
 from src.schemas.hypothesis_v3_1 import CandidateHypothesis, EvidenceClaim, TransmissionSegment
 from src.shared.logging import get_logger
@@ -47,8 +44,18 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["DXY", "US02Y", "FED_FUNDS"],
         "transmission": [
-            {"source": "liquidity", "target": "credit", "direction": "+", "desc": "Easing liquidity expands credit availability"},
-            {"source": "credit", "target": "NASDAQ", "direction": "+", "desc": "Cheaper credit fuels equity investment"},
+            {
+                "source": "liquidity",
+                "target": "credit",
+                "direction": "+",
+                "desc": "Easing liquidity expands credit availability",
+            },
+            {
+                "source": "credit",
+                "target": "NASDAQ",
+                "direction": "+",
+                "desc": "Cheaper credit fuels equity investment",
+            },
         ],
     },
     {
@@ -64,8 +71,18 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["DXY", "US02Y", "FED_FUNDS"],
         "transmission": [
-            {"source": "liquidity", "target": "credit", "direction": "-", "desc": "Tightening liquidity restricts credit"},
-            {"source": "credit", "target": "NASDAQ", "direction": "-", "desc": "Restricted credit weighs on equities"},
+            {
+                "source": "liquidity",
+                "target": "credit",
+                "direction": "-",
+                "desc": "Tightening liquidity restricts credit",
+            },
+            {
+                "source": "credit",
+                "target": "NASDAQ",
+                "direction": "-",
+                "desc": "Restricted credit weighs on equities",
+            },
         ],
     },
     {
@@ -81,8 +98,18 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["US02Y", "DXY", "Gold"],
         "transmission": [
-            {"source": "liquidity", "target": "DXY", "direction": "-", "desc": "Easing reduces dollar demand"},
-            {"source": "DXY", "target": "Gold", "direction": "-", "desc": "Weaker dollar supports gold"},
+            {
+                "source": "liquidity",
+                "target": "DXY",
+                "direction": "-",
+                "desc": "Easing reduces dollar demand",
+            },
+            {
+                "source": "DXY",
+                "target": "Gold",
+                "direction": "-",
+                "desc": "Weaker dollar supports gold",
+            },
         ],
     },
     {
@@ -98,10 +125,14 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["DXY", "US02Y"],
         "transmission": [
-            {"source": "liquidity", "target": "NASDAQ", "direction": "~", "desc": "Stable liquidity has limited impact on equities"},
+            {
+                "source": "liquidity",
+                "target": "NASDAQ",
+                "direction": "~",
+                "desc": "Stable liquidity has limited impact on equities",
+            },
         ],
     },
-
     # ═══ CREDIT ═══
     {
         "id": "crd_01",
@@ -116,8 +147,18 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["HYG", "VIX"],
         "transmission": [
-            {"source": "credit", "target": "HYG", "direction": "+", "desc": "Tightening spreads boost high-yield bonds"},
-            {"source": "credit", "target": "SPX", "direction": "+", "desc": "Credit expansion supports equity valuations"},
+            {
+                "source": "credit",
+                "target": "HYG",
+                "direction": "+",
+                "desc": "Tightening spreads boost high-yield bonds",
+            },
+            {
+                "source": "credit",
+                "target": "SPX",
+                "direction": "+",
+                "desc": "Credit expansion supports equity valuations",
+            },
         ],
     },
     {
@@ -133,8 +174,18 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["HYG", "VIX"],
         "transmission": [
-            {"source": "credit", "target": "HYG", "direction": "-", "desc": "Widening spreads hurt high-yield"},
-            {"source": "credit", "target": "SPX", "direction": "-", "desc": "Credit contraction spills into equities"},
+            {
+                "source": "credit",
+                "target": "HYG",
+                "direction": "-",
+                "desc": "Widening spreads hurt high-yield",
+            },
+            {
+                "source": "credit",
+                "target": "SPX",
+                "direction": "-",
+                "desc": "Credit contraction spills into equities",
+            },
         ],
     },
     {
@@ -150,11 +201,20 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["HYG", "SPX"],
         "transmission": [
-            {"source": "credit", "target": "HYG", "direction": "-", "desc": "Credit stress evident in HYG weakness"},
-            {"source": "HYG", "target": "SPX", "direction": "+", "desc": "HYG leads SPX — divergence resolves with SPX declining"},
+            {
+                "source": "credit",
+                "target": "HYG",
+                "direction": "-",
+                "desc": "Credit stress evident in HYG weakness",
+            },
+            {
+                "source": "HYG",
+                "target": "SPX",
+                "direction": "+",
+                "desc": "HYG leads SPX — divergence resolves with SPX declining",
+            },
         ],
     },
-
     # ═══ GROWTH ═══
     {
         "id": "grw_01",
@@ -169,8 +229,18 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["SPX", "US10Y"],
         "transmission": [
-            {"source": "growth", "target": "SPX", "direction": "+", "desc": "Growth drives earnings → equity appreciation"},
-            {"source": "growth", "target": "US10Y", "direction": "+", "desc": "Growth raises real rate expectations"},
+            {
+                "source": "growth",
+                "target": "SPX",
+                "direction": "+",
+                "desc": "Growth drives earnings → equity appreciation",
+            },
+            {
+                "source": "growth",
+                "target": "US10Y",
+                "direction": "+",
+                "desc": "Growth raises real rate expectations",
+            },
         ],
     },
     {
@@ -186,8 +256,18 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["SPX", "US10Y"],
         "transmission": [
-            {"source": "growth", "target": "SPX", "direction": "-", "desc": "Slowing growth weighs on earnings"},
-            {"source": "growth", "target": "US10Y", "direction": "-", "desc": "Slowing growth reduces rate expectations"},
+            {
+                "source": "growth",
+                "target": "SPX",
+                "direction": "-",
+                "desc": "Slowing growth weighs on earnings",
+            },
+            {
+                "source": "growth",
+                "target": "US10Y",
+                "direction": "-",
+                "desc": "Slowing growth reduces rate expectations",
+            },
         ],
     },
     {
@@ -203,11 +283,20 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["SPX", "US10Y", "Gold"],
         "transmission": [
-            {"source": "growth", "target": "SPX", "direction": "+", "desc": "Strong growth lifts all equity sectors"},
-            {"source": "growth", "target": "Gold", "direction": "+", "desc": "Demand-pull supports commodity prices"},
+            {
+                "source": "growth",
+                "target": "SPX",
+                "direction": "+",
+                "desc": "Strong growth lifts all equity sectors",
+            },
+            {
+                "source": "growth",
+                "target": "Gold",
+                "direction": "+",
+                "desc": "Demand-pull supports commodity prices",
+            },
         ],
     },
-
     # ═══ RISK APPETITE ═══
     {
         "id": "rsk_01",
@@ -222,8 +311,18 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["SPX", "VIX"],
         "transmission": [
-            {"source": "risk_appetite", "target": "SPX", "direction": "+", "desc": "Risk appetite directly supports equities"},
-            {"source": "risk_appetite", "target": "VIX", "direction": "-", "desc": "Risk appetite suppresses volatility"},
+            {
+                "source": "risk_appetite",
+                "target": "SPX",
+                "direction": "+",
+                "desc": "Risk appetite directly supports equities",
+            },
+            {
+                "source": "risk_appetite",
+                "target": "VIX",
+                "direction": "-",
+                "desc": "Risk appetite suppresses volatility",
+            },
         ],
     },
     {
@@ -239,8 +338,18 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["VIX", "SPX"],
         "transmission": [
-            {"source": "risk_appetite", "target": "VIX", "direction": "+", "desc": "Fear drives volatility higher"},
-            {"source": "risk_appetite", "target": "SPX", "direction": "-", "desc": "Risk aversion causes equity selling"},
+            {
+                "source": "risk_appetite",
+                "target": "VIX",
+                "direction": "+",
+                "desc": "Fear drives volatility higher",
+            },
+            {
+                "source": "risk_appetite",
+                "target": "SPX",
+                "direction": "-",
+                "desc": "Risk aversion causes equity selling",
+            },
         ],
     },
     {
@@ -256,11 +365,20 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["SPX", "NASDAQ"],
         "transmission": [
-            {"source": "risk_appetite", "target": "NASDAQ", "direction": "+", "desc": "Structural tech demand supports NASDAQ"},
-            {"source": "NASDAQ", "target": "SPX", "direction": "+", "desc": "Tech leadership pulls up broad indices"},
+            {
+                "source": "risk_appetite",
+                "target": "NASDAQ",
+                "direction": "+",
+                "desc": "Structural tech demand supports NASDAQ",
+            },
+            {
+                "source": "NASDAQ",
+                "target": "SPX",
+                "direction": "+",
+                "desc": "Tech leadership pulls up broad indices",
+            },
         ],
     },
-
     # ═══ INFLATION ═══
     {
         "id": "inf_01",
@@ -275,8 +393,18 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["TIPS", "US10Y", "Gold"],
         "transmission": [
-            {"source": "inflation", "target": "US10Y", "direction": "+", "desc": "Inflation raises nominal yield expectations"},
-            {"source": "inflation", "target": "Gold", "direction": "+", "desc": "Inflation hedging boosts gold demand"},
+            {
+                "source": "inflation",
+                "target": "US10Y",
+                "direction": "+",
+                "desc": "Inflation raises nominal yield expectations",
+            },
+            {
+                "source": "inflation",
+                "target": "Gold",
+                "direction": "+",
+                "desc": "Inflation hedging boosts gold demand",
+            },
         ],
     },
     {
@@ -292,8 +420,18 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["TIPS", "US10Y"],
         "transmission": [
-            {"source": "inflation", "target": "TIPS", "direction": "+", "desc": "Disinflation boosts TIPS real return appeal"},
-            {"source": "inflation", "target": "US10Y", "direction": "-", "desc": "Disinflation reduces nominal rate premium"},
+            {
+                "source": "inflation",
+                "target": "TIPS",
+                "direction": "+",
+                "desc": "Disinflation boosts TIPS real return appeal",
+            },
+            {
+                "source": "inflation",
+                "target": "US10Y",
+                "direction": "-",
+                "desc": "Disinflation reduces nominal rate premium",
+            },
         ],
     },
     {
@@ -309,8 +447,18 @@ _HYPOTHESIS_TEMPLATES: list[dict] = [
         ),
         "evidence_indicators": ["TIPS", "US10Y"],
         "transmission": [
-            {"source": "inflation", "target": "US10Y", "direction": "~", "desc": "Sticky inflation keeps rates range-bound"},
-            {"source": "inflation", "target": "SPX", "direction": "~", "desc": "Policy uncertainty limits equity direction"},
+            {
+                "source": "inflation",
+                "target": "US10Y",
+                "direction": "~",
+                "desc": "Sticky inflation keeps rates range-bound",
+            },
+            {
+                "source": "inflation",
+                "target": "SPX",
+                "direction": "~",
+                "desc": "Policy uncertainty limits equity direction",
+            },
         ],
     },
 ]
@@ -400,15 +548,20 @@ class CandidateGenerator:
 
         logger.info(
             "candidates_generated total=%d themes=%d signals=%d",
-            len(unique), len(signal_report.themes), len(signal_report.anomalies),
+            len(unique),
+            len(signal_report.themes),
+            len(signal_report.anomalies),
         )
         return unique
 
     # ── Internal ──────────────────────────────────────────────────────────
 
     def _instantiate_template(
-        self, template: dict, report: SignalReport, anomalies: dict[str, AnomalousSignal],
-    ) -> Optional[CandidateHypothesis]:
+        self,
+        template: dict,
+        report: SignalReport,
+        anomalies: dict[str, AnomalousSignal],
+    ) -> CandidateHypothesis | None:
         """Instantiate a template into a concrete CandidateHypothesis."""
         dim = template["dimension"]
         direction = template["direction"]
@@ -422,36 +575,45 @@ class CandidateGenerator:
         for ind in template.get("evidence_indicators", []):
             sig = anomalies.get(ind)
             if sig:
-                evidence.append(EvidenceClaim(
-                    indicator=ind,
-                    current_value=sig.value,
-                    direction=sig.direction,
-                    z_score=sig.z_score,
-                    claim=sig.interpretation,
-                    strength=sig.strength,
-                ))
+                evidence.append(
+                    EvidenceClaim(
+                        indicator=ind,
+                        current_value=sig.value,
+                        direction=sig.direction,
+                        z_score=sig.z_score,
+                        claim=sig.interpretation,
+                        strength=sig.strength,
+                    )
+                )
             else:
                 # Non-anomalous but still relevant
-                evidence.append(EvidenceClaim(
-                    indicator=ind,
-                    direction=direction if direction != "neutral" else "neutral",
-                    claim=f"{ind} in alignment with {dim} {direction} thesis",
-                    strength=0.3,
-                ))
+                evidence.append(
+                    EvidenceClaim(
+                        indicator=ind,
+                        direction=direction if direction != "neutral" else "neutral",
+                        claim=f"{ind} in alignment with {dim} {direction} thesis",
+                        strength=0.3,
+                    )
+                )
 
         # Build transmission chain
         chain = [
             TransmissionSegment(
-                source=s["source"], target=s["target"], direction=s["direction"],
-                description=s["desc"], reliability=0.5,  # Default; updated in Milestone B
+                source=s["source"],
+                target=s["target"],
+                direction=s["direction"],
+                description=s["desc"],
+                reliability=0.5,  # Default; updated in Milestone B
             )
             for s in template.get("transmission", [])
         ]
 
         # Format narrative with actual signal descriptions
-        signal_desc = ", ".join(
-            s.interpretation for s in report.anomalies[:4]
-        ) if report.anomalies else "mixed signals"
+        signal_desc = (
+            ", ".join(s.interpretation for s in report.anomalies[:4])
+            if report.anomalies
+            else "mixed signals"
+        )
         narrative = template["narrative"].format(signals=signal_desc)
 
         # Compute initial competition score (base on evidence strength)
@@ -472,20 +634,25 @@ class CandidateGenerator:
         )
 
     def _build_signal_hypothesis(
-        self, sig: AnomalousSignal, dimension: str, report: SignalReport,
-    ) -> Optional[CandidateHypothesis]:
+        self,
+        sig: AnomalousSignal,
+        dimension: str,
+        report: SignalReport,
+    ) -> CandidateHypothesis | None:
         """Build a hypothesis driven by a single anomalous signal."""
         key = f"{dimension}:{sig.direction}"
         self._dim_per_direction[key] = self._dim_per_direction.get(key, 0) + 1
 
-        evidence = [EvidenceClaim(
-            indicator=sig.indicator,
-            current_value=sig.value,
-            direction=sig.direction,
-            z_score=sig.z_score,
-            claim=sig.interpretation,
-            strength=sig.strength,
-        )]
+        evidence = [
+            EvidenceClaim(
+                indicator=sig.indicator,
+                current_value=sig.value,
+                direction=sig.direction,
+                z_score=sig.z_score,
+                claim=sig.interpretation,
+                strength=sig.strength,
+            )
+        ]
 
         return CandidateHypothesis(
             dimension=dimension,
@@ -510,8 +677,11 @@ class CandidateGenerator:
         )
 
     def _build_contrarian(
-        self, theme: SignalTheme, dimension: str, report: SignalReport,
-    ) -> Optional[CandidateHypothesis]:
+        self,
+        theme: SignalTheme,
+        dimension: str,
+        report: SignalReport,
+    ) -> CandidateHypothesis | None:
         """Build a contrarian hypothesis opposing a dominant theme."""
         opposing_dir = "bearish" if theme.direction == "bullish" else "bullish"
         key = f"{dimension}:{opposing_dir}"
@@ -548,8 +718,11 @@ class CandidateGenerator:
         )
 
     def _build_dimension_fallback(
-        self, dim: str, direction: str, report: SignalReport,
-    ) -> Optional[CandidateHypothesis]:
+        self,
+        dim: str,
+        direction: str,
+        report: SignalReport,
+    ) -> CandidateHypothesis | None:
         """Generate a fallback hypothesis to ensure dimension coverage."""
         key = f"{dim}:{direction}"
         self._dim_per_direction[key] = self._dim_per_direction.get(key, 0) + 1
@@ -567,7 +740,8 @@ class CandidateGenerator:
             evidence=[],
             transmission_chain=[
                 TransmissionSegment(
-                    source=dim, target="SPX",
+                    source=dim,
+                    target="SPX",
                     direction="+" if direction == "bullish" else "-",
                     description=f"Baseline {dim} → equity transmission",
                     reliability=0.35,
@@ -581,12 +755,17 @@ class CandidateGenerator:
     def _map_indicator_to_dimension(indicator: str) -> str:
         """Map an indicator to its primary macro dimension."""
         mapping = {
-            "DXY": "liquidity", "USD": "liquidity", "US02Y": "liquidity",
+            "DXY": "liquidity",
+            "USD": "liquidity",
+            "US02Y": "liquidity",
             "FED_FUNDS": "liquidity",
             "HYG": "credit",
-            "SPX": "growth", "NASDAQ": "growth",
+            "SPX": "growth",
+            "NASDAQ": "growth",
             "VIX": "risk_appetite",
-            "US10Y": "inflation", "TIPS": "inflation", "Gold": "inflation",
+            "US10Y": "inflation",
+            "TIPS": "inflation",
+            "Gold": "inflation",
         }
         return mapping.get(indicator, "growth")
 
@@ -594,10 +773,12 @@ class CandidateGenerator:
     def _map_theme_to_dimension(theme: SignalTheme) -> str:
         """Map a signal theme to its primary macro dimension."""
         mapping = {
-            "liquidity_tightening": "liquidity", "liquidity_easing": "liquidity",
+            "liquidity_tightening": "liquidity",
+            "liquidity_easing": "liquidity",
             "dollar_weakness": "liquidity",
             "credit_stress": "credit",
-            "growth_slowing": "growth", "growth_accelerating": "growth",
+            "growth_slowing": "growth",
+            "growth_accelerating": "growth",
             "risk_on": "risk_appetite",
             "inflation_pressure": "inflation",
         }

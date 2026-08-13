@@ -6,9 +6,7 @@ Maintains the complete principle library.
 
 from __future__ import annotations
 
-from typing import Optional
-
-from src.schemas.research import ResearchPrinciple, PrincipleStrength, PrincipleStatus
+from src.schemas.research import PrincipleStatus, PrincipleStrength, ResearchPrinciple
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -57,7 +55,8 @@ class PrincipleStore:
     def get_active(self) -> list[ResearchPrinciple]:
         """Get all non-retired, non-archived principles."""
         return [
-            p for p in self._principles.values()
+            p
+            for p in self._principles.values()
             if p.status not in (PrincipleStatus.RETIRED, PrincipleStatus.ARCHIVED)
         ]
 
@@ -72,8 +71,11 @@ class PrincipleStore:
     def get_validated_or_higher(self) -> list[ResearchPrinciple]:
         """Get principles at validated, mature, or foundational level."""
         result = []
-        for s in (PrincipleStrength.VALIDATED, PrincipleStrength.MATURE,
-                  PrincipleStrength.FOUNDATIONAL):
+        for s in (
+            PrincipleStrength.VALIDATED,
+            PrincipleStrength.MATURE,
+            PrincipleStrength.FOUNDATIONAL,
+        ):
             result.extend(self.get_by_strength(s))
         return result
 
@@ -120,8 +122,10 @@ class PrincipleStore:
             return False
         p.evidence.contradiction_count += 1
         if p.evidence.contradiction_count >= 10:
-            self.retire(principle_id, f"Exceeded contradiction threshold "
-                        f"({p.evidence.contradiction_count})")
+            self.retire(
+                principle_id,
+                f"Exceeded contradiction threshold " f"({p.evidence.contradiction_count})",
+            )
         elif p.evidence.contradiction_count >= 5:
             self.weaken(principle_id)
         return True
@@ -173,13 +177,13 @@ class PrincipleStore:
 
     @property
     def active_count(self) -> int:
-        return len([p for p in self._principles.values()
-                    if p.status == PrincipleStatus.ACTIVE])
+        return len([p for p in self._principles.values() if p.status == PrincipleStatus.ACTIVE])
 
     @property
     def competing_count(self) -> int:
-        return len([p for p in self._principles.values()
-                    if p.status == PrincipleStatus.ACTIVE_COMPETITION])
+        return len(
+            [p for p in self._principles.values() if p.status == PrincipleStatus.ACTIVE_COMPETITION]
+        )
 
     def summary(self) -> str:
         return (

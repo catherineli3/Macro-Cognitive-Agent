@@ -17,9 +17,6 @@ Evidence Sources (base_weights reflect epistemic reliability):
 
 from __future__ import annotations
 
-import math
-from typing import Union
-
 from src.research.beliefs.schemas import EvidenceSource
 
 # ── Base Weights by Evidence Source ──────────────────────────────────────────
@@ -27,12 +24,12 @@ from src.research.beliefs.schemas import EvidenceSource
 # MARKET_DATA > MACRO_DATA > HISTORY > COMPANY > INFERENCE > NEWS
 
 EVIDENCE_BASE_WEIGHTS: dict[str, float] = {
-    "macro_data":    0.85,
-    "market_data":   0.90,
-    "news":          0.40,
-    "company":       0.55,
-    "history":       0.60,
-    "inference":     0.50,
+    "macro_data": 0.85,
+    "market_data": 0.90,
+    "news": 0.40,
+    "company": 0.55,
+    "history": 0.60,
+    "inference": 0.50,
 }
 
 
@@ -122,13 +119,13 @@ def classify_evidence(
 
     # Direct type matching
     type_map = {
-        "macro_data":        EvidenceSource.MACRO_DATA,
-        "market_data":       EvidenceSource.MARKET_DATA,
-        "market data":       EvidenceSource.MARKET_DATA,
-        "news":              EvidenceSource.NEWS,
-        "company":           EvidenceSource.COMPANY,
-        "history":           EvidenceSource.HISTORY,
-        "inference":         EvidenceSource.INFERENCE,
+        "macro_data": EvidenceSource.MACRO_DATA,
+        "market_data": EvidenceSource.MARKET_DATA,
+        "market data": EvidenceSource.MARKET_DATA,
+        "news": EvidenceSource.NEWS,
+        "company": EvidenceSource.COMPANY,
+        "history": EvidenceSource.HISTORY,
+        "inference": EvidenceSource.INFERENCE,
     }
 
     if text in type_map:
@@ -139,35 +136,92 @@ def classify_evidence(
     # are more specific indicators of macro data than generic "rate" or "yield".
 
     macro_keywords = [
-        "fed", "ecb", "pce", "cpi", "ppi", "gdp", "nfp",
-        "nonfarm", "unemployment", "ism", "pmi", "inflation",
-        "policy", "rate hike", "rate cut", "fomc", "central bank",
-        "balance sheet", "fiscal", "deficit", "trade",
-        "interest rate", "basis point", "bps", "tightening",
-        "qe", "quantitative",
+        "fed",
+        "ecb",
+        "pce",
+        "cpi",
+        "ppi",
+        "gdp",
+        "nfp",
+        "nonfarm",
+        "unemployment",
+        "ism",
+        "pmi",
+        "inflation",
+        "policy",
+        "rate hike",
+        "rate cut",
+        "fomc",
+        "central bank",
+        "balance sheet",
+        "fiscal",
+        "deficit",
+        "trade",
+        "interest rate",
+        "basis point",
+        "bps",
+        "tightening",
+        "qe",
+        "quantitative",
     ]
 
     company_keywords = [
-        "earnings", "revenue", "guidance", "ceo", "quarterly",
-        "annual report", "eps", "beat", "miss",
+        "earnings",
+        "revenue",
+        "guidance",
+        "ceo",
+        "quarterly",
+        "annual report",
+        "eps",
+        "beat",
+        "miss",
     ]
 
     news_keywords = [
-        "headline", "breaking", "reported", "according to",
-        "sources say", "exclusive", "interview",
+        "headline",
+        "breaking",
+        "reported",
+        "according to",
+        "sources say",
+        "exclusive",
+        "interview",
     ]
 
     market_keywords = [
-        "price", "volume", "spread", "yield",
-        "dxy", "s&p", "spx", "nasdaq", "vix", "treasury",
-        "bond", "equity", "index", "resistance", "support",
-        "breakout", "broke above", "broke below", "rallied",
-        "sold off", "spike", "crash", "surged",
+        "price",
+        "volume",
+        "spread",
+        "yield",
+        "dxy",
+        "s&p",
+        "spx",
+        "nasdaq",
+        "vix",
+        "treasury",
+        "bond",
+        "equity",
+        "index",
+        "resistance",
+        "support",
+        "breakout",
+        "broke above",
+        "broke below",
+        "rallied",
+        "sold off",
+        "spike",
+        "crash",
+        "surged",
     ]
 
     history_keywords = [
-        "historically", "backtest", "analog", "precedent",
-        "prior cycle", "past", "previously", "historical",
+        "historically",
+        "backtest",
+        "analog",
+        "precedent",
+        "prior cycle",
+        "past",
+        "previously",
+        "historical",
     ]
 
     for kw in macro_keywords:
@@ -214,7 +268,10 @@ def compute_evidence_batch(
     return [
         compute_evidence_weight(s, c, r, corr)
         for s, c, r, corr in zip(
-            sources, confidences, recency_days_list, corroboration_counts,
+            sources,
+            confidences,
+            recency_days_list,
+            corroboration_counts,
         )
     ]
 
@@ -238,12 +295,12 @@ def get_source_reliability(source: EvidenceSource) -> dict:
         tier = "D — Low Reliability"
 
     descriptions = {
-        "macro_data":   "Official economic releases and policy announcements",
-        "market_data":  "Real-time price, volume, and spread data",
-        "news":         "News headlines and sentiment signals",
-        "company":      "Corporate earnings, guidance, and filings",
-        "history":      "Historical analogs and backtest results",
-        "inference":    "Model-derived conclusions and internal reasoning",
+        "macro_data": "Official economic releases and policy announcements",
+        "market_data": "Real-time price, volume, and spread data",
+        "news": "News headlines and sentiment signals",
+        "company": "Corporate earnings, guidance, and filings",
+        "history": "Historical analogs and backtest results",
+        "inference": "Model-derived conclusions and internal reasoning",
     }
 
     return {

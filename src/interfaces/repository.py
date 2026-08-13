@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """RepositoryInterface — Abstract contract for data persistence.
 
 The Repository pattern decouples storage logic from business logic.
@@ -9,6 +7,8 @@ Design goal:
     → Swap PostgreSQL for DuckDB/TimescaleDB/Snowflake without changing Collector.
     → Repository depends on StorageInterface, not on a concrete DB driver.
 """
+
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from datetime import datetime

@@ -59,10 +59,8 @@ _NARRATIVES: dict[str, dict] = {
         "assumptions": [
             "Dollar weakness represents genuine liquidity expansion "
             "rather than currency-specific dynamics",
-            "Lower yields reflect accommodative policy stance "
-            "rather than growth fears",
-            "Credit market strength is sustainable and not a "
-            "late-cycle compression",
+            "Lower yields reflect accommodative policy stance " "rather than growth fears",
+            "Credit market strength is sustainable and not a " "late-cycle compression",
         ],
         "direction": SignalDirection.BULLISH,
         "trigger": "bullish_majority",
@@ -76,12 +74,9 @@ _NARRATIVES: dict[str, dict] = {
             "to risk assets."
         ),
         "assumptions": [
-            "VIX elevation reflects genuine market fear, "
-            "not transient volatility event",
-            "Safe-haven demand (Gold) is driven by risk concerns "
-            "rather than inflation hedging",
-            "Credit stress is risk-driven rather than "
-            "fundamental credit deterioration",
+            "VIX elevation reflects genuine market fear, " "not transient volatility event",
+            "Safe-haven demand (Gold) is driven by risk concerns " "rather than inflation hedging",
+            "Credit stress is risk-driven rather than " "fundamental credit deterioration",
         ],
         "direction": SignalDirection.BEARISH,
         "trigger": "bearish_majority",
@@ -95,12 +90,10 @@ _NARRATIVES: dict[str, dict] = {
             "and risk-sensitive assets."
         ),
         "assumptions": [
-            "Low volatility reflects genuine stability "
-            "rather than complacency",
+            "Low volatility reflects genuine stability " "rather than complacency",
             "Industrial demand (Copper) strength represents "
             "real economic expansion, not speculative positioning",
-            "Credit spread compression is sustainable and "
-            "reflects fundamental health",
+            "Credit spread compression is sustainable and " "reflects fundamental health",
         ],
         "direction": SignalDirection.BULLISH,
         "trigger": "bullish_majority",
@@ -167,8 +160,12 @@ class HypothesisGenerator:
         logger.info(
             "generating_hypotheses total=%d bearish=%d bullish=%d neutral=%d "
             "bearish_ratio=%.2f bullish_ratio=%.2f",
-            total, len(bearish), len(bullish), len(neutral),
-            bearish_ratio, bullish_ratio,
+            total,
+            len(bearish),
+            len(bullish),
+            len(neutral),
+            bearish_ratio,
+            bullish_ratio,
         )
 
         hypotheses: list[HypothesisSchema] = []
@@ -262,9 +259,7 @@ class HypothesisGenerator:
         primary_dimension = self._primary_dimension(all_signals)
 
         # Select 2-3 relevant assumptions based on actual dimensions present
-        filtered_assumptions = self._filter_assumptions(
-            assumptions, dimensions
-        )
+        filtered_assumptions = self._filter_assumptions(assumptions, dimensions)
 
         return HypothesisSchema(
             statement=statement,
@@ -275,9 +270,7 @@ class HypothesisGenerator:
 
     # ── Private: Narrative Selection ──────────────────────────────────
 
-    def _select_narrative(
-        self, trigger: str, signals: list[MacroSignalSchema]
-    ) -> dict:
+    def _select_narrative(self, trigger: str, signals: list[MacroSignalSchema]) -> dict:
         """Select the best narrative for a given trigger pattern.
 
         Priority order:
@@ -324,14 +317,26 @@ class HypothesisGenerator:
         for s in signals[:5]:  # Top 5 for readability
             d = s.direction.value
             if d == "bearish":
-                verb_map = {"DXY": "rising", "US10Y": "elevated", "US2Y": "elevated",
-                            "HYG": "under stress", "^VIX": "elevated", "GC=F": "surging",
-                            "HG=F": "falling"}
+                verb_map = {
+                    "DXY": "rising",
+                    "US10Y": "elevated",
+                    "US2Y": "elevated",
+                    "HYG": "under stress",
+                    "^VIX": "elevated",
+                    "GC=F": "surging",
+                    "HG=F": "falling",
+                }
                 verb = verb_map.get(s.indicator, "deteriorating")
             elif d == "bullish":
-                verb_map = {"DXY": "weakening", "US10Y": "declining", "US2Y": "declining",
-                            "HYG": "strengthening", "^VIX": "subdued", "GC=F": "declining",
-                            "HG=F": "rising"}
+                verb_map = {
+                    "DXY": "weakening",
+                    "US10Y": "declining",
+                    "US2Y": "declining",
+                    "HYG": "strengthening",
+                    "^VIX": "subdued",
+                    "GC=F": "declining",
+                    "HG=F": "rising",
+                }
                 verb = verb_map.get(s.indicator, "improving")
             else:
                 verb = "stable"
@@ -366,13 +371,12 @@ class HypothesisGenerator:
         if not signals:
             return "Macro"
         from collections import Counter
+
         counter = Counter(s.dimension for s in signals)
         return counter.most_common(1)[0][0]
 
     @staticmethod
-    def _filter_assumptions(
-        assumptions: list[str], dimensions: set[str]
-    ) -> list[str]:
+    def _filter_assumptions(assumptions: list[str], dimensions: set[str]) -> list[str]:
         """Filter assumptions to only those relevant to the present dimensions.
 
         Removes assumptions about dimensions with no signals.

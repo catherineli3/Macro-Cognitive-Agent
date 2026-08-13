@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """MacroNarrative — The canonical structured output of a macro research run.
 
 This is the ONLY contract between the Agent and all presentation layers.
@@ -14,13 +12,13 @@ Design rationale (DDR-003, DDR-010):
     - The Narrative Engine knows nothing about Markdown, HTML, or PDF.
 """
 
-from datetime import datetime, timezone
-from typing import Optional
+from __future__ import annotations
+
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
 
 from src.domain.narrative import ConfidenceLevel
-
 
 # ── Dimension Narrative ─────────────────────────────────────────────────────
 
@@ -159,7 +157,7 @@ class RiskItem(BaseModel):
         default="medium",
         description="low | medium | high | critical",
     )
-    related_hypothesis: Optional[str] = Field(
+    related_hypothesis: str | None = Field(
         default=None,
         description="Hypothesis ID this risk relates to",
     )
@@ -237,19 +235,27 @@ class MacroNarrative(BaseModel):
     # ── Dimension Analysis ─────────────────────────────────────────────
 
     liquidity: DimensionNarrative = Field(
-        default_factory=lambda: DimensionNarrative(dimension="liquidity", summary="No liquidity analysis available."),
+        default_factory=lambda: DimensionNarrative(
+            dimension="liquidity", summary="No liquidity analysis available."
+        ),
         description="Liquidity dimension assessment",
     )
     credit: DimensionNarrative = Field(
-        default_factory=lambda: DimensionNarrative(dimension="credit", summary="No credit analysis available."),
+        default_factory=lambda: DimensionNarrative(
+            dimension="credit", summary="No credit analysis available."
+        ),
         description="Credit dimension assessment",
     )
     growth: DimensionNarrative = Field(
-        default_factory=lambda: DimensionNarrative(dimension="growth", summary="No growth analysis available."),
+        default_factory=lambda: DimensionNarrative(
+            dimension="growth", summary="No growth analysis available."
+        ),
         description="Growth dimension assessment",
     )
     inflation: DimensionNarrative = Field(
-        default_factory=lambda: DimensionNarrative(dimension="inflation", summary="No inflation analysis available."),
+        default_factory=lambda: DimensionNarrative(
+            dimension="inflation", summary="No inflation analysis available."
+        ),
         description="Inflation dimension assessment",
     )
 
@@ -324,7 +330,7 @@ class MacroNarrative(BaseModel):
         le=1.0,
         description="Numeric confidence score 0-1 (Beta)",
     )
-    confidence_explanation: Optional[ConfidenceExplanation] = Field(
+    confidence_explanation: ConfidenceExplanation | None = Field(
         default=None,
         description="Detailed confidence breakdown (Beta)",
     )
@@ -346,7 +352,7 @@ class MacroNarrative(BaseModel):
     )
 
     generated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="When the narrative was generated",
     )
 

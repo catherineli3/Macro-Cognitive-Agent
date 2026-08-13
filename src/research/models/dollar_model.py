@@ -66,9 +66,7 @@ class DollarModel(MentalModel):
                 f"{level_signal}. USD weakness provides global easing tailwind."
             )
         else:
-            conclusion_text = (
-                f"Dollar Neutral — DXY at {dxy_level:.1f}. {level_signal}"
-            )
+            conclusion_text = f"Dollar Neutral — DXY at {dxy_level:.1f}. {level_signal}"
 
         confidence = self._compute_confidence(
             score, len(supporting), len(contradicting), len(self._INDICATORS)

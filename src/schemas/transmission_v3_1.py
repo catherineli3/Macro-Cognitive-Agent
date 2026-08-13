@@ -13,11 +13,9 @@ Key design upgrades (from B → B.5):
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Optional
 from uuid import uuid4
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Failure Mode
@@ -26,24 +24,26 @@ from uuid import uuid4
 
 class FailureModeCategory(str, Enum):
     """Category of transmission failure."""
-    EVENT_OVERRIDE = "event_override"           # External event suppressed transmission
-    REGIME_INCOMPATIBLE = "regime_incompatible" # Not valid in current regime
-    THRESHOLD_NONLINEAR = "threshold_nonlinear" # Diminishing returns at extremes
-    STRUCTURAL_BREAK = "structural_break"       # Relationship fundamentally changed
-    SIGNAL_NOISE = "signal_noise"               # Normal fluctuation, no structural issue
-    COMPETITION_LOSS = "competition_loss"        # Alternative mechanism dominated
-    UNKNOWN = "unknown"                         # Not yet classified
+
+    EVENT_OVERRIDE = "event_override"  # External event suppressed transmission
+    REGIME_INCOMPATIBLE = "regime_incompatible"  # Not valid in current regime
+    THRESHOLD_NONLINEAR = "threshold_nonlinear"  # Diminishing returns at extremes
+    STRUCTURAL_BREAK = "structural_break"  # Relationship fundamentally changed
+    SIGNAL_NOISE = "signal_noise"  # Normal fluctuation, no structural issue
+    COMPETITION_LOSS = "competition_loss"  # Alternative mechanism dominated
+    UNKNOWN = "unknown"  # Not yet classified
 
 
 class TransmissionAction(str, Enum):
     """Action to apply to a transmission edge."""
-    REINFORCE = "reinforce"              # Transmission succeeded → reliability up
-    WEAKEN = "weaken"                    # Transmission broke → reliability down
+
+    REINFORCE = "reinforce"  # Transmission succeeded → reliability up
+    WEAKEN = "weaken"  # Transmission broke → reliability down
     REGISTER_FAILURE = "register_failure"  # New failure mode discovered
-    ADD_CONDITION = "add_condition"       # New validity condition discovered
+    ADD_CONDITION = "add_condition"  # New validity condition discovered
     PROMOTE_MECHANISM = "promote_mechanism"  # This mechanism won competition
-    DEMOTE_MECHANISM = "demote_mechanism"    # This mechanism lost competition
-    NO_CHANGE = "no_change"               # No significant update needed
+    DEMOTE_MECHANISM = "demote_mechanism"  # This mechanism lost competition
+    NO_CHANGE = "no_change"  # No significant update needed
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -54,15 +54,16 @@ class TransmissionAction(str, Enum):
 @dataclass
 class FailureMode:
     """A recorded failure pattern on a transmission edge."""
+
     mode_id: str = field(default_factory=lambda: f"fm-{uuid4().hex[:8]}")
     category: FailureModeCategory = FailureModeCategory.UNKNOWN
-    name: str = ""                       # Named failure: "Treasury Supply Shock", "VIX Spike"
+    name: str = ""  # Named failure: "Treasury Supply Shock", "VIX Spike"
     condition: dict = field(default_factory=dict)
     # e.g. {"vix_threshold": 30, "fiscal_dominance": True}
     description: str = ""
     occurrence_count: int = 0
-    first_observed: Optional[datetime] = None
-    last_observed: Optional[datetime] = None
+    first_observed: datetime | None = None
+    last_observed: datetime | None = None
 
     def __repr__(self) -> str:
         return f"<FailureMode {self.name or self.category.value} x{self.occurrence_count}>"
@@ -101,10 +102,10 @@ class TransmissionEdge:
     """
 
     edge_id: str = ""
-    source: str = ""                     # e.g. "liquidity", "credit", "Dollar"
-    target: str = ""                     # e.g. "NASDAQ", "Gold"
-    direction: str = "+"                 # "+" (positive corr) / "-" (negative corr)
-    mechanism: str = ""                  # Named transmission mechanism (for competition)
+    source: str = ""  # e.g. "liquidity", "credit", "Dollar"
+    target: str = ""  # e.g. "NASDAQ", "Gold"
+    direction: str = "+"  # "+" (positive corr) / "-" (negative corr)
+    mechanism: str = ""  # Named transmission mechanism (for competition)
 
     # ── Five Attributes ──────────────────────────────────────────────────
     # 1. Reliability: P(transmission succeeds) in [0, 1]
@@ -116,7 +117,7 @@ class TransmissionEdge:
     latency_range: tuple[int, int] = (2, 14)  # (min, max) observed latency
 
     # 3. Strength: correlation / effect size, 0=no effect, 1=deterministic
-    edge_strength: float = 0.50          # Base correlation strength
+    edge_strength: float = 0.50  # Base correlation strength
     strength_by_context: dict[str, float] = field(default_factory=dict)
 
     # 4. Failure Modes: named patterns of why it breaks
@@ -131,8 +132,8 @@ class TransmissionEdge:
     conditions_for_validity: list[str] = field(default_factory=list)
 
     # Metadata
-    last_updated: Optional[datetime] = None
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    last_updated: datetime | None = None
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     # ── Properties ───────────────────────────────────────────────────────
 
@@ -171,7 +172,7 @@ class TransmissionEdge:
         return [fm.name for fm in self.failure_modes if fm.name]
 
     @property
-    def dominant_failure_mode(self) -> Optional[FailureMode]:
+    def dominant_failure_mode(self) -> FailureMode | None:
         """The most frequently observed failure mode."""
         if not self.failure_modes:
             return None
@@ -247,16 +248,17 @@ class BreakpointSeverity(str, Enum):
 @dataclass
 class SegmentDiagnosis:
     """Diagnosis of a single transmission segment's performance."""
+
     segment_id: str = ""
     source: str = ""
     target: str = ""
-    mechanism: str = ""                  # Which mechanism (for competition edges)
+    mechanism: str = ""  # Which mechanism (for competition edges)
     expected_direction: str = ""
     actual_direction: str = ""
     transmitted_correctly: bool = False
     is_breakpoint: bool = False
-    breakpoint_severity: Optional[BreakpointSeverity] = None
-    matched_failure_mode: Optional[str] = None
+    breakpoint_severity: BreakpointSeverity | None = None
+    matched_failure_mode: str | None = None
     evidence: dict = field(default_factory=dict)
     diagnosis_rationale: str = ""
 
@@ -285,14 +287,14 @@ class BreakpointDiagnosis:
 
     all_segments_healthy: bool = False
     suggested_action: TransmissionAction = TransmissionAction.NO_CHANGE
-    new_failure_mode: Optional[FailureMode] = None
+    new_failure_mode: FailureMode | None = None
 
     # Competition tracking (Milestone B.5)
     competing_mechanisms: list[str] = field(default_factory=list)
-    winning_mechanism: str = ""          # Which mechanism actually transmitted
+    winning_mechanism: str = ""  # Which mechanism actually transmitted
     losing_mechanisms: list[str] = field(default_factory=list)
 
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def is_actionable(self) -> bool:
@@ -306,7 +308,9 @@ class BreakpointDiagnosis:
             parts.append(f"  {status} {sd.segment_id}: {sd.diagnosis_rationale}{marker}")
         chain_desc = " → ".join(sd.segment_id for sd in self.segment_diagnoses)
         brk = f"\n  Breakpoint: {self.breakpoint_segment}" if self.breakpoint_found else ""
-        root = f"\n  Root cause: {self.root_cause_description}" if self.root_cause_description else ""
+        root = (
+            f"\n  Root cause: {self.root_cause_description}" if self.root_cause_description else ""
+        )
         comp = ""
         if self.winning_mechanism:
             comp = f"\n  Winning mechanism: {self.winning_mechanism}"
@@ -315,8 +319,11 @@ class BreakpointDiagnosis:
         return f"Chain: {chain_desc}\n" + "\n".join(parts) + brk + root + comp
 
     def __repr__(self) -> str:
-        health = ("healthy" if self.all_segments_healthy else
-                  f"broken_at={self.breakpoint_segment}" if self.breakpoint_found else "diagnosed")
+        health = (
+            "healthy"
+            if self.all_segments_healthy
+            else f"broken_at={self.breakpoint_segment}" if self.breakpoint_found else "diagnosed"
+        )
         return f"<BreakpointDiagnosis {health} cat={self.root_cause_category.value}>"
 
 
@@ -327,10 +334,11 @@ class BreakpointDiagnosis:
 
 class FindingConfidence(str, Enum):
     """How confident is this research finding."""
-    PRELIMINARY = "preliminary"     # < 20 observations
-    OBSERVED = "observed"           # 20-50 observations
-    ESTABLISHED = "established"     # 50-100 observations
-    ROBUST = "robust"               # > 100 observations
+
+    PRELIMINARY = "preliminary"  # < 20 observations
+    OBSERVED = "observed"  # 20-50 observations
+    ESTABLISHED = "established"  # 50-100 observations
+    ROBUST = "robust"  # > 100 observations
 
 
 @dataclass
@@ -357,8 +365,8 @@ class ResearchNote:
     mechanism: str = ""
 
     # The finding (researcher prose)
-    headline: str = ""                   # One-line summary
-    narrative: str = ""                  # Full research-note style paragraph
+    headline: str = ""  # One-line summary
+    narrative: str = ""  # Full research-note style paragraph
     key_numbers: dict = field(default_factory=dict)
     # e.g. {"baseline_reliability": 0.82, "regime_reliability": 0.31, "current_vix": 34}
 
@@ -369,10 +377,10 @@ class ResearchNote:
     confidence: FindingConfidence = FindingConfidence.PRELIMINARY
 
     # Actionable insight
-    recommendation: str = ""             # What the agent should do
+    recommendation: str = ""  # What the agent should do
     competing_notes: list[str] = field(default_factory=list)  # IDs of competing research notes
 
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def describe(self) -> str:
         return (
@@ -402,17 +410,17 @@ class ResearchFinding:
     """
 
     finding_id: str = field(default_factory=lambda: f"rf-{uuid4().hex[:8]}")
-    category: str = ""                   # "reliability_ranking" | "failure_warning" |
-                                         # "failure_event_correlation" | "regime_similarity"
+    category: str = ""  # "reliability_ranking" | "failure_warning" |
+    # "failure_event_correlation" | "regime_similarity"
 
     # Human-readable
-    title: str = ""                      # "Liquidity→Credit is strongest in easing regime"
-    description: str = ""                # Full research prose
+    title: str = ""  # "Liquidity→Credit is strongest in easing regime"
+    description: str = ""  # Full research prose
     evidence: dict = field(default_factory=dict)
     # Supporting data: {transmission: weights, regime_comparison: {...}, etc.}
 
     # Scoring
-    relevance_score: float = 0.0         # How relevant is this finding RIGHT NOW
+    relevance_score: float = 0.0  # How relevant is this finding RIGHT NOW
     confidence: FindingConfidence = FindingConfidence.PRELIMINARY
 
     # Source
@@ -420,7 +428,7 @@ class ResearchFinding:
     source_notes: list[str] = field(default_factory=list)
     context_key: str = ""
 
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def __repr__(self) -> str:
         return f"<ResearchFinding [{self.category}] {self.title[:50]}>"
@@ -451,12 +459,16 @@ class ResearchFindingsReport:
 
     # Summary
     summary: str = ""
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def total_findings(self) -> int:
-        return (len(self.reliability_ranking) + len(self.failure_warnings) +
-                len(self.failure_event_correlations) + len(self.regime_similarities))
+        return (
+            len(self.reliability_ranking)
+            + len(self.failure_warnings)
+            + len(self.failure_event_correlations)
+            + len(self.regime_similarities)
+        )
 
     @property
     def total_notes(self) -> int:
@@ -497,8 +509,10 @@ class ResearchFindingsReport:
         return "\n".join(lines)
 
     def __repr__(self) -> str:
-        return (f"<ResearchFindingsReport ctx={self.context_key} "
-                f"findings={self.total_findings} notes={self.total_notes}>")
+        return (
+            f"<ResearchFindingsReport ctx={self.context_key} "
+            f"findings={self.total_findings} notes={self.total_notes}>"
+        )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -530,10 +544,10 @@ class TransmissionUpdateRecord:
     strength_delta: float = 0.0
 
     # Competition
-    competition_delta: float = 0.0    # Boost/demote for mechanism competition
+    competition_delta: float = 0.0  # Boost/demote for mechanism competition
 
     # Failure
-    failure_category: Optional[FailureModeCategory] = None
+    failure_category: FailureModeCategory | None = None
     failure_description: str = ""
 
     breakpoint_diagnosis_id: str = ""
@@ -542,7 +556,7 @@ class TransmissionUpdateRecord:
     # Cascade
     affected_belief_ids: list[str] = field(default_factory=list)
 
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def __repr__(self) -> str:
         return (
@@ -555,10 +569,11 @@ class TransmissionUpdateRecord:
 @dataclass
 class TransmissionUpdateBatch:
     """Collection of transmission updates from a single evaluation cycle."""
+
     batch_id: str = field(default_factory=lambda: f"tub-{uuid4().hex[:8]}")
     run_id: str = ""
     updates: list[TransmissionUpdateRecord] = field(default_factory=list)
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def total_reinforcements(self) -> int:
@@ -574,9 +589,12 @@ class TransmissionUpdateBatch:
 
     @property
     def total_competition_updates(self) -> int:
-        return sum(1 for u in self.updates
-                   if u.action in (TransmissionAction.PROMOTE_MECHANISM,
-                                   TransmissionAction.DEMOTE_MECHANISM))
+        return sum(
+            1
+            for u in self.updates
+            if u.action
+            in (TransmissionAction.PROMOTE_MECHANISM, TransmissionAction.DEMOTE_MECHANISM)
+        )
 
     @property
     def affected_segments(self) -> set[str]:
@@ -590,7 +608,11 @@ class TransmissionUpdateBatch:
         return list(set(result))
 
     def summary(self) -> str:
-        comp = f", {self.total_competition_updates} competition" if self.total_competition_updates else ""
+        comp = (
+            f", {self.total_competition_updates} competition"
+            if self.total_competition_updates
+            else ""
+        )
         return (
             f"TransmissionUpdateBatch: {len(self.updates)} updates "
             f"({self.total_reinforcements} reinforce, "
@@ -649,8 +671,8 @@ class ContextualBelief:
     min_samples_for_split: int = 15
 
     version: int = 1
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    last_updated: Optional[datetime] = None
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    last_updated: datetime | None = None
 
     def active_weight(self, context_key: str) -> float:
         profile = self.contexts.get(context_key)

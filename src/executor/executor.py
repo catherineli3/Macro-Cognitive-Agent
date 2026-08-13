@@ -23,8 +23,7 @@ RC-1 (Reliability):
 """
 
 import asyncio
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from src.domain.execution import TaskResultStatus
 from src.executor.context import ExecutionContext
@@ -32,7 +31,7 @@ from src.interfaces.task_handler import TaskHandlerInterface
 from src.planning.validator import PlanValidator
 from src.schemas.execution import ExecutionResult, TaskResult
 from src.schemas.planning import ExecutionPlan, Task
-from src.shared.exceptions import ExecutionError, PlanValidationError
+from src.shared.exceptions import ExecutionError
 from src.shared.logging import get_logger
 from src.shared.reliability import (
     TaskTimeoutError,
@@ -188,9 +187,7 @@ class AgentExecutor:
 
     # ── Private: Scheduler (dependency resolution) ─────────────────────────
 
-    def _get_ready_tasks(
-        self, plan: ExecutionPlan, context: ExecutionContext
-    ) -> list[Task]:
+    def _get_ready_tasks(self, plan: ExecutionPlan, context: ExecutionContext) -> list[Task]:
         """Return tasks whose all dependencies have completed (or soft-failed).
 
         Rules:
@@ -238,7 +235,7 @@ class AgentExecutor:
         return True
 
     @staticmethod
-    def _is_critical(task: Optional[Task]) -> bool:
+    def _is_critical(task: Task | None) -> bool:
         """Determine if a task is critical (failure blocks downstream)."""
         if task is None:
             return True  # Unknown tasks are treated as critical
@@ -266,7 +263,7 @@ class AgentExecutor:
             ExecutionError: If capability is missing from task config
                             or no handler is registered for it.
         """
-        capability: Optional[str] = task.config.get("capability")
+        capability: str | None = task.config.get("capability")
         if not capability:
             raise ExecutionError(
                 f"Task '{task.id}' has no 'capability' in config",
@@ -276,8 +273,7 @@ class AgentExecutor:
         handler = self._handlers.get(capability)
         if handler is None:
             raise ExecutionError(
-                f"No handler registered for capability '{capability}' "
-                f"(task '{task.id}')",
+                f"No handler registered for capability '{capability}' " f"(task '{task.id}')",
                 details={
                     "task_id": task.id,
                     "capability": capability,
@@ -301,7 +297,7 @@ class AgentExecutor:
         A handler exception is caught and converted to a FAILED TaskResult
         — it does NOT crash the Executor or the Pipeline.
         """
-        started_at = datetime.now(timezone.utc)
+        started_at = datetime.now(UTC)
         capability = task.config.get("capability", "unknown")
         logger.debug(
             "Executing task",
@@ -317,7 +313,7 @@ class AgentExecutor:
         max_retries = self._get_max_retries(task)
 
         handler = self._get_handler(task)
-        last_error: Optional[str] = None
+        last_error: str | None = None
         attempts = 0
 
         for attempt in range(1, max_retries + 1):
@@ -332,7 +328,7 @@ class AgentExecutor:
                 )
                 break  # Success — exit retry loop
             except TaskTimeoutError:
-                completed_at = datetime.now(timezone.utc)
+                completed_at = datetime.now(UTC)
                 delta_ms = round((completed_at - started_at).total_seconds() * 1000, 2)
                 logger.error(
                     "Task timed out",
@@ -346,9 +342,11 @@ class AgentExecutor:
                 if attempt >= max_retries:
                     return self._build_task_result(
                         task=task,
-                        status=TaskResultStatus.TIMED_OUT
-                        if self._is_critical(task)
-                        else TaskResultStatus.SKIPPED,
+                        status=(
+                            TaskResultStatus.TIMED_OUT
+                            if self._is_critical(task)
+                            else TaskResultStatus.SKIPPED
+                        ),
                         started_at=started_at,
                         error=f"Timed out after {timeout_s:.1f}s ({attempt} attempt(s))",
                         execution_time_ms=delta_ms,
@@ -375,7 +373,7 @@ class AgentExecutor:
                     continue  # Will hit the outer except
             except Exception as exc:
                 # Non-retryable exception — fail immediately
-                completed_at = datetime.now(timezone.utc)
+                completed_at = datetime.now(UTC)
                 delta_ms = round((completed_at - started_at).total_seconds() * 1000, 2)
                 logger.error(
                     "Task execution failed with non-retryable exception",
@@ -383,16 +381,18 @@ class AgentExecutor:
                 )
                 return self._build_task_result(
                     task=task,
-                    status=TaskResultStatus.FAILED
-                    if self._is_critical(task)
-                    else TaskResultStatus.SKIPPED,
+                    status=(
+                        TaskResultStatus.FAILED
+                        if self._is_critical(task)
+                        else TaskResultStatus.SKIPPED
+                    ),
                     started_at=started_at,
                     error=str(exc),
                     execution_time_ms=delta_ms,
                 )
         else:
             # Retry loop exhausted without success
-            completed_at = datetime.now(timezone.utc)
+            completed_at = datetime.now(UTC)
             delta_ms = round((completed_at - started_at).total_seconds() * 1000, 2)
             logger.error(
                 "Task failed after all retries",
@@ -404,9 +404,9 @@ class AgentExecutor:
             )
             return self._build_task_result(
                 task=task,
-                status=TaskResultStatus.FAILED
-                if self._is_critical(task)
-                else TaskResultStatus.SKIPPED,
+                status=(
+                    TaskResultStatus.FAILED if self._is_critical(task) else TaskResultStatus.SKIPPED
+                ),
                 started_at=started_at,
                 error=f"Failed after {attempts} attempt(s): {last_error}",
                 execution_time_ms=delta_ms,
@@ -415,7 +415,7 @@ class AgentExecutor:
         # Success path — result was set in the try block
         # Ensure timing is set if handler didn't populate it
         if result.started_at == result.completed_at or result.execution_time_ms == 0.0:
-            completed_at = datetime.now(timezone.utc)
+            completed_at = datetime.now(UTC)
             result.completed_at = completed_at
             delta = completed_at - result.started_at
             result.execution_time_ms = round(delta.total_seconds() * 1000, 2)
@@ -439,14 +439,12 @@ class AgentExecutor:
         started_at: datetime,
         error: str = "",
         execution_time_ms: float = 0.0,
-        artifacts: Optional[dict] = None,
+        artifacts: dict | None = None,
     ) -> TaskResult:
         """Build a TaskResult for non-success outcomes (timeout, failure, skipped)."""
-        completed_at = datetime.now(timezone.utc)
+        completed_at = datetime.now(UTC)
         if execution_time_ms == 0.0:
-            execution_time_ms = round(
-                (completed_at - started_at).total_seconds() * 1000, 2
-            )
+            execution_time_ms = round((completed_at - started_at).total_seconds() * 1000, 2)
         return TaskResult(
             task_id=task.id,
             task_name=task.name,

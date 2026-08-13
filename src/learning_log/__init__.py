@@ -10,7 +10,7 @@ Minimum 200 entries before PatternLearner activates (DDR-V3-005).
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 from typing import Optional
 from uuid import uuid4
@@ -41,7 +41,7 @@ class LearningLogRepository:
         await self._ensure_loaded()
         if not entry.entry_id:
             entry.entry_id = f"log-{uuid4().hex[:8]}"
-        entry.logged_at = datetime.now(timezone.utc)
+        entry.logged_at = datetime.now(UTC)
         self._entries.append(entry)
         await self._persist_incremental(entry)
         return entry.entry_id
@@ -92,7 +92,9 @@ class LearningLogRepository:
         return [e for e in self._entries if e.dimension.lower() == dimension.lower()]
 
     async def get_error_distribution(
-        self, window_days: Optional[int] = None, channel: Optional[str] = None,
+        self,
+        window_days: int | None = None,
+        channel: str | None = None,
     ) -> dict[str, int]:
         """Get error category distribution, optionally filtered."""
         await self._ensure_loaded()
@@ -100,11 +102,8 @@ class LearningLogRepository:
         if channel:
             entries = [e for e in entries if e.transmission_channel == channel]
         if window_days:
-            cutoff = datetime.now(timezone.utc)
-            entries = [
-                e for e in entries
-                if (cutoff - e.logged_at).days <= window_days
-            ]
+            cutoff = datetime.now(UTC)
+            entries = [e for e in entries if (cutoff - e.logged_at).days <= window_days]
 
         dist: dict[str, int] = {}
         for e in entries:
@@ -152,6 +151,8 @@ class LearningLogRepository:
         data = {
             "entries": [e.model_dump(mode="json") for e in self._entries],
             "total": len(self._entries),
-            "persisted_at": datetime.now(timezone.utc).isoformat(),
+            "persisted_at": datetime.now(UTC).isoformat(),
         }
-        index_path.write_text(json.dumps(data, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+        index_path.write_text(
+            json.dumps(data, indent=2, ensure_ascii=False, default=str), encoding="utf-8"
+        )

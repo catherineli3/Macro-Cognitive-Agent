@@ -16,11 +16,11 @@ liquidity would drive assets, but were wrong because credit transmission failed.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-from src.schemas.research_thesis import ResearchThesis, ThesisOutcome, ThesisStatus
 from src.research.evolution.regime_gate import RegimeSnapshot
+from src.schemas.research_thesis import ResearchThesis, ThesisOutcome, ThesisStatus
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -33,13 +33,13 @@ class PostmortemReport:
     report_id: str = ""
     thesis_id: str = ""
     thesis_validated: bool = False
-    root_cause: str = ""                          # e.g. "Transmission chain broke at X"
+    root_cause: str = ""  # e.g. "Transmission chain broke at X"
     transmission_problems: list[str] = field(default_factory=list)
-    framework_assessment: str = ""                # Was the framework appropriate?
-    learning: str = ""                            # What should be remembered
+    framework_assessment: str = ""  # Was the framework appropriate?
+    learning: str = ""  # What should be remembered
     suggested_actions: list[str] = field(default_factory=list)
     diagnosis_notes: str = ""
-    generated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    generated_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def describe(self) -> str:
         status = "VALIDATED" if self.thesis_validated else "INVALIDATED"
@@ -60,7 +60,7 @@ class ResearchMemoryEntry:
 
     entry_id: str = ""
     cycle_number: int = 0
-    date: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    date: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     # Input state
     market_regime: RegimeSnapshot | None = None
@@ -169,10 +169,7 @@ class ResearchMemory:
 
     def query_by_framework(self, framework_id: str) -> list[ResearchMemoryEntry]:
         """Find entries that used a specific framework."""
-        return [
-            e for e in self._entries.values()
-            if framework_id in e.framework_used
-        ]
+        return [e for e in self._entries.values() if framework_id in e.framework_used]
 
     def get_validated_theses(self) -> list[ResearchMemoryEntry]:
         """Get entries where the thesis was validated."""
@@ -180,16 +177,12 @@ class ResearchMemory:
 
     def get_invalidated_theses(self) -> list[ResearchMemoryEntry]:
         """Get entries where the thesis was invalidated."""
-        return [
-            e for e in self._entries.values()
-            if e.outcome and not e.outcome.verified
-        ]
+        return [e for e in self._entries.values() if e.outcome and not e.outcome.verified]
 
     def get_active_theses(self) -> list[ResearchMemoryEntry]:
         """Get entries with actively pending theses."""
         return [
-            e for e in self._entries.values()
-            if e.thesis and e.thesis.status == ThesisStatus.ACTIVE
+            e for e in self._entries.values() if e.thesis and e.thesis.status == ThesisStatus.ACTIVE
         ]
 
     # ── Analytics ───────────────────────────────────────────────────────
@@ -225,6 +218,7 @@ class ResearchMemory:
     def common_failure_reasons(self, n: int = 5) -> list[tuple[str, int]]:
         """Most common root causes of thesis failure."""
         from collections import Counter
+
         causes = Counter()
         for e in self._entries.values():
             if e.postmortem and e.postmortem.root_cause:
@@ -270,6 +264,7 @@ class ResearchMemory:
     def _save(self) -> None:
         """Save all entries to JSON file."""
         import json
+
         try:
             self._path.parent.mkdir(parents=True, exist_ok=True)
             data = {
@@ -284,17 +279,19 @@ class ResearchMemory:
     def _load(self) -> None:
         """Load entries from JSON file."""
         import json
+
         if not self._path.exists():
             return
         try:
-            with open(self._path, "r", encoding="utf-8") as f:
+            with open(self._path, encoding="utf-8") as f:
                 data = json.load(f)
             self._entries = {}
             self._by_date = data.get("by_date", [])
             # Entries are loaded as dicts; full deserialization needs schema classes
             # For now, we store minimal dict data
-            logger.info("Loaded %d memory entries from %s",
-                        len(data.get("entries", {})), self._path)
+            logger.info(
+                "Loaded %d memory entries from %s", len(data.get("entries", {})), self._path
+            )
         except Exception as e:
             logger.warning("Could not load research memory: %s", e)
             self._entries = {}
@@ -303,7 +300,11 @@ class ResearchMemory:
     def export(self, path: str | None = None) -> str:
         """Export memory to a JSON file."""
         import json
-        export_path = Path(path or f"data/research_memory_export_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json")
+
+        export_path = Path(
+            path
+            or f"data/research_memory_export_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}.json"
+        )
         export_path.parent.mkdir(parents=True, exist_ok=True)
         data = {
             "total_entries": self.total_entries,

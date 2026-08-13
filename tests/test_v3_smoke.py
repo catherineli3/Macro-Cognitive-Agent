@@ -1,14 +1,17 @@
 """V3 Release 3.0 Smoke Test."""
+
 import asyncio
-from src.prediction import MultiPredictionEngine
-from src.evaluation import OutcomeEvaluationEngine
-from src.diagnosis import DiagnosisEngine
-from src.hypothesis_library import HypothesisLibrary
+
 from src.belief_versioning import BeliefVersionManager
-from src.learning_unit import LearningUnitValidator
+from src.diagnosis import DiagnosisEngine
+from src.evaluation import OutcomeEvaluationEngine
+from src.hypothesis_library import HypothesisLibrary
 from src.learning_log import LearningLogRepository
-from src.schemas.learning_unit import LearningUnit
+from src.learning_unit import LearningUnitValidator
+from src.metrics import KPIMetricsEngine
+from src.prediction import MultiPredictionEngine
 from src.schemas.hypothesis import HypothesisSchema, HypothesisSet
+from src.schemas.learning_unit import LearningUnit
 from src.schemas.signal import SignalDirection
 
 
@@ -39,7 +42,8 @@ async def main():
     # 4. Prediction Engine
     eng = MultiPredictionEngine()
     h = HypothesisSchema(
-        statement="Liquidity tightening", dimension="liquidity",
+        statement="Liquidity tightening",
+        dimension="liquidity",
         direction=SignalDirection.BEARISH,
     )
     hs = HypothesisSet(hypotheses=[h])
@@ -47,30 +51,39 @@ async def main():
     assert batch.total_predictions == 3
     print(f"4. Predictions: {batch.total_predictions} preds, {batch.channel_count} channels")
     for p in batch.predictions:
-        print(f"   {p.prediction_tier.value}: {p.indicator} {p.direction} ({p.transmission_channel})")
+        print(
+            f"   {p.prediction_tier.value}: {p.indicator} {p.direction} ({p.transmission_channel})"
+        )
 
     # 5. Evaluation
     ev = OutcomeEvaluationEngine()
     actual = {
         "NASDAQ": (18000.0, 18500.0),  # ↓ bearish correct
-        "USD": (106.5, 105.5),          # ↑ bullish (wrong direction)
-        "Gold": (2350.0, 2310.0),       # ↑ bullish (wrong direction)
+        "USD": (106.5, 105.5),  # ↑ bullish (wrong direction)
+        "Gold": (2350.0, 2310.0),  # ↑ bullish (wrong direction)
     }
     report = await ev.evaluate_batch(batch, actual)
-    print(f"5. Evaluation: da={report.directional_accuracy:.1%}, ch_acc={report.accuracy_by_channel}")
+    print(
+        f"5. Evaluation: da={report.directional_accuracy:.1%}, ch_acc={report.accuracy_by_channel}"
+    )
 
     # 6. Diagnosis
     diag = DiagnosisEngine()
     dr = await diag.diagnose_batch(report)
-    print(f"6. Diagnosis: {dr.total_diagnosed} classified, {dr.correct_count} correct, {dr.incorrect_count} errors")
+    print(
+        f"6. Diagnosis: {dr.total_diagnosed} classified, {dr.correct_count} correct, {dr.incorrect_count} errors"
+    )
     print(f"   Error dist: {dr.error_distribution}")
 
     # 7. Learning Log
     log = LearningLogRepository(storage_dir="data/v3_test/learning_log")
     from src.schemas.learning_log import LearningLogEntry
+
     entries = []
     for outcome, classification in zip(report.outcomes, dr.classifications):
-        pred = next((p for p in batch.predictions if p.prediction_id == outcome.prediction_id), None)
+        pred = next(
+            (p for p in batch.predictions if p.prediction_id == outcome.prediction_id), None
+        )
         if pred:
             entry = LearningLogEntry(
                 run_id="test-run",
@@ -85,19 +98,22 @@ async def main():
                 was_correct=outcome.correct,
                 actual_direction=outcome.actual_direction,
                 error_magnitude=outcome.error_magnitude,
-                error_category=classification.error_category.value if classification.error_category else None,
+                error_category=(
+                    classification.error_category.value if classification.error_category else None
+                ),
             )
             entries.append(entry)
     await log.append_batch(entries)
     print(f"7. LearningLog: {await log.count()} entries")
 
     # 8. Belief Versioning update
-    from src.schemas.learning_unit import LearningUnit
     lu2 = LearningUnit(belief_id=belief.belief_id, weight_delta=-0.02)
     updated = await bvm.create_version(belief, lu2, "diag-test", "Test update")
     assert updated.current_version == 2
     assert len(updated.version_history) == 2
-    print(f"8. Belief Updated: v{updated.current_version} w={updated.weight} ({len(updated.version_history)} versions)")
+    print(
+        f"8. Belief Updated: v{updated.current_version} w={updated.weight} ({len(updated.version_history)} versions)"
+    )
 
     # 9. Hypothesis Library score update
     score = await lib.update_score("h-test", batch.predictions)
@@ -106,11 +122,17 @@ async def main():
     # 10. KPI
     kpi = KPIMetricsEngine()
     kpi1 = await kpi.compute_kpi1(library_avg_score=0.65, active_hypotheses=1)
-    kpi2 = await kpi.compute_kpi2(report.directional_accuracy, report.mean_absolute_error, report.rmse,
-                                   report.total_outcomes, report.total_correct)
+    kpi2 = await kpi.compute_kpi2(
+        report.directional_accuracy,
+        report.mean_absolute_error,
+        report.rmse,
+        report.total_outcomes,
+        report.total_correct,
+    )
     kpi3 = await kpi.compute_kpi3(0.15, report.brier_score)
     kpi4 = await kpi.compute_kpi4(total_errors_classified=3)
-    from src.schemas.kpi import WindowPeriod, FourKPIReport
+    from src.schemas.kpi import FourKPIReport, WindowPeriod
+
     kpi_report = FourKPIReport(
         window=WindowPeriod.D30,
         kpi1_hypothesis_accuracy=kpi1,

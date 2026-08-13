@@ -11,19 +11,18 @@ Diagnose WHY:
 True learning is about improving reasoning, not adjusting weights.
 """
 
+from src.research.learning.learning_orchestrator import LearningOrchestrator
+from src.research.learning.narrative_feedback import NarrativeFeedback
+from src.research.learning.reasoning_feedback_v5 import ReasoningFeedbackV5
+from src.research.learning.root_cause_analyzer import RootCauseAnalyzer
 from src.research.learning.schemas import (
-    LearningEvent,
     FailureDiagnosis,
     ImprovementAction,
+    LearningEvent,
     LearningLog,
     RootCauseCategory,
 )
-
-from src.research.learning.reasoning_feedback_v5 import ReasoningFeedbackV5
-from src.research.learning.narrative_feedback import NarrativeFeedback
 from src.research.learning.trade_feedback import TradeFeedback
-from src.research.learning.root_cause_analyzer import RootCauseAnalyzer
-from src.research.learning.learning_orchestrator import LearningOrchestrator
 
 __all__ = [
     # Schemas

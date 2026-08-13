@@ -11,8 +11,8 @@ Plus the Research Quality Benchmark:
 
 from __future__ import annotations
 
-import sys
 import statistics
+import sys
 from pathlib import Path
 
 import pytest
@@ -23,7 +23,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src.hypothesis.hypothesis_evolution import HypothesisEvolution
 from src.schemas.hypothesis_library import HypothesisLibraryEntry, HypothesisScore
 from src.schemas.hypothesis_v3_1 import HypothesisEvolutionResult
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Research Quality Benchmark — Gold Standard Framework
@@ -36,8 +35,15 @@ GOLD_STANDARD = {
     "easing_liquidity_dominant": {
         "description": "Fed clearly easing, dollar weakening, liquidity flooding",
         "indicators": {
-            "DXY": 100.0, "US02Y": 3.20, "SPX": 5500, "NASDAQ": 19000,
-            "VIX": 14, "HYG": 80, "US10Y": 3.30, "TIPS": 1.20, "Gold": 2300,
+            "DXY": 100.0,
+            "US02Y": 3.20,
+            "SPX": 5500,
+            "NASDAQ": 19000,
+            "VIX": 14,
+            "HYG": 80,
+            "US10Y": 3.30,
+            "TIPS": 1.20,
+            "Gold": 2300,
             "FED_FUNDS": 3.50,
         },
         "regime": "easing",
@@ -52,8 +58,15 @@ GOLD_STANDARD = {
     "tightening_liquidity_shock": {
         "description": "Fed hawkish surprise, dollar spiking, risk-off",
         "indicators": {
-            "DXY": 108.0, "US02Y": 5.00, "SPX": 4500, "NASDAQ": 15000,
-            "VIX": 28, "HYG": 72, "US10Y": 4.80, "TIPS": 2.20, "Gold": 1950,
+            "DXY": 108.0,
+            "US02Y": 5.00,
+            "SPX": 4500,
+            "NASDAQ": 15000,
+            "VIX": 28,
+            "HYG": 72,
+            "US10Y": 4.80,
+            "TIPS": 2.20,
+            "Gold": 1950,
             "FED_FUNDS": 5.50,
         },
         "regime": "tightening",
@@ -68,8 +81,15 @@ GOLD_STANDARD = {
     "growth_acceleration": {
         "description": "Strong growth, rising rates for good reasons, risk-on",
         "indicators": {
-            "DXY": 103.0, "US02Y": 4.20, "SPX": 5200, "NASDAQ": 18000,
-            "VIX": 15, "HYG": 79, "US10Y": 4.50, "TIPS": 1.80, "Gold": 2050,
+            "DXY": 103.0,
+            "US02Y": 4.20,
+            "SPX": 5200,
+            "NASDAQ": 18000,
+            "VIX": 15,
+            "HYG": 79,
+            "US10Y": 4.50,
+            "TIPS": 1.80,
+            "Gold": 2050,
             "FED_FUNDS": 4.50,
         },
         "regime": "neutral",
@@ -84,8 +104,15 @@ GOLD_STANDARD = {
     "stagflation_risk": {
         "description": "Sticky inflation + slowing growth — stagflation fears",
         "indicators": {
-            "DXY": 105.0, "US02Y": 4.80, "SPX": 4700, "NASDAQ": 16000,
-            "VIX": 22, "HYG": 74, "US10Y": 4.60, "TIPS": 2.40, "Gold": 2200,
+            "DXY": 105.0,
+            "US02Y": 4.80,
+            "SPX": 4700,
+            "NASDAQ": 16000,
+            "VIX": 22,
+            "HYG": 74,
+            "US10Y": 4.60,
+            "TIPS": 2.40,
+            "Gold": 2200,
             "FED_FUNDS": 5.00,
         },
         "regime": "tightening",
@@ -100,8 +127,15 @@ GOLD_STANDARD = {
     "mixed_signals": {
         "description": "No clear dominant theme — mixed and conflicting signals",
         "indicators": {
-            "DXY": 104.0, "US02Y": 4.00, "SPX": 5000, "NASDAQ": 17000,
-            "VIX": 19, "HYG": 77, "US10Y": 4.00, "TIPS": 1.50, "Gold": 2100,
+            "DXY": 104.0,
+            "US02Y": 4.00,
+            "SPX": 5000,
+            "NASDAQ": 17000,
+            "VIX": 19,
+            "HYG": 77,
+            "US10Y": 4.00,
+            "TIPS": 1.50,
+            "Gold": 2100,
             "FED_FUNDS": 4.50,
         },
         "regime": "neutral",
@@ -118,7 +152,8 @@ GOLD_STANDARD = {
 
 
 def compute_dimension_overlap(
-    result: HypothesisEvolutionResult, expected_dims: list[str],
+    result: HypothesisEvolutionResult,
+    expected_dims: list[str],
 ) -> float:
     """Fraction of expected dimensions covered by selected hypotheses."""
     if not expected_dims:
@@ -129,7 +164,8 @@ def compute_dimension_overlap(
 
 
 def compute_direction_alignment(
-    result: HypothesisEvolutionResult, expected_dir: str,
+    result: HypothesisEvolutionResult,
+    expected_dir: str,
 ) -> float:
     """Fraction of selected hypotheses matching expected direction."""
     if expected_dir == "neutral":
@@ -141,7 +177,8 @@ def compute_direction_alignment(
 
 
 def compute_theme_similarity(
-    result: HypothesisEvolutionResult, expected_themes: list[str],
+    result: HypothesisEvolutionResult,
+    expected_themes: list[str],
 ) -> float:
     """How well the selected thesis statements cover expected themes."""
     if not expected_themes:
@@ -179,8 +216,14 @@ def evaluate_research_quality(
         "competition_stats": {
             "before": result.competition_round.candidates_before if result.competition_round else 0,
             "after": result.competition_round.candidates_after if result.competition_round else 0,
-            "contradictions": len(result.competition_round.contradictions_found) if result.competition_round else 0,
-            "eliminated": len(result.competition_round.eliminated) if result.competition_round else 0,
+            "contradictions": (
+                len(result.competition_round.contradictions_found)
+                if result.competition_round
+                else 0
+            ),
+            "eliminated": (
+                len(result.competition_round.eliminated) if result.competition_round else 0
+            ),
         },
     }
 
@@ -195,43 +238,103 @@ def build_seed_library() -> list[HypothesisLibraryEntry]:
     entries = []
 
     seed_data = [
-        ("hyp-001", "liquidity", "bullish",
-         "Liquidity easing will push equities higher as cheaper funding broadens the rally",
-         0.78, 0.72),
-        ("hyp-002", "liquidity", "bearish",
-         "Tightening liquidity conditions are constraining risk appetite and supporting the dollar",
-         0.82, 0.75),
-        ("hyp-003", "credit", "bullish",
-         "Credit spreads are tightening, signaling improving financial conditions for risk assets",
-         0.75, 0.70),
-        ("hyp-004", "credit", "bearish",
-         "Credit stress is building — widening spreads precede equity market corrections",
-         0.80, 0.74),
-        ("hyp-005", "growth", "bullish",
-         "Economic growth acceleration supports cyclical equities and rising long-end rates",
-         0.71, 0.68),
-        ("hyp-006", "growth", "bearish",
-         "Growth deceleration will trigger defensive rotation and falling long-term yields",
-         0.76, 0.70),
-        ("hyp-007", "risk_appetite", "bullish",
-         "Risk appetite is strong with low volatility — breadth expansion favors laggard sectors",
-         0.73, 0.69),
-        ("hyp-008", "risk_appetite", "bearish",
-         "Risk appetite is deteriorating as volatility spikes — defensive positioning is warranted",
-         0.79, 0.73),
-        ("hyp-009", "inflation", "bearish",
-         "Inflation re-acceleration pressures long-end yields higher and compresses TIPS valuations",
-         0.77, 0.71),
-        ("hyp-010", "inflation", "bullish",
-         "Disinflation trend continues — falling inflation supports duration and growth assets",
-         0.74, 0.68),
+        (
+            "hyp-001",
+            "liquidity",
+            "bullish",
+            "Liquidity easing will push equities higher as cheaper funding broadens the rally",
+            0.78,
+            0.72,
+        ),
+        (
+            "hyp-002",
+            "liquidity",
+            "bearish",
+            "Tightening liquidity conditions are constraining risk appetite and supporting the dollar",
+            0.82,
+            0.75,
+        ),
+        (
+            "hyp-003",
+            "credit",
+            "bullish",
+            "Credit spreads are tightening, signaling improving financial conditions for risk assets",
+            0.75,
+            0.70,
+        ),
+        (
+            "hyp-004",
+            "credit",
+            "bearish",
+            "Credit stress is building — widening spreads precede equity market corrections",
+            0.80,
+            0.74,
+        ),
+        (
+            "hyp-005",
+            "growth",
+            "bullish",
+            "Economic growth acceleration supports cyclical equities and rising long-end rates",
+            0.71,
+            0.68,
+        ),
+        (
+            "hyp-006",
+            "growth",
+            "bearish",
+            "Growth deceleration will trigger defensive rotation and falling long-term yields",
+            0.76,
+            0.70,
+        ),
+        (
+            "hyp-007",
+            "risk_appetite",
+            "bullish",
+            "Risk appetite is strong with low volatility — breadth expansion favors laggard sectors",
+            0.73,
+            0.69,
+        ),
+        (
+            "hyp-008",
+            "risk_appetite",
+            "bearish",
+            "Risk appetite is deteriorating as volatility spikes — defensive positioning is warranted",
+            0.79,
+            0.73,
+        ),
+        (
+            "hyp-009",
+            "inflation",
+            "bearish",
+            "Inflation re-acceleration pressures long-end yields higher and compresses TIPS valuations",
+            0.77,
+            0.71,
+        ),
+        (
+            "hyp-010",
+            "inflation",
+            "bullish",
+            "Disinflation trend continues — falling inflation supports duration and growth assets",
+            0.74,
+            0.68,
+        ),
         # Add some with regime context in statements
-        ("hyp-011", "liquidity", "bullish",
-         "In this easing and dovish environment, the loosening of monetary policy benefits all risk assets",
-         0.85, 0.80),
-        ("hyp-012", "liquidity", "bearish",
-         "The hawkish tightening cycle is restrictive and contractionary for credit-sensitive sectors",
-         0.83, 0.77),
+        (
+            "hyp-011",
+            "liquidity",
+            "bullish",
+            "In this easing and dovish environment, the loosening of monetary policy benefits all risk assets",
+            0.85,
+            0.80,
+        ),
+        (
+            "hyp-012",
+            "liquidity",
+            "bearish",
+            "The hawkish tightening cycle is restrictive and contractionary for credit-sensitive sectors",
+            0.83,
+            0.77,
+        ),
     ]
 
     for h_id, dim, dir_, stmt, acc, total in seed_data:
@@ -311,16 +414,16 @@ def signal_report():
 
     # Test with clearly anomalous indicators
     indicators = {
-        "DXY": 108.0,     # +0.8σ (bullish for DXY = tightening signal)
-        "US02Y": 5.20,    # +1.56σ (strong tightening)
-        "SPX": 4400,      # -1σ (bearish)
-        "VIX": 30,        # +2σ (strong fear)
-        "US10Y": 3.30,    # -0.25σ (neutral)
-        "HYG": 76,        # -0.33σ (slightly weak)
-        "TIPS": 1.0,      # -1σ
-        "Gold": 2300,     # +1.33σ
+        "DXY": 108.0,  # +0.8σ (bullish for DXY = tightening signal)
+        "US02Y": 5.20,  # +1.56σ (strong tightening)
+        "SPX": 4400,  # -1σ (bearish)
+        "VIX": 30,  # +2σ (strong fear)
+        "US10Y": 3.30,  # -0.25σ (neutral)
+        "HYG": 76,  # -0.33σ (slightly weak)
+        "TIPS": 1.0,  # -1σ
+        "Gold": 2300,  # +1.33σ
         "NASDAQ": 18000,  # +0.4σ
-        "FED_FUNDS": 5.5, # +1σ
+        "FED_FUNDS": 5.5,  # +1σ
     }
 
     report = engine.process(indicators, regime="unknown")
@@ -385,7 +488,9 @@ def retrieval_report(candidates, signal_report, seed_library):
     assert len(report.contexts) == len(candidates), "Each candidate should have a context"
 
     # At least some candidates should find historical matches
-    assert report.total_matches > 0 or candidates, "Should find at least some matches with seed library"
+    assert (
+        report.total_matches > 0 or candidates
+    ), "Should find at least some matches with seed library"
 
     return report
 
@@ -484,8 +589,15 @@ def test_full_pipeline():
     evolution = HypothesisEvolution(library_entries=library)
 
     indicators = {
-        "DXY": 105.0, "US02Y": 4.60, "SPX": 4800, "NASDAQ": 16500,
-        "VIX": 24, "HYG": 73, "US10Y": 4.50, "TIPS": 2.20, "Gold": 2150,
+        "DXY": 105.0,
+        "US02Y": 4.60,
+        "SPX": 4800,
+        "NASDAQ": 16500,
+        "VIX": 24,
+        "HYG": 73,
+        "US10Y": 4.50,
+        "TIPS": 2.20,
+        "Gold": 2150,
         "FED_FUNDS": 5.00,
     }
 
@@ -531,5 +643,3 @@ def test_research_quality_benchmark():
 
     # Criterion 5: Composite quality > 45%
     assert avg > 0.45, f"Composite quality too low: {avg:.0%}"
-
-

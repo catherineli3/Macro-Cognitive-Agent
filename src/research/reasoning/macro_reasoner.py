@@ -16,17 +16,19 @@ No floating claims, no unreferenced assertions.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
-from src.research.reasoning.schemas import (
-    ResearchMemo, EvidenceAssessment, Hypothesis, CounterArgument,
-    ReasoningChain, EvidenceCluster,
-)
+from src.research.reasoning.counter_argument_generator import CounterArgumentGenerator
 from src.research.reasoning.evidence_synthesizer import EvidenceSynthesizer
 from src.research.reasoning.hypothesis_builder import HypothesisBuilder
-from src.research.reasoning.counter_argument_generator import CounterArgumentGenerator
 from src.research.reasoning.memo_writer import MemoWriter
+from src.research.reasoning.schemas import (
+    CounterArgument,
+    EvidenceAssessment,
+    Hypothesis,
+    ReasoningChain,
+    ResearchMemo,
+)
 
 
 class MacroReasoner:
@@ -47,7 +49,7 @@ class MacroReasoner:
         7. Write professional research memo
     """
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
         self.synthesizer = EvidenceSynthesizer(config)
         self.hypothesis_builder = HypothesisBuilder(config)
@@ -59,10 +61,10 @@ class MacroReasoner:
         market_data: dict,
         narratives: list = None,
         beliefs: list = None,
-        regime_result: Optional[dict] = None,
-        capital_flow_result: Optional[dict] = None,
-        news_events: Optional[list] = None,
-        date_str: Optional[str] = None,
+        regime_result: dict | None = None,
+        capital_flow_result: dict | None = None,
+        news_events: list | None = None,
+        date_str: str | None = None,
     ) -> ResearchMemo:
         """Execute the full reasoning pipeline.
 
@@ -82,7 +84,7 @@ class MacroReasoner:
         """
         narratives = narratives or []
         beliefs = beliefs or []
-        date_str = date_str or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        date_str = date_str or datetime.now(UTC).strftime("%Y-%m-%d")
 
         # ── Step 1: Evidence Synthesis ──
         evidence_assessment = self.synthesizer.synthesize(
@@ -113,9 +115,7 @@ class MacroReasoner:
         hypotheses = self._calibrate_confidence(hypotheses, counter_arguments, evidence_assessment)
 
         # ── Step 5: Reasoning Chain ──
-        chain = self._build_reasoning_chain(
-            evidence_assessment, hypotheses, counter_arguments
-        )
+        _chain = self._build_reasoning_chain(evidence_assessment, hypotheses, counter_arguments)
 
         # ── Step 6: Write Research Memo ──
         memo = self.memo_writer.write_memo(
@@ -135,7 +135,7 @@ class MacroReasoner:
         self,
         market_data: dict,
         beliefs: list = None,
-        regime_result: Optional[dict] = None,
+        regime_result: dict | None = None,
     ) -> ResearchMemo:
         """Fast reasoning with only essential inputs.
 
@@ -155,7 +155,7 @@ class MacroReasoner:
         market_data: dict,
         news_events: list,
         beliefs: list = None,
-        regime_result: Optional[dict] = None,
+        regime_result: dict | None = None,
     ) -> ResearchMemo:
         """Reasoning with news integration as primary input."""
         return self.reason(
@@ -261,7 +261,7 @@ class MacroReasoner:
         )
 
     @staticmethod
-    def _extract_narrative_text(narratives: list) -> Optional[str]:
+    def _extract_narrative_text(narratives: list) -> str | None:
         """Extract dominant narrative text from narrative objects."""
         for n in narratives:
             nd = n if isinstance(n, dict) else n.to_dict() if hasattr(n, "to_dict") else {}

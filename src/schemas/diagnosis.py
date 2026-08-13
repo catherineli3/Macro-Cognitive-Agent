@@ -7,12 +7,10 @@ Key design:
     - DiagnosisReport is the ONLY input to Learning Engine (DDR-V3-006)
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
-
 
 # ── Error Category ───────────────────────────────────────────────────────────
 
@@ -28,6 +26,7 @@ class ErrorCategory(str, Enum):
         EVENT_ERR      → No weight change (non-learnable)
         WEIGHT_ERR     → Adjust dimension weights
     """
+
     SIGNAL_ERR = "SIGNAL_ERR"
     HYP_ERR = "HYP_ERR"
     EVID_MISSING = "EVID_MISSING"
@@ -38,9 +37,10 @@ class ErrorCategory(str, Enum):
 
 class CorrectCategory(str, Enum):
     """Categories for correct predictions."""
-    CORRECT_STRONG = "CORRECT_STRONG"    # Direction + magnitude both correct
-    CORRECT_WEAK = "CORRECT_WEAK"        # Direction correct, magnitude off
-    CORRECT_LUCKY = "CORRECT_LUCKY"      # Direction correct but rationale suspect
+
+    CORRECT_STRONG = "CORRECT_STRONG"  # Direction + magnitude both correct
+    CORRECT_WEAK = "CORRECT_WEAK"  # Direction correct, magnitude off
+    CORRECT_LUCKY = "CORRECT_LUCKY"  # Direction correct but rationale suspect
 
 
 # ── Error Classification ─────────────────────────────────────────────────────
@@ -61,19 +61,21 @@ class ErrorClassification(BaseModel):
 
     # ── Classification ───────────────────────────────────────────────────
     is_correct: bool = Field(default=False)
-    error_category: Optional[ErrorCategory] = Field(default=None)
-    correct_category: Optional[CorrectCategory] = Field(default=None)
+    error_category: ErrorCategory | None = Field(default=None)
+    correct_category: CorrectCategory | None = Field(default=None)
 
     # ── Diagnosis Quality ────────────────────────────────────────────────
     diagnosis_confidence: float = Field(
-        default=0.5, ge=0.0, le=1.0,
+        default=0.5,
+        ge=0.0,
+        le=1.0,
         description="How confident we are in this diagnosis",
     )
     diagnosis_rationale: str = Field(default="", max_length=1024)
 
     # ── Metadata ─────────────────────────────────────────────────────────
     classified_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
     evidence_for_diagnosis: list[str] = Field(
         default_factory=list,
@@ -93,12 +95,12 @@ class ErrorClassification(BaseModel):
         if self.is_correct:
             return 0.0
         weights = {
-            ErrorCategory.HYP_ERR: 2.0,        # Strongest penalty
+            ErrorCategory.HYP_ERR: 2.0,  # Strongest penalty
             ErrorCategory.WEIGHT_ERR: 1.5,
             ErrorCategory.SIGNAL_ERR: 1.0,
             ErrorCategory.EVID_MISSING: 1.0,
-            ErrorCategory.TIMING_ERR: 0.5,     # Minor penalty
-            ErrorCategory.EVENT_ERR: 0.0,      # No penalty (non-learnable)
+            ErrorCategory.TIMING_ERR: 0.5,  # Minor penalty
+            ErrorCategory.EVENT_ERR: 0.0,  # No penalty (non-learnable)
         }
         return weights.get(self.error_category, 1.0)  # type: ignore[arg-type]
 
@@ -123,7 +125,7 @@ class DiagnosisReport(BaseModel):
     report_id: str = Field(default="", description="Unique diagnosis report ID")
     evaluation_report_id: str = Field(..., min_length=1, max_length=64)
     generated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     # ── Per-prediction diagnoses ─────────────────────────────────────────
@@ -152,12 +154,13 @@ class DiagnosisReport(BaseModel):
 
     # ── Unclassified ─────────────────────────────────────────────────────
     unclassified_count: int = Field(
-        default=0, ge=0,
+        default=0,
+        ge=0,
         description="Predictions that could not be classified (safe default)",
     )
 
     @property
-    def most_common_error(self) -> Optional[str]:
+    def most_common_error(self) -> str | None:
         """The most frequent error category in this batch."""
         if not self.error_distribution:
             return None
@@ -166,9 +169,7 @@ class DiagnosisReport(BaseModel):
     @property
     def learnable_count(self) -> int:
         """Number of predictions that should trigger learning."""
-        return sum(
-            1 for c in self.classifications if c.is_learnable
-        )
+        return sum(1 for c in self.classifications if c.is_learnable)
 
     def get_channel_errors(self, channel: str) -> dict[str, int]:
         """Get error distribution for a specific channel."""
@@ -188,15 +189,15 @@ class DiagnosisReport(BaseModel):
 class ErrorTrend(BaseModel):
     """Historical error pattern for a hypothesis or channel over a time window."""
 
-    hypothesis_id: Optional[str] = None
-    channel: Optional[str] = None
+    hypothesis_id: str | None = None
+    channel: str | None = None
     window_days: int = Field(default=90, ge=1)
     error_counts: dict[str, int] = Field(default_factory=dict)
     trend_direction: str = Field(default="stable")  # improving | declining | stable
     total_errors: int = Field(default=0, ge=0)
 
     @property
-    def primary_error_type(self) -> Optional[str]:
+    def primary_error_type(self) -> str | None:
         if not self.error_counts:
             return None
         return max(self.error_counts, key=self.error_counts.get)  # type: ignore[arg-type]

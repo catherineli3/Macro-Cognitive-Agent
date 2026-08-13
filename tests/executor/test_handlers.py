@@ -1,6 +1,6 @@
 """Tests for Simple Task Handlers: capability routing, artifact production."""
+
 import pytest
-from datetime import datetime, timezone
 
 from src.domain.execution import TaskResultStatus
 from src.domain.planning import TaskType
@@ -174,4 +174,7 @@ class TestHandlerStatelessness:
         task = _make_task("t1", capability="simple.process")
         r1 = await h.execute(task, ctx)
         r2 = await h.execute(task, ctx)
-        assert r1.artifacts["processed_data"]["input_records_count"] == r2.artifacts["processed_data"]["input_records_count"]
+        assert (
+            r1.artifacts["processed_data"]["input_records_count"]
+            == r2.artifacts["processed_data"]["input_records_count"]
+        )

@@ -3,22 +3,27 @@
 Validates the four-level cognitive hierarchy data structures.
 """
 
-import pytest
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 from src.schemas.research import (
-    ResearchPrinciple, ResearchFramework, FrameworkSet,
-    CompetingPrinciple, ConflictRecord, ConflictResolution,
-    FindingLifecycle, FindingTTLStatus,
-    PrincipleEvidence, PrincipleStrength, PrincipleStatus,
-    FrameworkStatus, FrameworkExplainability,
-    SynthesisStrategy,
+    CompetingPrinciple,
+    ConflictResolution,
+    FindingLifecycle,
+    FindingTTLStatus,
+    FrameworkExplainability,
+    FrameworkSet,
+    FrameworkStatus,
+    PrincipleEvidence,
+    PrincipleStatus,
+    PrincipleStrength,
+    ResearchFramework,
+    ResearchPrinciple,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ResearchPrinciple tests
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestResearchPrinciple:
     def test_create_principle_with_granularity(self):
@@ -44,7 +49,8 @@ class TestResearchPrinciple:
 
     def test_principle_competition(self):
         p = ResearchPrinciple(
-            name="Compete A", domain="liquidity",
+            name="Compete A",
+            domain="liquidity",
             statement="Liquidity easing → Gold rises",
             strength=PrincipleStrength.VALIDATED,
             status=PrincipleStatus.ACTIVE_COMPETITION,
@@ -57,8 +63,11 @@ class TestResearchPrinciple:
 class TestResearchFramework:
     def test_framework_explainability(self):
         p1 = ResearchPrinciple(
-            principle_id="p1", name="P1", domain="monetary",
-            statement="test", strength=PrincipleStrength.MATURE,
+            principle_id="p1",
+            name="P1",
+            domain="monetary",
+            statement="test",
+            strength=PrincipleStrength.MATURE,
         )
         p1.evidence.total_observations = 80
         p1.evidence.accuracy = 0.85
@@ -67,8 +76,8 @@ class TestResearchFramework:
             framework_id="fw-test",
             name="Monetary Framework",
             thesis="Monetary policy is the primary driver of asset prices in "
-                   "this regime. Rate decisions ripple through credit markets "
-                   "and equity valuations via the discount rate channel.",
+            "this regime. Rate decisions ripple through credit markets "
+            "and equity valuations via the discount rate channel.",
             status=FrameworkStatus.ACTIVE,
             principles=["p1"],
             accuracy_trajectory=[0.75, 0.80, 0.78, 0.82, 0.79],
@@ -82,8 +91,11 @@ class TestResearchFramework:
 
     def test_framework_confidence_computation(self):
         p1 = ResearchPrinciple(
-            principle_id="p1", name="P1", domain="monetary",
-            statement="test", strength=PrincipleStrength.MATURE,
+            principle_id="p1",
+            name="P1",
+            domain="monetary",
+            statement="test",
+            strength=PrincipleStrength.MATURE,
         )
         p1.evidence.total_observations = 100
         p1.evidence.accuracy = 0.90
@@ -91,7 +103,7 @@ class TestResearchFramework:
         fw = ResearchFramework(
             name="Test FW",
             thesis="A framework thesis that explains the macro worldview in "
-                   "adequate detail for confidence computation purposes here.",
+            "adequate detail for confidence computation purposes here.",
             principles=["p1"],
             accuracy_trajectory=[0.70, 0.72, 0.71, 0.73],
         )
@@ -134,7 +146,8 @@ class TestFrameworkSet:
 class TestCompetingPrinciple:
     def test_competition_creation(self):
         cp = CompetingPrinciple(
-            principle_a_id="pr-a", principle_b_id="pr-b",
+            principle_a_id="pr-a",
+            principle_b_id="pr-b",
             domain="liquidity",
         )
         assert cp.status == "competing"
@@ -167,14 +180,14 @@ class TestFindingLifecycle:
     def test_expiry(self):
         fl = FindingLifecycle(
             finding_id="test",
-            created_at=datetime.now(timezone.utc) - timedelta(days=91),
+            created_at=datetime.now(UTC) - timedelta(days=91),
         )
         fl.expires_at = fl.created_at + timedelta(days=fl.ttl_days)
         assert fl.is_expired
 
     def test_freeze_unfreeze(self):
         fl = FindingLifecycle(finding_id="test")
-        remaining_before = fl.days_remaining
+        _remaining_before = fl.days_remaining
         fl.freeze("conflict-1")
         assert fl.status == FindingTTLStatus.FROZEN
         assert fl.days_remaining == -1  # Indefinite
@@ -185,7 +198,7 @@ class TestFindingLifecycle:
     def test_promotion_immune_to_ttl(self):
         fl = FindingLifecycle(
             finding_id="test",
-            created_at=datetime.now(timezone.utc) - timedelta(days=200),
+            created_at=datetime.now(UTC) - timedelta(days=200),
         )
         fl.expires_at = fl.created_at + timedelta(days=fl.ttl_days)
         fl.promote("pr-1")
@@ -225,7 +238,7 @@ class TestFrameworkExplainability:
         fe = FrameworkExplainability(
             name="Test FW",
             thesis="A sufficiently detailed thesis that explains the worldview "
-                   "in adequate detail to serve as a proper framework explanation.",
+            "in adequate detail to serve as a proper framework explanation.",
             confidence=0.71,
             supporting_principles_count=17,
             contradicting_principles_count=3,

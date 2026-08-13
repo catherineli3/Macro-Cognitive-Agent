@@ -30,8 +30,7 @@ Usage:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from src.data_pipeline.collector_manager import CollectorManager
 from src.data_pipeline.feature_engine import FeatureEngine
@@ -82,8 +81,8 @@ class MacroPipeline:
 
     def build_daily_macro_snapshot(
         self,
-        date: Optional[datetime] = None,
-        for_dimension: Optional[str] = None,
+        date: datetime | None = None,
+        for_dimension: str | None = None,
         persist: bool = True,
     ) -> dict:
         """Run the complete pipeline and produce a MacroSnapshot.
@@ -99,7 +98,7 @@ class MacroPipeline:
         Raises:
             RuntimeError: If zero indicators could be collected.
         """
-        target_date = date or datetime.now(timezone.utc)
+        target_date = date or datetime.now(UTC)
         date_str = target_date.strftime("%Y-%m-%d")
 
         logger.info(
@@ -165,14 +164,12 @@ class MacroPipeline:
         """Reset all internal state (history, counters, quality history)."""
         self.validator.reset_history()
         # Re-initialize feature engine to clear history
-        self.feature_engine = FeatureEngine(
-            history_window=30
-        )  # Default window
+        self.feature_engine = FeatureEngine(history_window=30)  # Default window
 
 
 # ── Module-level convenience ────────────────────────────────────────────────
 
-_default_pipeline: Optional[MacroPipeline] = None
+_default_pipeline: MacroPipeline | None = None
 
 
 def get_pipeline() -> MacroPipeline:
@@ -184,8 +181,8 @@ def get_pipeline() -> MacroPipeline:
 
 
 def build_daily_macro_snapshot(
-    date: Optional[datetime] = None,
-    for_dimension: Optional[str] = None,
+    date: datetime | None = None,
+    for_dimension: str | None = None,
     persist: bool = True,
 ) -> dict:
     """Convenience function — build snapshot via the default pipeline."""

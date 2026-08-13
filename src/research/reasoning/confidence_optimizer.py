@@ -17,29 +17,29 @@ from __future__ import annotations
 import uuid
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
-import math
+from datetime import UTC, datetime
 
 
 @dataclass
 class CalibrationBucket:
     """Track predictions in a confidence bucket (e.g., 70-80%)."""
+
     bucket_low: float = 0.0
     bucket_high: float = 0.0
     total_predictions: int = 0
     correct_predictions: int = 0
     observed_accuracy: float = 0.0
-    expected_accuracy: float = 0.0       # Midpoint of bucket
+    expected_accuracy: float = 0.0  # Midpoint of bucket
     is_calibrated: bool = True
-    adjustment: float = 0.0              # How much to adjust (positive = underconfident)
+    adjustment: float = 0.0  # How much to adjust (positive = underconfident)
 
 
 @dataclass
 class CalibrationReport:
     """Complete confidence calibration report."""
+
     report_id: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     total_predictions: int = 0
     buckets: list[CalibrationBucket] = field(default_factory=list)
@@ -47,11 +47,11 @@ class CalibrationReport:
     # Overall metrics
     expected_calibration_error: float = 0.0  # ECE
     max_calibration_error: float = 0.0
-    overconfidence_bias: bool = False        # True if systematically overconfident
-    average_calibration_bias: float = 0.0    # Positive = overconfident
+    overconfidence_bias: bool = False  # True if systematically overconfident
+    average_calibration_bias: float = 0.0  # Positive = overconfident
 
     # Recommendations
-    global_adjustment: float = 0.0           # Global confidence shift
+    global_adjustment: float = 0.0  # Global confidence shift
     per_bucket_adjustments: dict = field(default_factory=dict)
     # {bucket_label: adjustment}
 
@@ -68,8 +68,16 @@ class ConfidenceOptimizer:
 
     # Bucket definitions
     BUCKETS = [
-        (0.0, 0.1), (0.1, 0.2), (0.2, 0.3), (0.3, 0.4), (0.4, 0.5),
-        (0.5, 0.6), (0.6, 0.7), (0.7, 0.8), (0.8, 0.9), (0.9, 1.0),
+        (0.0, 0.1),
+        (0.1, 0.2),
+        (0.2, 0.3),
+        (0.3, 0.4),
+        (0.4, 0.5),
+        (0.5, 0.6),
+        (0.6, 0.7),
+        (0.7, 0.8),
+        (0.8, 0.9),
+        (0.9, 1.0),
     ]
 
     def __init__(self):
@@ -78,12 +86,14 @@ class ConfidenceOptimizer:
 
     def record(self, confidence: float, was_correct: bool, domain: str = ""):
         """Record a single prediction outcome for calibration tracking."""
-        self.prediction_history.append({
-            "confidence": confidence,
-            "was_correct": was_correct,
-            "domain": domain,
-            "recorded_at": datetime.now(timezone.utc).isoformat(),
-        })
+        self.prediction_history.append(
+            {
+                "confidence": confidence,
+                "was_correct": was_correct,
+                "domain": domain,
+                "recorded_at": datetime.now(UTC).isoformat(),
+            }
+        )
 
     def record_batch(self, predictions_outcomes: list[dict]):
         """Record multiple prediction outcomes.
@@ -159,14 +169,18 @@ class ConfidenceOptimizer:
             if error > 0 and total > 0:
                 overconfident_buckets += 1
 
-        report.expected_calibration_error = round(total_ece / total_weight, 3) if total_weight > 0 else 0.0
+        report.expected_calibration_error = (
+            round(total_ece / total_weight, 3) if total_weight > 0 else 0.0
+        )
         report.max_calibration_error = round(max_error, 3)
 
         # 3. Aggregate bias
         all_errors = []
         for pred in self.prediction_history:
             all_errors.append(pred["confidence"] - (1.0 if pred["was_correct"] else 0.0))
-        report.average_calibration_bias = round(sum(all_errors) / len(all_errors), 3) if all_errors else 0.0
+        report.average_calibration_bias = (
+            round(sum(all_errors) / len(all_errors), 3) if all_errors else 0.0
+        )
         report.overconfidence_bias = report.average_calibration_bias > 0.1
 
         # 4. Per-bucket adjustments
@@ -198,10 +212,7 @@ class ConfidenceOptimizer:
         # Find applicable bucket adjustment
         for low, high in self.BUCKETS:
             if low <= raw_confidence < high:
-                bucket_preds = [
-                    p for p in self.prediction_history
-                    if low <= p["confidence"] < high
-                ]
+                bucket_preds = [p for p in self.prediction_history if low <= p["confidence"] < high]
                 if len(bucket_preds) >= 5:
                     correct = sum(1 for p in bucket_preds if p["was_correct"])
                     observed = correct / len(bucket_preds)
@@ -217,10 +228,7 @@ class ConfidenceOptimizer:
         """Get the calibration curve: expected_accuracy → observed_accuracy."""
         curve = {}
         for low, high in self.BUCKETS:
-            bucket_preds = [
-                p for p in self.prediction_history
-                if low <= p["confidence"] < high
-            ]
+            bucket_preds = [p for p in self.prediction_history if low <= p["confidence"] < high]
             if bucket_preds:
                 expected = (low + high) / 2
                 observed = sum(1 for p in bucket_preds if p["was_correct"]) / len(bucket_preds)

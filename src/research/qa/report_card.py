@@ -9,12 +9,9 @@ Generates formatted output for:
 
 from __future__ import annotations
 
-from typing import Optional
-
 from src.research.qa.schemas import (
-    ResearchScoreCard,
-    MemoGrade,
     QAVerdict,
+    ResearchScoreCard,
 )
 
 
@@ -35,9 +32,11 @@ class ReportCard:
         lines.append("=" * 70)
         lines.append("  RESEARCH QUALITY SCORECARD")
         lines.append("=" * 70)
-        lines.append(f"  Score: {scorecard.total_score:.1f}/100  |  "
-                     f"Grade: {scorecard.grade.value}  |  "
-                     f"Verdict: {scorecard.verdict.value.upper()}")
+        lines.append(
+            f"  Score: {scorecard.total_score:.1f}/100  |  "
+            f"Grade: {scorecard.grade.value}  |  "
+            f"Verdict: {scorecard.verdict.value.upper()}"
+        )
         lines.append("=" * 70)
         lines.append("")
 
@@ -47,11 +46,10 @@ class ReportCard:
 
         for dim in scorecard.dimensions:
             bar = self._make_bar(dim.score)
-            name = dim.dimension.replace('_', ' ').title()
+            name = dim.dimension.replace("_", " ").title()
             weight_pct = f"{dim.weight*100:.0f}%"
             lines.append(
-                f"  {dim.grade.value:3s} | {name:30s} "
-                f"[{bar}] {dim.score:5.1f} ({weight_pct})"
+                f"  {dim.grade.value:3s} | {name:30s} " f"[{bar}] {dim.score:5.1f} ({weight_pct})"
             )
 
         lines.append("  " + "-" * 68)
@@ -94,8 +92,8 @@ class ReportCard:
         lines = []
         lines.append("## Research Quality Scorecard")
         lines.append("")
-        lines.append(f"| Metric | Value |")
-        lines.append(f"|--------|-------|")
+        lines.append("| Metric | Value |")
+        lines.append("|--------|-------|")
         lines.append(f"| **Total Score** | **{scorecard.total_score:.1f}/100** |")
         lines.append(f"| **Grade** | **{scorecard.grade.value}** |")
         lines.append(f"| **Verdict** | **{scorecard.verdict.value.upper()}** |")
@@ -103,15 +101,11 @@ class ReportCard:
 
         lines.append("### Dimension Breakdown")
         lines.append("")
-        lines.append(
-            "| Grade | Dimension | Score | Weight | Key Finding |"
-        )
-        lines.append(
-            "|-------|-----------|-------|--------|-------------|"
-        )
+        lines.append("| Grade | Dimension | Score | Weight | Key Finding |")
+        lines.append("|-------|-----------|-------|--------|-------------|")
 
         for dim in scorecard.dimensions:
-            name = dim.dimension.replace('_', ' ').title()
+            name = dim.dimension.replace("_", " ").title()
             finding = dim.findings[0][:60] + "..." if dim.findings else "-"
             lines.append(
                 f"| {dim.grade.value} | {name} | {dim.score:.1f} | "
@@ -181,10 +175,8 @@ class ReportCard:
             before_score = before_dims.get(dim.dimension, 0)
             delta = dim.score - before_score
             delta_str = f"{delta:+.1f}" if delta != 0 else " 0.0"
-            name = dim.dimension.replace('_', ' ').title()
-            lines.append(
-                f"    {name:30s}: {before_score:.1f} → {dim.score:.1f} ({delta_str})"
-            )
+            name = dim.dimension.replace("_", " ").title()
+            lines.append(f"    {name:30s}: {before_score:.1f} → {dim.score:.1f} ({delta_str})")
 
         return "\n".join(lines)
 

@@ -1,4 +1,4 @@
-""""V10 Reasoning Engine — Professional macro research reasoning.
+""" "V10 Reasoning Engine — Professional macro research reasoning.
 
 Core principle: Deterministic reasoning before LLM synthesis.
 LLM is ONLY called at Step 7 (synthesis) and Step 9 (rewrite) — all other steps are pure computation.
@@ -23,55 +23,99 @@ The output is a Research Memo that reads like:
     Bridgewater Daily Observations x PTJ Market Letter
 """
 
-from src.research.reasoning.schemas import (
-    ResearchMemo,
-    EvidenceCluster,
-    EvidenceAssessment,
-    Hypothesis,
-    CounterArgument,
-    ReasoningChain,
-    MemoSection,
+from src.research.reasoning.confidence_optimizer import CalibrationReport, ConfidenceOptimizer
+from src.research.reasoning.continuous_learning import (
+    BeliefDiff,
+    BeliefUpdate,
+    BeliefUpdater,
+    ContinuousLearningLoop,
+    LearningReport,
+    OutcomeRecord,
+    PredictionRecord,
+    PromptDiff,
+    PromptUpdate,
+    PromptUpdater,
+    ReasoningDiff,
+    ReasoningUpdate,
+    ReasoningUpdater,
+    RootCauseDiagnosis,
+    RootCauseDiagnostician,
 )
-from src.research.reasoning.macro_reasoner import MacroReasoner
-from src.research.reasoning.reasoning_pipeline import ReasoningPipeline, PipelineResult, StepResult
+from src.research.reasoning.counter_argument_generator import CounterArgumentGenerator
 from src.research.reasoning.evidence_synthesizer import EvidenceSynthesizer
 from src.research.reasoning.hypothesis_builder import HypothesisBuilder
-from src.research.reasoning.counter_argument_generator import CounterArgumentGenerator
-from src.research.reasoning.memo_writer import MemoWriter
-from src.research.reasoning.reasoning_feedback import ReasoningFeedback, FeedbackEntry, FeedbackReport
-from src.research.reasoning.prompt_optimizer import PromptOptimizer, PromptOptimizationReport
-from src.research.reasoning.confidence_optimizer import ConfidenceOptimizer, CalibrationReport
-from src.research.reasoning.research_quality_evaluator import ResearchQualityEvaluator, QualityReport
-from src.research.reasoning.review_queue import ReviewQueue, ReviewableItem, ReviewSession, ReviewStatus, ReviewableType
-
-# V10 Sprint 2-4 modules
-from src.research.reasoning.prompt_router import PromptRouter, RoutedPrompt, DOMAIN_RULES
+from src.research.reasoning.macro_reasoner import MacroReasoner
+from src.research.reasoning.market_challenge import (
+    CatalystCheck,
+    ConsensusCheck,
+    CrowdedCheck,
+    MarketChallenge,
+    MarketChallengeResult,
+    PositioningCheck,
+    ReactionCheck,
+    market_challenge,
+)
 from src.research.reasoning.memo_reviewer import (
-    MemoReviewer, MemoCritic, MemoSelfReviewPipeline,
-    ReviewResult, ReviewDimensionScore, SelfReviewResult, RevisionRecord,
-    HallucinationDetector, review_memo,
+    HallucinationDetector,
+    MemoCritic,
+    MemoReviewer,
+    MemoSelfReviewPipeline,
+    ReviewDimensionScore,
+    ReviewResult,
+    RevisionRecord,
+    SelfReviewResult,
+    review_memo,
 )
-from src.research.reasoning.continuous_learning import (
-    ContinuousLearningLoop, RootCauseDiagnostician, BeliefUpdater,
-    PromptUpdater, ReasoningUpdater, PredictionRecord, OutcomeRecord,
-    RootCauseDiagnosis, BeliefUpdate, BeliefDiff, PromptUpdate, PromptDiff,
-    ReasoningUpdate, ReasoningDiff, LearningReport,
-)
+from src.research.reasoning.memo_writer import MemoWriter
 
 # V10 Sprint 4.5: Research Intelligence Upgrade
 from src.research.reasoning.narrative_prompt_router import (
-    NarrativePromptRouter, NarrativeRoutedPrompt, NarrativeAnalyzer,
-    DominantNarrative, NarrativeProfile,
+    DominantNarrative,
+    NarrativeAnalyzer,
+    NarrativeProfile,
+    NarrativePromptRouter,
+    NarrativeRoutedPrompt,
 )
-from src.research.reasoning.market_challenge import (
-    MarketChallenge, MarketChallengeResult,
-    ConsensusCheck, CrowdedCheck, PositioningCheck,
-    CatalystCheck, ReactionCheck, market_challenge,
-)
+from src.research.reasoning.prompt_optimizer import PromptOptimizationReport, PromptOptimizer
+
+# V10 Sprint 2-4 modules
+from src.research.reasoning.prompt_router import DOMAIN_RULES, PromptRouter, RoutedPrompt
 from src.research.reasoning.reasoning_evolution import (
-    ReasoningEvolution, ReasoningLibrary, ReasoningCase,
-    CaseRetriever, RetrievalResult, ReasoningTemplate,
-    ReasoningTemplateEvolver, ReasoningEvolutionEngine, EvolutionReport,
+    CaseRetriever,
+    EvolutionReport,
+    ReasoningCase,
+    ReasoningEvolution,
+    ReasoningEvolutionEngine,
+    ReasoningLibrary,
+    ReasoningTemplate,
+    ReasoningTemplateEvolver,
+    RetrievalResult,
+)
+from src.research.reasoning.reasoning_feedback import (
+    FeedbackEntry,
+    FeedbackReport,
+    ReasoningFeedback,
+)
+from src.research.reasoning.reasoning_pipeline import PipelineResult, ReasoningPipeline, StepResult
+from src.research.reasoning.research_quality_evaluator import (
+    QualityReport,
+    ResearchQualityEvaluator,
+)
+from src.research.reasoning.review_queue import (
+    ReviewableItem,
+    ReviewableType,
+    ReviewQueue,
+    ReviewSession,
+    ReviewStatus,
+)
+from src.research.reasoning.schemas import (
+    CounterArgument,
+    EvidenceAssessment,
+    EvidenceCluster,
+    Hypothesis,
+    MemoSection,
+    ReasoningChain,
+    ResearchMemo,
 )
 
 __all__ = [

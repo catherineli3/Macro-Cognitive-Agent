@@ -10,8 +10,7 @@ Takes validated data points and normalizes them into a common format:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import datetime
 
 from src.data_pipeline.validator import ValidatedDataPoint
 from src.shared.logging import get_logger
@@ -37,14 +36,14 @@ class MacroObservation:
     source: str
     dimension: str  # Liquidity, Credit, Growth, Inflation, Risk_Appetite, AI_Capex
     # Derived fields
-    value_bps: Optional[float] = None  # For yield-type indicators
-    value_log: Optional[float] = None  # For index-type indicators
+    value_bps: float | None = None  # For yield-type indicators
+    value_log: float | None = None  # For index-type indicators
     # Quality
     quality_score: float = 1.0  # 0.0-1.0 aggregate quality
     is_degraded: bool = False
     degradation_reason: str = ""
     # Traceability
-    raw_value: Optional[float] = None
+    raw_value: float | None = None
     collector_metadata: dict = field(default_factory=dict)
 
 

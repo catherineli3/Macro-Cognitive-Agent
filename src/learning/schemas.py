@@ -7,8 +7,7 @@ The learning cycle:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
 
 @dataclass
@@ -65,12 +64,12 @@ class PredictionScore:
     outcome: PredictionOutcome = None
 
     # Core scores (0-1, higher = better)
-    direction_score: float = 0.0   # Was direction right?
-    magnitude_score: float = 0.0   # Was magnitude close?
-    brier_score: float = 0.0       # (confidence - outcome)^2, lower is better
+    direction_score: float = 0.0  # Was direction right?
+    magnitude_score: float = 0.0  # Was magnitude close?
+    brier_score: float = 0.0  # (confidence - outcome)^2, lower is better
     calibration_score: float = 0.0  # Brier decomposed: calibration component
-    resolution_score: float = 0.0   # Brier decomposed: resolution component
-    composite_score: float = 0.0    # Weighted combination
+    resolution_score: float = 0.0  # Brier decomposed: resolution component
+    composite_score: float = 0.0  # Weighted combination
 
     # Classification
     grade: str = ""  # "A+" / "A" / "B" / "C" / "D" / "F"
@@ -116,7 +115,7 @@ class BeliefCalibrationResult:
     # Track record summary
     total_predictions: int = 0
     correct_predictions: int = 0
-    raw_accuracy: float = 0.0      # simple: correct/total
+    raw_accuracy: float = 0.0  # simple: correct/total
 
     # Calibrated values
     calibrated_confidence: float = 0.5
@@ -124,10 +123,10 @@ class BeliefCalibrationResult:
     calibrated_beta: float = 1.0
 
     # Calibration assessment
-    calibration_bias: float = 0.0   # positive = overconfident
+    calibration_bias: float = 0.0  # positive = overconfident
     is_overconfident: bool = False
     is_underconfident: bool = False
-    recommendation: str = ""        # "maintain" / "increase_confidence" / "decrease_confidence"
+    recommendation: str = ""  # "maintain" / "increase_confidence" / "decrease_confidence"
 
     def to_dict(self) -> dict:
         return {
@@ -164,8 +163,8 @@ class ModelPerformance:
     is_calibrated: bool = False
 
     # Recent trend
-    recent_accuracy: float = 0.0    # Last 10 predictions
-    momentum: float = 0.0           # Recent vs overall (-1 to 1)
+    recent_accuracy: float = 0.0  # Last 10 predictions
+    momentum: float = 0.0  # Recent vs overall (-1 to 1)
 
     # Derived from beliefs
     belief_count: int = 0
@@ -192,7 +191,7 @@ class ModelWeightRecommendation:
     model_name: str = ""
     current_weight: float = 1.0
     recommended_weight: float = 1.0
-    adjustment: float = 0.0          # new_weight - current_weight
+    adjustment: float = 0.0  # new_weight - current_weight
     reason: str = ""
 
 
@@ -201,7 +200,7 @@ class LearningReport:
     """Complete learning cycle report."""
 
     report_id: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     date: str = ""
 
     # Resolution summary

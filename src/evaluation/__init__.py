@@ -7,7 +7,7 @@ Per-channel breakdowns enable precise diagnosis (DDR-V3-009).
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from math import sqrt
 from typing import Optional
 from uuid import uuid4
@@ -44,10 +44,10 @@ class PerChannelComparator:
                 predicted_direction=prediction.direction,
                 actual_direction="unknown",
                 pct_change=0.0,
-                error_magnitude=float('inf'),
+                error_magnitude=float("inf"),
                 actual_value=actual_value,
                 transmission_channel=prediction.transmission_channel,
-                evaluated_at=datetime.now(timezone.utc),
+                evaluated_at=datetime.now(UTC),
             )
 
         pct_change = (actual_value - prev_value) / abs(prev_value)
@@ -84,7 +84,7 @@ class PerChannelComparator:
             error_magnitude=round(error_magnitude, 6),
             actual_value=round(actual_value, 4),
             transmission_channel=prediction.transmission_channel,
-            evaluated_at=datetime.now(timezone.utc),
+            evaluated_at=datetime.now(UTC),
         )
 
 
@@ -144,7 +144,7 @@ class OutcomeEvaluationEngine:
                     error_magnitude=0.0,
                     actual_value=0.0,
                     transmission_channel=pred.transmission_channel,
-                    evaluated_at=datetime.now(timezone.utc),
+                    evaluated_at=datetime.now(UTC),
                 )
             else:
                 current_val, prev_val = indicator_data
@@ -184,7 +184,7 @@ class OutcomeEvaluationEngine:
                 tier_correct[tier] = tier_correct.get(tier, 0) + 1
 
             # MAE, RMSE components
-            squared_errors.append(outcome.error_magnitude ** 2)
+            squared_errors.append(outcome.error_magnitude**2)
 
             # Brier score: (confidence - outcome)^2
             outcome_val = 1.0 if outcome.correct else 0.0
@@ -201,30 +201,23 @@ class OutcomeEvaluationEngine:
         brier = sum(brier_terms) / total if total > 0 else 0.0
 
         # ── Build accuracy breakdowns ────────────────────────────────
-        accuracy_by_dimension = {
-            d: dim_correct.get(d, 0) / dim_total[d]
-            for d in dim_total
-        }
+        accuracy_by_dimension = {d: dim_correct.get(d, 0) / dim_total[d] for d in dim_total}
         accuracy_by_channel = {
-            c: channel_correct.get(c, 0) / channel_total[c]
-            for c in channel_total
+            c: channel_correct.get(c, 0) / channel_total[c] for c in channel_total
         }
         accuracy_by_horizon = {
-            h: horizon_correct.get(h, 0) / horizon_total[h]
-            for h in horizon_total
+            h: horizon_correct.get(h, 0) / horizon_total[h] for h in horizon_total
         }
-        accuracy_by_hypothesis = {
-            h: hyp_correct.get(h, 0) / hyp_total[h]
-            for h in hyp_total
-        }
-        accuracy_by_tier = {
-            t: tier_correct.get(t, 0) / tier_total[t]
-            for t in tier_total
-        }
+        accuracy_by_hypothesis = {h: hyp_correct.get(h, 0) / hyp_total[h] for h in hyp_total}
+        accuracy_by_tier = {t: tier_correct.get(t, 0) / tier_total[t] for t in tier_total}
 
         logger.info(
             "evaluation_complete batch=%s total=%d correct=%d da=%.1f%% channels=%d",
-            batch.batch_id, total, total_correct, directional_accuracy * 100, len(accuracy_by_channel),
+            batch.batch_id,
+            total,
+            total_correct,
+            directional_accuracy * 100,
+            len(accuracy_by_channel),
         )
 
         return EvaluationReport(

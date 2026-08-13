@@ -1,23 +1,21 @@
 """v2.0 Outcome Engine tests — PredictionOutcome, OutcomeTracker, OutcomeEvaluator."""
 
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
+from src.domain.memory import BeliefStatus, TransitionType
+from src.domain.signal import SignalDirection
 from src.outcome.engine import OutcomeEngine, OutcomeEvaluator, OutcomeMetrics, OutcomeTracker
 from src.schemas.memory import BeliefRecord
 from src.schemas.outcome import (
     OutcomeDirection,
     OutcomeRecord,
-    OutcomeSummary,
     OutcomeVerdict,
     PredictionOutcome,
 )
-from src.domain.memory import BeliefStatus, TransitionType
-from src.domain.signal import SignalDirection
-
 
 # ── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -37,7 +35,7 @@ def belief():
         contradicting_count=0,
         evidence_summary="Strong dollar signals.",
         review_summary="Review confirms.",
-        timestamp=datetime(2026, 7, 1, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 7, 1, tzinfo=UTC),
     )
 
 
@@ -102,7 +100,8 @@ class TestPredictionOutcome:
 class TestOutcomeEvaluator:
     def test_bullish_up_is_correct(self):
         outcome = PredictionOutcome(
-            hypothesis_id="h1", dimension="Liquidity",
+            hypothesis_id="h1",
+            dimension="Liquidity",
             predicted_statement="DXY up",
             predicted_direction=SignalDirection.BULLISH,
             predicted_confidence=0.8,
@@ -112,7 +111,8 @@ class TestOutcomeEvaluator:
 
     def test_bearish_down_is_correct(self):
         outcome = PredictionOutcome(
-            hypothesis_id="h1", dimension="Credit",
+            hypothesis_id="h1",
+            dimension="Credit",
             predicted_statement="HYG down",
             predicted_direction=SignalDirection.BEARISH,
             predicted_confidence=0.7,
@@ -122,7 +122,8 @@ class TestOutcomeEvaluator:
 
     def test_bullish_down_is_incorrect(self):
         outcome = PredictionOutcome(
-            hypothesis_id="h1", dimension="Growth",
+            hypothesis_id="h1",
+            dimension="Growth",
             predicted_statement="PMI up",
             predicted_direction=SignalDirection.BULLISH,
             predicted_confidence=0.6,
@@ -132,7 +133,8 @@ class TestOutcomeEvaluator:
 
     def test_bearish_up_is_incorrect(self):
         outcome = PredictionOutcome(
-            hypothesis_id="h1", dimension="Inflation",
+            hypothesis_id="h1",
+            dimension="Inflation",
             predicted_statement="CPI down",
             predicted_direction=SignalDirection.BEARISH,
             predicted_confidence=0.9,
@@ -142,7 +144,8 @@ class TestOutcomeEvaluator:
 
     def test_neutral_flat_is_correct(self):
         outcome = PredictionOutcome(
-            hypothesis_id="h1", dimension="Risk_Appetite",
+            hypothesis_id="h1",
+            dimension="Risk_Appetite",
             predicted_statement="VIX flat",
             predicted_direction=SignalDirection.NEUTRAL,
             predicted_confidence=0.5,
@@ -152,7 +155,8 @@ class TestOutcomeEvaluator:
 
     def test_neutral_up_is_partial(self):
         outcome = PredictionOutcome(
-            hypothesis_id="h1", dimension="Risk_Appetite",
+            hypothesis_id="h1",
+            dimension="Risk_Appetite",
             predicted_statement="Flat",
             predicted_direction=SignalDirection.NEUTRAL,
             predicted_confidence=0.5,
@@ -162,7 +166,8 @@ class TestOutcomeEvaluator:
 
     def test_no_observation_stays_pending(self):
         outcome = PredictionOutcome(
-            hypothesis_id="h1", dimension="Liquidity",
+            hypothesis_id="h1",
+            dimension="Liquidity",
             predicted_statement="Test",
             predicted_direction=SignalDirection.BULLISH,
             predicted_confidence=0.7,
@@ -185,13 +190,14 @@ class TestOutcomeMetrics:
         records = []
         for i in range(5):
             outcome = PredictionOutcome(
-                hypothesis_id=f"h{i}", dimension="Liquidity",
+                hypothesis_id=f"h{i}",
+                dimension="Liquidity",
                 predicted_statement="Test",
                 predicted_direction=SignalDirection.BULLISH,
                 predicted_confidence=0.8,
                 verdict=OutcomeVerdict.CORRECT,
                 observed_direction=OutcomeDirection.UP,
-                evaluated_at=datetime.now(timezone.utc),
+                evaluated_at=datetime.now(UTC),
             )
             records.append(OutcomeRecord(run_id=f"r{i}", outcome=outcome))
 
@@ -204,13 +210,14 @@ class TestOutcomeMetrics:
         records = []
         for i in range(3):
             outcome = PredictionOutcome(
-                hypothesis_id=f"h{i}", dimension="Growth",
+                hypothesis_id=f"h{i}",
+                dimension="Growth",
                 predicted_statement="Test",
                 predicted_direction=SignalDirection.BULLISH,
                 predicted_confidence=0.8,
                 verdict=OutcomeVerdict.CORRECT if i < 2 else OutcomeVerdict.INCORRECT,
                 observed_direction=OutcomeDirection.UP if i < 2 else OutcomeDirection.DOWN,
-                evaluated_at=datetime.now(timezone.utc),
+                evaluated_at=datetime.now(UTC),
             )
             records.append(OutcomeRecord(run_id=f"r{i}", outcome=outcome))
 
@@ -221,13 +228,14 @@ class TestOutcomeMetrics:
 
     def test_brier_score_perfect(self):
         outcome = PredictionOutcome(
-            hypothesis_id="h1", dimension="Liquidity",
+            hypothesis_id="h1",
+            dimension="Liquidity",
             predicted_statement="Test",
             predicted_direction=SignalDirection.BULLISH,
             predicted_confidence=1.0,
             verdict=OutcomeVerdict.CORRECT,
             observed_direction=OutcomeDirection.UP,
-            evaluated_at=datetime.now(timezone.utc),
+            evaluated_at=datetime.now(UTC),
         )
         record = OutcomeRecord(run_id="r1", outcome=outcome)
         summary = OutcomeMetrics.compute_summary([record])
@@ -238,13 +246,14 @@ class TestOutcomeMetrics:
         for dim in ["Liquidity", "Credit", "Growth"]:
             for i in range(2):
                 outcome = PredictionOutcome(
-                    hypothesis_id=f"h_{dim}_{i}", dimension=dim,
+                    hypothesis_id=f"h_{dim}_{i}",
+                    dimension=dim,
                     predicted_statement=f"{dim} test",
                     predicted_direction=SignalDirection.BULLISH,
                     predicted_confidence=0.8,
                     verdict=OutcomeVerdict.CORRECT,
                     observed_direction=OutcomeDirection.UP,
-                    evaluated_at=datetime.now(timezone.utc),
+                    evaluated_at=datetime.now(UTC),
                 )
                 records.append(OutcomeRecord(run_id=f"r_{dim}_{i}", outcome=outcome))
 
@@ -260,7 +269,8 @@ class TestOutcomeMetrics:
 class TestOutcomeTracker:
     def test_persist_and_load(self, tracker):
         outcome = PredictionOutcome(
-            hypothesis_id="h1", dimension="Liquidity",
+            hypothesis_id="h1",
+            dimension="Liquidity",
             predicted_statement="Test",
             predicted_direction=SignalDirection.BULLISH,
             predicted_confidence=0.8,
@@ -273,7 +283,8 @@ class TestOutcomeTracker:
         records = []
         for i in range(5):
             outcome = PredictionOutcome(
-                hypothesis_id=f"h{i}", dimension="Liquidity",
+                hypothesis_id=f"h{i}",
+                dimension="Liquidity",
                 predicted_statement=f"Test {i}",
                 predicted_direction=SignalDirection.BULLISH,
                 predicted_confidence=0.7,
@@ -284,7 +295,8 @@ class TestOutcomeTracker:
 
     def test_get_pending(self, tracker):
         outcome = PredictionOutcome(
-            hypothesis_id="h1", dimension="Liquidity",
+            hypothesis_id="h1",
+            dimension="Liquidity",
             predicted_statement="Test",
             predicted_direction=SignalDirection.BULLISH,
             predicted_confidence=0.7,
@@ -296,16 +308,18 @@ class TestOutcomeTracker:
 
     def test_get_evaluated(self, tracker):
         outcome1 = PredictionOutcome(
-            hypothesis_id="h1", dimension="Liquidity",
+            hypothesis_id="h1",
+            dimension="Liquidity",
             predicted_statement="Test",
             predicted_direction=SignalDirection.BULLISH,
             predicted_confidence=0.7,
             verdict=OutcomeVerdict.CORRECT,
             observed_direction=OutcomeDirection.UP,
-            evaluated_at=datetime.now(timezone.utc),
+            evaluated_at=datetime.now(UTC),
         )
         outcome2 = PredictionOutcome(
-            hypothesis_id="h2", dimension="Credit",
+            hypothesis_id="h2",
+            dimension="Credit",
             predicted_statement="Test",
             predicted_direction=SignalDirection.BEARISH,
             predicted_confidence=0.6,
@@ -318,7 +332,8 @@ class TestOutcomeTracker:
     def test_get_by_dimension(self, tracker):
         for dim in ["Liquidity", "Credit", "Liquidity"]:
             outcome = PredictionOutcome(
-                hypothesis_id=f"h_{dim}", dimension=dim,
+                hypothesis_id=f"h_{dim}",
+                dimension=dim,
                 predicted_statement=f"{dim} test",
                 predicted_direction=SignalDirection.BULLISH,
                 predicted_confidence=0.7,
@@ -364,15 +379,24 @@ class TestOutcomeEngine:
 
     def test_evaluate_pending(self, engine):
         # Create 2 pending outcomes in different dimensions
-        for dim, direction in [("Liquidity", SignalDirection.BULLISH), ("Growth", SignalDirection.BEARISH)]:
+        for dim, direction in [
+            ("Liquidity", SignalDirection.BULLISH),
+            ("Growth", SignalDirection.BEARISH),
+        ]:
             belief = BeliefRecord(
-                run_id="r1", hypothesis_id=f"h_{dim}", dimension=dim,
+                run_id="r1",
+                hypothesis_id=f"h_{dim}",
+                dimension=dim,
                 statement=f"{dim} test",
-                direction=direction, confidence=0.8,
-                status=BeliefStatus.HELD, transition=TransitionType.NEW,
-                supporting_count=2, contradicting_count=0,
-                evidence_summary="Test", review_summary="Test",
-                timestamp=datetime(2026, 7, 1, tzinfo=timezone.utc),
+                direction=direction,
+                confidence=0.8,
+                status=BeliefStatus.HELD,
+                transition=TransitionType.NEW,
+                supporting_count=2,
+                contradicting_count=0,
+                evidence_summary="Test",
+                review_summary="Test",
+                timestamp=datetime(2026, 7, 1, tzinfo=UTC),
             )
             outcome = engine.create_outcome(belief, "r1")
             engine.persist(outcome, "r1")

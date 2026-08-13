@@ -5,7 +5,6 @@ Represents the capabilities and configuration of a market data provider
 """
 
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -15,9 +14,9 @@ class SourceType(str, Enum):
 
     REST_API = "rest_api"
     WEBSOCKET = "websocket"
-    LIBRARY = "library"       # e.g. yfinance
-    FILE = "file"              # CSV / Parquet import
-    SDK = "sdk"                # Bloomberg API, Wind SDK
+    LIBRARY = "library"  # e.g. yfinance
+    FILE = "file"  # CSV / Parquet import
+    SDK = "sdk"  # Bloomberg API, Wind SDK
 
 
 class AuthType(str, Enum):
@@ -43,13 +42,15 @@ class MarketSource(BaseModel):
 
     name: str = Field(..., min_length=1, description="Unique source name, e.g. 'Yahoo', 'FRED'")
     source_type: SourceType = Field(..., description="Connection type")
-    base_url: Optional[str] = Field(default=None, description="API base URL (for REST sources)")
-    library_name: Optional[str] = Field(default=None, description="Python library name (for library sources)")
+    base_url: str | None = Field(default=None, description="API base URL (for REST sources)")
+    library_name: str | None = Field(
+        default=None, description="Python library name (for library sources)"
+    )
     auth_type: AuthType = Field(default=AuthType.NONE, description="Authentication method")
-    auth_env_var: Optional[str] = Field(default=None, description="Env var holding credential")
+    auth_env_var: str | None = Field(default=None, description="Env var holding credential")
     rate_limit_rpm: int = Field(default=60, ge=1, description="Max requests per minute")
     enabled: bool = Field(default=True, description="Whether this source is active")
-    description: Optional[str] = Field(default=None, description="Free-text description")
+    description: str | None = Field(default=None, description="Free-text description")
 
     model_config = {"frozen": True}
 

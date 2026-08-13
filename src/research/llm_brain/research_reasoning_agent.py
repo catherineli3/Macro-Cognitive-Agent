@@ -29,26 +29,24 @@ from __future__ import annotations
 import json
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
-from src.research.llm_brain.schemas import (
-    ResearchMemo,
-    RegimeAnalysis,
-    NarrativeAnalysis,
-    CausalAnalysis,
-    EvidenceAssessment,
-    BeliefSynthesis,
-    FalsificationCheck,
-    AssetImplication,
-    TailRisk,
-    ConfidenceCalibration,
-)
+from src.research.llm_brain.llm_client import LLMClient, LLMResponse
 from src.research.llm_brain.prompts import (
     PromptArchitecture,
-    RESEARCHER_SYSTEM_PROMPT,
 )
-from src.research.llm_brain.llm_client import LLMClient, LLMResponse
+from src.research.llm_brain.schemas import (
+    AssetImplication,
+    BeliefSynthesis,
+    CausalAnalysis,
+    ConfidenceCalibration,
+    EvidenceAssessment,
+    FalsificationCheck,
+    NarrativeAnalysis,
+    RegimeAnalysis,
+    ResearchMemo,
+    TailRisk,
+)
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -89,16 +87,16 @@ class ReasoningInput:
     falsification_conditions: list[str] = field(default_factory=list)
 
     # Meta
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     case_id: str = ""
 
     # Additional context
     historical_context: str = ""
     recent_events: list[str] = field(default_factory=list)
-    
+
     # V10: Blind test support — prevents hindsight bias
-    blind_test_date: str = ""       # e.g. "2022-01" — agent only sees data before this
-    blind_test_title: str = ""      # Case title for the blind test preamble
+    blind_test_date: str = ""  # e.g. "2022-01" — agent only sees data before this
+    blind_test_title: str = ""  # Case title for the blind test preamble
 
     def to_context_string(self) -> str:
         """Build a comprehensive context string for the LLM prompt."""
@@ -124,8 +122,10 @@ class ReasoningInput:
             parts.append(f"\n市场摘要: {self.market_summary}")
 
         # Narratives
-        parts.append(f"\n### 叙事")
-        parts.append(f"主导叙事: {self.dominant_narrative} (置信度: {self.narrative_confidence:.2f})")
+        parts.append("\n### 叙事")
+        parts.append(
+            f"主导叙事: {self.dominant_narrative} (置信度: {self.narrative_confidence:.2f})"
+        )
         if self.narrative_stage:
             parts.append(f"叙事阶段: {self.narrative_stage}")
         if self.competing_narratives:
@@ -165,15 +165,28 @@ class ReasoningInput:
         return {
             "timestamp": self.timestamp,
             "regime_snapshot": f"{self.regime_label} (置信度: {self.regime_confidence:.2f})\n"
-                              f"维度: {json.dumps(self.regime_dimensions, ensure_ascii=False)}",
-            "market_data": json.dumps(self.market_indicators, indent=2, ensure_ascii=False)
-                           if self.market_indicators else self.market_summary,
-            "existing_beliefs": "\n".join(f"- {b}" for b in self.core_beliefs)
-                               if self.core_beliefs else "无既有信念",
-            "active_narratives": f"主导: {self.dominant_narrative} (阶段: {self.narrative_stage})\n"
-                                 f"竞争: {json.dumps(self.competing_narratives[:5], ensure_ascii=False)}"
-                                 if self.competing_narratives else self.dominant_narrative,
-            "mental_models": ", ".join(self.active_mental_models) if self.active_mental_models else "默认: 多模型综合",
+            f"维度: {json.dumps(self.regime_dimensions, ensure_ascii=False)}",
+            "market_data": (
+                json.dumps(self.market_indicators, indent=2, ensure_ascii=False)
+                if self.market_indicators
+                else self.market_summary
+            ),
+            "existing_beliefs": (
+                "\n".join(f"- {b}" for b in self.core_beliefs)
+                if self.core_beliefs
+                else "无既有信念"
+            ),
+            "active_narratives": (
+                f"主导: {self.dominant_narrative} (阶段: {self.narrative_stage})\n"
+                f"竞争: {json.dumps(self.competing_narratives[:5], ensure_ascii=False)}"
+                if self.competing_narratives
+                else self.dominant_narrative
+            ),
+            "mental_models": (
+                ", ".join(self.active_mental_models)
+                if self.active_mental_models
+                else "默认: 多模型综合"
+            ),
             # V10: Blind test parameters
             "blind_test_date": self.blind_test_date,
             "blind_test_title": self.blind_test_title,
@@ -345,7 +358,7 @@ class ResearchReasoningAgent:
         temperature: float = 0.3,
         max_tokens: int = 4096,
         reasoning_mode: str = "llm",  # "llm" / "rule" / "hybrid"
-        prompt_architecture: Optional[PromptArchitecture] = None,
+        prompt_architecture: PromptArchitecture | None = None,
     ):
         """Initialize the research reasoning agent.
 
@@ -411,7 +424,8 @@ class ResearchReasoningAgent:
             memo.reasoning_mode = "rule-based"
             logger.info(
                 "Rule-based memo generated for %s in %.0fms",
-                input_data.case_id, (time.time() - t0) * 1000,
+                input_data.case_id,
+                (time.time() - t0) * 1000,
             )
             return memo
 
@@ -426,7 +440,10 @@ class ResearchReasoningAgent:
         elapsed = (time.time() - t0) * 1000
         logger.info(
             "LLM memo generated for %s in %.0fms (model: %s, confidence: %.2f)",
-            input_data.case_id, elapsed, self.model, memo.confidence.overall_confidence,
+            input_data.case_id,
+            elapsed,
+            self.model,
+            memo.confidence.overall_confidence,
         )
         return memo
 
@@ -487,7 +504,10 @@ class ResearchReasoningAgent:
                 "LLM response couldn't be parsed as JSON. Falling back to rule-based with LLM text."
             )
             memo = _rule_based_memo(input_data)
-            memo.executive_summary = response.content[:500] + "\n\n(以上为LLM原始输出，系统无法解析为结构化JSON，已使用规则引擎补充)"
+            memo.executive_summary = (
+                response.content[:500]
+                + "\n\n(以上为LLM原始输出，系统无法解析为结构化JSON，已使用规则引擎补充)"
+            )
             memo.reasoning_mode = "hybrid (LLM text + rule-based structure)"
             return memo
 
@@ -525,8 +545,10 @@ class ResearchReasoningAgent:
             regime_duration_estimate=r.get("duration_estimate", ""),
             defining_characteristics=r.get("characteristics", []),
             historical_analogs=r.get("analogs", []),
-            **{f"{k}_assessment": r.get("dimensions", {}).get(k, "")
-               for k in ["growth", "inflation", "monetary", "risk", "credit"]},
+            **{
+                f"{k}_assessment": r.get("dimensions", {}).get(k, "")
+                for k in ["growth", "inflation", "monetary", "risk", "credit"]
+            },
         )
 
         # ── Narrative ──

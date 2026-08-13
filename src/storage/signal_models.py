@@ -1,12 +1,11 @@
-from __future__ import annotations
-
 """Signal ORM model — Persistent storage for generated signals.
 
 Sprint 2: signals table — separate from macro_observations.
 """
 
-from datetime import datetime, timezone
-from typing import Optional
+from __future__ import annotations
+
+from datetime import UTC, datetime
 
 from sqlalchemy import DateTime, Float, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -35,19 +34,13 @@ class SignalRecord(Base):
     direction: Mapped[str] = mapped_column(String(10), nullable=False)
     strength: Mapped[str] = mapped_column(String(10), nullable=False)
     confidence: Mapped[float] = mapped_column(Float, nullable=False, default=0.5)
-    timestamp: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, index=True
-    )
-    data_timestamp: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    data_timestamp: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     evidence_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
-    interpretation_summary: Mapped[str] = mapped_column(
-        String(500), nullable=True, default=""
-    )
+    interpretation_summary: Mapped[str] = mapped_column(String(500), nullable=True, default="")
     ingested_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
         nullable=False,
     )
 

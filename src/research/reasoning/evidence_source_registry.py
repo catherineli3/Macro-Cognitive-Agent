@@ -10,8 +10,6 @@ query to determine what evidence is missing and what to collect next.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
-
 
 # ── Source categories ─────────────────────────────────────────────
 
@@ -30,13 +28,13 @@ class SourceCategory:
 # These map 1:1 with SourceCategory for EvidenceCoverage computation.
 
 COVERAGE_DIMENSIONS = [
-    "macro",        # GDP, PMI, CPI, employment — BLS, BEA, Reuters, Bloomberg
-    "liquidity",    # Treasury auctions, credit spreads, repo — Treasury Auction
-    "policy",       # Central bank speeches, minutes, decisions — FOMC, Fed/ECB/BOJ Speeches
+    "macro",  # GDP, PMI, CPI, employment — BLS, BEA, Reuters, Bloomberg
+    "liquidity",  # Treasury auctions, credit spreads, repo — Treasury Auction
+    "policy",  # Central bank speeches, minutes, decisions — FOMC, Fed/ECB/BOJ Speeches
     "positioning",  # CFTC COT, 13F, options data
-    "flow",         # ETF flows, mutual fund allocations
-    "valuation",    # P/E, earnings, guidance — Earnings Call, Company Guidance
-    "sentiment",    # News, analyst consensus, macro calendar events
+    "flow",  # ETF flows, mutual fund allocations
+    "valuation",  # P/E, earnings, guidance — Earnings Call, Company Guidance
+    "sentiment",  # News, analyst consensus, macro calendar events
 ]
 
 
@@ -46,12 +44,13 @@ COVERAGE_DIMENSIONS = [
 @dataclass
 class EvidenceSource:
     """A single evidence source with its attributes."""
+
     name: str
     category: str
-    priority: int = 50          # 0-100: how essential is this source?
-    latency: str = "daily"      # "realtime", "daily", "weekly", "monthly", "quarterly"
+    priority: int = 50  # 0-100: how essential is this source?
+    latency: str = "daily"  # "realtime", "daily", "weekly", "monthly", "quarterly"
     coverage: list[str] = field(default_factory=list)  # Which COVERAGE_DIMENSIONS?
-    reliability: float = 0.7    # 0-1
+    reliability: float = 0.7  # 0-1
 
     def to_dict(self) -> dict:
         return {
@@ -109,7 +108,6 @@ EVIDENCE_SOURCES: dict[str, EvidenceSource] = {
         coverage=["macro", "sentiment"],
         reliability=0.75,
     ),
-
     # ── Policy ──
     "FOMC Minutes": EvidenceSource(
         name="FOMC Minutes",
@@ -143,7 +141,6 @@ EVIDENCE_SOURCES: dict[str, EvidenceSource] = {
         coverage=["policy"],
         reliability=0.76,
     ),
-
     # ── Positioning ──
     "CFTC COT": EvidenceSource(
         name="CFTC COT",
@@ -161,7 +158,6 @@ EVIDENCE_SOURCES: dict[str, EvidenceSource] = {
         coverage=["positioning", "flow"],
         reliability=0.75,
     ),
-
     # ── Flow ──
     "ETF Flow": EvidenceSource(
         name="ETF Flow",
@@ -171,7 +167,6 @@ EVIDENCE_SOURCES: dict[str, EvidenceSource] = {
         coverage=["flow"],
         reliability=0.78,
     ),
-
     # ── Liquidity ──
     "Treasury Auction": EvidenceSource(
         name="Treasury Auction",
@@ -189,7 +184,6 @@ EVIDENCE_SOURCES: dict[str, EvidenceSource] = {
         coverage=["policy", "liquidity"],
         reliability=0.80,
     ),
-
     # ── Valuation / Sentiment ──
     "Earnings Call": EvidenceSource(
         name="Earnings Call",
@@ -213,7 +207,7 @@ EVIDENCE_SOURCES: dict[str, EvidenceSource] = {
 # ── Helper: map source name → EvidenceSource ──────────────────────
 
 
-def get_source(name: str) -> Optional[EvidenceSource]:
+def get_source(name: str) -> EvidenceSource | None:
     """Look up a source by name. Returns None if not found."""
     return EVIDENCE_SOURCES.get(name)
 

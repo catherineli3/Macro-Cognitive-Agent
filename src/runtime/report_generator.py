@@ -9,8 +9,8 @@ No chat, no UI — just the day's research output.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from datetime import date as date_type
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -120,12 +120,12 @@ class ReportGenerator:
 
     def generate(
         self,
-        cycle_result: Any,              # CycleResult
+        cycle_result: Any,  # CycleResult
         date_str: str | None = None,
-        previous_result: Any = None,    # CycleResult | None (yesterday's)
-        memory: Any = None,             # ResearchMemory
-        registry: Any = None,           # PredictionRegistry
-        extra: dict | None = None,      # Additional context
+        previous_result: Any = None,  # CycleResult | None (yesterday's)
+        memory: Any = None,  # ResearchMemory
+        registry: Any = None,  # PredictionRegistry
+        extra: dict | None = None,  # Additional context
     ) -> str:
         """Generate and save a daily research report.
 
@@ -146,8 +146,7 @@ class ReportGenerator:
         # Build each section
         sections = {
             "date": today,
-            "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-
+            "generated_at": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
             # Section 1: Macro
             "regime_label": self._safe(cycle_result, "macro_snapshot.regime_label", "N/A"),
             "monetary_policy": self._regime_field(cycle_result, "monetary_policy"),
@@ -156,57 +155,51 @@ class ReportGenerator:
             "volatility": self._regime_field(cycle_result, "volatility"),
             "fiscal_stance": self._regime_field(cycle_result, "fiscal_stance"),
             "market_data_section": self._render_market_data(cycle_result),
-
             # Section 2: Framework
             "top_framework": self._safe(
                 cycle_result, "framework_selection.top_framework_id", "None"
             ),
             "top_weight": self._safe(
-                cycle_result, "framework_selection.best_weight", 0.5,
+                cycle_result,
+                "framework_selection.best_weight",
+                0.5,
             ),
             "framework_ranking": self._render_framework_ranking(cycle_result),
-
             # Section 3: Hypothesis
             "top_hypothesis": self._render_top_hypothesis(cycle_result),
             "Hypothesis_ranking": self._render_hypothesis_ranking(cycle_result),
-
             # Section 4: Transmission
             "transmission_chain": self._render_transmission_chain(cycle_result),
-
             # Section 5: Thesis
             "thesis_title": self._safe(cycle_result, "thesis.title", "N/A"),
             "core_belief": self._safe(cycle_result, "thesis.core_belief", "N/A"),
             "confidence": self._safe(cycle_result, "thesis.confidence", 0.0),
             "expected_window": self._safe(cycle_result, "thesis.expected_window", "N/A"),
-            "evidence": self._render_list(
-                self._safe(cycle_result, "thesis.evidence")
-            ),
+            "evidence": self._render_list(self._safe(cycle_result, "thesis.evidence")),
             "counter_arguments": self._render_list(
                 self._safe(cycle_result, "thesis.counter_arguments")
             ),
             "invalidation_conditions": self._render_list(
                 self._safe(cycle_result, "thesis.invalidation_conditions")
             ),
-
             # Section 6: Predictions
             "predictions_section": self._render_predictions(cycle_result, registry),
-
             # Section 7: Open Questions
             "open_questions": self._render_open_questions(cycle_result),
-
             # Section 8: Yesterday Review
             "yesterday_review": self._render_yesterday_review(previous_result, cycle_result),
-
             # Section 9: Learning
             "learning_today": self._render_learning(cycle_result),
-
             # Section 10: Framework Changes
             "framework_changes": self._render_framework_changes(cycle_result),
-
             # Section 11: Memory Snapshot
             "total_cycles": self._safe(memory, "total_entries", 0) if memory else 0,
             "success_rate": self._safe(memory, "success_rate", 0.0) if memory else 0.0,
-            "pending_theses": self._safe(cycle_result, "get_pending_outcomes", []) if hasattr(cycle_result, 'get_pending_outcomes') else 0,
+            "pending_theses": (
+                self._safe(cycle_result, "get_pending_outcomes", [])
+                if hasattr(cycle_result, "get_pending_outcomes")
+                else 0
+            ),
             "common_failures": self._render_failures(memory),
             "regime_performance": self._render_regime_performance(memory),
         }
@@ -241,9 +234,9 @@ class ReportGenerator:
     @staticmethod
     def _regime_field(cycle_result, field: str) -> str:
         """Extract a regime field with proper formatting."""
-        regime = getattr(cycle_result, 'macro_snapshot', None)
+        regime = getattr(cycle_result, "macro_snapshot", None)
         if regime:
-            regime = getattr(regime, 'regime', None)
+            regime = getattr(regime, "regime", None)
         if regime:
             val = getattr(regime, field, None)
             return str(val).title() if val else "N/A"
@@ -262,23 +255,28 @@ class ReportGenerator:
     @staticmethod
     def _render_market_data(cycle_result) -> str:
         """Render market data indicators section."""
-        snap = getattr(cycle_result, 'macro_snapshot', None)
+        snap = getattr(cycle_result, "macro_snapshot", None)
         if not snap:
             return ""
 
-        market = getattr(snap, 'market', None)
+        market = getattr(snap, "market", None)
         if not market:
             return ""
 
-        indicators = getattr(market, 'indicators', {})
+        indicators = getattr(market, "indicators", {})
         if not indicators:
             return "- **Market Data**: *(none)*"
 
         lines = ["- **Market Data**:"]
         label_map = {
-            "spx": "S&P 500", "vix": "VIX", "dxy": "DXY",
-            "us10y": "US 10Y", "us2y": "US 2Y",
-            "hyg": "HYG (Credit)", "gold": "Gold", "copper": "Copper",
+            "spx": "S&P 500",
+            "vix": "VIX",
+            "dxy": "DXY",
+            "us10y": "US 10Y",
+            "us2y": "US 2Y",
+            "hyg": "HYG (Credit)",
+            "gold": "Gold",
+            "copper": "Copper",
         }
         for k, v in list(indicators.items())[:10]:
             if k.startswith("prev_"):
@@ -298,41 +296,41 @@ class ReportGenerator:
     @staticmethod
     def _render_framework_ranking(cycle_result) -> str:
         """Render framework ranking table."""
-        fw_sel = getattr(cycle_result, 'framework_selection', None)
+        fw_sel = getattr(cycle_result, "framework_selection", None)
         if not fw_sel:
             return "    *(none)*"
 
-        ranked = getattr(fw_sel, 'ranked', [])
+        ranked = getattr(fw_sel, "ranked", [])
         if not ranked:
             return "    *(none)*"
 
         lines = ["- **Ranked Frameworks**:"]
         for fw, weight in ranked[:5]:
-            name = getattr(fw, 'name', getattr(fw, 'framework_id', '?'))
+            name = getattr(fw, "name", getattr(fw, "framework_id", "?"))
             lines.append(f"  - {name}: {weight:.0%}")
         return "\n".join(lines)
 
     @staticmethod
     def _render_top_hypothesis(cycle_result) -> str:
         """Render top hypothesis from hypothesis set."""
-        hs = getattr(cycle_result, 'hypothesis_set', None)
+        hs = getattr(cycle_result, "hypothesis_set", None)
         if not hs:
             return "    *(no hypotheses generated)*"
 
-        hyps = getattr(hs, 'hypotheses', [])
+        hyps = getattr(hs, "hypotheses", [])
         if not hyps:
             return "    *(empty hypothesis set)*"
 
         top = hyps[0]
-        statement = getattr(top, 'statement', '') or getattr(top, 'description', '')
-        conf = getattr(top, 'confidence', 0.0)
-        dim = getattr(top, 'dimension', '')
+        statement = getattr(top, "statement", "") or getattr(top, "description", "")
+        conf = getattr(top, "confidence", 0.0)
+        dim = getattr(top, "dimension", "")
 
         parts = [f"- **{dim.title() if dim else 'Hypothesis'}** (confidence: {conf:.0%})"]
         if statement:
             parts.append(f"  {statement[:200]}")
 
-        belief = getattr(top, 'belief_summary', '') or getattr(top, 'description', '')
+        belief = getattr(top, "belief_summary", "") or getattr(top, "description", "")
         if belief:
             parts.append(f"  *{str(belief)[:150]}*")
 
@@ -341,29 +339,29 @@ class ReportGenerator:
     @staticmethod
     def _render_hypothesis_ranking(cycle_result) -> str:
         """Render all hypotheses ranked."""
-        hs = getattr(cycle_result, 'hypothesis_set', None)
+        hs = getattr(cycle_result, "hypothesis_set", None)
         if not hs:
             return ""
 
-        hyps = getattr(hs, 'hypotheses', [])
+        hyps = getattr(hs, "hypotheses", [])
         if len(hyps) <= 1 or not hyps:
             return ""
 
         lines = ["- **All Hypotheses**:"]
         for i, h in enumerate(hyps[1:6]):
-            statement = (getattr(h, 'statement', '') or getattr(h, 'description', ''))[:120]
-            conf = getattr(h, 'confidence', 0.0)
+            statement = (getattr(h, "statement", "") or getattr(h, "description", ""))[:120]
+            conf = getattr(h, "confidence", 0.0)
             lines.append(f"  {i + 2}. [{conf:.0%}] {statement}")
         return "\n".join(lines)
 
     @staticmethod
     def _render_transmission_chain(cycle_result) -> str:
         """Render transmission chain as a flow diagram."""
-        thesis = getattr(cycle_result, 'thesis', None)
+        thesis = getattr(cycle_result, "thesis", None)
         if not thesis:
             return "    *(no transmission chain)*"
 
-        chain = getattr(thesis, 'transmission_chain', [])
+        chain = getattr(thesis, "transmission_chain", [])
         if not chain:
             return "    *(no transmission chain)*"
 
@@ -371,7 +369,7 @@ class ReportGenerator:
         for i, step in enumerate(chain):
             if i < len(chain) - 1:
                 lines.append(f"    {step}")
-                lines.append(f"        ↓")
+                lines.append("        ↓")
             else:
                 lines.append(f"    {step}")
         return "\n".join(lines)
@@ -379,21 +377,21 @@ class ReportGenerator:
     @staticmethod
     def _render_predictions(cycle_result, registry=None) -> str:
         """Render today's predictions section."""
-        pb = getattr(cycle_result, 'prediction_batch', None)
+        pb = getattr(cycle_result, "prediction_batch", None)
         if not pb:
             return "    *(no predictions generated today)*"
 
-        preds = getattr(pb, 'predictions', [])
+        preds = getattr(pb, "predictions", [])
         if not preds:
             return "    *(no predictions in batch)*"
 
         lines = [f"**{len(preds)} predictions registered today:**"]
         for p in preds[:10]:
-            direction = getattr(p, 'direction', '?')
-            asset = getattr(p, 'asset', '') or getattr(p, 'indicator', '?')
-            conf = getattr(p, 'confidence', 0.0)
-            horizon = getattr(p, 'horizon', 30)
-            channel = getattr(p, 'transmission_channel', '') or getattr(p, 'channel', '')
+            direction = getattr(p, "direction", "?")
+            asset = getattr(p, "asset", "") or getattr(p, "indicator", "?")
+            conf = getattr(p, "confidence", 0.0)
+            horizon = getattr(p, "horizon", 30)
+            channel = getattr(p, "transmission_channel", "") or getattr(p, "channel", "")
             line = f"  - {direction} {asset} ({conf:.0%}, {horizon}d)"
             if channel:
                 line += f" via {channel}"
@@ -413,13 +411,15 @@ class ReportGenerator:
     def _render_open_questions(cycle_result) -> str:
         """Generate open questions from counter-arguments and unknowns."""
         questions = []
-        thesis = getattr(cycle_result, 'thesis', None)
+        thesis = getattr(cycle_result, "thesis", None)
         if thesis:
-            counter = getattr(thesis, 'counter_arguments', [])
+            counter = getattr(thesis, "counter_arguments", [])
             for ca in counter[:3]:
-                questions.append(f"  - Is '{ca[:100]}...' a real risk? How would we detect it early?")
+                questions.append(
+                    f"  - Is '{ca[:100]}...' a real risk? How would we detect it early?"
+                )
 
-            conditions = getattr(thesis, 'invalidation_conditions', [])
+            conditions = getattr(thesis, "invalidation_conditions", [])
             for cond in conditions[:2]:
                 questions.append(f"  - How to monitor: {cond[:120]}?")
 
@@ -435,19 +435,19 @@ class ReportGenerator:
         if not previous_result:
             return "    *(first cycle — no previous thesis to review)*"
 
-        prev_thesis = getattr(previous_result, 'thesis', None)
-        outcome = getattr(cycle_result, 'outcome_from_previous', None)
+        prev_thesis = getattr(previous_result, "thesis", None)
+        outcome = getattr(cycle_result, "outcome_from_previous", None)
 
         if not prev_thesis:
             return "    *(no previous thesis)*"
 
-        title = getattr(prev_thesis, 'title', 'Unknown')
+        title = getattr(prev_thesis, "title", "Unknown")
         lines = [f"- **Previous Thesis**: {title[:100]}"]
 
         if outcome:
-            verified = getattr(outcome, 'verified', False)
-            triggered = getattr(outcome, 'invalidation_triggered', None)
-            notes = getattr(outcome, 'notes', '')
+            verified = getattr(outcome, "verified", False)
+            triggered = getattr(outcome, "invalidation_triggered", None)
+            notes = getattr(outcome, "notes", "")
 
             status_str = "VALIDATED" if verified else "INVALIDATED"
             lines.append(f"- **Outcome**: {status_str}")
@@ -456,12 +456,12 @@ class ReportGenerator:
             if notes:
                 lines.append(f"- **Notes**: {notes[:200]}")
 
-        pm = getattr(cycle_result, 'postmortem', None)
+        pm = getattr(cycle_result, "postmortem", None)
         if pm:
-            root_cause = getattr(pm, 'root_cause', '')
+            root_cause = getattr(pm, "root_cause", "")
             if root_cause:
                 lines.append(f"- **Postmortem**: {root_cause[:200]}")
-            learning = getattr(pm, 'learning', '')
+            learning = getattr(pm, "learning", "")
             if learning:
                 lines.append(f"- **Learning**: {learning[:200]}")
 
@@ -470,18 +470,18 @@ class ReportGenerator:
     @staticmethod
     def _render_learning(cycle_result) -> str:
         """Render today's learning from postmortem."""
-        pm = getattr(cycle_result, 'postmortem', None)
+        pm = getattr(cycle_result, "postmortem", None)
         if not pm:
             return "    *(no learning this cycle)*"
 
-        learning = getattr(pm, 'learning', '')
-        actions = getattr(pm, 'suggested_actions', [])
+        learning = getattr(pm, "learning", "")
+        actions = getattr(pm, "suggested_actions", [])
 
         lines = []
         if learning:
             lines.append(f"  **Key Insight**: {learning[:300]}")
         if actions:
-            lines.append(f"  **Actions**:")
+            lines.append("  **Actions**:")
             for a in actions[:3]:
                 lines.append(f"    - {a}")
 
@@ -492,16 +492,16 @@ class ReportGenerator:
     @staticmethod
     def _render_framework_changes(cycle_result) -> str:
         """Render framework/principle changes from evolution."""
-        ev = getattr(cycle_result, 'evolution_result', None)
+        ev = getattr(cycle_result, "evolution_result", None)
         if not ev:
             return "    *(no framework changes this cycle)*"
 
         lines = []
-        p_created = ev.get('principles_created', 0)
-        p_promoted = ev.get('principles_promoted', 0)
-        fw_created = ev.get('frameworks_created', 0)
-        conflicts = ev.get('conflicts_resolved', 0)
-        beliefs = ev.get('beliefs_updated', 0)
+        p_created = ev.get("principles_created", 0)
+        p_promoted = ev.get("principles_promoted", 0)
+        fw_created = ev.get("frameworks_created", 0)
+        conflicts = ev.get("conflicts_resolved", 0)
+        beliefs = ev.get("beliefs_updated", 0)
 
         if p_created:
             lines.append(f"  - {p_created} new principle(s) created")
@@ -524,7 +524,7 @@ class ReportGenerator:
         if not memory:
             return "    *(no memory)*"
 
-        failures = getattr(memory, 'common_failure_reasons', None)
+        failures = getattr(memory, "common_failure_reasons", None)
         if not failures:
             return "    *(no history)*"
 
@@ -547,23 +547,21 @@ class ReportGenerator:
 
         # Try to extract regime performance from memory entries
         try:
-            entries = getattr(memory, '_entries', {})
+            entries = getattr(memory, "_entries", {})
             if not entries:
                 return "    *(no data)*"
 
-            from collections import Counter
             regime_stats: dict[str, dict] = {}
             for e in entries.values():
-                rl = getattr(e, 'regime_label', 'Unknown')
+                rl = getattr(e, "regime_label", "Unknown")
                 if rl not in regime_stats:
                     regime_stats[rl] = {"success": 0, "total": 0}
                 regime_stats[rl]["total"] += 1
-                if getattr(e, 'was_successful', False):
+                if getattr(e, "was_successful", False):
                     regime_stats[rl]["success"] += 1
 
             lines = []
-            for regime, stats in sorted(regime_stats.items(),
-                                        key=lambda x: -x[1]["total"]):
+            for regime, stats in sorted(regime_stats.items(), key=lambda x: -x[1]["total"]):
                 rate = stats["success"] / stats["total"] if stats["total"] else 0
                 lines.append(f"  - {regime}: {rate:.0%} ({stats['success']}/{stats['total']})")
 

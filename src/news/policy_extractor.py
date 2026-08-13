@@ -8,9 +8,8 @@ This module extracts: stance, forward guidance, reaction function, pivot signals
 from __future__ import annotations
 
 import uuid
-from typing import Any, Optional
 
-from src.news.schemas import ResearchEvent, PolicySignal, NewsSourceType, EventCategory
+from src.news.schemas import NewsSourceType, PolicySignal, ResearchEvent
 
 
 class PolicyExtractor:
@@ -24,77 +23,126 @@ class PolicyExtractor:
     CB_PATTERNS = {
         "fed": {
             "hawkish_phrases": [
-                "restrictive stance", "further tightening", "inflation remains elevated",
-                "above the longer-run goal", "additional policy firming", "strongly committed",
-                "labor market remains tight", "insufficiently restrictive",
-                "premature to cut", "need to see more evidence",
+                "restrictive stance",
+                "further tightening",
+                "inflation remains elevated",
+                "above the longer-run goal",
+                "additional policy firming",
+                "strongly committed",
+                "labor market remains tight",
+                "insufficiently restrictive",
+                "premature to cut",
+                "need to see more evidence",
             ],
             "dovish_phrases": [
-                "considerable progress", "moving toward better balance",
-                "moderating inflation", "appropriate to dial back",
-                "risks to both sides", "labor market in better balance",
-                "disinflation has resumed", "real rate is restrictive",
+                "considerable progress",
+                "moving toward better balance",
+                "moderating inflation",
+                "appropriate to dial back",
+                "risks to both sides",
+                "labor market in better balance",
+                "disinflation has resumed",
+                "real rate is restrictive",
             ],
             "pivot_phrases": [
-                "at or near", "peak rate", "next move", "likely to be",
-                "any adjustment", "could be appropriate",
+                "at or near",
+                "peak rate",
+                "next move",
+                "likely to be",
+                "any adjustment",
+                "could be appropriate",
             ],
             "watched_indicators": [
-                "inflation", "labor market", "financial conditions",
-                "economic activity", "global developments",
+                "inflation",
+                "labor market",
+                "financial conditions",
+                "economic activity",
+                "global developments",
             ],
         },
         "ecb": {
             "hawkish_phrases": [
-                "inflation expectations", "wage pressures", "restrictive",
-                "sufficiently long", "forcefully", "determined",
-                "further tightening", "upside risks",
+                "inflation expectations",
+                "wage pressures",
+                "restrictive",
+                "sufficiently long",
+                "forcefully",
+                "determined",
+                "further tightening",
+                "upside risks",
             ],
             "dovish_phrases": [
-                "significant progress", "declining", "data-dependent",
-                "gradual", "transmission", "lagged effects",
+                "significant progress",
+                "declining",
+                "data-dependent",
+                "gradual",
+                "transmission",
+                "lagged effects",
             ],
             "pivot_phrases": ["sufficiently restrictive", "terminal rate", "plateau"],
             "watched_indicators": ["inflation", "wages", "profits", "financing conditions"],
         },
         "boj": {
             "hawkish_phrases": [
-                "normalization", "exit", "adjustment", "flexibility",
-                "yield curve control band", "wage growth",
+                "normalization",
+                "exit",
+                "adjustment",
+                "flexibility",
+                "yield curve control band",
+                "wage growth",
             ],
             "dovish_phrases": [
-                "patiently", "accommodative", "sustainably",
-                "virtuous cycle", "continued easing",
-                "deflation", "price stability target",
+                "patiently",
+                "accommodative",
+                "sustainably",
+                "virtuous cycle",
+                "continued easing",
+                "deflation",
+                "price stability target",
             ],
             "pivot_phrases": ["review", "assessment", "side effects"],
-            "watched_indicators": ["wages", "service prices", "output gap", "inflation expectations"],
+            "watched_indicators": [
+                "wages",
+                "service prices",
+                "output gap",
+                "inflation expectations",
+            ],
         },
         "pboc": {
             "hawkish_phrases": [
-                "prudent", "targeted", "structural", "property sector risk",
-                "shadow banking", "financial stability",
+                "prudent",
+                "targeted",
+                "structural",
+                "property sector risk",
+                "shadow banking",
+                "financial stability",
             ],
             "dovish_phrases": [
-                "counter-cyclical", "ample liquidity", "credit support",
-                "real economy", "small and micro", "inclusive",
-                "moderately accommodative", "cut reserve requirement",
+                "counter-cyclical",
+                "ample liquidity",
+                "credit support",
+                "real economy",
+                "small and micro",
+                "inclusive",
+                "moderately accommodative",
+                "cut reserve requirement",
             ],
             "pivot_phrases": ["targeted RRR cut", "LPR reform", "MLF operations"],
             "watched_indicators": ["CPI", "PPI", "credit growth", "housing", "investment"],
         },
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
-    def extract(self, event: ResearchEvent) -> Optional[PolicySignal]:
+    def extract(self, event: ResearchEvent) -> PolicySignal | None:
         """Extract policy signal from a CB communication event.
 
         Returns None if the event is not from a central bank source.
         """
         if event.source_type not in (
-            NewsSourceType.CENTRAL_BANK, NewsSourceType.CENTRAL_BANK_SPEECH
+            NewsSourceType.CENTRAL_BANK,
+            NewsSourceType.CENTRAL_BANK_SPEECH,
         ):
             return None
 
@@ -195,7 +243,7 @@ class PolicyExtractor:
 
     # ── Extraction Helpers ──
 
-    def _identify_cb(self, event: ResearchEvent) -> Optional[str]:
+    def _identify_cb(self, event: ResearchEvent) -> str | None:
         """Identify which central bank an event relates to."""
         text = (event.title + " " + event.description).lower()
         for entity in event.entities:
@@ -242,9 +290,14 @@ class PolicyExtractor:
     def _extract_guidance(self, text: str, stance: str) -> str:
         """Extract forward guidance text."""
         guidance_markers = [
-            "forward guidance", "appropriate path", "future adjustments",
-            "data dependent", "meeting by meeting", "any decision",
-            "remain data dependent", "proceed carefully",
+            "forward guidance",
+            "appropriate path",
+            "future adjustments",
+            "data dependent",
+            "meeting by meeting",
+            "any decision",
+            "remain data dependent",
+            "proceed carefully",
         ]
         found = [m for m in guidance_markers if m in text]
         if found:

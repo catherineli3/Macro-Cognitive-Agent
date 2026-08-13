@@ -7,9 +7,7 @@ validation, and manages graduation.
 
 from __future__ import annotations
 
-from typing import Optional
-
-from src.schemas.research import ResearchPrinciple, PrincipleStrength, PrincipleStatus
+from src.schemas.research import PrincipleStatus, PrincipleStrength, ResearchPrinciple
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -40,25 +38,25 @@ class CandidatePrincipleManager:
         if principle.strength != PrincipleStrength.CANDIDATE:
             logger.warning(
                 "Cannot register non-candidate principle %s (strength=%s)",
-                principle.principle_id, principle.strength.value,
+                principle.principle_id,
+                principle.strength.value,
             )
             return False
 
         self._candidates[principle.principle_id] = principle
-        self._regime_checks[principle.principle_id] = list(
-            principle.evidence.regimes_validated
-        )
+        self._regime_checks[principle.principle_id] = list(principle.evidence.regimes_validated)
         logger.info(
             "Registered candidate: %s (domain=%s, obs=%d, regimes=%d)",
-            principle.principle_id, principle.domain,
+            principle.principle_id,
+            principle.domain,
             principle.evidence.total_observations,
             principle.evidence.regimes_count,
         )
         return True
 
-    def record_regime_validation(self, principle_id: str,
-                                  regime_key: str,
-                                  validated: bool = True) -> bool:
+    def record_regime_validation(
+        self, principle_id: str, regime_key: str, validated: bool = True
+    ) -> bool:
         """Record a regime check result. Returns True if candidate graduated."""
         if principle_id not in self._candidates:
             return False
@@ -88,7 +86,8 @@ class CandidatePrincipleManager:
         self._graduated[principle_id] = candidate
         logger.info(
             "Graduated candidate → VALIDATED: %s (regimes=%d, obs=%d)",
-            principle_id, candidate.evidence.regimes_count,
+            principle_id,
+            candidate.evidence.regimes_count,
             candidate.evidence.total_observations,
         )
         return True
@@ -101,9 +100,11 @@ class CandidatePrincipleManager:
         if not p:
             return False
 
-        if (p.evidence.total_observations >= 50
-                and p.evidence.regimes_count >= 3
-                and p.evidence.contradiction_count <= 2):
+        if (
+            p.evidence.total_observations >= 50
+            and p.evidence.regimes_count >= 3
+            and p.evidence.contradiction_count <= 2
+        ):
             p.strength = PrincipleStrength.MATURE
             logger.info("Principle graduated to MATURE: %s", principle_id)
             return True
@@ -115,9 +116,11 @@ class CandidatePrincipleManager:
         if not p:
             return False
 
-        if (p.evidence.total_observations >= 100
-                and p.evidence.regimes_count >= 5
-                and p.evidence.contradiction_count == 0):
+        if (
+            p.evidence.total_observations >= 100
+            and p.evidence.regimes_count >= 5
+            and p.evidence.contradiction_count == 0
+        ):
             p.strength = PrincipleStrength.FOUNDATIONAL
             logger.info("Principle graduated to FOUNDATIONAL: %s", principle_id)
             return True
@@ -145,10 +148,7 @@ class CandidatePrincipleManager:
 
     def get_pending_candidates(self) -> list[ResearchPrinciple]:
         """Get candidates still awaiting cross-regime validation."""
-        return [
-            p for p in self._candidates.values()
-            if p.evidence.regimes_count < 2
-        ]
+        return [p for p in self._candidates.values() if p.evidence.regimes_count < 2]
 
     @property
     def candidate_count(self) -> int:

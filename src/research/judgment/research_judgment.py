@@ -27,12 +27,12 @@ Output Format (per conclusion):
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 from uuid import uuid4
 
-from src.research.beliefs.schemas import ResearchBelief, BeliefDomain, BeliefRelationType
 from src.research.beliefs.belief_graph import BeliefGraph
+from src.research.beliefs.schemas import BeliefDomain, BeliefRelationType, ResearchBelief
 from src.research.narrative.schemas import NarrativeObject
 from src.shared.logging import get_logger
 
@@ -168,18 +168,67 @@ def _infer_direction_from_belief(belief: ResearchBelief) -> str:
     title = belief.title.lower()
 
     directional_words = {
-        "hawkish": ["hawkish", "hawk", "tighten", "tightening", "hike", "restrictive",
-                     "aggressive", "strong"],
-        "dovish": ["dovish", "dove", "easing", "ease", "cut", "accommodative", "loose",
-                    "pivot", "pause"],
-        "elevated": ["elevated", "rising", "high", "surge", "upside", "sticky", "persistent",
-                      "reaccelerate", "shock"],
-        "moderating": ["moderating", "declining", "cooling", "falling", "disinflation",
-                        "peaking", "transitory"],
-        "bullish": ["bullish", "acceleration", "expanding", "boom", "growth", "recovery",
-                     "optimism", "upside"],
-        "bearish": ["bearish", "slowing", "slowdown", "contraction", "recession", "declining",
-                     "deteriorating", "downside"],
+        "hawkish": [
+            "hawkish",
+            "hawk",
+            "tighten",
+            "tightening",
+            "hike",
+            "restrictive",
+            "aggressive",
+            "strong",
+        ],
+        "dovish": [
+            "dovish",
+            "dove",
+            "easing",
+            "ease",
+            "cut",
+            "accommodative",
+            "loose",
+            "pivot",
+            "pause",
+        ],
+        "elevated": [
+            "elevated",
+            "rising",
+            "high",
+            "surge",
+            "upside",
+            "sticky",
+            "persistent",
+            "reaccelerate",
+            "shock",
+        ],
+        "moderating": [
+            "moderating",
+            "declining",
+            "cooling",
+            "falling",
+            "disinflation",
+            "peaking",
+            "transitory",
+        ],
+        "bullish": [
+            "bullish",
+            "acceleration",
+            "expanding",
+            "boom",
+            "growth",
+            "recovery",
+            "optimism",
+            "upside",
+        ],
+        "bearish": [
+            "bearish",
+            "slowing",
+            "slowdown",
+            "contraction",
+            "recession",
+            "declining",
+            "deteriorating",
+            "downside",
+        ],
         "risk_on": ["risk_on", "risk on", "appetite", "complacency", "leverage"],
         "risk_off": ["risk_off", "risk off", "aversion", "flight", "deleverage", "de-risk"],
         "tight": ["tight", "tightening", "stress", "drain", "constrain", "squeeze"],
@@ -248,7 +297,7 @@ class ResearchJudgment:
     # ── Meta ─────────────────────────────────────────────
     domain: str = ""
     source_narrative_titles: list[str] = field(default_factory=list)
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def confidence_label(self) -> str:
@@ -338,8 +387,8 @@ class JudgmentOutput:
     judgments: list[ResearchJudgment] = field(default_factory=list)
     summary: str = ""
     macro_stance: str = ""  # Net macro stance: hawkish/dovish/neutral
-    highest_conviction: Optional[ResearchJudgment] = None
-    generated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    highest_conviction: ResearchJudgment | None = None
+    generated_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def count(self) -> int:
@@ -432,9 +481,13 @@ class ResearchJudgmentEngine:
         logger.info(
             "judgment_engine | %d judgments | stance=%s | avg_confidence=%.0f%% | "
             "falsifiable=%d/%d | competition=%d/%d",
-            output.count, macro_stance, output.avg_confidence * 100,
-            output.falsifiable_count, output.count,
-            output.competition_count, output.count,
+            output.count,
+            macro_stance,
+            output.avg_confidence * 100,
+            output.falsifiable_count,
+            output.count,
+            output.competition_count,
+            output.count,
         )
 
         return output
@@ -463,7 +516,7 @@ class ResearchJudgmentEngine:
         # 5. Get narrative context
         narrative_titles = self._get_narrative_titles(belief, narrative_objects)
 
-        direction = _infer_direction_from_belief(belief)
+        _direction = _infer_direction_from_belief(belief)
 
         return ResearchJudgment(
             belief_title=belief.title,

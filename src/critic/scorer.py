@@ -69,12 +69,8 @@ class BeliefScorer:
 
         # 1. Base multiplier from sufficiency and consistency
         base = 1.0
-        base *= self.SUFFICIENCY_FACTORS.get(
-            report.evidence_sufficiency, 1.0
-        )
-        base *= self.CONSISTENCY_FACTORS.get(
-            report.evidence_consistency, 1.0
-        )
+        base *= self.SUFFICIENCY_FACTORS.get(report.evidence_sufficiency, 1.0)
+        base *= self.CONSISTENCY_FACTORS.get(report.evidence_consistency, 1.0)
 
         # 2. Cumulative finding penalties
         finding_factor = self._compute_finding_penalty(report.findings)
@@ -94,9 +90,7 @@ class BeliefScorer:
 
     # ── Internal ──────────────────────────────────────────────────────────
 
-    def _compute_finding_penalty(
-        self, findings: list[ReflectionFinding]
-    ) -> float:
+    def _compute_finding_penalty(self, findings: list[ReflectionFinding]) -> float:
         """Compound severity penalties. More findings = more penalty,
         but capped at MAX_CUMULATIVE_PENALTY to avoid over-reaction.
         """
@@ -105,9 +99,7 @@ class BeliefScorer:
 
         penalty = 1.0
         for f in findings:
-            factor = self.SEVERITY_PENALTIES.get(
-                f.severity, 1.0
-            )
+            factor = self.SEVERITY_PENALTIES.get(f.severity, 1.0)
             penalty *= factor
 
         return max(penalty, self.MAX_CUMULATIVE_PENALTY)

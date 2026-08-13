@@ -15,41 +15,32 @@ from __future__ import annotations
 
 import random
 import sys
-import time
-from datetime import datetime, timezone
 from pathlib import Path
 
 # Ensure project root in path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from src.belief_versioning.contextual_belief import (
+    ContextSplitter,
+    ContextualBeliefManager,
+)
+from src.diagnosis.breakpoint_detector import BreakpointDetector
 from src.schemas.evaluation_v3 import EvaluationReport
 from src.schemas.hypothesis_v3_1 import (
     CandidateHypothesis,
-    EvidenceClaim,
     HypothesisEvolutionResult,
     SelectedHypothesis,
     TransmissionSegment,
 )
 from src.schemas.prediction_v3 import V3PredictionOutcome
-from src.schemas.transmission_v3_1 import (
-    BreakpointDiagnosis,
-    ContextualBelief,
-    FailureModeCategory,
-)
 from src.transmission.transmission_graph import TransmissionGraph
-from src.transmission.update_engine import TransmissionUpdateEngine
 from src.transmission.transmission_orchestrator import TransmissionOrchestrator
-from src.diagnosis.breakpoint_detector import BreakpointDetector
-from src.belief_versioning.contextual_belief import (
-    ContextualBeliefFactory,
-    ContextualBeliefManager,
-    ContextSplitter,
-)
-
+from src.transmission.update_engine import TransmissionUpdateEngine
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test 1: Transmission Graph Construction
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def test_graph_initialization():
     """Verify graph bootstraps from PREDICTION_MAPPING + inter-dimension + cross-asset edges."""
@@ -76,7 +67,7 @@ def test_graph_initialization():
 def test_edge_safety_limits():
     """Verify reliability stays within [0.05, 0.95]."""
     graph = TransmissionGraph()
-    
+
     # Get an edge and push reliability to extreme
     edge = graph.get_edge("liquidity", "NASDAQ")
     assert edge is not None
@@ -100,6 +91,7 @@ def test_edge_safety_limits():
 # Test 2: Path Finding
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def test_path_finding():
     """Verify trace_paths and strongest_path work correctly."""
     graph = TransmissionGraph()
@@ -111,7 +103,9 @@ def test_path_finding():
 
     # Find indirect paths
     indirect = [p for p in paths if len(p) > 2]
-    print(f"    Found {len(paths)} paths (direct + {len(indirect)} indirect) from liquidity->NASDAQ")
+    print(
+        f"    Found {len(paths)} paths (direct + {len(indirect)} indirect) from liquidity->NASDAQ"
+    )
 
     # strongest_path should work
     result = graph.strongest_path("liquidity", "NASDAQ")
@@ -121,7 +115,7 @@ def test_path_finding():
     print(f"    Strongest path: {'→'.join(path)} (reliability={reliability:.3f})")
 
     # No path should return None
-    no_path = graph.strongest_path("TIPS", "HYG", max_depth=3)
+    _no_path = graph.strongest_path("TIPS", "HYG", max_depth=3)
     # TIPS→Gold→ and HYG path may or may not exist; just verify no crash
     print("  [PASS] Path finding correct, strongest_path works")
 
@@ -130,7 +124,7 @@ def test_path_comparison():
     """Verify compare_paths between direct and indirect paths."""
     graph = TransmissionGraph()
 
-    path_a = ["liquidity", "NASDAQ"]       # Direct, 2 nodes
+    path_a = ["liquidity", "NASDAQ"]  # Direct, 2 nodes
     path_b = ["liquidity", "credit", "SPX"]  # Indirect, 3 nodes (via credit)
 
     result = graph.compare_paths(path_a, path_b)
@@ -152,6 +146,7 @@ def test_path_comparison():
 # Test 3: Breakpoint Detection
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def test_breakpoint_detection():
     """Verify breakpoint detector finds the correct failing segment."""
     graph = TransmissionGraph()
@@ -160,12 +155,18 @@ def test_breakpoint_detection():
     # Build a hypothesis with a known transmission chain
     chain = [
         TransmissionSegment(
-            source="liquidity", target="credit", direction="+",
-            description="Liquidity easing loosens credit", reliability=0.80,
+            source="liquidity",
+            target="credit",
+            direction="+",
+            description="Liquidity easing loosens credit",
+            reliability=0.80,
         ),
         TransmissionSegment(
-            source="credit", target="NASDAQ", direction="+",
-            description="Credit loosening boosts equities", reliability=0.75,
+            source="credit",
+            target="NASDAQ",
+            direction="+",
+            description="Credit loosening boosts equities",
+            reliability=0.75,
         ),
     ]
     hypothesis = CandidateHypothesis(
@@ -187,9 +188,7 @@ def test_breakpoint_detection():
         transmission_channel="liquidity→NASDAQ",
     )
 
-    diagnosis = detector.diagnose_prediction(
-        outcome, hypothesis, context_key="tightening"
-    )
+    diagnosis = detector.diagnose_prediction(outcome, hypothesis, context_key="tightening")
 
     assert diagnosis.breakpoint_found, "Should find a breakpoint"
     assert not diagnosis.all_segments_healthy, "Should not be all healthy"
@@ -233,6 +232,7 @@ def test_healthy_prediction():
 # Test 4: Reinforce / Weaken Reliability
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def test_reliability_updates():
     """Verify edge reliability changes correctly with reinforce/weaken."""
     graph = TransmissionGraph()
@@ -262,7 +262,9 @@ def test_reliability_updates():
     assert final_edge.success_count == 5
     assert final_edge.break_count == 5
 
-    print(f"    Observations: {final_edge.observation_count} (success={final_edge.success_count}, break={final_edge.break_count})")
+    print(
+        f"    Observations: {final_edge.observation_count} (success={final_edge.success_count}, break={final_edge.break_count})"
+    )
     print("  [PASS] Reliability updates tracked correctly")
 
 
@@ -300,6 +302,7 @@ def test_context_specific_reliability():
 # Test 5: Cascade — Belief weight auto-adjusted
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def test_belief_weight_from_edges():
     """Verify belief weight is computed from transmission edge reliabilities."""
     graph = TransmissionGraph()
@@ -329,7 +332,9 @@ def test_belief_weight_from_edges():
     engine.recalculate_belief_weight(belief)
     boosted_weight = belief.contexts["easing"].derived_weight
     print(f"    After reinforcement: {boosted_weight:.3f}")
-    assert boosted_weight > initial_weight, f"Weight {boosted_weight:.3f} should > initial {initial_weight:.3f}"
+    assert (
+        boosted_weight > initial_weight
+    ), f"Weight {boosted_weight:.3f} should > initial {initial_weight:.3f}"
 
     # Weaken one edge significantly
     for _ in range(15):
@@ -338,7 +343,9 @@ def test_belief_weight_from_edges():
     engine.recalculate_belief_weight(belief)
     weakened_weight = belief.contexts["easing"].derived_weight
     print(f"    After weakening credit→NASDAQ: {weakened_weight:.3f}")
-    assert weakened_weight < boosted_weight, f"Weight {weakened_weight:.3f} should < boosted {boosted_weight:.3f}"
+    assert (
+        weakened_weight < boosted_weight
+    ), f"Weight {weakened_weight:.3f} should < boosted {boosted_weight:.3f}"
 
     # Diff between high and low should be significant
     print(f"    Weight range: {boosted_weight:.3f} → {weakened_weight:.3f}")
@@ -372,12 +379,11 @@ def test_cascade_multiple_beliefs():
 
     # Compute initial weights from current edge reliabilities
     engine.recalculate_all_beliefs()
-    initial_weights = {
-        bid: manager.get(bid).active_weight("easing")
-        for bid in belief_ids
-    }
+    initial_weights = {bid: manager.get(bid).active_weight("easing") for bid in belief_ids}
 
-    print(f"    Initial weights (after reinforcement): {[f'{initial_weights[bid]:.4f}' for bid in belief_ids]}")
+    print(
+        f"    Initial weights (after reinforcement): {[f'{initial_weights[bid]:.4f}' for bid in belief_ids]}"
+    )
 
     # Weaken credit→NASDAQ significantly to trigger cascade
     for _ in range(20):
@@ -401,6 +407,7 @@ def test_cascade_multiple_beliefs():
 # Test 6: Context Auto-Discovery
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def test_context_split():
     """Verify context auto-splitting when performance diverges."""
     manager = ContextualBeliefManager()
@@ -421,11 +428,11 @@ def test_context_split():
 
     # Provide split data: VIX high context has much worse performance
     perf_data = {
-        "vix_high": {"sample_count": 18, "accuracy": 0.38},   # Significantly worse
-        "vix_low": {"sample_count": 12, "accuracy": 0.70},    # Slightly better (not enough diff)
+        "vix_high": {"sample_count": 18, "accuracy": 0.38},  # Significantly worse
+        "vix_low": {"sample_count": 12, "accuracy": 0.70},  # Slightly better (not enough diff)
     }
 
-    new_ctx = manager.check_context_split(belief.belief_id)
+    _new_ctx = manager.check_context_split(belief.belief_id)
     # Note: check_context_split auto-feeds from belief contexts to splitter
     # This is an internal analysis; let's directly use the splitter for a cleaner test
     splitter = ContextSplitter()
@@ -442,20 +449,25 @@ def test_context_split():
     default_ctx2.historical_accuracy = 13 / 20
 
     result = splitter.analyze_and_split(belief2, perf_data)
-    
+
     assert result is not None, "Should create new context for vix_high (accuracy diverges > 0.15)"
     assert "vix_high" in result, "New context should include vix_high"
     assert result in belief2.contexts, "New context should be added to belief"
-    
+
     new_profile = belief2.contexts[result]
-    print(f"    Default context: accuracy={default_ctx2.historical_accuracy:.2f}, weight={default_ctx2.derived_weight:.3f}")
-    print(f"    New context ({result}): accuracy={new_profile.historical_accuracy:.2f}, weight={new_profile.derived_weight:.3f}")
+    print(
+        f"    Default context: accuracy={default_ctx2.historical_accuracy:.2f}, weight={default_ctx2.derived_weight:.3f}"
+    )
+    print(
+        f"    New context ({result}): accuracy={new_profile.historical_accuracy:.2f}, weight={new_profile.derived_weight:.3f}"
+    )
     print("  [PASS] Context auto-split works for divergent performance")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test 7: 100-Cycle Simulation
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def test_simulation_100_cycles():
     """Run 100 cycles with regime switches and verify cumulative learning.
@@ -469,9 +481,14 @@ def test_simulation_100_cycles():
 
     # Bootstrap beliefs
     beliefs = []
-    for dim, indicator in [("liquidity", "NASDAQ"), ("liquidity", "USD"),
-                             ("credit", "HYG"), ("credit", "SPX"),
-                             ("growth", "SPX"), ("risk_appetite", "VIX")]:
+    for dim, indicator in [
+        ("liquidity", "NASDAQ"),
+        ("liquidity", "USD"),
+        ("credit", "HYG"),
+        ("credit", "SPX"),
+        ("growth", "SPX"),
+        ("risk_appetite", "VIX"),
+    ]:
         b = orchestrator.belief_manager.create(
             belief_id=f"sim-{dim}-{indicator}",
             dimension=dim,
@@ -517,8 +534,11 @@ def test_simulation_100_cycles():
                 pct_change=random.uniform(-0.05, 0.05) if correct else random.uniform(-0.08, -0.01),
                 error_magnitude=0.01 if correct else random.uniform(0.02, 0.08),
                 actual_value=random.uniform(-5, 5),
-                transmission_channel=b.active_segments(context_key or b.default_context_key)[0]
-                if b.active_segments(context_key or b.default_context_key) else f"{b.dimension}→NASDAQ",
+                transmission_channel=(
+                    b.active_segments(context_key or b.default_context_key)[0]
+                    if b.active_segments(context_key or b.default_context_key)
+                    else f"{b.dimension}→NASDAQ"
+                ),
             )
             outcomes.append(outcome)
 
@@ -542,8 +562,7 @@ def test_simulation_100_cycles():
         actions_taken += len(result.update_batch.updates)
         if cycle % 25 == 0:
             avg_weight = sum(
-                b.active_weight(context_key or b.default_context_key)
-                for b in beliefs
+                b.active_weight(context_key or b.default_context_key) for b in beliefs
             ) / len(beliefs)
             weights_at[cycle] = avg_weight
 
@@ -567,7 +586,7 @@ def test_simulation_100_cycles():
     if liq_nasdaq and liq_nasdaq.observation_count > 20:
         easing_rel = liq_nasdaq.reliability_in_context("easing")
         tightening_rel = liq_nasdaq.reliability_in_context("tightening")
-        print(f"\n    liquidity→NASDAQ context diff:")
+        print("\n    liquidity→NASDAQ context diff:")
         print(f"      easing:     {easing_rel:.3f}")
         print(f"      tightening: {tightening_rel:.3f}")
         print(f"      diff:       {easing_rel - tightening_rel:.3f}")
@@ -578,6 +597,7 @@ def test_simulation_100_cycles():
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test 8: Exit Criteria Verification
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def test_exit_criteria():
     """Verify Milestone B exit criteria are measurable."""
@@ -596,7 +616,9 @@ def test_exit_criteria():
         easing = liq_credit.reliability_in_context("easing")
         tightening = liq_credit.reliability_in_context("tightening")
         diff = easing - tightening
-        print(f"    liquidity→credit: easing={easing:.3f} tightening={tightening:.3f} diff={diff:.3f}")
+        print(
+            f"    liquidity→credit: easing={easing:.3f} tightening={tightening:.3f} diff={diff:.3f}"
+        )
         assert diff > 0.1, f"Expected meaningful reliability differentiation, got {diff:.3f}"
         # Note: >0.3 requires many cycles; >0.1 is sufficient for unit test
 
@@ -615,6 +637,7 @@ def test_exit_criteria():
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test 9: Orchestrator Full Pipeline
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def test_orchestrator_pipeline():
     """Full orchestrator pipeline: bootstrap → cycle → verify."""
@@ -656,7 +679,7 @@ def test_orchestrator_pipeline():
     # Run a few cycles
     for cycle in range(10):
         regime = "easing" if cycle < 5 else "tightening"
-        
+
         outcomes = []
         for b in beliefs:
             correct = random.random() < (0.7 if regime == "easing" else 0.35)
@@ -668,8 +691,11 @@ def test_orchestrator_pipeline():
                 pct_change=0.02 if correct else -0.03,
                 error_magnitude=0.01 if correct else 0.05,
                 actual_value=2.0 if correct else -3.0,
-                transmission_channel=b.active_segments(regime)[0]
-                if b.active_segments(regime) else f"{b.dimension}→general",
+                transmission_channel=(
+                    b.active_segments(regime)[0]
+                    if b.active_segments(regime)
+                    else f"{b.dimension}→general"
+                ),
             )
             outcomes.append(outcome)
 
@@ -681,14 +707,14 @@ def test_orchestrator_pipeline():
             mean_absolute_error=sum(o.error_magnitude for o in outcomes) / len(outcomes),
         )
 
-        cr = orchestrator.run_cycle(
+        _cr = orchestrator.run_cycle(
             evaluation=evaluation,
             context_key=regime,
             run_id=f"full-pipeline-{cycle}",
         )
 
     # Verify graph has learned
-    print(f"\n  Orchestrator Summary:")
+    print("\n  Orchestrator Summary:")
     print(f"    Cycles: {orchestrator.cycles_completed}")
     print(f"    Graph edges: {orchestrator.graph.edge_count}")
     print(f"    Total observations: {orchestrator.graph.total_observations}")
@@ -705,6 +731,7 @@ def test_orchestrator_pipeline():
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test Runner
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def run_tests():
     """Run all Milestone B validation tests."""
@@ -740,6 +767,7 @@ def run_tests():
         except Exception as e:
             print(f"  [FAIL] {e}")
             import traceback
+
             traceback.print_exc()
             failed += 1
 
@@ -750,14 +778,14 @@ def run_tests():
     print(f"{'=' * 70}")
 
     # Exit criteria status
-    print(f"\n  Exit Criteria Status:")
-    print(f"    [B1] Graph initialized from PREDICTION_MAPPING ........ [CHECK]")
-    print(f"    [B2] Edge reliability tracking (reinforce/weaken) ..... [CHECK]")
-    print(f"    [B3] Breakpoint detection accuracy .................... [CHECK]")
-    print(f"    [B4] Context-specific reliability differentiation ..... [CHECK]")
-    print(f"    [B5] Cascade belief weight auto-update ................ [CHECK]")
-    print(f"    [B6] Context auto-split ............................... [CHECK]")
-    print(f"    [B7] 100-cycle simulation stable ...................... [CHECK]")
+    print("\n  Exit Criteria Status:")
+    print("    [B1] Graph initialized from PREDICTION_MAPPING ........ [CHECK]")
+    print("    [B2] Edge reliability tracking (reinforce/weaken) ..... [CHECK]")
+    print("    [B3] Breakpoint detection accuracy .................... [CHECK]")
+    print("    [B4] Context-specific reliability differentiation ..... [CHECK]")
+    print("    [B5] Cascade belief weight auto-update ................ [CHECK]")
+    print("    [B6] Context auto-split ............................... [CHECK]")
+    print("    [B7] 100-cycle simulation stable ...................... [CHECK]")
 
     return failed == 0
 

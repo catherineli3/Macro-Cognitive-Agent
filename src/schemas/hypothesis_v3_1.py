@@ -9,13 +9,11 @@ Key design:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
-
 
 # ── Evidence Claim ───────────────────────────────────────────────────────────
 
@@ -36,7 +34,9 @@ class EvidenceClaim(BaseModel):
         default="",
         description="Why this evidence supports the hypothesis, e.g. '2Y yield declining signals dovish Fed stance'",
     )
-    strength: float = Field(default=0.5, ge=0.0, le=1.0, description="How strongly this evidence supports")
+    strength: float = Field(
+        default=0.5, ge=0.0, le=1.0, description="How strongly this evidence supports"
+    )
 
 
 # ── Transmission Segment ─────────────────────────────────────────────────────
@@ -112,7 +112,7 @@ class CandidateHypothesis(BaseModel):
         default="",
         description="Which template generated this candidate",
     )
-    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     generation_context: dict = Field(default_factory=dict)
 
     # Computed during competition
@@ -138,7 +138,7 @@ class CandidateHypothesis(BaseModel):
             return 0.5
         return sum(s.reliability for s in self.transmission_chain) / len(self.transmission_chain)
 
-    def predicts_indicator_direction(self, indicator: str) -> Optional[str]:
+    def predicts_indicator_direction(self, indicator: str) -> str | None:
         """Return the direction this hypothesis predicts for a given indicator, or None."""
         for s in self.transmission_chain:
             if s.target == indicator:
@@ -161,18 +161,20 @@ class CandidateHypothesis(BaseModel):
 
 class EliminationReason(str, Enum):
     """Why a hypothesis was eliminated during competition."""
-    DIRECT_CONTRADICTION = "direct_contradiction"       # Predicts opposite direction for same indicator
-    WEAKER_EVIDENCE = "weaker_evidence"                  # Same direction but weaker evidence
-    BROKEN_TRANSMISSION = "broken_transmission"          # Transmission chain less reliable
-    DIMENSION_OVERLAP = "dimension_overlap"             # Duplicate in same dimension, lower score
-    LOW_CONFIDENCE = "low_confidence"                    # Below minimum confidence threshold
+
+    DIRECT_CONTRADICTION = "direct_contradiction"  # Predicts opposite direction for same indicator
+    WEAKER_EVIDENCE = "weaker_evidence"  # Same direction but weaker evidence
+    BROKEN_TRANSMISSION = "broken_transmission"  # Transmission chain less reliable
+    DIMENSION_OVERLAP = "dimension_overlap"  # Duplicate in same dimension, lower score
+    LOW_CONFIDENCE = "low_confidence"  # Below minimum confidence threshold
 
 
 class ContradictionType(str, Enum):
     """Type of contradiction between two hypotheses."""
-    DIRECTION = "direction"          # Predict opposite directions for same indicator
-    MECHANISM = "mechanism"          # Incompatible causal mechanisms
-    TRANSMISSION = "transmission"    # Rely on contradictory transmission segments
+
+    DIRECTION = "direction"  # Predict opposite directions for same indicator
+    MECHANISM = "mechanism"  # Incompatible causal mechanisms
+    TRANSMISSION = "transmission"  # Rely on contradictory transmission segments
 
 
 # ── Competition Round ────────────────────────────────────────────────────────
@@ -180,37 +182,48 @@ class ContradictionType(str, Enum):
 
 class Contradiction(BaseModel):
     """A detected contradiction between two hypotheses."""
+
     hypothesis_a: str
     hypothesis_b: str
     contradiction_type: ContradictionType
-    indicator: str = Field(default="", description="Indicator on which they disagree, if directional")
-    description: str = Field(default="", description="Human-readable explanation of the contradiction")
-    severity: float = Field(default=0.5, ge=0.0, le=1.0, description="How severe is this contradiction")
+    indicator: str = Field(
+        default="", description="Indicator on which they disagree, if directional"
+    )
+    description: str = Field(
+        default="", description="Human-readable explanation of the contradiction"
+    )
+    severity: float = Field(
+        default=0.5, ge=0.0, le=1.0, description="How severe is this contradiction"
+    )
 
 
 class EliminatedHypothesis(BaseModel):
     """Record of a hypothesis eliminated during competition."""
+
     candidate_id: str
-    eliminated_by: str = Field(default="", description="Candidate ID of the hypothesis that eliminated this")
+    eliminated_by: str = Field(
+        default="", description="Candidate ID of the hypothesis that eliminated this"
+    )
     reason: EliminationReason
-    contradiction: Optional[Contradiction] = Field(default=None)
+    contradiction: Contradiction | None = Field(default=None)
     detail: str = Field(default="", description="Detailed explanation of why")
     revival_condition: str = Field(
         default="",
         description="Under what condition should this hypothesis be reconsidered",
     )
-    eliminated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    eliminated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class CompetitionRound(BaseModel):
     """Result of one round of hypothesis competition."""
+
     round_id: str = Field(default_factory=lambda: f"comp-{uuid4().hex[:6]}")
     candidates_before: int = 0
     candidates_after: int = 0
     contradictions_found: list[Contradiction] = Field(default_factory=list)
     eliminated: list[EliminatedHypothesis] = Field(default_factory=list)
     survivors: list[str] = Field(default_factory=list)
-    completed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    completed_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 # ── Selected Hypothesis ──────────────────────────────────────────────────────
@@ -246,7 +259,7 @@ class HypothesisEvolutionResult(BaseModel):
     """Complete output of the Hypothesis Evolution pipeline (Milestone A)."""
 
     run_id: str = Field(default_factory=lambda: f"evol-{uuid4().hex[:8]}")
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Input
     regime: str = ""
@@ -259,7 +272,7 @@ class HypothesisEvolutionResult(BaseModel):
     historical_matches: int = 0
 
     # Competition
-    competition_round: Optional[CompetitionRound] = None
+    competition_round: CompetitionRound | None = None
 
     # Final output
     selected_hypotheses: list[SelectedHypothesis] = Field(default_factory=list)

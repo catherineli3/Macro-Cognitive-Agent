@@ -4,44 +4,51 @@ Tests the complete Finding → Principle → Belief → Framework pipeline
 and all supporting modules.
 """
 
-import pytest
-from datetime import datetime, timezone
-
-from src.schemas.research import (
-    ResearchPrinciple, ResearchFramework, FrameworkSet,
-    CompetingPrinciple, PrincipleEvidence, PrincipleStrength,
-    PrincipleStatus, FrameworkStatus, ConflictResolution,
-)
-from src.schemas.transmission_v3_1 import (
-    ResearchFinding, ResearchFindingsReport, FindingConfidence,
-    BreakpointDiagnosis, TransmissionEdge,
-)
-from src.schemas.belief_version import AdaptiveBelief
-
-from src.research.principles.admission_gate import PrincipleAdmissionGate, AdmissionResult
-from src.research.principles.principle_extractor import PrincipleExtractor
-from src.research.principles.candidate_manager import CandidatePrincipleManager
-from src.research.principles.principle_store import PrincipleStore
+from src.research.evolution.belief_lifecycle import BeliefLifecycleManager, BeliefLifecycleStage
+from src.research.evolution.conflict_resolver import ConflictResolver
+from src.research.evolution.evolution_pipeline import EvolutionPipeline
+from src.research.evolution.regime_gate import RegimeGate, RegimeSnapshot
+from src.research.evolution.temporary_layer import EventCategory, TemporaryEventLayer
 from src.research.framework.cluster_detector import PrincipleClusterDetector
 from src.research.framework.framework_evaluator import FrameworkEvaluator
-from src.research.framework.framework_store import FrameworkStore
 from src.research.framework.framework_orchestrator import FrameworkOrchestrator
-from src.research.evolution.regime_gate import RegimeGate, RegimeSnapshot
-from src.research.evolution.temporary_layer import TemporaryEventLayer, EventCategory
-from src.research.evolution.conflict_resolver import ConflictResolver
-from src.research.evolution.belief_lifecycle import BeliefLifecycleManager, BeliefLifecycleStage
-from src.research.evolution.evolution_pipeline import EvolutionPipeline
-
+from src.research.framework.framework_store import FrameworkStore
+from src.research.principles.admission_gate import PrincipleAdmissionGate
+from src.research.principles.candidate_manager import CandidatePrincipleManager
+from src.research.principles.principle_extractor import PrincipleExtractor
+from src.research.principles.principle_store import PrincipleStore
+from src.schemas.belief_version import AdaptiveBelief
+from src.schemas.research import (
+    FrameworkSet,
+    FrameworkStatus,
+    PrincipleEvidence,
+    PrincipleStatus,
+    PrincipleStrength,
+    ResearchFramework,
+    ResearchPrinciple,
+)
+from src.schemas.transmission_v3_1 import (
+    FindingConfidence,
+    ResearchFinding,
+    ResearchFindingsReport,
+)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Helper factories
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def make_finding(fid: str = "rf-001", category: str = "reliability_ranking",
-                 title: str = "Test Finding", obs: int = 35,
-                 confidence: str = "observed") -> ResearchFinding:
+
+def make_finding(
+    fid: str = "rf-001",
+    category: str = "reliability_ranking",
+    title: str = "Test Finding",
+    obs: int = 35,
+    confidence: str = "observed",
+) -> ResearchFinding:
     return ResearchFinding(
-        finding_id=fid, category=category, title=title,
+        finding_id=fid,
+        category=category,
+        title=title,
         description=f"Test description for {fid}",
         evidence={"observations": obs, "reliability": 0.75},
         relevance_score=0.7,
@@ -51,20 +58,29 @@ def make_finding(fid: str = "rf-001", category: str = "reliability_ranking",
     )
 
 
-def make_principle(pid: str = "pr-001", domain: str = "liquidity",
-                   strength: PrincipleStrength = PrincipleStrength.VALIDATED,
-                   obs: int = 50, regimes: int = 3,
-                   accuracy: float = 0.80) -> ResearchPrinciple:
+def make_principle(
+    pid: str = "pr-001",
+    domain: str = "liquidity",
+    strength: PrincipleStrength = PrincipleStrength.VALIDATED,
+    obs: int = 50,
+    regimes: int = 3,
+    accuracy: float = 0.80,
+) -> ResearchPrinciple:
     p = ResearchPrinciple(
-        principle_id=pid, name=f"Principle {pid}", domain=domain,
+        principle_id=pid,
+        name=f"Principle {pid}",
+        domain=domain,
         statement=f"Test causal statement for {pid}",
         strength=strength,
     )
     p.evidence = PrincipleEvidence(
-        total_observations=obs, correct_in_scope=int(obs * accuracy),
-        accuracy=accuracy, regimes_count=regimes,
+        total_observations=obs,
+        correct_in_scope=int(obs * accuracy),
+        accuracy=accuracy,
+        regimes_count=regimes,
         regimes_validated=[f"regime_{i}" for i in range(regimes)],
-        sustained_cycles=20, contradiction_count=0,
+        sustained_cycles=20,
+        contradiction_count=0,
     )
     return p
 
@@ -73,14 +89,17 @@ def make_principle(pid: str = "pr-001", domain: str = "liquidity",
 # Principle Admission Gate tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestAdmissionGate:
     def test_all_criteria_pass(self):
         gate = PrincipleAdmissionGate()
         findings = [make_finding(f"rf-{i:03d}", obs=10) for i in range(8)]
         # Register in multiple regime contexts
         for i, f in enumerate(findings):
-            regime = {"monetary_policy": "easing" if i < 4 else "tightening",
-                      "volatility": "low" if i < 4 else "high"}
+            regime = {
+                "monetary_policy": "easing" if i < 4 else "tightening",
+                "volatility": "low" if i < 4 else "high",
+            }
             gate.register_finding(f, regime, i)
 
         result = gate.evaluate(findings)
@@ -118,9 +137,11 @@ class TestAdmissionGate:
             gate.register_finding(f, regime, i)
 
         principle = gate.create_principle(
-            findings, "Test Principle",
+            findings,
+            "Test Principle",
             "Test statement about liquidity→credit",
-            "liquidity→credit", cycle=0,
+            "liquidity→credit",
+            cycle=0,
         )
         assert principle is not None
         # G2 rule: all new principles start at CANDIDATE strength
@@ -146,7 +167,7 @@ class TestPrincipleExtractor:
         for f in findings_b:
             f.source_edges = ["credit→equity"]
         extractor.add_findings(findings_a + findings_b)
-        candidates = extractor.extract_candidates(min_cluster_size=5)
+        _candidates = extractor.extract_candidates(min_cluster_size=5)
         # Should detect multiple clusters
         assert extractor.total_domains > 0
 
@@ -208,6 +229,7 @@ class TestPrincipleStore:
 # Framework tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestClusterDetector:
     def test_detect_clusters(self):
         detector = PrincipleClusterDetector()
@@ -238,8 +260,10 @@ class TestFrameworkEvaluator:
         for _ in range(50):
             evaluator.record_accuracy("fw-test", 0.35)
         fw = ResearchFramework(
-            framework_id="fw-test", name="Test",
-            thesis="A", status=FrameworkStatus.ACTIVE,
+            framework_id="fw-test",
+            name="Test",
+            thesis="A",
+            status=FrameworkStatus.ACTIVE,
         )
         status = evaluator.evaluate(fw)
         assert status == FrameworkStatus.RETIRED
@@ -257,7 +281,7 @@ class TestFrameworkStore:
         fw = ResearchFramework(
             name="Test FW",
             thesis="A sufficiently detailed framework thesis describing "
-                   "the macro worldview adequately for this test.",
+            "the macro worldview adequately for this test.",
             principles=["pr-1"],
         )
         store.save(fw)
@@ -267,7 +291,8 @@ class TestFrameworkStore:
     def test_lifecycle_transitions(self):
         store = FrameworkStore()
         fw = ResearchFramework(
-            name="Test", thesis="A" * 100,
+            name="Test",
+            thesis="A" * 100,
             status=FrameworkStatus.CANDIDATE,
         )
         store.save(fw)
@@ -285,7 +310,9 @@ class TestFrameworkOrchestrator:
             for pid in [f"pr-{i}" for i in range(5)]
         }
         fw = orch.form_candidate(
-            list(principles.keys()), principles, cycle=0,
+            list(principles.keys()),
+            principles,
+            cycle=0,
         )
         assert fw is not None
         assert fw.status == FrameworkStatus.CANDIDATE
@@ -293,10 +320,7 @@ class TestFrameworkOrchestrator:
 
     def test_insufficient_principles(self):
         orch = FrameworkOrchestrator()
-        principles = {
-            pid: make_principle(pid=pid)
-            for pid in ["pr-1", "pr-2"]  # Only 2, need 5
-        }
+        principles = {pid: make_principle(pid=pid) for pid in ["pr-1", "pr-2"]}  # Only 2, need 5
         fw = orch.form_candidate(list(principles.keys()), principles)
         assert fw is None
 
@@ -305,42 +329,65 @@ class TestFrameworkOrchestrator:
 # Evolution module tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestRegimeGate:
     def test_distinct_regime_detection(self):
-        gate = RegimeGate()
+        _gate = RegimeGate()
         r1 = RegimeSnapshot(
-            monetary_policy="easing", fiscal_stance="expansionary",
-            volatility="low", growth="accelerating", inflation="stable",
+            monetary_policy="easing",
+            fiscal_stance="expansionary",
+            volatility="low",
+            growth="accelerating",
+            inflation="stable",
         )
         r2 = RegimeSnapshot(
-            monetary_policy="tightening", fiscal_stance="contractionary",
-            volatility="high", growth="decelerating", inflation="rising",
+            monetary_policy="tightening",
+            fiscal_stance="contractionary",
+            volatility="high",
+            growth="decelerating",
+            inflation="rising",
         )
         assert r1.is_distinct_from(r2)
 
     def test_same_regime(self):
-        gate = RegimeGate()
+        _gate = RegimeGate()
         r1 = RegimeSnapshot(
-            monetary_policy="easing", fiscal_stance="neutral",
-            volatility="low", growth="stable", inflation="stable",
+            monetary_policy="easing",
+            fiscal_stance="neutral",
+            volatility="low",
+            growth="stable",
+            inflation="stable",
         )
         r2 = RegimeSnapshot(
-            monetary_policy="easing", fiscal_stance="neutral",
-            volatility="low", growth="stable", inflation="stable",
+            monetary_policy="easing",
+            fiscal_stance="neutral",
+            volatility="low",
+            growth="stable",
+            inflation="stable",
         )
         assert not r1.is_distinct_from(r2)
 
     def test_cross_regime_validation(self):
         gate = RegimeGate()
-        gate.set_current_regime(RegimeSnapshot(
-            monetary_policy="easing", fiscal_stance="expansionary",
-            volatility="low", growth="accelerating", inflation="stable",
-        ))
+        gate.set_current_regime(
+            RegimeSnapshot(
+                monetary_policy="easing",
+                fiscal_stance="expansionary",
+                volatility="low",
+                growth="accelerating",
+                inflation="stable",
+            )
+        )
         gate.record_principle_observation("pr-1", gate.current_regime)
-        gate.set_current_regime(RegimeSnapshot(
-            monetary_policy="tightening", fiscal_stance="contractionary",
-            volatility="high", growth="decelerating", inflation="rising",
-        ))
+        gate.set_current_regime(
+            RegimeSnapshot(
+                monetary_policy="tightening",
+                fiscal_stance="contractionary",
+                volatility="high",
+                growth="decelerating",
+                inflation="rising",
+            )
+        )
         gate.record_principle_observation("pr-1", gate.current_regime)
 
         p = make_principle(pid="pr-1")
@@ -351,7 +398,8 @@ class TestTemporaryEventLayer:
     def test_register_event(self):
         layer = TemporaryEventLayer()
         event = layer.register_event(
-            "Trump Tariff", "Trade policy event",
+            "Trump Tariff",
+            "Trade policy event",
             EventCategory.GEOPOLITICAL,
             finding_ids=["rf-001"],
         )
@@ -361,7 +409,9 @@ class TestTemporaryEventLayer:
     def test_archive_expired(self):
         layer = TemporaryEventLayer()
         layer.register_event(
-            "Old Event", "Expired", EventCategory.SINGLE_OBSERVATION,
+            "Old Event",
+            "Expired",
+            EventCategory.SINGLE_OBSERVATION,
             ttl_days=-1,  # Already-expired by setting creation in the past
         )
         count = layer.archive_expired()
@@ -433,7 +483,8 @@ class TestBeliefLifecycle:
     def test_full_lifecycle(self):
         mgr = BeliefLifecycleManager()
         belief = AdaptiveBelief(
-            belief_id="b-001", dimension="liquidity",
+            belief_id="b-001",
+            dimension="liquidity",
             transmission_channel="liquidity→credit",
         )
         mgr.register_belief(belief)
@@ -447,7 +498,8 @@ class TestBeliefLifecycle:
     def test_weight_derivation(self):
         mgr = BeliefLifecycleManager()
         belief = AdaptiveBelief(
-            belief_id="b-001", dimension="liquidity",
+            belief_id="b-001",
+            dimension="liquidity",
         )
         mgr.register_belief(belief)
         mgr.link_to_principle("b-001", "pr-1")
@@ -475,12 +527,14 @@ class TestBeliefLifecycle:
 # Evolution Pipeline integration tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestEvolutionPipeline:
     def test_pipeline_run_basic(self):
         pipeline = EvolutionPipeline()
 
         report = ResearchFindingsReport(
-            context_key="test", cycle_number=1,
+            context_key="test",
+            cycle_number=1,
             reliability_ranking=[make_finding(f"rf-{i:03d}", obs=8) for i in range(6)],
             failure_warnings=[],
             failure_event_correlations=[],
@@ -488,8 +542,11 @@ class TestEvolutionPipeline:
             research_notes=[],
         )
         regime = RegimeSnapshot(
-            monetary_policy="easing", fiscal_stance="neutral",
-            volatility="moderate", growth="stable", inflation="falling",
+            monetary_policy="easing",
+            fiscal_stance="neutral",
+            volatility="moderate",
+            growth="stable",
+            inflation="falling",
         )
 
         result = pipeline.run(report, current_regime=regime)
@@ -510,9 +567,11 @@ class TestEvolutionPipeline:
                 inflation="falling",
             )
             report = ResearchFindingsReport(
-                context_key=f"cycle_{cycle}", cycle_number=cycle,
-                reliability_ranking=[make_finding(f"rf-cycle{cycle}-{i:02d}", obs=10)
-                                     for i in range(8)],
+                context_key=f"cycle_{cycle}",
+                cycle_number=cycle,
+                reliability_ranking=[
+                    make_finding(f"rf-cycle{cycle}-{i:02d}", obs=10) for i in range(8)
+                ],
                 failure_warnings=[],
                 failure_event_correlations=[],
                 regime_similarities=[],
@@ -538,7 +597,7 @@ class TestEvolutionPipeline:
         pipeline.principle_store.save(p_a)
         pipeline.principle_store.save(p_b)
 
-        conflicts = pipeline.conflict_resolver.detect_conflicts()
+        _conflicts = pipeline.conflict_resolver.detect_conflicts()
         assert pipeline.active_competitions == 1
 
     def test_framework_formation(self):
@@ -547,15 +606,15 @@ class TestEvolutionPipeline:
 
         # Create validated principles
         for i in range(5):
-            p = make_principle(pid=f"pr-{i}", domain="liquidity",
-                              obs=60, regimes=3)
+            p = make_principle(pid=f"pr-{i}", domain="liquidity", obs=60, regimes=3)
             pipeline.principle_store.save(p)
 
         # Record co-activation
         all_principles = {p.principle_id: p for p in pipeline.principle_store.get_all()}
         for _ in range(10):
             pipeline.framework_orchestrator.record_principle_activation(
-                list(all_principles.keys()), 0,
+                list(all_principles.keys()),
+                0,
             )
 
         fws = pipeline.framework_orchestrator.attempt_formation(all_principles)
@@ -569,7 +628,8 @@ class TestEvolutionPipeline:
         pipeline.principle_store.save(p)
 
         belief = AdaptiveBelief(
-            belief_id="b-001", dimension="liquidity",
+            belief_id="b-001",
+            dimension="liquidity",
         )
         pipeline.register_belief(belief, principle_ids=["pr-1"])
         weight = pipeline.get_belief_weight("b-001")
@@ -615,10 +675,7 @@ class TestEvolutionPipeline:
         pipeline = EvolutionPipeline()
 
         # T1: Principle split test (GR-5)
-        findings_broad = [
-            make_finding(f"rf-broad-{i:02d}", obs=5)
-            for i in range(8)
-        ]
+        findings_broad = [make_finding(f"rf-broad-{i:02d}", obs=5) for i in range(8)]
         for f in findings_broad[:4]:
             f.source_edges = ["liquidity→real_yield"]
         for f in findings_broad[4:]:
@@ -633,8 +690,8 @@ class TestEvolutionPipeline:
         fw = ResearchFramework(
             name="Explainable FW",
             thesis="A comprehensive framework thesis that explains the macro "
-                   "worldview in sufficient detail to pass the explainability "
-                   "requirement for architecture compliance testing.",
+            "worldview in sufficient detail to pass the explainability "
+            "requirement for architecture compliance testing.",
             principles=["pr-explain"],
             accuracy_trajectory=[0.75, 0.78, 0.72, 0.80],
         )
@@ -660,7 +717,9 @@ class TestEvolutionPipeline:
         assert fs.is_at_capacity
 
         # T5: Finding TTL expiry
-        assert len(pipeline._finding_lifecycles) == 0 or True  # Verified by test_finding_ttl_enforcement
+        assert (
+            len(pipeline._finding_lifecycles) == 0 or True
+        )  # Verified by test_finding_ttl_enforcement
 
         # T6: Cross-layer isolation
         # Verified architecturally — no direct modification paths exist

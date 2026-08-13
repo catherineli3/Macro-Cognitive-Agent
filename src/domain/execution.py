@@ -20,6 +20,6 @@ class TaskResultStatus(str, Enum):
 class ExecutionStatus(str, Enum):
     """Outcome of executing an entire ExecutionPlan."""
 
-    COMPLETED = "completed"                  # All tasks succeeded
+    COMPLETED = "completed"  # All tasks succeeded
     PARTIALLY_COMPLETED = "partially_completed"  # Some tasks failed (strict: downstream blocked)
-    FAILED = "failed"                        # Fatal error (validation, no handler, etc.)
+    FAILED = "failed"  # Fatal error (validation, no handler, etc.)

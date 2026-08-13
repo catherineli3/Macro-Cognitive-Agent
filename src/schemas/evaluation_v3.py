@@ -6,13 +6,11 @@ Key design (DDR-V3-009):
     - Per-channel breakdowns for precise diagnosis
 """
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
 
 from src.schemas.prediction_v3 import V3PredictionOutcome
-
 
 # ── V3 Evaluation Report ─────────────────────────────────────────────────────
 
@@ -27,7 +25,7 @@ class EvaluationReport(BaseModel):
     report_id: str = Field(default="", description="Unique report identifier")
     batch_id: str = Field(..., min_length=1, max_length=64)
     evaluated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     # ── Per-prediction outcomes ──────────────────────────────────────────
@@ -77,14 +75,14 @@ class EvaluationReport(BaseModel):
         """Get accuracy for a specific hypothesis."""
         return self.accuracy_by_hypothesis.get(hypothesis_id, 0.0)
 
-    def worst_channel(self) -> Optional[tuple[str, float]]:
+    def worst_channel(self) -> tuple[str, float] | None:
         """Return the channel with lowest accuracy."""
         if not self.accuracy_by_channel:
             return None
         worst = min(self.accuracy_by_channel.items(), key=lambda x: x[1])
         return worst
 
-    def best_channel(self) -> Optional[tuple[str, float]]:
+    def best_channel(self) -> tuple[str, float] | None:
         """Return the channel with highest accuracy."""
         if not self.accuracy_by_channel:
             return None

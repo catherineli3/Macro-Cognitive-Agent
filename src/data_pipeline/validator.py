@@ -13,17 +13,16 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
-from src.schemas.macro_data import MacroDataSchema, QualityFactor, QualityScore
+from src.schemas.macro_data import MacroDataSchema
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
 
 # ── Constants ───────────────────────────────────────────────────────────────
 _MAX_STALENESS_HOURS = 48  # Data older than this is marked stale
-_OUTLIER_Z_SCORE = 4.0      # Z-score threshold for outlier detection
+_OUTLIER_Z_SCORE = 4.0  # Z-score threshold for outlier detection
 _MIN_OBSERVATIONS_FOR_Z = 10  # Need at least this many to compute z-scores
 
 
@@ -126,7 +125,7 @@ class DataQualityValidator:
         vp = ValidatedDataPoint(
             symbol=point.symbol,
             name=point.symbol,
-            timestamp=point.timestamp or datetime.now(timezone.utc),
+            timestamp=point.timestamp or datetime.now(UTC),
             value=point.value,
             unit=point.unit or "unknown",
             source=point.source or "",
@@ -152,7 +151,7 @@ class DataQualityValidator:
             vp.checks_passed.append("has_value")
 
         # ── Check 2: Timestamp staleness ───────────────────────────
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         ts = point.timestamp or now
         age_hours = (now - ts).total_seconds() / 3600
         if age_hours > _MAX_STALENESS_HOURS:

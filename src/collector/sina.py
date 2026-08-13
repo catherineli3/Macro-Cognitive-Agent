@@ -3,17 +3,13 @@
 Replaces Yahoo Finance (yfinance) which is rate-limited in the user's network.
 Uses Sina Finance's free HTTP API - no API key required, works from China.
 """
+
 from __future__ import annotations
 
-import json
 import time
-from datetime import datetime, timezone
-from typing import Optional, Dict
 
 import requests
 
-from src.domain.macro_indicator import MacroIndicator
-from src.schemas.macro_data import MacroDataSchema
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -21,26 +17,26 @@ logger = get_logger(__name__)
 
 # Sina code mapping: indicator_symbol -> sina_code
 SINA_CODE_MAP = {
-    "SPY":    "gb_spy",      # S&P 500 ETF (proxy for SPX)
-    "QQQ":    "gb_qqq",      # Nasdaq-100 ETF
-    "IWM":    "gb_iwm",      # Russell 2000 ETF
-    "GLD":    "gb_gld",      # Gold ETF
-    "USO":    "gb_uso",      # WTI Oil ETF
-    "HYG":    "gb_hyg",      # High Yield Bond ETF
-    "LQD":    "gb_lqd",      # Investment Grade Bond ETF
-    "TLT":    "gb_tlt",      # 20+ Year Treasury ETF (proxy for US10Y)
-    "SHY":    "gb_shy",      # 1-3 Year Treasury ETF (proxy for US2Y)
-    "VIXY":   "gb_vixy",     # VIX Short-Term Futures ETF (proxy for VIX)
-    "NVDA":   "gb_nvda",     # NVIDIA
-    "SMH":    "gb_smh",      # Semiconductor ETF
-    "ASML":   "gb_asml",     # ASML
-    "TSM":    "gb_tsm",      # TSMC
-    "COPX":   "gb_copx",     # Copper Miners ETF (proxy for copper)
-    "BND":    "gb_bnd",      # Total Bond Market ETF
+    "SPY": "gb_spy",  # S&P 500 ETF (proxy for SPX)
+    "QQQ": "gb_qqq",  # Nasdaq-100 ETF
+    "IWM": "gb_iwm",  # Russell 2000 ETF
+    "GLD": "gb_gld",  # Gold ETF
+    "USO": "gb_uso",  # WTI Oil ETF
+    "HYG": "gb_hyg",  # High Yield Bond ETF
+    "LQD": "gb_lqd",  # Investment Grade Bond ETF
+    "TLT": "gb_tlt",  # 20+ Year Treasury ETF (proxy for US10Y)
+    "SHY": "gb_shy",  # 1-3 Year Treasury ETF (proxy for US2Y)
+    "VIXY": "gb_vixy",  # VIX Short-Term Futures ETF (proxy for VIX)
+    "NVDA": "gb_nvda",  # NVIDIA
+    "SMH": "gb_smh",  # Semiconductor ETF
+    "ASML": "gb_asml",  # ASML
+    "TSM": "gb_tsm",  # TSMC
+    "COPX": "gb_copx",  # Copper Miners ETF (proxy for copper)
+    "BND": "gb_bnd",  # Total Bond Market ETF
 }
 
 
-def fetch_sina_quote(sina_code: str) -> Optional[Dict]:
+def fetch_sina_quote(sina_code: str) -> dict | None:
     """Fetch a single quote from Sina Finance. Returns parsed dict or None."""
     try:
         r = requests.get(
@@ -82,7 +78,10 @@ def fetch_all_sina(log_delay: float = 0.3) -> dict[str, dict]:
             results[indicator] = quote
             logger.info(
                 "sina_quote | %s(%s) price=%.2f change=%.2f%%",
-                indicator, code, quote["price"], quote["change_pct"],
+                indicator,
+                code,
+                quote["price"],
+                quote["change_pct"],
             )
         else:
             logger.warning("sina_quote_miss | %s(%s) NOT FOUND", indicator, code)
@@ -94,5 +93,5 @@ if __name__ == "__main__":
     quotes = fetch_all_sina()
     print(f"\nFetched {len(quotes)}/{len(SINA_CODE_MAP)} indicators from Sina Finance")
     for sym, q in quotes.items():
-        chg = f"{q['change_pct']:+.2f}%" if q['change_pct'] != 0 else "FLAT"
+        chg = f"{q['change_pct']:+.2f}%" if q["change_pct"] != 0 else "FLAT"
         print(f"  {sym:6s}: {q['price']:>10.2f}  ({chg})  {q['name'][:30]}")

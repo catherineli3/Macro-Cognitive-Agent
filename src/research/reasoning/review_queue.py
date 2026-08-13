@@ -15,14 +15,15 @@ Workflow:
 from __future__ import annotations
 
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Optional, Callable
 
 
 class ReviewStatus(str, Enum):
     """Status of an item in the review queue."""
+
     PENDING = "pending"
     ACCEPTED = "accepted"
     REJECTED = "rejected"
@@ -32,6 +33,7 @@ class ReviewStatus(str, Enum):
 
 class ReviewableType(str, Enum):
     """Types of items that can be reviewed."""
+
     BELIEF = "belief"
     NARRATIVE = "narrative"
     HYPOTHESIS = "hypothesis"
@@ -45,6 +47,7 @@ class ReviewableType(str, Enum):
 @dataclass
 class ReviewableItem:
     """An item awaiting human review."""
+
     item_id: str = ""
     item_type: ReviewableType = ReviewableType.BELIEF
     content: dict = field(default_factory=dict)
@@ -52,8 +55,8 @@ class ReviewableItem:
     status: ReviewStatus = ReviewStatus.PENDING
 
     # Timestamps
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    reviewed_at: Optional[str] = None
+    created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
+    reviewed_at: str | None = None
     reviewer: str = ""
 
     # Review outcome
@@ -68,8 +71,14 @@ class ReviewableItem:
     def to_dict(self) -> dict:
         return {
             "item_id": self.item_id,
-            "item_type": self.item_type.value if isinstance(self.item_type, ReviewableType) else str(self.item_type),
-            "status": self.status.value if isinstance(self.status, ReviewStatus) else str(self.status),
+            "item_type": (
+                self.item_type.value
+                if isinstance(self.item_type, ReviewableType)
+                else str(self.item_type)
+            ),
+            "status": (
+                self.status.value if isinstance(self.status, ReviewStatus) else str(self.status)
+            ),
             "content_preview": str(self.content)[:100],
             "created_at": self.created_at,
             "reviewed_at": self.reviewed_at,
@@ -81,9 +90,10 @@ class ReviewableItem:
 @dataclass
 class ReviewSession:
     """A review session — one sitting of reviewing agent outputs."""
+
     session_id: str = ""
-    started_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    ended_at: Optional[str] = None
+    started_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
+    ended_at: str | None = None
     reviewer: str = ""
 
     items: list[ReviewableItem] = field(default_factory=list)
@@ -128,8 +138,8 @@ class ReviewQueue:
     def __init__(self):
         self.queue: list[ReviewableItem] = []
         self.sessions: list[ReviewSession] = []
-        self.current_session: Optional[ReviewSession] = None
-        self._on_learning_signal: Optional[Callable] = None
+        self.current_session: ReviewSession | None = None
+        self._on_learning_signal: Callable | None = None
 
     def start_session(self, reviewer: str = "") -> ReviewSession:
         """Start a new review session."""
@@ -141,12 +151,12 @@ class ReviewQueue:
         self.sessions.append(session)
         return session
 
-    def end_session(self) -> Optional[ReviewSession]:
+    def end_session(self) -> ReviewSession | None:
         """End the current review session and compile learning signals."""
         if not self.current_session:
             return None
 
-        self.current_session.ended_at = datetime.now(timezone.utc).isoformat()
+        self.current_session.ended_at = datetime.now(UTC).isoformat()
 
         # Compile learning signals
         for item in self.current_session.items:
@@ -161,7 +171,7 @@ class ReviewQueue:
         self,
         content: dict,
         item_type: ReviewableType,
-        original_content: Optional[dict] = None,
+        original_content: dict | None = None,
     ) -> ReviewableItem:
         """Add an item to the review queue.
 
@@ -196,20 +206,24 @@ class ReviewQueue:
         """Enqueue multiple items of the same type."""
         return [self.enqueue(content=item, item_type=item_type) for item in items]
 
-    def accept(self, item_id: str, notes: str = "") -> Optional[ReviewableItem]:
+    def accept(self, item_id: str, notes: str = "") -> ReviewableItem | None:
         """Accept an item — it passes review unchanged."""
         item = self._find_item(item_id)
         if not item:
             return None
 
         item.status = ReviewStatus.ACCEPTED
-        item.reviewed_at = datetime.now(timezone.utc).isoformat()
+        item.reviewed_at = datetime.now(UTC).isoformat()
         item.reviewer_notes = notes
 
         item.learning_signal = {
             "action": "accept",
             "feedback_type": "reinforcement",
-            "item_type": item.item_type.value if isinstance(item.item_type, ReviewableType) else str(item.item_type),
+            "item_type": (
+                item.item_type.value
+                if isinstance(item.item_type, ReviewableType)
+                else str(item.item_type)
+            ),
             "lessons": ["Output quality met human standards — reinforce this pattern"],
             "confidence_impact": 0.05,
         }
@@ -220,20 +234,24 @@ class ReviewQueue:
         self._emit_learning_signal(item.learning_signal)
         return item
 
-    def reject(self, item_id: str, reason: str = "") -> Optional[ReviewableItem]:
+    def reject(self, item_id: str, reason: str = "") -> ReviewableItem | None:
         """Reject an item — it does not pass review."""
         item = self._find_item(item_id)
         if not item:
             return None
 
         item.status = ReviewStatus.REJECTED
-        item.reviewed_at = datetime.now(timezone.utc).isoformat()
+        item.reviewed_at = datetime.now(UTC).isoformat()
         item.reviewer_notes = reason
 
         item.learning_signal = {
             "action": "reject",
             "feedback_type": "correction",
-            "item_type": item.item_type.value if isinstance(item.item_type, ReviewableType) else str(item.item_type),
+            "item_type": (
+                item.item_type.value
+                if isinstance(item.item_type, ReviewableType)
+                else str(item.item_type)
+            ),
             "lessons": [f"Rejected because: {reason}"],
             "rejection_reason": reason,
             "confidence_impact": -0.1,
@@ -245,9 +263,7 @@ class ReviewQueue:
         self._emit_learning_signal(item.learning_signal)
         return item
 
-    def edit(
-        self, item_id: str, edits: dict, notes: str = ""
-    ) -> Optional[ReviewableItem]:
+    def edit(self, item_id: str, edits: dict, notes: str = "") -> ReviewableItem | None:
         """Edit an item — modify and accept.
 
         Args:
@@ -266,17 +282,21 @@ class ReviewQueue:
         item.edited_fields = list(edits.keys())
 
         # Apply edits
-        for field, new_value in edits.items():
-            item.content[field] = new_value
+        for field_name, new_value in edits.items():
+            item.content[field_name] = new_value
 
         item.status = ReviewStatus.EDITED
-        item.reviewed_at = datetime.now(timezone.utc).isoformat()
+        item.reviewed_at = datetime.now(UTC).isoformat()
         item.reviewer_notes = notes
 
         item.learning_signal = {
             "action": "edit",
             "feedback_type": "correction",
-            "item_type": item.item_type.value if isinstance(item.item_type, ReviewableType) else str(item.item_type),
+            "item_type": (
+                item.item_type.value
+                if isinstance(item.item_type, ReviewableType)
+                else str(item.item_type)
+            ),
             "edited_fields": item.edited_fields,
             "lessons": [
                 f"Fields edited: {', '.join(item.edited_fields)}",
@@ -291,7 +311,7 @@ class ReviewQueue:
         self._emit_learning_signal(item.learning_signal)
         return item
 
-    def skip(self, item_id: str, notes: str = "") -> Optional[ReviewableItem]:
+    def skip(self, item_id: str, notes: str = "") -> ReviewableItem | None:
         """Skip an item for later review."""
         item = self._find_item(item_id)
         if not item:
@@ -369,7 +389,8 @@ class ReviewQueue:
     def clear_reviewed(self):
         """Remove accepted/rejected items from queue, keeping pending."""
         self.queue = [
-            item for item in self.queue
+            item
+            for item in self.queue
             if item.status in (ReviewStatus.PENDING, ReviewStatus.SKIPPED)
         ]
 
@@ -383,7 +404,7 @@ class ReviewQueue:
 
     # ── Internal ──
 
-    def _find_item(self, item_id: str) -> Optional[ReviewableItem]:
+    def _find_item(self, item_id: str) -> ReviewableItem | None:
         """Find an item by ID."""
         for item in self.queue:
             if item.item_id == item_id:

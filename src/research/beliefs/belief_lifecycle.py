@@ -13,8 +13,7 @@ Transitions are rule-based, driven by evidence state and track record.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from src.research.beliefs.schemas import BeliefStage, ResearchBelief
 from src.shared.logging import get_logger
@@ -23,6 +22,7 @@ logger = get_logger(__name__)
 
 
 # ── Stage transition rules ──────────────────────────────────────────────────
+
 
 def _min_evidence(stage: BeliefStage) -> int:
     return {
@@ -59,24 +59,20 @@ class BeliefLifecycleManager:
     def __init__(self) -> None:
         self._transition_log: list[dict] = []
 
-    def evaluate(self, belief: ResearchBelief) -> Optional[BeliefStage]:
+    def evaluate(self, belief: ResearchBelief) -> BeliefStage | None:
         """Evaluate a belief's current state and determine next stage.
 
         Returns:
             New stage if a transition is warranted, None otherwise.
         """
-        n_supporting = sum(
-            1 for e in belief.evidence if e.direction == "supporting"
-        )
-        n_contradicting = sum(
-            1 for e in belief.evidence if e.direction == "contradicting"
-        )
+        n_supporting = sum(1 for e in belief.evidence if e.direction == "supporting")
+        n_contradicting = sum(1 for e in belief.evidence if e.direction == "contradicting")
         total_evidence = n_supporting + n_contradicting
         track = belief.track_record_summary()
         accuracy = track.get("accuracy", 0.0)
         total_predictions = track.get("total", 0)
 
-        new_stage: Optional[BeliefStage] = None
+        new_stage: BeliefStage | None = None
         reason = ""
 
         current = belief.stage
@@ -88,11 +84,13 @@ class BeliefLifecycleManager:
         # If accuracy is very poor with enough predictions, retire
         if total_predictions >= 5 and accuracy < 0.3:
             new_stage = BeliefStage.RETIRED
-            reason = f"Poor track record: {accuracy:.0%} accuracy over {total_predictions} predictions"
+            reason = (
+                f"Poor track record: {accuracy:.0%} accuracy over {total_predictions} predictions"
+            )
 
         # If no evidence for 60+ days and in early stages
         elif belief.last_evidence_at:
-            delta = (datetime.now(timezone.utc) - belief.last_evidence_at).days
+            delta = (datetime.now(UTC) - belief.last_evidence_at).days
             if delta > 60 and current in {BeliefStage.HYPOTHESIS, BeliefStage.EVIDENCE_GATHERING}:
                 new_stage = BeliefStage.RETIRED
                 reason = f"Inactive for {delta} days with insufficient evidence"
@@ -138,7 +136,9 @@ class BeliefLifecycleManager:
         elif current == BeliefStage.CONSOLIDATION:
             if belief.confidence < 0.55:
                 new_stage = BeliefStage.EROSION
-                reason = f"Confidence dropped below consolidation threshold: {belief.confidence:.2f}"
+                reason = (
+                    f"Confidence dropped below consolidation threshold: {belief.confidence:.2f}"
+                )
             elif total_predictions >= 5 and accuracy < 0.5:
                 new_stage = BeliefStage.EROSION
                 reason = f"Track record deteriorating: {accuracy:.0%}"
@@ -155,24 +155,27 @@ class BeliefLifecycleManager:
         # Apply transition
         if new_stage and new_stage != current:
             belief.advance_stage(new_stage, reason)
-            self._transition_log.append({
-                "belief_id": belief.id[:8],
-                "title": belief.title,
-                "from": current.value,
-                "to": new_stage.value,
-                "reason": reason,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            })
+            self._transition_log.append(
+                {
+                    "belief_id": belief.id[:8],
+                    "title": belief.title,
+                    "from": current.value,
+                    "to": new_stage.value,
+                    "reason": reason,
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }
+            )
             logger.info(
                 "belief_lifecycle | %s: %s → %s (%s)",
-                belief.id[:8], current.value, new_stage.value, reason,
+                belief.id[:8],
+                current.value,
+                new_stage.value,
+                reason,
             )
 
         return new_stage
 
-    def get_active_count_by_stage(
-        self, beliefs: list[ResearchBelief]
-    ) -> dict[BeliefStage, int]:
+    def get_active_count_by_stage(self, beliefs: list[ResearchBelief]) -> dict[BeliefStage, int]:
         """Count active beliefs per stage."""
         counts = {stage: 0 for stage in BeliefStage}
         for b in beliefs:

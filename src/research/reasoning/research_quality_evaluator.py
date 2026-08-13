@@ -15,22 +15,22 @@ Output: Research Quality Score (0-100)
 
 from __future__ import annotations
 
-import uuid
 import re
+import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
-from src.research.reasoning.schemas import ResearchMemo, Hypothesis, CounterArgument
+from src.research.reasoning.schemas import CounterArgument, Hypothesis, ResearchMemo
 
 
 @dataclass
 class QualityDimension:
     """Score for a single quality dimension."""
+
     name: str = ""
-    score: float = 0.0                    # 0-100
-    weight: float = 0.0                   # Weight in overall score
-    passing: bool = False                 # Above threshold?
+    score: float = 0.0  # 0-100
+    weight: float = 0.0  # Weight in overall score
+    passing: bool = False  # Above threshold?
     details: list[str] = field(default_factory=list)
     suggestions: list[str] = field(default_factory=list)
 
@@ -38,9 +38,10 @@ class QualityDimension:
 @dataclass
 class QualityReport:
     """Complete research quality evaluation report."""
+
     report_id: str = ""
     memo_id: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     # Dimensions
     dimensions: dict[str, QualityDimension] = field(default_factory=dict)
@@ -51,10 +52,10 @@ class QualityReport:
     # }
 
     # Overall
-    overall_score: float = 0.0             # 0-100
-    grade: str = ""                        # A+, A, B, C, D, F
-    passes_minimum: bool = False           # Score >= 60?
-    is_professional_grade: bool = False    # Score >= 80?
+    overall_score: float = 0.0  # 0-100
+    grade: str = ""  # A+, A, B, C, D, F
+    passes_minimum: bool = False  # Score >= 60?
+    is_professional_grade: bool = False  # Score >= 80?
 
     # Detailed findings
     critical_flaws: list[str] = field(default_factory=list)
@@ -133,7 +134,9 @@ class ResearchQualityEvaluator:
         dims["evidence_completeness"] = self._score_evidence(memo, hypotheses)
 
         # 3. Counterargument Quality
-        dims["counterargument_quality"] = self._score_counterarguments(counter_arguments, hypotheses)
+        dims["counterargument_quality"] = self._score_counterarguments(
+            counter_arguments, hypotheses
+        )
 
         # 4. Prediction Usefulness
         dims["prediction_usefulness"] = self._score_predictions(memo, hypotheses)
@@ -146,8 +149,7 @@ class ResearchQualityEvaluator:
 
         # Overall score
         overall = sum(
-            dims[name].score * self.DIMENSION_WEIGHTS[name]
-            for name in self.DIMENSION_WEIGHTS
+            dims[name].score * self.DIMENSION_WEIGHTS[name] for name in self.DIMENSION_WEIGHTS
         )
         overall = round(overall, 1)
 
@@ -181,7 +183,9 @@ class ResearchQualityEvaluator:
 
     # ── Dimension 1: Hypothesis Originality ──
 
-    def _score_originality(self, hypotheses: list[Hypothesis], memo: ResearchMemo) -> QualityDimension:
+    def _score_originality(
+        self, hypotheses: list[Hypothesis], memo: ResearchMemo
+    ) -> QualityDimension:
         """Score hypothesis originality (0-100).
 
         Key questions:
@@ -268,25 +272,21 @@ class ResearchQualityEvaluator:
 
         # How many hypotheses have evidence?
         with_evidence = sum(
-            1 for h in hypotheses
-            if h.supporting_evidence or h.contradicting_evidence
+            1 for h in hypotheses if h.supporting_evidence or h.contradicting_evidence
         )
         evidence_ratio = with_evidence / total_hypotheses
 
         score += evidence_ratio * 40  # Up to 40 points for hypotheses with evidence
 
         # Average evidence items per hypothesis
-        avg_evidence = sum(
-            len(h.supporting_evidence) + len(h.contradicting_evidence)
-            for h in hypotheses
-        ) / total_hypotheses
+        avg_evidence = (
+            sum(len(h.supporting_evidence) + len(h.contradicting_evidence) for h in hypotheses)
+            / total_hypotheses
+        )
         score += min(avg_evidence * 10, 30)  # Up to 30 for evidence quantity
 
         # Citing both supporting AND contradicting evidence
-        with_both = sum(
-            1 for h in hypotheses
-            if h.supporting_evidence and h.contradicting_evidence
-        )
+        with_both = sum(1 for h in hypotheses if h.supporting_evidence and h.contradicting_evidence)
         score += (with_both / total_hypotheses) * 20  # Up to 20 for balanced evidence
 
         # Memo citations
@@ -377,7 +377,9 @@ class ResearchQualityEvaluator:
 
     # ── Dimension 4: Prediction Usefulness ──
 
-    def _score_predictions(self, memo: ResearchMemo, hypotheses: list[Hypothesis]) -> QualityDimension:
+    def _score_predictions(
+        self, memo: ResearchMemo, hypotheses: list[Hypothesis]
+    ) -> QualityDimension:
         """Score prediction usefulness (0-100).
 
         Would a portfolio manager actually use these predictions?
@@ -393,23 +395,21 @@ class ResearchQualityEvaluator:
         if not predictions and hypotheses:
             # Can extract from hypotheses
             predictions = [
-                {"statement": h.statement, "confidence": h.confidence}
-                for h in hypotheses
+                {"statement": h.statement, "confidence": h.confidence} for h in hypotheses
             ]
 
         if not predictions:
             dim.score = 0
             dim.details = ["No predictions in research memo"]
-            dim.suggestions = ["Add at least 3 predictions with confidence, direction, and invalidation"]
+            dim.suggestions = [
+                "Add at least 3 predictions with confidence, direction, and invalidation"
+            ]
             dim.passing = False
             return dim
 
         # Count predictions with all required fields
         required_fields = ["statement", "direction", "confidence"]
-        complete_preds = sum(
-            1 for p in predictions
-            if all(f in p for f in required_fields)
-        )
+        complete_preds = sum(1 for p in predictions if all(f in p for f in required_fields))
         score += (complete_preds / len(predictions)) * 30  # Up to 30
 
         # Have invalidation conditions?
@@ -486,8 +486,15 @@ class ResearchQualityEvaluator:
 
         # Structure completeness
         sections = memo.sections or []
-        expected_sections = {"Executive Summary", "Regime", "Evidence", "Hypothesis",
-                              "Counter", "Investment", "Invalidation"}
+        expected_sections = {
+            "Executive Summary",
+            "Regime",
+            "Evidence",
+            "Hypothesis",
+            "Counter",
+            "Investment",
+            "Invalidation",
+        }
         found_sections = {s.heading.lower()[:15] for s in sections}
         # Fuzzy check
         section_match = 0
@@ -507,9 +514,19 @@ class ResearchQualityEvaluator:
 
         # - Professional vocabulary
         professional_terms = [
-            "regime", "causal", "structural", "cyclical", "transmission",
-            "preponderance", "contradictory", "implication", "invalidation",
-            "calibration", "conviction", "tail risk", "hedge",
+            "regime",
+            "causal",
+            "structural",
+            "cyclical",
+            "transmission",
+            "preponderance",
+            "contradictory",
+            "implication",
+            "invalidation",
+            "calibration",
+            "conviction",
+            "tail risk",
+            "hedge",
         ]
         term_count = sum(1 for t in professional_terms if t in text.lower())
         score += min(term_count * 3, 15)
@@ -547,7 +564,9 @@ class ResearchQualityEvaluator:
 
     # ── Dimension 6: Hallucination Rate ──
 
-    def _score_hallucination(self, memo: ResearchMemo, hypotheses: list[Hypothesis]) -> tuple[QualityDimension, list[dict]]:
+    def _score_hallucination(
+        self, memo: ResearchMemo, hypotheses: list[Hypothesis]
+    ) -> tuple[QualityDimension, list[dict]]:
         """Score hallucination rate (0-100, lower = more hallucinations).
 
         Every statement must have evidence or citation.
@@ -577,11 +596,13 @@ class ResearchQualityEvaluator:
             matches = re.findall(pattern, text, re.IGNORECASE)
             for m in matches[:3]:
                 # Flag as potential hallucination if not near a citation marker
-                instances.append({
-                    "type": claim_type,
-                    "pattern": str(m)[:50],
-                    "severity": "low",
-                })
+                instances.append(
+                    {
+                        "type": claim_type,
+                        "pattern": str(m)[:50],
+                        "severity": "low",
+                    }
+                )
                 score -= 1
 
         # Check 2: Claims without evidence linkage
@@ -590,20 +611,24 @@ class ResearchQualityEvaluator:
                 if not h.supporting_evidence and not h.contradicting_evidence:
                     if h.confidence > 0.6:
                         score -= 5
-                        instances.append({
-                            "type": "unbacked_claim",
-                            "detail": f"Hypothesis '{h.title}' has no evidence but confidence {h.confidence:.0%}",
-                            "severity": "medium",
-                        })
+                        instances.append(
+                            {
+                                "type": "unbacked_claim",
+                                "detail": f"Hypothesis '{h.title}' has no evidence but confidence {h.confidence:.0%}",
+                                "severity": "medium",
+                            }
+                        )
 
         # Check 3: Citation presence
         if memo.citation_count == 0 and len(text) > 500:
             score -= 10
-            instances.append({
-                "type": "zero_citations",
-                "detail": "Memo has no citations despite substantial content",
-                "severity": "high",
-            })
+            instances.append(
+                {
+                    "type": "zero_citations",
+                    "detail": "Memo has no citations despite substantial content",
+                    "severity": "high",
+                }
+            )
 
         score = max(0, min(100, round(score)))
 

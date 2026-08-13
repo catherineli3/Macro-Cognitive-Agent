@@ -17,32 +17,23 @@ This is the core execution engine for V5.2.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from datetime import datetime
-from typing import Optional, Callable
 
+from src.research.reasoning_pipeline.analogy_stage import AnalogyStage
+from src.research.reasoning_pipeline.counter_stage import CounterStage
+from src.research.reasoning_pipeline.evidence_stage import EvidenceStage
+from src.research.reasoning_pipeline.hypothesis_stage import HypothesisStage
+from src.research.reasoning_pipeline.observation_stage import ObservationStage
+from src.research.reasoning_pipeline.pattern_stage import PatternStage
+from src.research.reasoning_pipeline.prediction_stage import PredictionStage
+from src.research.reasoning_pipeline.risk_stage import RiskStage
 from src.research.reasoning_pipeline.schemas import (
-    ObservationOutput,
-    EvidenceOutput,
-    PatternOutput,
-    AnalogyOutput,
-    HypothesisOutput,
-    CounterOutput,
-    PredictionOutput,
-    TradeOutput,
-    RiskOutput,
     PipelineState,
     StageResult,
     StageStatus,
 )
-from src.research.reasoning_pipeline.observation_stage import ObservationStage
-from src.research.reasoning_pipeline.evidence_stage import EvidenceStage
-from src.research.reasoning_pipeline.pattern_stage import PatternStage
-from src.research.reasoning_pipeline.analogy_stage import AnalogyStage
-from src.research.reasoning_pipeline.hypothesis_stage import HypothesisStage
-from src.research.reasoning_pipeline.counter_stage import CounterStage
-from src.research.reasoning_pipeline.prediction_stage import PredictionStage
 from src.research.reasoning_pipeline.trade_stage import TradeStage
-from src.research.reasoning_pipeline.risk_stage import RiskStage
 
 
 class ReasoningPipeline:
@@ -88,7 +79,7 @@ class ReasoningPipeline:
         "risk": "Stage 9: Risk & Watchlist",
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
         # Initialize all stages
@@ -103,9 +94,9 @@ class ReasoningPipeline:
         self.risk_stage = RiskStage(config)
 
         # Optional callbacks
-        self._on_stage_start: Optional[Callable] = None
-        self._on_stage_complete: Optional[Callable] = None
-        self._on_pipeline_complete: Optional[Callable] = None
+        self._on_stage_start: Callable | None = None
+        self._on_stage_complete: Callable | None = None
+        self._on_pipeline_complete: Callable | None = None
 
     # ── Pipeline Execution ──────────────────────────────────────────
 
@@ -306,42 +297,42 @@ class ReasoningPipeline:
         """
         from src.research.reasoning.memo_writer import MemoWriter
 
-        writer = MemoWriter(self.config)
+        _writer = MemoWriter(self.config)
 
         # Map pipeline state to memo writer inputs
         obs = state.get_output("observation")
         pat = state.get_output("pattern")
         hyp = state.get_output("hypothesis")
-        cnt = state.get_output("counter")
-        prd = state.get_output("prediction")
-        trd = state.get_output("trade")
-        rsk = state.get_output("risk")
+        _cnt = state.get_output("counter")
+        _prd = state.get_output("prediction")
+        _trd = state.get_output("trade")
+        _rsk = state.get_output("risk")
 
         # Assemble context for memo writer
-        macro_context = {
+        _macro_context = {
             "observations": obs.observations if obs else [],
             "data_surprises": obs.data_surprises if obs else [],
             "macro_snapshot": obs.macro_snapshot if obs else "",
         }
 
-        regime_context = {
+        _regime_context = {
             "current_regime": pat.regime_diagnosis if pat else "",
             "patterns": pat.patterns if pat else [],
             "transition_signals": pat.regime_transition_signals if pat else [],
             "pattern_confidence": pat.pattern_confidence if pat else 0.0,
         }
 
-        market_context = {
+        _market_context = {
             "market_moves": obs.market_moves if obs else [],
         }
 
-        beliefs_context = {
+        _beliefs_context = {
             "primary_hypothesis": hyp.primary_hypothesis if hyp else "",
             "causal_mechanism": hyp.causal_mechanism if hyp else "",
             "confidence": hyp.hypothesis_confidence if hyp else 0.0,
         }
 
-        narratives_context = {
+        _narratives_context = {
             "patterns": pat.patterns if pat else [],
             "regime": pat.regime_diagnosis if pat else "",
         }
@@ -417,8 +408,7 @@ class ReasoningPipeline:
             lines.append("-" * 40)
             for p in prd.predictions:
                 lines.append(
-                    f"  [{p['probability']:.0%}] {p['claim']} "
-                    f"(Horizon: {p['horizon']})"
+                    f"  [{p['probability']:.0%}] {p['claim']} " f"(Horizon: {p['horizon']})"
                 )
             lines.append("")
 
@@ -430,7 +420,9 @@ class ReasoningPipeline:
             lines.append(f"Positioning: {trd.portfolio_positioning}")
             lines.append("")
             for t in trd.trades:
-                lines.append(f"  * {t['description']} ({t['direction']}, conv={t['conviction']:.0%})")
+                lines.append(
+                    f"  * {t['description']} ({t['direction']}, conv={t['conviction']:.0%})"
+                )
             lines.append("")
 
         # Risks
@@ -439,7 +431,9 @@ class ReasoningPipeline:
             lines.append("RISK DASHBOARD")
             lines.append("-" * 40)
             for r in rsk.risks[:3]:
-                lines.append(f"  [{r['severity'].upper()}] ({r['probability']:.0%}) {r['risk'][:80]}...")
+                lines.append(
+                    f"  [{r['severity'].upper()}] ({r['probability']:.0%}) {r['risk'][:80]}..."
+                )
             lines.append("")
 
         if rsk and rsk.watchlist_24h:

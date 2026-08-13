@@ -15,14 +15,13 @@ Reuses: Evaluation patterns from ResearchJudgmentEngine quality scoring.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
+from src.shared.logging import get_logger
+from src.summary_engine.change_detector import ChangeSignals
 from src.summary_engine.cio_brief import CIOBrief
 from src.summary_engine.macro_state_layer import MacroState
-from src.summary_engine.change_detector import ChangeSignals
 from src.summary_engine.narrative_generator import MacroNarrative
-from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -35,6 +34,7 @@ logger = get_logger(__name__)
 @dataclass
 class DimensionScore:
     """Score for a single quality dimension."""
+
     name: str
     score: float  # 0-100
     weight: float  # weight in overall score
@@ -46,7 +46,7 @@ class DimensionScore:
 class SummaryQuality:
     """Complete quality assessment of a CIO brief."""
 
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     # Dimension scores
     data_accuracy: float = 0.0  # 0-100
@@ -97,18 +97,24 @@ class SummaryEvaluator:
 
     # Dimension weights
     WEIGHTS = {
-        "data_accuracy": 0.30,        # Most important — must use real data
-        "context": 0.20,              # Macro context matters
-        "causality": 0.20,            # Causal chains = insight quality
-        "investment_usefulness": 0.20, # Actionable for portfolios
-        "risk_awareness": 0.10,        # Risk identification
+        "data_accuracy": 0.30,  # Most important — must use real data
+        "context": 0.20,  # Macro context matters
+        "causality": 0.20,  # Causal chains = insight quality
+        "investment_usefulness": 0.20,  # Actionable for portfolios
+        "risk_awareness": 0.10,  # Risk identification
     }
 
     # Grade boundaries
     GRADES = [
-        (95, "A+"), (90, "A"), (85, "A-"),
-        (80, "B+"), (75, "B"), (70, "B-"),
-        (65, "C+"), (60, "C"), (0, "D"),
+        (95, "A+"),
+        (90, "A"),
+        (85, "A-"),
+        (80, "B+"),
+        (75, "B"),
+        (70, "B-"),
+        (65, "C+"),
+        (60, "C"),
+        (0, "D"),
     ]
 
     def evaluate(
@@ -173,9 +179,7 @@ class SummaryEvaluator:
         ]
 
         # Overall score
-        sq.overall_score = sum(
-            d.score * d.weight for d in sq.dimension_details
-        )
+        sq.overall_score = sum(d.score * d.weight for d in sq.dimension_details)
 
         # Grade
         sq.grade = self._assign_grade(sq.overall_score)
@@ -226,7 +230,9 @@ class SummaryEvaluator:
 
         return min(100, score)
 
-    def _score_context(self, brief: CIOBrief, macro_state: MacroState, change_signals: ChangeSignals) -> float:
+    def _score_context(
+        self, brief: CIOBrief, macro_state: MacroState, change_signals: ChangeSignals
+    ) -> float:
         """Score macro context quality."""
         score = 70.0  # Base: regime section always populated
 
@@ -327,7 +333,8 @@ class SummaryEvaluator:
 
         # Specific risks (not just generic)
         specific_count = sum(
-            1 for r in brief.risks_to_monitor
+            1
+            for r in brief.risks_to_monitor
             if any(kw in r.lower() for kw in ["divergence", "positioning", "correlation", "regime"])
         )
         score += specific_count * 3
@@ -413,9 +420,7 @@ class SummaryEvaluator:
         improvements = []
         for d in sq.dimension_details:
             if d.score < 70:
-                improvements.append(
-                    f"{d.name} ({d.score:.0f}/100): {d.rationale[:100]}"
-                )
+                improvements.append(f"{d.name} ({d.score:.0f}/100): {d.rationale[:100]}")
         if not improvements:
             improvements.append("All dimensions above threshold — maintain quality")
         return improvements

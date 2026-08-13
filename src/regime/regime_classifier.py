@@ -8,7 +8,9 @@ Integrates: MentalModel outputs, market data, narrative engine, reflexivity engi
 """
 
 from __future__ import annotations
-from typing import Any, Optional
+
+from typing import Any
+
 from src.regime.schemas import MacroRegime
 
 
@@ -18,9 +20,9 @@ class RegimeClassifier:
     def classify(
         self,
         mental_models: dict[str, Any] = None,
-        market_data: Optional[dict] = None,
-        narrative_data: Optional[dict] = None,
-        reflexivity_data: Optional[dict] = None,
+        market_data: dict | None = None,
+        narrative_data: dict | None = None,
+        reflexivity_data: dict | None = None,
     ) -> MacroRegime:
         mental = mental_models or {}
         market = market_data or {}
@@ -69,7 +71,11 @@ class RegimeClassifier:
             if s == "stable":
                 return {"label": "stable", "score": 0.7, "desc": "Trend growth"}
         yc = market.get("yield_curve", 0)
-        return {"label": "decelerating" if yc < 0.3 else "stable", "score": 0.4, "desc": "Market-implied"}
+        return {
+            "label": "decelerating" if yc < 0.3 else "stable",
+            "score": 0.4,
+            "desc": "Market-implied",
+        }
 
     def _classify_inflation(self, model_data: Any, market: dict) -> dict:
         cpi = market.get("cpi_yoy", 2.5)
@@ -121,9 +127,13 @@ class RegimeClassifier:
 
     def _composite_label(
         self,
-        growth: dict, inflation: dict, monetary: dict,
-        credit: dict, dollar: dict, vol: dict,
-        reflexivity: Optional[dict],
+        growth: dict,
+        inflation: dict,
+        monetary: dict,
+        credit: dict,
+        dollar: dict,
+        vol: dict,
+        reflexivity: dict | None,
     ) -> tuple:
         if vol["label"] == "crisis":
             return "credit_event", 0.85
@@ -143,8 +153,13 @@ class RegimeClassifier:
 
     def _detect_transition_signals(
         self,
-        growth: dict, inflation: dict, monetary: dict,
-        credit: dict, dollar: dict, vol: dict, market: dict,
+        growth: dict,
+        inflation: dict,
+        monetary: dict,
+        credit: dict,
+        dollar: dict,
+        vol: dict,
+        market: dict,
     ) -> tuple:
         prob = 0.2
         direction = "stable"
@@ -167,9 +182,14 @@ class RegimeClassifier:
 
     def _generate_warnings(
         self,
-        growth: dict, inflation: dict, monetary: dict,
-        credit: dict, dollar: dict, vol: dict, market: dict,
-        reflexivity: Optional[dict],
+        growth: dict,
+        inflation: dict,
+        monetary: dict,
+        credit: dict,
+        dollar: dict,
+        vol: dict,
+        market: dict,
+        reflexivity: dict | None,
     ) -> list[str]:
         warnings = []
         if market.get("yield_curve", 0.5) < -0.3:
@@ -185,12 +205,17 @@ class RegimeClassifier:
         if reflexivity:
             cycles = reflexivity.get("active_cycles", [])
             if cycles:
-                warnings.append(f"{len(cycles)} reflexivity cycle(s) active — self-reinforcing dynamics")
+                warnings.append(
+                    f"{len(cycles)} reflexivity cycle(s) active — self-reinforcing dynamics"
+                )
         return warnings
 
     def _historical_label(
         self,
-        growth: dict, inflation: dict, monetary: dict, credit: dict,
+        growth: dict,
+        inflation: dict,
+        monetary: dict,
+        credit: dict,
     ) -> str:
         """Generate historical period label."""
         if growth["label"] == "accelerating" and inflation["label"] == "disinflation":

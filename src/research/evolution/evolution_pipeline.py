@@ -18,45 +18,45 @@ research methodology.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
-from src.schemas.transmission_v3_1 import (
-    ResearchFinding, ResearchFindingsReport,
-)
-from src.schemas.research import (
-    ResearchPrinciple, ResearchFramework,
-    FrameworkSet, FindingLifecycle, FindingTTLStatus,
-    CompetingPrinciple, PrincipleStrength, PrincipleStatus,
-)
-from src.schemas.diagnosis import DiagnosisReport
-
-from src.research.findings.engine import ResearchFindingsEngine
-from src.research.principles.admission_gate import PrincipleAdmissionGate
-from src.research.principles.principle_extractor import PrincipleExtractor
-from src.research.principles.candidate_manager import CandidatePrincipleManager
-from src.research.principles.principle_store import PrincipleStore
+from src.research.evolution.belief_lifecycle import BeliefLifecycleManager
+from src.research.evolution.conflict_resolver import ConflictResolver
+from src.research.evolution.regime_gate import RegimeGate, RegimeSnapshot
+from src.research.evolution.temporary_layer import EventCategory, TemporaryEventLayer
 from src.research.framework.cluster_detector import PrincipleClusterDetector
 from src.research.framework.framework_evaluator import FrameworkEvaluator
-from src.research.framework.framework_store import FrameworkStore
 from src.research.framework.framework_orchestrator import FrameworkOrchestrator
-from src.research.evolution.regime_gate import RegimeGate, RegimeSnapshot
-from src.research.evolution.temporary_layer import TemporaryEventLayer, EventCategory
-from src.research.evolution.conflict_resolver import ConflictResolver
-from src.research.evolution.belief_lifecycle import BeliefLifecycleManager, BeliefLifecycleStage
-
+from src.research.framework.framework_store import FrameworkStore
+from src.research.principles.admission_gate import PrincipleAdmissionGate
+from src.research.principles.candidate_manager import CandidatePrincipleManager
+from src.research.principles.principle_extractor import PrincipleExtractor
+from src.research.principles.principle_store import PrincipleStore
+from src.schemas.diagnosis import DiagnosisReport
+from src.schemas.research import (
+    FindingLifecycle,
+    FindingTTLStatus,
+    FrameworkSet,
+    PrincipleStatus,
+    PrincipleStrength,
+    ResearchFramework,
+    ResearchPrinciple,
+)
+from src.schemas.transmission_v3_1 import (
+    ResearchFinding,
+    ResearchFindingsReport,
+)
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
 
 # ── G2 Lifecycle Thresholds (F1.6) ─────────────────────────────────────
-CANDIDATE_MIN_CYCLES = 5      # Must persist for at least 5 cycles before graduating
-CANDIDATE_MIN_REGIMES = 1     # At least 1 regime validated as candidate
-VALIDATED_MIN_OBS = 30        # Minimum observations to graduate to validated
-VALIDATED_MIN_REGIMES = 2     # Minimum regimes for validated
-MATURE_MIN_OBS = 100          # Minimum observations for mature
-MATURE_MIN_REGIMES = 3        # Minimum regimes for mature
-MATURE_MIN_ACCURACY = 0.60    # Minimum accuracy for mature
-MATURE_MAX_CONTRADICTIONS = 2 # Maximum contradictions for mature
+CANDIDATE_MIN_CYCLES = 5  # Must persist for at least 5 cycles before graduating
+CANDIDATE_MIN_REGIMES = 1  # At least 1 regime validated as candidate
+VALIDATED_MIN_OBS = 30  # Minimum observations to graduate to validated
+VALIDATED_MIN_REGIMES = 2  # Minimum regimes for validated
+MATURE_MIN_OBS = 100  # Minimum observations for mature
+MATURE_MIN_REGIMES = 3  # Minimum regimes for mature
+MATURE_MIN_ACCURACY = 0.60  # Minimum accuracy for mature
+MATURE_MAX_CONTRADICTIONS = 2  # Maximum contradictions for mature
 
 
 class EvolutionPipeline:
@@ -83,11 +83,14 @@ class EvolutionPipeline:
 
         # ── V3.1: Unified BeliefStore (ResearchBelief) ─────────────────
         from src.research.beliefs.belief_store import BeliefStore
+
         self.belief_store = BeliefStore()
         self.cluster_detector = PrincipleClusterDetector()
         self.framework_evaluator = FrameworkEvaluator()
         self.framework_orchestrator = FrameworkOrchestrator(
-            self.cluster_detector, self.framework_evaluator, self.framework_store,
+            self.cluster_detector,
+            self.framework_evaluator,
+            self.framework_store,
         )
 
         # State
@@ -153,7 +156,8 @@ class EvolutionPipeline:
             # Route to Temporary or Permanent
             if self._is_temporary(finding):
                 self.temporary_layer.register_from_finding(
-                    finding, EventCategory.SINGLE_OBSERVATION,
+                    finding,
+                    EventCategory.SINGLE_OBSERVATION,
                 )
                 result["temporary_events"] += 1
                 continue
@@ -186,7 +190,8 @@ class EvolutionPipeline:
             # Cross-regime validation
             if current_regime:
                 self.regime_gate.record_principle_observation(
-                    pid, current_regime,
+                    pid,
+                    current_regime,
                 )
                 # Update regimes_validated from regime_gate
                 regime_key = current_regime.key
@@ -220,16 +225,18 @@ class EvolutionPipeline:
                             result["conflicts_resolved"] += len(resolved)
 
         # ── Step 4: Framework Formation ────────────────────────────
-        all_principles = {
-            p.principle_id: p
-            for p in self.principle_store.get_all()
-        }
+        all_principles = {p.principle_id: p for p in self.principle_store.get_all()}
 
         # Record active principles for cluster detection
         active_principle_ids = [
-            pid for pid, p in all_principles.items()
-            if p.strength in (PrincipleStrength.VALIDATED, PrincipleStrength.MATURE,
-                              PrincipleStrength.FOUNDATIONAL)
+            pid
+            for pid, p in all_principles.items()
+            if p.strength
+            in (
+                PrincipleStrength.VALIDATED,
+                PrincipleStrength.MATURE,
+                PrincipleStrength.FOUNDATIONAL,
+            )
         ]
         self.framework_orchestrator.record_principle_activation(active_principle_ids, cycle)
 
@@ -244,12 +251,10 @@ class EvolutionPipeline:
         self.framework_orchestrator.evaluate_active(cycle)
 
         # Compute framework weights
-        all_frameworks = {
-            fw.framework_id: fw
-            for fw in self.framework_store.get_all()
-        }
+        all_frameworks = {fw.framework_id: fw for fw in self.framework_store.get_all()}
         self.framework_orchestrator.compute_framework_set_weights(
-            all_frameworks, all_principles,
+            all_frameworks,
+            all_principles,
         )
 
         # ── Step 5: Update Beliefs ─────────────────────────────────
@@ -258,7 +263,8 @@ class EvolutionPipeline:
             # Cascade principle changes to beliefs
             if p.status in (PrincipleStatus.RETIRED, PrincipleStatus.WEAKENING):
                 affected = self.belief_manager.cascade_principle_retirement(
-                    pid, all_principles,
+                    pid,
+                    all_principles,
                 )
                 result["beliefs_updated"] += len(affected)
 
@@ -273,8 +279,11 @@ class EvolutionPipeline:
         logger.info(
             "Evolution cycle %d: %d findings → %d principles, %d conflicts, "
             "%d frameworks, %d beliefs updated",
-            cycle, result["findings_processed"], result["principles_created"],
-            result["conflicts_detected"], result["frameworks_created"],
+            cycle,
+            result["findings_processed"],
+            result["principles_created"],
+            result["conflicts_detected"],
+            result["frameworks_created"],
             result["beliefs_updated"],
         )
 
@@ -282,8 +291,9 @@ class EvolutionPipeline:
 
     # ── Belief Operations (V3.1 — ResearchBelief Primary) ───────────────
 
-    def register_belief(self, belief,  # ResearchBelief (V3.1)
-                         principle_ids: list[str] | None = None) -> str:
+    def register_belief(
+        self, belief, principle_ids: list[str] | None = None  # ResearchBelief (V3.1)
+    ) -> str:
         """Register a ResearchBelief (V3.1 primary store).
 
         Also syncs to legacy BeliefLifecycleManager via BeliefAdapter
@@ -295,6 +305,7 @@ class EvolutionPipeline:
         # ── Sync to legacy BeliefLifecycleManager for principle linking ──
         try:
             from src.research.beliefs.belief_adapter import BeliefAdapter
+
             adaptive = BeliefAdapter.to_adaptive(belief)
             self.belief_manager.register_belief(adaptive)
             if principle_ids:
@@ -312,6 +323,7 @@ class EvolutionPipeline:
         # Try BeliefStore (V3.1 primary) first
         try:
             from src.research.beliefs.belief_adapter import BeliefAdapter
+
             belief = self.belief_store.get_belief(belief_id)
             if belief:
                 penalty = 1.0
@@ -322,7 +334,9 @@ class EvolutionPipeline:
                         if p and p.status == PrincipleStatus.ACTIVE_COMPETITION:
                             penalty *= self.conflict_resolver.get_penalty(pid)
                 return self.belief_manager.derive_weight(
-                    belief_id, all_principles, penalty,
+                    belief_id,
+                    all_principles,
+                    penalty,
                 )
         except Exception:
             pass
@@ -334,8 +348,7 @@ class EvolutionPipeline:
         """Get mature beliefs. Returns ResearchBelief list (V3.1)."""
         try:
             all_beliefs = self.belief_store.list_beliefs()
-            mature = [b for b in all_beliefs
-                       if getattr(b, 'confidence', 0) >= 0.5]
+            mature = [b for b in all_beliefs if getattr(b, "confidence", 0) >= 0.5]
             if mature:
                 return mature
         except Exception:
@@ -344,6 +357,7 @@ class EvolutionPipeline:
         # Fallback: convert from legacy
         try:
             from src.research.beliefs.belief_adapter import BeliefAdapter
+
             legacy = self.belief_manager.get_mature_beliefs()
             return [BeliefAdapter.from_adaptive(ab) for ab in legacy]
         except Exception:
@@ -389,48 +403,73 @@ class EvolutionPipeline:
             if p.strength == PrincipleStrength.CANDIDATE:
                 ev = p.evidence
                 cycles_persisted = cycle - p.created_at_cycle
-                if (cycles_persisted >= CANDIDATE_MIN_CYCLES
-                        and ev.regimes_count >= CANDIDATE_MIN_REGIMES
-                        and ev.total_observations >= VALIDATED_MIN_OBS):
+                if (
+                    cycles_persisted >= CANDIDATE_MIN_CYCLES
+                    and ev.regimes_count >= CANDIDATE_MIN_REGIMES
+                    and ev.total_observations >= VALIDATED_MIN_OBS
+                ):
                     p.strength = PrincipleStrength.VALIDATED
                     p.status = PrincipleStatus.ACTIVE
                     self.principle_store.update_strength(pid, PrincipleStrength.VALIDATED)
                     if pid in self.candidate_manager._candidates:
                         self.candidate_manager._graduate(pid)
                     promoted_count += 1
-                    logger.info("G2: CANDIDATE → VALIDATED: %s (cycles=%d, regimes=%d, obs=%d)",
-                                pid[:12], cycles_persisted, ev.regimes_count, ev.total_observations)
+                    logger.info(
+                        "G2: CANDIDATE → VALIDATED: %s (cycles=%d, regimes=%d, obs=%d)",
+                        pid[:12],
+                        cycles_persisted,
+                        ev.regimes_count,
+                        ev.total_observations,
+                    )
 
             # ── VALIDATED → MATURE ──
             elif p.strength == PrincipleStrength.VALIDATED:
                 ev = p.evidence
-                if (ev.total_observations >= MATURE_MIN_OBS
-                        and ev.regimes_count >= MATURE_MIN_REGIMES
-                        and ev.contradiction_count <= MATURE_MAX_CONTRADICTIONS):
+                if (
+                    ev.total_observations >= MATURE_MIN_OBS
+                    and ev.regimes_count >= MATURE_MIN_REGIMES
+                    and ev.contradiction_count <= MATURE_MAX_CONTRADICTIONS
+                ):
                     # Check accuracy — use computed accuracy if available
-                    acc = ev.computed_accuracy if (ev.correct_count + ev.incorrect_count) > 0 else 0.5
+                    acc = (
+                        ev.computed_accuracy if (ev.correct_count + ev.incorrect_count) > 0 else 0.5
+                    )
                     if acc >= MATURE_MIN_ACCURACY:
                         p.strength = PrincipleStrength.MATURE
                         self.principle_store.update_strength(pid, PrincipleStrength.MATURE)
                         matured_count += 1
-                        logger.info("G2: VALIDATED → MATURE: %s (obs=%d, regimes=%d, acc=%.2f)",
-                                    pid[:12], ev.total_observations, ev.regimes_count, acc)
+                        logger.info(
+                            "G2: VALIDATED → MATURE: %s (obs=%d, regimes=%d, acc=%.2f)",
+                            pid[:12],
+                            ev.total_observations,
+                            ev.regimes_count,
+                            acc,
+                        )
 
             # ── WEAKENING / RETIREMENT ──
             if p.evidence.contradiction_count >= 5:
                 if p.strength not in (PrincipleStrength.FOUNDATIONAL,):
                     # Weaken or retire
                     if p.evidence.contradiction_count >= 10:
-                        self.principle_store.retire(pid, f"Contradictions: {p.evidence.contradiction_count}")
+                        self.principle_store.retire(
+                            pid, f"Contradictions: {p.evidence.contradiction_count}"
+                        )
                         retired_count += 1
                     elif p.status != PrincipleStatus.WEAKENING:
                         self.principle_store.weaken(pid)
-                        logger.info("G2: WEAKENING: %s (contradictions=%d)",
-                                    pid[:12], p.evidence.contradiction_count)
+                        logger.info(
+                            "G2: WEAKENING: %s (contradictions=%d)",
+                            pid[:12],
+                            p.evidence.contradiction_count,
+                        )
 
         if promoted_count or matured_count or retired_count:
-            logger.info("G2 Lifecycle: %d promoted →VALIDATED, %d →MATURE, %d retired",
-                       promoted_count, matured_count, retired_count)
+            logger.info(
+                "G2 Lifecycle: %d promoted →VALIDATED, %d →MATURE, %d retired",
+                promoted_count,
+                matured_count,
+                retired_count,
+            )
 
     def _run_evidence_feedback(self, cycle: int, result: dict) -> None:
         """G3 (F1.6): Record evidence/outcomes to principles.
@@ -462,8 +501,11 @@ class EvolutionPipeline:
                 failure_mode="thesis_contradicted" if not thesis_correct else "",
             )
 
-        logger.info("G3 Evidence Feedback: %d principles evaluated, result=%s",
-                    len(relevant_principles), "correct" if thesis_correct else "incorrect")
+        logger.info(
+            "G3 Evidence Feedback: %d principles evaluated, result=%s",
+            len(relevant_principles),
+            "correct" if thesis_correct else "incorrect",
+        )
 
     def _determine_thesis_correctness(self, cycle: int, result: dict) -> bool:
         """G3: Determine if the thesis was correct using available signals."""
@@ -522,9 +564,14 @@ class EvolutionPipeline:
         # Fallback: all validated+ principles
         if not pids:
             pids = {
-                p.principle_id for p in self.principle_store.get_all()
-                if p.strength in (PrincipleStrength.VALIDATED, PrincipleStrength.MATURE,
-                                  PrincipleStrength.CANDIDATE)
+                p.principle_id
+                for p in self.principle_store.get_all()
+                if p.strength
+                in (
+                    PrincipleStrength.VALIDATED,
+                    PrincipleStrength.MATURE,
+                    PrincipleStrength.CANDIDATE,
+                )
             }
 
         return pids
@@ -532,9 +579,12 @@ class EvolutionPipeline:
     def _get_or_create_lifecycle(self, finding: ResearchFinding) -> FindingLifecycle:
         if finding.finding_id not in self._finding_lifecycles:
             lc = FindingLifecycle(finding_id=finding.finding_id)
-            if hasattr(finding, 'confidence') and finding.confidence:
-                lc.set_ttl(finding.confidence.value if hasattr(finding.confidence, 'value')
-                           else str(finding.confidence))
+            if hasattr(finding, "confidence") and finding.confidence:
+                lc.set_ttl(
+                    finding.confidence.value
+                    if hasattr(finding.confidence, "value")
+                    else str(finding.confidence)
+                )
             self._finding_lifecycles[finding.finding_id] = lc
         return self._finding_lifecycles[finding.finding_id]
 
@@ -563,8 +613,10 @@ class EvolutionPipeline:
         """Archive expired findings. Returns count."""
         expired_count = 0
         for fid, lc in list(self._finding_lifecycles.items()):
-            if lc.is_expired and lc.status not in (FindingTTLStatus.PROMOTED,
-                                                    FindingTTLStatus.ARCHIVED):
+            if lc.is_expired and lc.status not in (
+                FindingTTLStatus.PROMOTED,
+                FindingTTLStatus.ARCHIVED,
+            ):
                 lc.expire()
                 expired_count += 1
         if expired_count:
@@ -592,14 +644,18 @@ class EvolutionPipeline:
     def summary(self) -> str:
         """Comprehensive pipeline summary."""
         lines = [f"=== Evolution Pipeline Summary (Cycle {self._cycle_count}) ==="]
-        lines.append(f"")
-        lines.append(f"Findings: {len(self._finding_lifecycles)} tracked "
-                     f"({self.temporary_layer.active_count} temp events)")
+        lines.append("")
+        lines.append(
+            f"Findings: {len(self._finding_lifecycles)} tracked "
+            f"({self.temporary_layer.active_count} temp events)"
+        )
         lines.append(f"Principles: {self.principle_store.summary()}")
         lines.append(f"  Candidates: {self.candidate_manager.summary()}")
         lines.append(f"Conflicts: {self.conflict_resolver.summary()}")
         lines.append(f"Frameworks: {self.framework_store.summary()}")
-        lines.append(f"  FrameworkSet: {self.framework_orchestrator.get_framework_set().describe()}")
+        lines.append(
+            f"  FrameworkSet: {self.framework_orchestrator.get_framework_set().describe()}"
+        )
         lines.append(f"Beliefs: {self.belief_manager.summary()}")
         lines.append(f"Regimes: {self.regime_gate.summary()}")
         return "\n".join(lines)

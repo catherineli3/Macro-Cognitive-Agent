@@ -6,8 +6,7 @@ Design:
     - All exceptions carry optional 'details' dict for observability
 """
 
-from typing import Any, Optional
-
+from typing import Any
 
 # ── Root ───────────────────────────────────────────────────────────────────
 
@@ -15,7 +14,7 @@ from typing import Any, Optional
 class MacroAgentError(Exception):
     """Base class for all Macro Research Agent exceptions."""
 
-    def __init__(self, message: str, *, details: Optional[dict[str, Any]] = None) -> None:
+    def __init__(self, message: str, *, details: dict[str, Any] | None = None) -> None:
         super().__init__(message)
         self.details = details or {}
 

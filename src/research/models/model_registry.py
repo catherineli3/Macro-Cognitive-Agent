@@ -12,8 +12,6 @@ Usage:
 
 from __future__ import annotations
 
-from typing import Optional
-
 from src.research.models.mental_model import MentalModel, ModelInput, ResearchConclusion
 from src.shared.logging import get_logger
 
@@ -99,9 +97,7 @@ class ModelRegistry:
         )
         return all_conclusions
 
-    def evaluate_domain(
-        self, domain: str, snapshot: dict
-    ) -> list[ResearchConclusion]:
+    def evaluate_domain(self, domain: str, snapshot: dict) -> list[ResearchConclusion]:
         """Evaluate only models for a specific domain."""
         input_data = ModelInput(snapshot=snapshot)
         conclusions: list[ResearchConclusion] = []
@@ -115,9 +111,7 @@ class ModelRegistry:
 
         return conclusions
 
-    def evaluate_model(
-        self, model_name: str, snapshot: dict
-    ) -> Optional[list[ResearchConclusion]]:
+    def evaluate_model(self, model_name: str, snapshot: dict) -> list[ResearchConclusion] | None:
         """Evaluate a single named model."""
         model = self._models.get(model_name)
         if model is None:
@@ -143,7 +137,7 @@ class ModelRegistry:
         """Return all macro domains covered."""
         return list(self._domains)
 
-    def get_model(self, model_name: str) -> Optional[MentalModel]:
+    def get_model(self, model_name: str) -> MentalModel | None:
         """Get a specific model instance by name."""
         return self._models.get(model_name)
 
@@ -173,13 +167,15 @@ def build_default_registry() -> ModelRegistry:
     from src.research.models.policy_model import PolicyModel
 
     registry = ModelRegistry()
-    registry.register_all([
-        LiquidityModel(),
-        CreditModel(),
-        InflationModel(),
-        GrowthModel(),
-        PolicyModel(),
-        DollarModel(),
-        AICapexModel(),
-    ])
+    registry.register_all(
+        [
+            LiquidityModel(),
+            CreditModel(),
+            InflationModel(),
+            GrowthModel(),
+            PolicyModel(),
+            DollarModel(),
+            AICapexModel(),
+        ]
+    )
     return registry

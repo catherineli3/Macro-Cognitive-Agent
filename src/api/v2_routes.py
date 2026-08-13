@@ -1,21 +1,21 @@
 """v2.0 API Routes — Continuous Learning endpoints.
 
-    GET /v2/beliefs        — Current agent beliefs and weights
-    GET /v2/learning       — Learning summary and patterns
-    GET /v2/outcomes       — Outcome history and metrics
-    GET /v2/accuracy       — Prediction accuracy per dimension
-    GET /v2/confidence     — Calibrated confidence data
-    POST /v2/relearn       — Trigger a learning cycle
+GET /v2/beliefs        — Current agent beliefs and weights
+GET /v2/learning       — Learning summary and patterns
+GET /v2/outcomes       — Outcome history and metrics
+GET /v2/accuracy       — Prediction accuracy per dimension
+GET /v2/confidence     — Calibrated confidence data
+POST /v2/relearn       — Trigger a learning cycle
 """
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, HTTPException
 
-from src.outcome.engine import OutcomeEngine
 from src.learning.learning_engine import LearningEngine
+from src.outcome.engine import OutcomeEngine
 from src.pipeline import MacroResearchPipeline
 from src.shared.logging import get_logger
 
@@ -90,7 +90,7 @@ async def get_beliefs() -> dict:
             "status": "ok",
             "count": len(beliefs_data),
             "beliefs": beliefs_data,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -144,7 +144,7 @@ async def get_learning() -> dict:
                     for bw in learning.belief_weights
                 ],
             },
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -188,15 +188,21 @@ async def get_outcomes(dimension: str | None = None, limit: int = 20) -> dict:
                     "dimension": r.outcome.dimension,
                     "predicted_direction": r.outcome.predicted_direction.value,
                     "predicted_confidence": r.outcome.predicted_confidence,
-                    "observed_direction": r.outcome.observed_direction.value if r.outcome.observed_direction else "pending",
+                    "observed_direction": (
+                        r.outcome.observed_direction.value
+                        if r.outcome.observed_direction
+                        else "pending"
+                    ),
                     "verdict": r.outcome.verdict.value,
                     "predicted_at": r.outcome.predicted_at.isoformat(),
-                    "evaluated_at": r.outcome.evaluated_at.isoformat() if r.outcome.evaluated_at else None,
+                    "evaluated_at": (
+                        r.outcome.evaluated_at.isoformat() if r.outcome.evaluated_at else None
+                    ),
                     "rationale": r.outcome.verdict_rationale,
                 }
                 for r in recent
             ],
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -229,7 +235,7 @@ async def get_accuracy() -> dict:
                 "evaluation_lag_days": summary.average_evaluation_lag_days,
                 "per_dimension": summary.dimension_accuracy,
             },
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -263,7 +269,7 @@ async def get_confidence() -> dict:
                 }
                 for bw in weights
             ],
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -315,7 +321,7 @@ async def trigger_relearn() -> dict:
                 "patterns_found": len(learning.learned_patterns),
                 "improvement_trend": learning.improvement_trend,
             },
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

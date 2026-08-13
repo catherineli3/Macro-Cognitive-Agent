@@ -12,11 +12,9 @@ Design:
 
 from src.domain.memory import BeliefStatus
 from src.domain.reflection import ReflectionVerdict
-from src.domain.signal import SignalDirection
 from src.schemas.hypothesis import HypothesisSchema, HypothesisSet
 from src.schemas.memory import BeliefRecord
 from src.schemas.reflection import ReflectionReport, ReflectionSet
-
 
 # ── ReflectionVerdict → BeliefStatus Mapping ──────────────────────────────
 

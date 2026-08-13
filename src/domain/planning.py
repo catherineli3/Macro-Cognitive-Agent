@@ -23,9 +23,9 @@ class TaskType(str, Enum):
     (future Sprint) maps each type to concrete tool invocations.
     """
 
-    RETRIEVE = "retrieve"    # Fetch data from external/internal sources
-    PROCESS = "process"      # Transform, normalize, filter data
-    ANALYZE = "analyze"      # Examine data for patterns, signals, anomalies
-    GENERATE = "generate"    # Create new content (hypothesis, report, plan)
-    VALIDATE = "validate"    # Verify correctness, consistency, quality
-    DECIDE = "decide"        # Choose among alternatives (future capability)
+    RETRIEVE = "retrieve"  # Fetch data from external/internal sources
+    PROCESS = "process"  # Transform, normalize, filter data
+    ANALYZE = "analyze"  # Examine data for patterns, signals, anomalies
+    GENERATE = "generate"  # Create new content (hypothesis, report, plan)
+    VALIDATE = "validate"  # Verify correctness, consistency, quality
+    DECIDE = "decide"  # Choose among alternatives (future capability)

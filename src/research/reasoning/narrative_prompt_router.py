@@ -22,9 +22,7 @@ Key design:
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
-from typing import Optional
 
 from src.shared.logging import get_logger
 
@@ -39,6 +37,7 @@ logger = get_logger(__name__)
 @dataclass
 class NarrativeProfile:
     """Profile of a single narrative for prompt generation."""
+
     title: str = ""
     score: float = 0.0  # Strength score
     category: str = ""  # consensus / contested / emerging
@@ -56,6 +55,7 @@ class NarrativeProfile:
 @dataclass
 class DominantNarrative:
     """The dominant narrative extracted from the landscape."""
+
     primary: NarrativeProfile = field(default_factory=NarrativeProfile)
     competitors: list[NarrativeProfile] = field(default_factory=list)
     is_contested: bool = False
@@ -71,6 +71,7 @@ class DominantNarrative:
 @dataclass
 class NarrativeRoutedPrompt:
     """Output of narrative-driven prompt routing."""
+
     dominant_narrative: DominantNarrative = field(default_factory=DominantNarrative)
     system_prompt: str = ""
     narrative_briefing: str = ""  # A human-readable briefing on the narrative
@@ -102,29 +103,108 @@ class NarrativeRoutedPrompt:
 # ═══════════════════════════════════════════════════════════════════════════
 
 _DOMAIN_KEYWORDS: dict[str, list[str]] = {
-    "Liquidity": ["liquidity", "repo", "balance sheet", "qt", "qe", "reserve",
-                  "funding", "money market", "overnight", "sofr"],
-    "Inflation": ["inflation", "cpi", "ppi", "price", "wage", "shelter",
-                  "breakeven", "reflation", "disinflation", "stagflation"],
-    "Growth": ["growth", "gdp", "recession", "soft landing", "hard landing",
-               "expansion", "employment", "payroll", "ism", "pmi", "output"],
-    "Credit": ["credit", "spread", "default", "leverage", "hy", "ig",
-               "high yield", "investment grade", "refinancing", "maturity wall"],
-    "Currency": ["dollar", "dxy", "fx", "exchange rate", "currency",
-                 "carry trade", "devaluation", "reserve currency"],
-    "Policy": ["fed", "central bank", "rate cut", "rate hike", "fomc",
-               "monetary policy", "forward guidance", "hawkish", "dovish"],
+    "Liquidity": [
+        "liquidity",
+        "repo",
+        "balance sheet",
+        "qt",
+        "qe",
+        "reserve",
+        "funding",
+        "money market",
+        "overnight",
+        "sofr",
+    ],
+    "Inflation": [
+        "inflation",
+        "cpi",
+        "ppi",
+        "price",
+        "wage",
+        "shelter",
+        "breakeven",
+        "reflation",
+        "disinflation",
+        "stagflation",
+    ],
+    "Growth": [
+        "growth",
+        "gdp",
+        "recession",
+        "soft landing",
+        "hard landing",
+        "expansion",
+        "employment",
+        "payroll",
+        "ism",
+        "pmi",
+        "output",
+    ],
+    "Credit": [
+        "credit",
+        "spread",
+        "default",
+        "leverage",
+        "hy",
+        "ig",
+        "high yield",
+        "investment grade",
+        "refinancing",
+        "maturity wall",
+    ],
+    "Currency": [
+        "dollar",
+        "dxy",
+        "fx",
+        "exchange rate",
+        "currency",
+        "carry trade",
+        "devaluation",
+        "reserve currency",
+    ],
+    "Policy": [
+        "fed",
+        "central bank",
+        "rate cut",
+        "rate hike",
+        "fomc",
+        "monetary policy",
+        "forward guidance",
+        "hawkish",
+        "dovish",
+    ],
     "Energy": ["oil", "crude", "energy", "opec", "gas", "commodity", "supply"],
-    "Geopolitics": ["war", "sanction", "conflict", "tension", "geopolitic",
-                    "trade war", "decoupling", "alliance"],
-    "AI": ["ai", "artificial intelligence", "semiconductor", "data center",
-           "gpu", "model", "productivity", "automation"],
-    "Technology": ["tech", "technology", "innovation", "semiconductor",
-                   "r&d", "software", "cloud"],
-    "Housing": ["housing", "mortgage", "construction", "home", "shelter",
-                "real estate", "affordability"],
-    "Debt": ["debt", "deficit", "fiscal", "treasury", "auction",
-             "sovereign", "sustainability"],
+    "Geopolitics": [
+        "war",
+        "sanction",
+        "conflict",
+        "tension",
+        "geopolitic",
+        "trade war",
+        "decoupling",
+        "alliance",
+    ],
+    "AI": [
+        "ai",
+        "artificial intelligence",
+        "semiconductor",
+        "data center",
+        "gpu",
+        "model",
+        "productivity",
+        "automation",
+    ],
+    "Technology": ["tech", "technology", "innovation", "semiconductor", "r&d", "software", "cloud"],
+    "Housing": [
+        "housing",
+        "mortgage",
+        "construction",
+        "home",
+        "shelter",
+        "real estate",
+        "affordability",
+    ],
+    "Debt": ["debt", "deficit", "fiscal", "treasury", "auction", "sovereign", "sustainability"],
 }
 
 
@@ -236,7 +316,7 @@ class NarrativeAnalyzer:
     def analyze(
         self,
         narratives: list[dict],
-        step_outputs: Optional[dict] = None,
+        step_outputs: dict | None = None,
     ) -> DominantNarrative:
         """Extract dominant narrative from narrative landscape.
 
@@ -265,9 +345,7 @@ class NarrativeAnalyzer:
         # Classify narrative landscape
         is_contested = len(competitors) > 0 and competitors[0].score > primary.score * 0.7
         is_consensus = (
-            not is_contested
-            and primary.conviction > 0.7
-            and primary.source_diversity > 0.5
+            not is_contested and primary.conviction > 0.7 and primary.source_diversity > 0.5
         )
         is_fragile = primary.conviction > 0.7 and primary.momentum in ("weakening", "broken")
         is_evolving = any(p.momentum == "strengthening" and p.score > 0.4 for p in competitors)
@@ -281,9 +359,13 @@ class NarrativeAnalyzer:
         # Overall direction
         directions = [p.direction for p in profiles if p.direction]
         overall_direction = (
-            "bullish" if directions.count("bullish") > directions.count("bearish")
-            else "bearish" if directions.count("bearish") > directions.count("bullish")
-            else "neutral"
+            "bullish"
+            if directions.count("bullish") > directions.count("bearish")
+            else (
+                "bearish"
+                if directions.count("bearish") > directions.count("bullish")
+                else "neutral"
+            )
         )
 
         # Confidence dispersion
@@ -307,7 +389,7 @@ class NarrativeAnalyzer:
         )
 
     def _build_profiles(
-        self, narratives: list[dict], step_outputs: Optional[dict]
+        self, narratives: list[dict], step_outputs: dict | None
     ) -> list[NarrativeProfile]:
         """Convert raw narrative dicts into NarrativeProfile objects."""
         profiles = []
@@ -357,7 +439,9 @@ class NarrativeAnalyzer:
                 source_diversity=round(min(source_diversity, 1.0), 2),
                 causal_chain=str(causal_chain),
                 evidence_for=list(evidence_for) if isinstance(evidence_for, (list, tuple)) else [],
-                evidence_against=list(evidence_against) if isinstance(evidence_against, (list, tuple)) else [],
+                evidence_against=(
+                    list(evidence_against) if isinstance(evidence_against, (list, tuple)) else []
+                ),
             )
             profiles.append(profile)
 
@@ -395,18 +479,22 @@ class NarrativeAnalyzer:
 
         top_competitor = competitors[0]
 
-        if primary.direction and top_competitor.direction and primary.direction != top_competitor.direction:
+        if (
+            primary.direction
+            and top_competitor.direction
+            and primary.direction != top_competitor.direction
+        ):
             return (
                 f'Bull-bear battle: "{primary.title}" ({primary.direction}, '
                 f'score={primary.score:.2f}) vs "{top_competitor.title}" '
-                f'({top_competitor.direction}, score={top_competitor.score:.2f}). '
-                f'The market is split on direction.'
+                f"({top_competitor.direction}, score={top_competitor.score:.2f}). "
+                f"The market is split on direction."
             )
         else:
             return (
                 f'Competing interpretations: "{primary.title}" (score={primary.score:.2f}) '
                 f'faces challenge from "{top_competitor.title}" '
-                f'(score={top_competitor.score:.2f}). Same direction, different mechanism.'
+                f"(score={top_competitor.score:.2f}). Same direction, different mechanism."
             )
 
     def _identify_consensus_risk(
@@ -419,17 +507,17 @@ class NarrativeAnalyzer:
         risks = []
 
         if primary.momentum == "weakening":
-            risks.append(f'Momentum is weakening despite {primary.conviction:.0%} conviction')
+            risks.append(f"Momentum is weakening despite {primary.conviction:.0%} conviction")
 
         if primary.evidence_against:
-            risks.append(f'Contradictory evidence exists: {primary.evidence_against[0][:100]}')
+            risks.append(f"Contradictory evidence exists: {primary.evidence_against[0][:100]}")
 
         for c in competitors[:2]:
             if c.momentum == "strengthening":
                 risks.append(f'Competitor "{c.title}" is gaining momentum')
 
         if primary.persistence > 20:
-            risks.append(f'Narrative has persisted {primary.persistence}d — mean reversion risk')
+            risks.append(f"Narrative has persisted {primary.persistence}d — mean reversion risk")
 
         return "; ".join(risks) if risks else "No obvious catalyst for narrative break."
 
@@ -459,9 +547,9 @@ class NarrativePromptRouter:
 
     def route(
         self,
-        narratives: Optional[list[dict]] = None,
-        regime_result: Optional[dict] = None,
-        step_outputs: Optional[dict] = None,
+        narratives: list[dict] | None = None,
+        regime_result: dict | None = None,
+        step_outputs: dict | None = None,
     ) -> NarrativeRoutedPrompt:
         """Route based on narrative landscape.
 
@@ -502,9 +590,7 @@ class NarrativePromptRouter:
             is_hybrid=dominant.is_contested,
         )
 
-    def _determine_stance(
-        self, dominant: DominantNarrative
-    ) -> tuple[str, str]:
+    def _determine_stance(self, dominant: DominantNarrative) -> tuple[str, str]:
         """Determine how to approach the dominant narrative.
 
         Returns (stance, rationale).
@@ -516,9 +602,9 @@ class NarrativePromptRouter:
             return (
                 "challenge",
                 f'Consensus narrative "{primary.title}" has {primary.conviction:.0%} '
-                f'conviction across {primary.source_diversity:.0%} sources. '
-                f'Maximum alpha is in challenging consensus. '
-                f'Risk: {dominant.consensus_risk}',
+                f"conviction across {primary.source_diversity:.0%} sources. "
+                f"Maximum alpha is in challenging consensus. "
+                f"Risk: {dominant.consensus_risk}",
             )
 
         # Rule 2: If narrative is contested → NUANCE
@@ -527,9 +613,9 @@ class NarrativePromptRouter:
                 "nuance",
                 f'Contested landscape: "{primary.title}" ({primary.score:.2f}) '
                 f'vs "{dominant.competitors[0].title}" '
-                f'({dominant.competitors[0].score:.2f}). '
-                f'Dispersion: {dominant.confidence_dispersion:.0%}. '
-                f'Uncertainty itself is the alpha opportunity.',
+                f"({dominant.competitors[0].score:.2f}). "
+                f"Dispersion: {dominant.confidence_dispersion:.0%}. "
+                f"Uncertainty itself is the alpha opportunity.",
             )
 
         # Rule 3: If narrative is fragile (high conviction but weakening) → CHALLENGE
@@ -537,8 +623,8 @@ class NarrativePromptRouter:
             return (
                 "challenge",
                 f'Fragile consensus: "{primary.title}" holds {primary.conviction:.0%} '
-                f'conviction but momentum is {primary.momentum}. '
-                f'The narrative is about to break — front-run the shift.',
+                f"conviction but momentum is {primary.momentum}. "
+                f"The narrative is about to break — front-run the shift.",
             )
 
         # Rule 4: If narrative is evolving (new gaining traction) → NUANCE
@@ -546,16 +632,16 @@ class NarrativePromptRouter:
             return (
                 "nuance",
                 f'Regime transition: "{primary.title}" is dominant but '
-                f'new narratives are gaining traction. '
-                f'Position for the transition, not the status quo.',
+                f"new narratives are gaining traction. "
+                f"Position for the transition, not the status quo.",
             )
 
         # Rule 5: Default — moderate conviction → SUPPORT
         return (
             "support",
             f'Supported narrative: "{primary.title}" has moderate conviction '
-            f'({primary.conviction:.0%}) with converging evidence. '
-            f'Focus on execution and second-order implications.',
+            f"({primary.conviction:.0%}) with converging evidence. "
+            f"Focus on execution and second-order implications.",
         )
 
     def _narrative_to_domains(self, dominant: DominantNarrative) -> list[str]:
@@ -583,9 +669,7 @@ class NarrativePromptRouter:
 
         return sorted(domains)
 
-    def _build_prompt(
-        self, dominant: DominantNarrative, stance: str
-    ) -> str:
+    def _build_prompt(self, dominant: DominantNarrative, stance: str) -> str:
         """Build the dynamic system prompt from the narrative template."""
         primary = dominant.primary
 
@@ -605,7 +689,7 @@ class NarrativePromptRouter:
             competing_parts = []
             for i, c in enumerate(dominant.competitors[:3]):
                 competing_parts.append(
-                    f"  {i + 1}. \"{c.title}\" (score={c.score:.2f}, "
+                    f'  {i + 1}. "{c.title}" (score={c.score:.2f}, '
                     f"direction={c.direction}, momentum={c.momentum})"
                 )
             competing_narratives = "\n".join(competing_parts)
@@ -613,13 +697,17 @@ class NarrativePromptRouter:
             competing_narratives = "  No significant competing narratives."
 
         # Evidence for/against
-        evidence_for = "\n".join(
-            f"  - {e}" for e in primary.evidence_for[:5]
-        ) if primary.evidence_for else "  (No specific evidence items extracted)"
+        evidence_for = (
+            "\n".join(f"  - {e}" for e in primary.evidence_for[:5])
+            if primary.evidence_for
+            else "  (No specific evidence items extracted)"
+        )
 
-        evidence_against = "\n".join(
-            f"  - {e}" for e in primary.evidence_against[:5]
-        ) if primary.evidence_against else "  (No contradicting evidence identified)"
+        evidence_against = (
+            "\n".join(f"  - {e}" for e in primary.evidence_against[:5])
+            if primary.evidence_against
+            else "  (No contradicting evidence identified)"
+        )
 
         # Source count
         source_count = max(int(primary.source_diversity * 10), 1)
@@ -629,7 +717,9 @@ class NarrativePromptRouter:
         domain_count = len(domains)
 
         # All narratives for nuance template
-        all_narratives_parts = [f'  1. "{primary.title}" (score={primary.score:.2f}, {primary.direction})']
+        all_narratives_parts = [
+            f'  1. "{primary.title}" (score={primary.score:.2f}, {primary.direction})'
+        ]
         for i, c in enumerate(dominant.competitors[:4]):
             all_narratives_parts.append(
                 f'  {i + 2}. "{c.title}" (score={c.score:.2f}, {c.direction})'
@@ -670,9 +760,7 @@ Do NOT treat them as isolated silos — the narrative is the connective tissue."
 
         return prompt
 
-    def _build_briefing(
-        self, dominant: DominantNarrative, stance: str
-    ) -> str:
+    def _build_briefing(self, dominant: DominantNarrative, stance: str) -> str:
         """Build a human-readable narrative briefing."""
         primary = dominant.primary
 
@@ -681,32 +769,32 @@ Do NOT treat them as isolated silos — the narrative is the connective tissue."
 
         lines = [
             f"{emoji} NARRATIVE BRIEFING — Stance: {stance.upper()}",
-            f"",
-            f"Dominant: \"{primary.title}\"",
+            "",
+            f'Dominant: "{primary.title}"',
             f"  Score: {primary.score:.2f} | Conviction: {primary.conviction:.0%}",
             f"  Direction: {primary.direction} | Momentum: {primary.momentum}",
             f"  Persistence: {primary.persistence}d | Sources: {primary.source_diversity:.0%} diversity",
-            f"",
+            "",
             f"Landscape: {'CONTESTED' if dominant.is_contested else 'CONSENSUS' if dominant.is_consensus else 'FORMING'}",
             f"  Fragile: {'YES — narrative may break' if dominant.is_fragile else 'No'}",
             f"  Evolving: {'YES — new competition emerging' if dominant.is_evolving else 'No'}",
-            f"",
+            "",
             f"Tension: {dominant.narrative_tension}",
             f"Consensus Risk: {dominant.consensus_risk}",
         ]
 
         if dominant.competitors:
-            lines.append(f"")
-            lines.append(f"Competitors:")
+            lines.append("")
+            lines.append("Competitors:")
             for i, c in enumerate(dominant.competitors[:3]):
-                lines.append(f"  {i + 1}. \"{c.title}\" (score={c.score:.2f}, {c.direction})")
+                lines.append(f'  {i + 1}. "{c.title}" (score={c.score:.2f}, {c.direction})')
 
-        lines.append(f"")
+        lines.append("")
         lines.append(f"Recommended stance: {stance.upper()}")
 
         return "\n".join(lines)
 
-    def _fallback(self, regime_result: Optional[dict]) -> NarrativeRoutedPrompt:
+    def _fallback(self, regime_result: dict | None) -> NarrativeRoutedPrompt:
         """Fallback when no narratives are available."""
         return NarrativeRoutedPrompt(
             dominant_narrative=DominantNarrative(

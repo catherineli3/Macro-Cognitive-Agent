@@ -11,30 +11,27 @@ Tests:
     5. Growth metrics tracked
 """
 
+import json
 import os
 import sys
 import tempfile
-import json
 
 import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pathlib import Path
-from collections import namedtuple
 
 from src.runtime import (
-    DailyRunner, RunReport,
-    PredictionRegistry, PredictionRecord,
-    OutcomeScheduler,
-    PaperTrader, ReplayDay, ReplayStats, ReplayResult,
-    ReportGenerator,
+    DailyRunner,
+    PaperTrader,
+    PredictionRegistry,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test 1: Quick smoke test (5 cycles)
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 @pytest.mark.slow
 def test_smoke_5_cycles():
@@ -59,13 +56,20 @@ def test_smoke_5_cycles():
 
         r = runner.run_today(
             macro_data={
-                "spx": spx, "prev_spx": prev_spx,
-                "vix": vix, "prev_vix": vix + 1,
-                "dxy": 104, "prev_dxy": 103.5,
-                "us10y": 4.2, "prev_us10y": 4.0,
-                "us2y": 3.8, "prev_us2y": 3.6,
-                "fed_rate": 5.25, "prev_fed_rate": 5.25,
-                "cpi_yoy": 2.8, "prev_cpi_yoy": 3.0,
+                "spx": spx,
+                "prev_spx": prev_spx,
+                "vix": vix,
+                "prev_vix": vix + 1,
+                "dxy": 104,
+                "prev_dxy": 103.5,
+                "us10y": 4.2,
+                "prev_us10y": 4.0,
+                "us2y": 3.8,
+                "prev_us2y": 3.6,
+                "fed_rate": 5.25,
+                "prev_fed_rate": 5.25,
+                "cpi_yoy": 2.8,
+                "prev_cpi_yoy": 3.0,
             },
             date_str=day,
         )
@@ -107,6 +111,7 @@ def test_smoke_5_cycles():
 # Test 2: Fast-feedback 50-cycle test (short horizons)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 @pytest.mark.slow
 def test_fast_50_cycles():
     """50 cycles with short horizons — verifies evaluation + evolution loop."""
@@ -132,9 +137,7 @@ def test_fast_50_cycles():
 
     # Assertions
     assert result.stats.total_days == 50
-    assert result.stats.completed_cycles >= 45, (
-        f"Too many failures: {result.stats.failed_cycles}"
-    )
+    assert result.stats.completed_cycles >= 45, f"Too many failures: {result.stats.failed_cycles}"
     assert result.stats.predictions_made > 0, "No predictions made"
 
     # Check output files
@@ -165,6 +168,7 @@ def test_fast_50_cycles():
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test 3: Full 100-cycle Paper Trader
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 @pytest.mark.slow
 def test_100_cycles():
@@ -200,23 +204,27 @@ def test_100_cycles():
     result = trader.replay(days_100)
 
     stats = result.stats
-    print(f"\n  === RESULTS ===")
+    print("\n  === RESULTS ===")
     print(f"  Total days:       {stats.total_days}")
-    print(f"  Completed cycles: {stats.completed_cycles}/{stats.total_days} "
-          f"({stats.completion_rate:.1%})")
+    print(
+        f"  Completed cycles: {stats.completed_cycles}/{stats.total_days} "
+        f"({stats.completion_rate:.1%})"
+    )
     print(f"  Failed cycles:    {stats.failed_cycles}")
-    print(f"")
+    print("")
     print(f"  Predictions made:  {stats.predictions_made}")
     print(f"  Predictions eval:  {stats.predictions_evaluated}")
-    print(f"  Hit rate:          {stats.hit_rate:.1%} "
-          f"({stats.predictions_correct}/{stats.predictions_evaluated})")
-    print(f"")
+    print(
+        f"  Hit rate:          {stats.hit_rate:.1%} "
+        f"({stats.predictions_correct}/{stats.predictions_evaluated})"
+    )
+    print("")
     print(f"  Principles created: {stats.principles_created}")
     print(f"  Principles promoted:{stats.principles_promoted}")
     print(f"  Frameworks created: {stats.frameworks_created}")
     print(f"  Beliefs updated:    {stats.beliefs_updated}")
     print(f"  Conflicts resolved: {stats.conflicts_resolved}")
-    print(f"")
+    print("")
     print(f"  Memory entries: {stats.evolving_memory_entries}")
     print(f"  Invalidated theses: {stats.invalidated_theses}")
 
@@ -229,13 +237,11 @@ def test_100_cycles():
 
     # ── Assertions ──────────────────────────────────────────
     assert stats.total_days == 100, f"Expected 100 days, got {stats.total_days}"
-    assert stats.completed_cycles >= 90, (
-        f"Too many failed cycles: {stats.failed_cycles}"
-    )
+    assert stats.completed_cycles >= 90, f"Too many failed cycles: {stats.failed_cycles}"
     assert stats.predictions_made > 0, "No predictions were made"
-    assert stats.predictions_evaluated > 0, (
-        "No predictions were evaluated — horizon too long or scheduler not working"
-    )
+    assert (
+        stats.predictions_evaluated > 0
+    ), "No predictions were evaluated — horizon too long or scheduler not working"
 
     # ── Output file checks ──────────────────────────────────
     output_dir = Path(result.output_dir)
@@ -246,23 +252,21 @@ def test_100_cycles():
 
     daily_dir = output_dir / "daily"
     daily_reports = list(daily_dir.glob("*.md"))
-    assert len(daily_reports) >= 90, (
-        f"Only {len(daily_reports)} daily reports (expected >= 90)"
-    )
+    assert len(daily_reports) >= 90, f"Only {len(daily_reports)} daily reports (expected >= 90)"
     print(f"\n  Daily reports: {len(daily_reports)}")
 
     # ── Registry verification ───────────────────────────────
     reg = PredictionRegistry(str(tmp / "preds.db"))
     reg_stats = reg.stats()
-    print(f"  Registry: total={reg_stats['total']}, pending={reg_stats['pending']}, "
-          f"hit_rate={reg_stats['hit_rate']:.1%}")
+    print(
+        f"  Registry: total={reg_stats['total']}, pending={reg_stats['pending']}, "
+        f"hit_rate={reg_stats['hit_rate']:.1%}"
+    )
     assert reg_stats["total"] > 0, "Registry is empty"
 
     # Check that evaluation happened
     evaluated = reg_stats["evaluated"]
-    assert evaluated > 0, (
-        f"No predictions were evaluated (all {reg_stats['total']} still pending)"
-    )
+    assert evaluated > 0, f"No predictions were evaluated (all {reg_stats['total']} still pending)"
 
     # Hit rate by horizon
     hrh = reg.hit_rate_by_horizon()
@@ -292,20 +296,21 @@ def test_100_cycles():
     # ── Print growth report excerpt ─────────────────────────
     gr_path = output_dir / "growth_report.md"
     gr_content = gr_path.read_text(encoding="utf-8")
-    print(f"\n  --- Growth Report Excerpt ---")
+    print("\n  --- Growth Report Excerpt ---")
     for line in gr_content.split("\n")[:25]:
         print(f"  {line}")
 
     # Cleanup
     _rmtree(tmp)
 
-    print(f"\n  PASS: 100-cycle paper trader completed")
+    print("\n  PASS: 100-cycle paper trader completed")
     assert stats.completed_cycles >= 90, f"Expected >=90 completed, got {stats.completed_cycles}"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test 4: Traceable Learning (any Belief change → Finding → Principle)
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 @pytest.mark.slow
 def test_traceable_learning():
@@ -327,7 +332,7 @@ def test_traceable_learning():
 
     # 30 days — enough for some predictions to mature
     days = trader.generate_synthetic_days("2026-06-01", "2026-07-31")
-    result = trader.replay(days[:30])
+    _result = trader.replay(days[:30])
 
     reg = PredictionRegistry(str(tmp / "preds.db"))
 
@@ -351,9 +356,9 @@ def test_traceable_learning():
 
     # Check: stats are consistent
     stats = reg.stats()
-    assert stats["total"] == stats["pending"] + stats["evaluated"] + stats["invalidated"], (
-        "Stats don't add up"
-    )
+    assert (
+        stats["total"] == stats["pending"] + stats["evaluated"] + stats["invalidated"]
+    ), "Stats don't add up"
 
     reg.close()
     _rmtree(tmp)
@@ -365,6 +370,7 @@ def test_traceable_learning():
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test 5: Evolution hooks fire correctly
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 @pytest.mark.slow
 def test_evolution_hooks():
@@ -392,11 +398,16 @@ def test_evolution_hooks():
         spx = 5200 + i * 25
         r = runner.run_today(
             macro_data={
-                "spx": spx, "prev_spx": spx - 25,
-                "vix": 16 + (i % 3 - 1), "prev_vix": 16,
-                "dxy": 104 + i * 0.2, "prev_dxy": 104,
-                "us10y": 4.2 + i * 0.02, "prev_us10y": 4.2,
-                "us2y": 3.8 + i * 0.01, "prev_us2y": 3.8,
+                "spx": spx,
+                "prev_spx": spx - 25,
+                "vix": 16 + (i % 3 - 1),
+                "prev_vix": 16,
+                "dxy": 104 + i * 0.2,
+                "prev_dxy": 104,
+                "us10y": 4.2 + i * 0.02,
+                "prev_us10y": 4.2,
+                "us2y": 3.8 + i * 0.01,
+                "prev_us2y": 3.8,
             },
             date_str=day,
         )
@@ -407,28 +418,35 @@ def test_evolution_hooks():
             ev = r.cycle_result.evolution_result
             if ev.get("findings_processed", 0) > 0:
                 evolution_events += 1
-                print(f"  Day {day}: cycle evolution — "
-                      f"{ev.get('principles_created', 0)} principles")
+                print(
+                    f"  Day {day}: cycle evolution — "
+                    f"{ev.get('principles_created', 0)} principles"
+                )
 
         # Check scheduler-triggered evolution (from failed predictions)
         if r.scheduler_report and r.scheduler_report.evolution_triggered:
             ev_result = r.scheduler_report.evolution_result or {}
             scheduler_evolution += ev_result.get("evolution_cycles", 0)
             if scheduler_evolution > 0:
-                print(f"  Day {day}: scheduler evolution — "
-                      f"{ev_result.get('principles_created', 0)} principles, "
-                      f"{ev_result.get('frameworks_created', 0)} frameworks")
+                print(
+                    f"  Day {day}: scheduler evolution — "
+                    f"{ev_result.get('principles_created', 0)} principles, "
+                    f"{ev_result.get('frameworks_created', 0)} frameworks"
+                )
 
     runner.close()
 
     total_evolution = evolution_events + scheduler_evolution
-    print(f"  Cycle evolution: {evolution_events}/15, "
-          f"Scheduler evolution: {scheduler_evolution}, "
-          f"Total: {total_evolution}")
+    print(
+        f"  Cycle evolution: {evolution_events}/15, "
+        f"Scheduler evolution: {scheduler_evolution}, "
+        f"Total: {total_evolution}"
+    )
 
     # At minimum, the EvolutionPipeline object should exist and be importable
     # (scheduler-side evolution requires failed predictions which depends on data)
     from src.research.evolution.evolution_pipeline import EvolutionPipeline
+
     assert EvolutionPipeline is not None, "EvolutionPipeline module not importable"
 
     # Check that the pipeline is initialized in the engine
@@ -447,6 +465,7 @@ def test_evolution_hooks():
 # ═══════════════════════════════════════════════════════════════════════════════
 # Helpers
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def _rmtree(path: Path):
     """Recursively remove a directory tree."""
@@ -481,7 +500,7 @@ if __name__ == "__main__":
     tests = [
         ("Smoke 5 cycles", test_smoke_5_cycles),
         ("Fast 50 cycles", test_fast_50_cycles),
-        ("100-cycle Paper Trader", test_100_cycles),     # ← THE BIG ONE
+        ("100-cycle Paper Trader", test_100_cycles),  # ← THE BIG ONE
         ("Traceable Learning", test_traceable_learning),
         ("Evolution Hooks", test_evolution_hooks),
     ]
@@ -490,10 +509,11 @@ if __name__ == "__main__":
         try:
             test_fn()
             passed += 1
-        except Exception as e:
+        except Exception:
             failed += 1
             print(f"\n  FAIL: {name}")
             import traceback
+
             traceback.print_exc()
 
     print("\n" + "=" * 72)

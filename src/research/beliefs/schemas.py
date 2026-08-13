@@ -7,11 +7,10 @@ All belief data structures are defined here only.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 from uuid import uuid4
-
 
 # ── Enums ────────────────────────────────────────────────────────────────────
 
@@ -27,6 +26,7 @@ class BeliefStage(str, Enum):
     6. EROSION            — Belief weakening, confidence declining
     7. RETIRED            — Belief no longer active
     """
+
     HYPOTHESIS = "hypothesis"
     EVIDENCE_GATHERING = "evidence_gathering"
     CONFIRMATION = "confirmation"
@@ -38,12 +38,13 @@ class BeliefStage(str, Enum):
 
 class EvidenceSource(str, Enum):
     """Six-source classification of evidence."""
-    MACRO_DATA = "macro_data"          # Economic indicators, policy data
-    MARKET_DATA = "market_data"        # Price, volume, spreads
-    NEWS = "news"                       # Headlines, sentiment
-    COMPANY = "company"                 # Earnings, guidance
-    HISTORY = "history"                 # Historical analogs, backtest
-    INFERENCE = "inference"             # Model-derived conclusions
+
+    MACRO_DATA = "macro_data"  # Economic indicators, policy data
+    MARKET_DATA = "market_data"  # Price, volume, spreads
+    NEWS = "news"  # Headlines, sentiment
+    COMPANY = "company"  # Earnings, guidance
+    HISTORY = "history"  # Historical analogs, backtest
+    INFERENCE = "inference"  # Model-derived conclusions
 
 
 class BeliefRelationType(str, Enum):
@@ -71,13 +72,14 @@ class BeliefDomain(str, Enum):
 @dataclass
 class EvidenceItem:
     """A single piece of evidence with source classification."""
+
     id: str = field(default_factory=lambda: uuid4().hex[:8])
     source: EvidenceSource = EvidenceSource.MACRO_DATA
     description: str = ""
-    weight: float = 1.0            # 0–1: evidential weight
-    direction: str = "neutral"     # supporting / contradicting / neutral
+    weight: float = 1.0  # 0–1: evidential weight
+    direction: str = "neutral"  # supporting / contradicting / neutral
     value: float = 0.0
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -95,19 +97,20 @@ class EvidenceItem:
 @dataclass
 class Prediction:
     """A verifiable prediction generated from a belief."""
+
     id: str = field(default_factory=lambda: uuid4().hex[:8])
     belief_id: str = ""
-    statement: str = ""              # What is predicted
-    asset: str = ""                  # Target asset/index
-    direction: str = ""              # up / down / flat
+    statement: str = ""  # What is predicted
+    asset: str = ""  # Target asset/index
+    direction: str = ""  # up / down / flat
     target_value: float = 0.0
-    confidence: float = 0.5          # 0–1
+    confidence: float = 0.5  # 0–1
     time_horizon_days: int = 30
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    outcome: str = ""                # correct / wrong / pending
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    outcome: str = ""  # correct / wrong / pending
     actual_value: float = 0.0
-    resolved_at: Optional[datetime] = None
-    score: float = 0.0               # 1.0 = perfectly correct, 0.0 = wrong
+    resolved_at: datetime | None = None
+    score: float = 0.0  # 1.0 = perfectly correct, 0.0 = wrong
 
     def to_dict(self) -> dict:
         return {
@@ -148,16 +151,16 @@ class ResearchBelief:
     stage: BeliefStage = BeliefStage.HYPOTHESIS
 
     # ── Beta-Bayesian state ─────────────────────────────────────────────
-    alpha: float = 1.0              # Prior successes (Beta distribution α)
-    beta: float = 1.0               # Prior failures (Beta distribution β)
-    confidence: float = 0.5         # alpha / (alpha + beta)
-    uncertainty: float = 0.5        # 1 / (alpha + beta) normalized
-    decay: float = 0.0              # Time-decay factor
+    alpha: float = 1.0  # Prior successes (Beta distribution α)
+    beta: float = 1.0  # Prior failures (Beta distribution β)
+    confidence: float = 0.5  # alpha / (alpha + beta)
+    uncertainty: float = 0.5  # 1 / (alpha + beta) normalized
+    decay: float = 0.0  # Time-decay factor
 
     # ── Evidence ─────────────────────────────────────────────────────────
     evidence: list[EvidenceItem] = field(default_factory=list)
     evidence_count: int = 0
-    last_evidence_at: Optional[datetime] = None
+    last_evidence_at: datetime | None = None
 
     # ── Regime awareness ─────────────────────────────────────────────────
     regimes: list[str] = field(default_factory=list)
@@ -178,9 +181,9 @@ class ResearchBelief:
     source_models: list[str] = field(default_factory=list)
 
     # ── Lifecycle ────────────────────────────────────────────────────────
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    retired_at: Optional[datetime] = None
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    retired_at: datetime | None = None
     is_active: bool = True
     version: int = 1
 
@@ -210,7 +213,7 @@ class ResearchBelief:
             self.beta += item.weight
 
         self.update_confidence()
-        self.updated_at = datetime.now(timezone.utc)
+        self.updated_at = datetime.now(UTC)
         self.version += 1
 
     def predict(
@@ -239,12 +242,12 @@ class ResearchBelief:
         prediction_id: str,
         actual_value: float,
         was_correct: bool,
-    ) -> Optional[Prediction]:
+    ) -> Prediction | None:
         """Resolve a prediction with actual outcome."""
         for p in self.prediction_history:
             if p.id == prediction_id:
                 p.actual_value = actual_value
-                p.resolved_at = datetime.now(timezone.utc)
+                p.resolved_at = datetime.now(UTC)
                 p.outcome = "correct" if was_correct else "wrong"
                 p.score = 1.0 if was_correct else 0.0
 
@@ -253,21 +256,25 @@ class ResearchBelief:
 
                 # If wrong, this is evidence against the belief
                 if not was_correct:
-                    self.add_evidence(EvidenceItem(
-                        source=EvidenceSource.MARKET_DATA,
-                        description=f"Prediction '{p.statement}' was wrong",
-                        direction="contradicting",
-                        weight=0.8,
-                        value=actual_value,
-                    ))
+                    self.add_evidence(
+                        EvidenceItem(
+                            source=EvidenceSource.MARKET_DATA,
+                            description=f"Prediction '{p.statement}' was wrong",
+                            direction="contradicting",
+                            weight=0.8,
+                            value=actual_value,
+                        )
+                    )
                 else:
-                    self.add_evidence(EvidenceItem(
-                        source=EvidenceSource.MARKET_DATA,
-                        description=f"Prediction '{p.statement}' was correct",
-                        direction="supporting",
-                        weight=0.8,
-                        value=actual_value,
-                    ))
+                    self.add_evidence(
+                        EvidenceItem(
+                            source=EvidenceSource.MARKET_DATA,
+                            description=f"Prediction '{p.statement}' was correct",
+                            direction="supporting",
+                            weight=0.8,
+                            value=actual_value,
+                        )
+                    )
 
                 return p
         return None
@@ -276,34 +283,36 @@ class ResearchBelief:
         """Advance belief to a new lifecycle stage."""
         old_stage = self.stage
         self.stage = new_stage
-        self.stage_history.append({
-            "from": old_stage.value,
-            "to": new_stage.value,
-            "reason": reason,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "confidence": self.confidence,
-        })
+        self.stage_history.append(
+            {
+                "from": old_stage.value,
+                "to": new_stage.value,
+                "reason": reason,
+                "timestamp": datetime.now(UTC).isoformat(),
+                "confidence": self.confidence,
+            }
+        )
 
         if new_stage == BeliefStage.RETIRED:
-            self.retired_at = datetime.now(timezone.utc)
+            self.retired_at = datetime.now(UTC)
             self.is_active = False
 
-        self.updated_at = datetime.now(timezone.utc)
+        self.updated_at = datetime.now(UTC)
         self.version += 1
 
-    def auto_stage(self) -> Optional[BeliefStage]:
+    def auto_stage(self) -> BeliefStage | None:
         """Auto-determine lifecycle stage based on evidence and confidence."""
-        n_supporting = sum(
-            1 for e in self.evidence if e.direction == "supporting"
-        )
-        n_contradicting = sum(
-            1 for e in self.evidence if e.direction == "contradicting"
-        )
+        n_supporting = sum(1 for e in self.evidence if e.direction == "supporting")
+        n_contradicting = sum(1 for e in self.evidence if e.direction == "contradicting")
 
         total = n_supporting + n_contradicting
 
         if total == 0:
-            return BeliefStage.HYPOTHESIS if self.stage == BeliefStage.HYPOTHESIS else BeliefStage.EVIDENCE_GATHERING
+            return (
+                BeliefStage.HYPOTHESIS
+                if self.stage == BeliefStage.HYPOTHESIS
+                else BeliefStage.EVIDENCE_GATHERING
+            )
 
         if total < 3:
             return BeliefStage.EVIDENCE_GATHERING

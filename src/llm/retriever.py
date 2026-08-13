@@ -14,10 +14,8 @@ Integration:
 
 from __future__ import annotations
 
-import math
 import re
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from src.memory.store import BeliefMemoryStore
 from src.shared.logging import get_logger
@@ -32,22 +30,133 @@ logger = get_logger(__name__)
 _STOPWORDS: frozenset[str] = frozenset(
     [
         # English
-        "the", "a", "an", "is", "are", "was", "were", "be", "been",
-        "being", "have", "has", "had", "do", "does", "did", "will",
-        "would", "could", "should", "may", "might", "can", "shall",
-        "and", "or", "but", "not", "no", "if", "then", "else",
-        "at", "by", "for", "from", "in", "of", "on", "to", "with",
-        "this", "that", "these", "those", "it", "its", "they", "their",
-        "we", "us", "our", "you", "your", "he", "she", "him", "her",
-        "about", "above", "after", "again", "all", "also", "as",
-        "just", "more", "most", "only", "other", "over", "same",
-        "some", "such", "than", "very", "well", "when", "which",
-        "while", "who", "whom", "why", "how", "up", "down", "out",
+        "the",
+        "a",
+        "an",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "will",
+        "would",
+        "could",
+        "should",
+        "may",
+        "might",
+        "can",
+        "shall",
+        "and",
+        "or",
+        "but",
+        "not",
+        "no",
+        "if",
+        "then",
+        "else",
+        "at",
+        "by",
+        "for",
+        "from",
+        "in",
+        "of",
+        "on",
+        "to",
+        "with",
+        "this",
+        "that",
+        "these",
+        "those",
+        "it",
+        "its",
+        "they",
+        "their",
+        "we",
+        "us",
+        "our",
+        "you",
+        "your",
+        "he",
+        "she",
+        "him",
+        "her",
+        "about",
+        "above",
+        "after",
+        "again",
+        "all",
+        "also",
+        "as",
+        "just",
+        "more",
+        "most",
+        "only",
+        "other",
+        "over",
+        "same",
+        "some",
+        "such",
+        "than",
+        "very",
+        "well",
+        "when",
+        "which",
+        "while",
+        "who",
+        "whom",
+        "why",
+        "how",
+        "up",
+        "down",
+        "out",
         # Chinese
-        "的", "了", "在", "是", "我", "有", "和", "就", "不", "人",
-        "都", "一", "一个", "上", "也", "很", "到", "说", "要", "去",
-        "你", "会", "着", "没有", "看", "好", "自己", "这", "他", "她",
-        "它", "们", "那", "些", "什么", "吗", "吧", "呢", "啊",
+        "的",
+        "了",
+        "在",
+        "是",
+        "我",
+        "有",
+        "和",
+        "就",
+        "不",
+        "人",
+        "都",
+        "一",
+        "一个",
+        "上",
+        "也",
+        "很",
+        "到",
+        "说",
+        "要",
+        "去",
+        "你",
+        "会",
+        "着",
+        "没有",
+        "看",
+        "好",
+        "自己",
+        "这",
+        "他",
+        "她",
+        "它",
+        "们",
+        "那",
+        "些",
+        "什么",
+        "吗",
+        "吧",
+        "呢",
+        "啊",
     ]
 )
 
@@ -86,6 +195,7 @@ def _tokenize(text: str) -> set[str]:
 # Token estimation — chars ÷ 1.5 per spec
 # ---------------------------------------------------------------------------
 
+
 def _estimate_tokens(text: str) -> int:
     """Estimated token count using char ÷ 1.5 rule."""
     return max(1, int(len(text) / 1.5))
@@ -108,6 +218,7 @@ def _truncate_to_chars(text: str, max_chars: int) -> str:
 # HistoryRecord — lightweight container for retrieved history
 # ---------------------------------------------------------------------------
 
+
 class HistoryRecord:
     """A single retrieved history item for prompt injection."""
 
@@ -125,15 +236,13 @@ class HistoryRecord:
         return f"[{index}] {self.date} | {self.dimension} | {body}"
 
     def __repr__(self) -> str:
-        return (
-            f"<HistoryRecord {self.date} {self.dimension} "
-            f"score={self.score:.3f}>"
-        )
+        return f"<HistoryRecord {self.date} {self.dimension} " f"score={self.score:.3f}>"
 
 
 # ---------------------------------------------------------------------------
 # HistoryRetriever
 # ---------------------------------------------------------------------------
+
 
 class HistoryRetriever:
     r"""Retrieve relevant historical beliefs/evidence using keyword Jaccard.
@@ -147,9 +256,9 @@ class HistoryRetriever:
     # --- Tunable constants ---
     TOP_K: int = 3
     TIME_DECAY_RATE: float = 0.95  # 0.95^days_ago
-    MAX_ENTRY_CHARS: int = 300      # single entry ≤ 300 chars
-    MAX_HISTORY_CHARS: int = 1050   # history segment ≤ 1050 chars
-    LOOKBACK_DAYS: int = 7          # beliefs within last 7 days
+    MAX_ENTRY_CHARS: int = 300  # single entry ≤ 300 chars
+    MAX_HISTORY_CHARS: int = 1050  # history segment ≤ 1050 chars
+    LOOKBACK_DAYS: int = 7  # beliefs within last 7 days
     SIGNAL_LOOKBACK_DAYS: int = 30  # signals within last 30 days
 
     def __init__(self, belief_store: BeliefMemoryStore | None = None) -> None:
@@ -178,7 +287,7 @@ class HistoryRetriever:
             if not candidates:
                 return []
 
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             scored = []
             for record in candidates:
                 score = self._score(record.text, query_tokens, record.date, now)
@@ -252,7 +361,7 @@ class HistoryRetriever:
             self._belief_store = store
 
         try:
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             all_beliefs = store.all_beliefs()
         except Exception:
             logger.warning("history_belief_load_failed", exc_info=True)
@@ -300,12 +409,12 @@ class HistoryRetriever:
 
         # Time decay
         try:
-            record_date = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            record_date = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=UTC)
             days_ago = max(0, (now - record_date).days)
         except (ValueError, TypeError):
             days_ago = 0
 
-        time_weight = self.TIME_DECAY_RATE ** days_ago
+        time_weight = self.TIME_DECAY_RATE**days_ago
         return jaccard * time_weight
 
     # ------------------------------------------------------------------
@@ -338,6 +447,7 @@ class HistoryRetriever:
 # Prompt assembly utility
 # ---------------------------------------------------------------------------
 
+
 def assemble_history_prompt(records: list[HistoryRecord]) -> tuple[str, int]:
     """Build the 【历史参考】prompt segment from retrieved records.
 
@@ -352,8 +462,7 @@ def assemble_history_prompt(records: list[HistoryRecord]) -> tuple[str, int]:
         return "", 0
 
     header = (
-        f"【历史参考】\n"
-        f"检索到 {len(records)} 条相关历史记录（最多 3 条，每条 ≤ 300 字符）：\n"
+        f"【历史参考】\n" f"检索到 {len(records)} 条相关历史记录（最多 3 条，每条 ≤ 300 字符）：\n"
     )
     lines = [header]
 

@@ -12,11 +12,10 @@ Interface:
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from src.collector.sina_collector import SinaCollector
-from src.collector.worldbank import WorldBankCollector, WB_INDICATOR_MAP
+from src.collector.worldbank import WorldBankCollector
 from src.collector.yahoo import YahooCollector
 from src.domain.macro_indicator import Frequency, HypothesisDimension, MacroIndicator
 from src.schemas.macro_data import MacroDataSchema, QualityFactor, QualityScore
@@ -30,135 +29,219 @@ logger = get_logger(__name__)
 _INDICATOR_REGISTRY: list[MacroIndicator] = [
     # ── Dollar / Liquidity ───────────────────────────────────────────────
     MacroIndicator(
-        symbol="UUP", name="DXY", category="Currency",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="UUP",
+        name="DXY",
+        category="Currency",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.LIQUIDITY,
         description="Invesco DB USD Bullish ETF (proxy for US Dollar Index)",
     ),
     MacroIndicator(
-        symbol="TLT", name="US10Y", category="Rates",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="TLT",
+        name="US10Y",
+        category="Rates",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.LIQUIDITY,
         description="iShares 20+ Year Treasury ETF (proxy for US 10-Year Yield)",
     ),
     MacroIndicator(
-        symbol="SHY", name="US2Y", category="Rates",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="SHY",
+        name="US2Y",
+        category="Rates",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.LIQUIDITY,
         description="iShares 1-3 Year Treasury ETF (proxy for US 2-Year Yield)",
     ),
     # ── Credit ───────────────────────────────────────────────────────────
     MacroIndicator(
-        symbol="HYG", name="HYG", category="Credit",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="HYG",
+        name="HYG",
+        category="Credit",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.CREDIT,
         description="iShares iBoxx High Yield Corporate Bond ETF",
     ),
     MacroIndicator(
-        symbol="LQD", name="LQD", category="Credit",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="LQD",
+        name="LQD",
+        category="Credit",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.CREDIT,
         description="iShares iBoxx Investment Grade Corporate Bond ETF",
     ),
     # ── Risk / Volatility ────────────────────────────────────────────────
     MacroIndicator(
-        symbol="VIXY", name="VIX", category="Volatility",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="VIXY",
+        name="VIX",
+        category="Volatility",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.RISK_APPETITE,
         description="VIX Short-Term Futures ETF (proxy for CBOE VIX)",
     ),
     # ── Commodities ──────────────────────────────────────────────────────
     MacroIndicator(
-        symbol="GLD", name="Gold", category="Commodities",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="GLD",
+        name="Gold",
+        category="Commodities",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.INFLATION,
         description="SPDR Gold Trust ETF (proxy for Gold Futures)",
     ),
     MacroIndicator(
-        symbol="COPX", name="Copper", category="Commodities",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="COPX",
+        name="Copper",
+        category="Commodities",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.GROWTH,
         description="Global X Copper Miners ETF (proxy for Copper Futures)",
     ),
     MacroIndicator(
-        symbol="USO", name="Oil", category="Commodities",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="USO",
+        name="Oil",
+        category="Commodities",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.INFLATION,
         description="United States Oil Fund ETF (proxy for WTI Crude)",
     ),
     # ── Equity ───────────────────────────────────────────────────────────
     MacroIndicator(
-        symbol="SPY", name="SP500", category="Equity",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="SPY",
+        name="SP500",
+        category="Equity",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.RISK_APPETITE,
         description="SPDR S&P 500 ETF",
     ),
     MacroIndicator(
-        symbol="QQQ", name="Nasdaq", category="Equity",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="QQQ",
+        name="Nasdaq",
+        category="Equity",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.RISK_APPETITE,
         description="Invesco QQQ Trust (Nasdaq-100)",
     ),
     MacroIndicator(
-        symbol="IWM", name="Russell", category="Equity",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="IWM",
+        name="Russell",
+        category="Equity",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.GROWTH,
         description="iShares Russell 2000 ETF (Small Cap)",
     ),
     # ── AI Cycle ─────────────────────────────────────────────────────────
     MacroIndicator(
-        symbol="NVDA", name="NVDA", category="Equity",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="NVDA",
+        name="NVDA",
+        category="Equity",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.AI_CAPEX,
         description="NVIDIA — AI GPU leader",
     ),
     MacroIndicator(
-        symbol="SMH", name="Semiconductor", category="Equity",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="SMH",
+        name="Semiconductor",
+        category="Equity",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.AI_CAPEX,
         description="VanEck Semiconductor ETF",
     ),
     MacroIndicator(
-        symbol="ASML", name="ASML", category="Equity",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="ASML",
+        name="ASML",
+        category="Equity",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.AI_CAPEX,
         description="ASML — Lithography equipment leader",
     ),
     MacroIndicator(
-        symbol="TSM", name="TSMC", category="Equity",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="TSM",
+        name="TSMC",
+        category="Equity",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.AI_CAPEX,
         description="Taiwan Semiconductor — Advanced foundry",
     ),
     # ── Bond Market ──────────────────────────────────────────────────────
     MacroIndicator(
-        symbol="BND", name="Bond_Market", category="Fixed_Income",
-        frequency=Frequency.DAILY, unit="Price", source="Sina",
+        symbol="BND",
+        name="Bond_Market",
+        category="Fixed_Income",
+        frequency=Frequency.DAILY,
+        unit="Price",
+        source="Sina",
         hypothesis_dimension=HypothesisDimension.CREDIT,
         description="Vanguard Total Bond Market ETF",
     ),
     # ── WorldBank Macro Indicators (free, no API key) ────────────────────
     MacroIndicator(
-        symbol="GDP", name="GDP_USD", category="Macro",
-        frequency=Frequency.ANNUAL, unit="USD", source="WorldBank",
+        symbol="GDP",
+        name="GDP_USD",
+        category="Macro",
+        frequency=Frequency.ANNUAL,
+        unit="USD",
+        source="WorldBank",
         hypothesis_dimension=HypothesisDimension.GROWTH,
         description="US GDP (current USD) — World Bank",
     ),
     MacroIndicator(
-        symbol="CPI", name="CPI_YoY", category="Macro",
-        frequency=Frequency.ANNUAL, unit="Percent", source="WorldBank",
+        symbol="CPI",
+        name="CPI_YoY",
+        category="Macro",
+        frequency=Frequency.ANNUAL,
+        unit="Percent",
+        source="WorldBank",
         hypothesis_dimension=HypothesisDimension.INFLATION,
         description="US Inflation, consumer prices (annual %) — World Bank",
     ),
     MacroIndicator(
-        symbol="UNEMPLOYMENT", name="Unemployment_Rate", category="Macro",
-        frequency=Frequency.ANNUAL, unit="Percent", source="WorldBank",
+        symbol="UNEMPLOYMENT",
+        name="Unemployment_Rate",
+        category="Macro",
+        frequency=Frequency.ANNUAL,
+        unit="Percent",
+        source="WorldBank",
         hypothesis_dimension=HypothesisDimension.EMPLOYMENT,
         description="US Unemployment, total (% of labor force) — World Bank",
     ),
     MacroIndicator(
-        symbol="TRADE_BALANCE", name="Trade_Balance", category="Macro",
-        frequency=Frequency.ANNUAL, unit="Percent", source="WorldBank",
+        symbol="TRADE_BALANCE",
+        name="Trade_Balance",
+        category="Macro",
+        frequency=Frequency.ANNUAL,
+        unit="Percent",
+        source="WorldBank",
         hypothesis_dimension=HypothesisDimension.GROWTH,
         description="US Trade (% of GDP) — World Bank",
     ),
@@ -180,9 +263,12 @@ class CollectorManager:
         data = await manager.collect(for_dimension="Liquidity")
     """
 
-    def __init__(self, sina_collector: Optional[SinaCollector] = None,
-                 yahoo_collector: Optional[YahooCollector] = None,
-                 worldbank_collector: Optional[WorldBankCollector] = None) -> None:
+    def __init__(
+        self,
+        sina_collector: SinaCollector | None = None,
+        yahoo_collector: YahooCollector | None = None,
+        worldbank_collector: WorldBankCollector | None = None,
+    ) -> None:
         self._sina = sina_collector or SinaCollector()
         self._yahoo = yahoo_collector or YahooCollector()
         self._worldbank = worldbank_collector or WorldBankCollector()
@@ -192,8 +278,8 @@ class CollectorManager:
 
     async def collect_async(
         self,
-        for_dimension: Optional[str] = None,
-        indicators: Optional[list[str]] = None,
+        for_dimension: str | None = None,
+        indicators: list[str] | None = None,
     ) -> list[MacroDataSchema]:
         """Collect all registered indicators asynchronously.
 
@@ -222,7 +308,9 @@ class CollectorManager:
             if isinstance(result, Exception):
                 logger.warning(
                     "collector_manager_failed | indicator=%s source=%s error=%s",
-                    indicator.name, indicator.source, result,
+                    indicator.name,
+                    indicator.source,
+                    result,
                 )
                 failed.append(indicator.name)
                 self._source_stats["failed"] += 1
@@ -238,27 +326,30 @@ class CollectorManager:
         if failed:
             logger.warning(
                 "collector_manager_partial_failure | failed=%d/%d indicators=%s",
-                len(failed), len(registry), failed,
+                len(failed),
+                len(registry),
+                failed,
             )
 
         logger.info(
             "collector_manager_done | collected=%d failed=%d",
-            len(results), len(failed),
+            len(results),
+            len(failed),
         )
         return results
 
     def collect(
         self,
-        for_dimension: Optional[str] = None,
-        indicators: Optional[list[str]] = None,
+        for_dimension: str | None = None,
+        indicators: list[str] | None = None,
     ) -> list[MacroDataSchema]:
         """Synchronous sequential collection with rate-limit delays.
 
         Avoids asyncio event-loop issues on Windows by running requests
         one at a time with 1-2s pauses between Yahoo calls.
         """
-        import time
         import random
+        import time
 
         registry = self._filter_registry(for_dimension, indicators)
         logger.info(
@@ -290,7 +381,8 @@ class CollectorManager:
                     self._source_stats["success"] += 1
                     logger.info(
                         "yahoo_collect_done | symbol=%s value=%.2f",
-                        indicator.symbol, schema.value,
+                        indicator.symbol,
+                        schema.value,
                     )
                 elif indicator.source == "Sina":
                     schema = SinaCollector.collect_sync(indicator)
@@ -298,7 +390,8 @@ class CollectorManager:
                     self._source_stats["success"] += 1
                     logger.info(
                         "sina_collect_done | symbol=%s value=%.2f",
-                        indicator.symbol, schema.value,
+                        indicator.symbol,
+                        schema.value,
                     )
                 elif indicator.source == "WorldBank":
                     time.sleep(random.uniform(0.5, 1.0))
@@ -307,12 +400,14 @@ class CollectorManager:
                     self._source_stats["success"] += 1
                     logger.info(
                         "worldbank_collect_done | symbol=%s value=%.2f",
-                        indicator.symbol, schema.value,
+                        indicator.symbol,
+                        schema.value,
                     )
                 else:
                     logger.warning(
                         "collector_not_implemented | source=%s indicator=%s",
-                        indicator.source, indicator.name,
+                        indicator.source,
+                        indicator.name,
                     )
                     failed.append(indicator.name)
                     self._source_stats["failed"] += 1
@@ -320,7 +415,9 @@ class CollectorManager:
             except Exception as exc:
                 logger.warning(
                     "collector_manager_failed | indicator=%s source=%s error=%s",
-                    indicator.name, indicator.source, str(exc)[:120],
+                    indicator.name,
+                    indicator.source,
+                    str(exc)[:120],
                 )
                 failed.append(indicator.name)
                 self._source_stats["failed"] += 1
@@ -329,12 +426,15 @@ class CollectorManager:
         if failed:
             logger.warning(
                 "collector_manager_partial_failure | failed=%d/%d indicators=%s",
-                len(failed), len(registry), failed,
+                len(failed),
+                len(registry),
+                failed,
             )
 
         logger.info(
             "collector_manager_done | collected=%d failed=%d",
-            len(results) - len(failed), len(failed),
+            len(results) - len(failed),
+            len(failed),
         )
         return results
 
@@ -354,14 +454,15 @@ class CollectorManager:
 
     def _filter_registry(
         self,
-        for_dimension: Optional[str],
-        indicators: Optional[list[str]],
+        for_dimension: str | None,
+        indicators: list[str] | None,
     ) -> list[MacroIndicator]:
         """Apply dimension and indicator filters to the registry."""
         registry = list(_INDICATOR_REGISTRY)
         if for_dimension:
             registry = [
-                ind for ind in registry
+                ind
+                for ind in registry
                 if ind.hypothesis_dimension.value.lower() == for_dimension.lower()
             ]
         if indicators:
@@ -369,7 +470,7 @@ class CollectorManager:
             registry = [ind for ind in registry if ind.name.upper() in names]
         return registry
 
-    async def _collect_single(self, indicator: MacroIndicator) -> Optional[MacroDataSchema]:
+    async def _collect_single(self, indicator: MacroIndicator) -> MacroDataSchema | None:
         """Collect a single indicator from its designated source."""
         source = indicator.source
 
@@ -382,17 +483,16 @@ class CollectorManager:
 
         logger.warning(
             "collector_not_implemented | source=%s indicator=%s",
-            source, indicator.name,
+            source,
+            indicator.name,
         )
         return None
 
-    def _degraded_placeholder(
-        self, indicator: MacroIndicator, error: str
-    ) -> MacroDataSchema:
+    def _degraded_placeholder(self, indicator: MacroIndicator, error: str) -> MacroDataSchema:
         """Create a degraded-quality placeholder when collection fails."""
         return MacroDataSchema(
             symbol=indicator.name,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             value=0.0,  # Placeholder value — marked as low quality
             source=indicator.source,
             quality=QualityScore(
@@ -404,6 +504,9 @@ class CollectorManager:
                     QualityFactor.OUTLIER: 0.5,
                     QualityFactor.DUPLICATE: 0.5,
                 },
-                flags=[f"collection_failed: {error[:80]}", f"dimension={indicator.hypothesis_dimension}"],
+                flags=[
+                    f"collection_failed: {error[:80]}",
+                    f"dimension={indicator.hypothesis_dimension}",
+                ],
             ),
         )

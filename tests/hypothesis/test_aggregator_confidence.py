@@ -8,8 +8,9 @@ Covers:
     - ConfidenceCalculator: edge cases (no evidence, all supporting, all contradicting)
 """
 
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, timezone
 
 from src.hypothesis.aggregator import EvidenceAggregator
 from src.hypothesis.confidence import ConfidenceCalculator
@@ -17,10 +18,9 @@ from src.schemas.hypothesis import HypothesisEvidence
 from src.schemas.signal import (
     MacroSignalSchema,
     SignalDirection,
-    SignalStrength,
     SignalEvidence,
+    SignalStrength,
 )
-
 
 # ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -35,7 +35,7 @@ def make_signal(
     with_evidence: bool = True,
 ) -> MacroSignalSchema:
     """Factory for test signals."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     evidence = []
     if with_evidence:
         evidence = [
@@ -73,9 +73,7 @@ class TestEvidenceAggregator:
             make_signal("s1", "DXY", SignalDirection.BEARISH),
             make_signal("s2", "US10Y", SignalDirection.BEARISH),
         ]
-        supporting, contradicting = aggregator.aggregate(
-            signals, SignalDirection.BEARISH
-        )
+        supporting, contradicting = aggregator.aggregate(signals, SignalDirection.BEARISH)
         assert len(supporting) == 2
         assert len(contradicting) == 0
 
@@ -83,9 +81,7 @@ class TestEvidenceAggregator:
         signals = [
             make_signal("s1", "DXY", SignalDirection.BULLISH),
         ]
-        supporting, contradicting = aggregator.aggregate(
-            signals, SignalDirection.BEARISH
-        )
+        supporting, contradicting = aggregator.aggregate(signals, SignalDirection.BEARISH)
         assert len(supporting) == 0
         assert len(contradicting) == 1
 
@@ -95,9 +91,7 @@ class TestEvidenceAggregator:
             make_signal("s2", "HG=F", SignalDirection.BULLISH),
             make_signal("s3", "US10Y", SignalDirection.BEARISH),
         ]
-        supporting, contradicting = aggregator.aggregate(
-            signals, SignalDirection.BEARISH
-        )
+        supporting, contradicting = aggregator.aggregate(signals, SignalDirection.BEARISH)
         assert len(supporting) == 2
         assert len(contradicting) == 1
 
@@ -106,9 +100,7 @@ class TestEvidenceAggregator:
         signals = [
             make_signal("s1", "DXY", SignalDirection.NEUTRAL),
         ]
-        supporting, contradicting = aggregator.aggregate(
-            signals, SignalDirection.BEARISH
-        )
+        supporting, contradicting = aggregator.aggregate(signals, SignalDirection.BEARISH)
         assert len(supporting) == 1
         assert len(contradicting) == 0
 
@@ -120,8 +112,13 @@ class TestEvidenceAggregator:
     def test_contribution_from_strength_and_confidence(self, aggregator):
         """Contribution = strength_weight × signal.confidence."""
         signals = [
-            make_signal("s1", "DXY", SignalDirection.BEARISH,
-                       strength=SignalStrength.STRONG, confidence=0.80),
+            make_signal(
+                "s1",
+                "DXY",
+                SignalDirection.BEARISH,
+                strength=SignalStrength.STRONG,
+                confidence=0.80,
+            ),
         ]
         supporting, _ = aggregator.aggregate(signals, SignalDirection.BEARISH)
         # strong weight = 0.80, confidence = 0.80 → contribution ≈ 0.64
@@ -130,8 +127,9 @@ class TestEvidenceAggregator:
 
     def test_contribution_weak_signal(self, aggregator):
         signals = [
-            make_signal("s1", "DXY", SignalDirection.BEARISH,
-                       strength=SignalStrength.WEAK, confidence=0.50),
+            make_signal(
+                "s1", "DXY", SignalDirection.BEARISH, strength=SignalStrength.WEAK, confidence=0.50
+            ),
         ]
         supporting, _ = aggregator.aggregate(signals, SignalDirection.BEARISH)
         # weak weight = 0.30, confidence = 0.50 → contribution ≈ 0.15
@@ -152,23 +150,19 @@ class TestEvidenceAggregator:
             make_signal("s1", "DXY", SignalDirection.BEARISH),
             make_signal("s2", "HG=F", SignalDirection.BULLISH),
         ]
-        supporting, contradicting = aggregator.aggregate(
-            signals, SignalDirection.BEARISH
-        )
+        supporting, contradicting = aggregator.aggregate(signals, SignalDirection.BEARISH)
         assert supporting[0].alignment == "supporting"
         assert contradicting[0].alignment == "contradicting"
 
     def test_signal_without_evidence_still_produces_item(self, aggregator):
         signals = [make_signal("s1", "DXY", SignalDirection.BEARISH, with_evidence=False)]
-        supporting, contradicting = aggregator.aggregate(
-            signals, SignalDirection.BEARISH
-        )
+        supporting, contradicting = aggregator.aggregate(signals, SignalDirection.BEARISH)
         assert len(supporting) == 1
         assert "DXY" in supporting[0].observation
 
     def test_multi_evidence_signal(self, aggregator):
         """A signal with 2 evidence items produces 2 HypothesisEvidence items."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         signal = MacroSignalSchema(
             signal_id="s1",
             indicator="DXY",
@@ -179,14 +173,20 @@ class TestEvidenceAggregator:
             timestamp=now,
             evidence=[
                 SignalEvidence(
-                    rule_id="r1", rule_description="Rule 1",
-                    input_value=106.0, condition="value > 105",
-                    interpretation="Above 105", evaluated_at=now,
+                    rule_id="r1",
+                    rule_description="Rule 1",
+                    input_value=106.0,
+                    condition="value > 105",
+                    interpretation="Above 105",
+                    evaluated_at=now,
                 ),
                 SignalEvidence(
-                    rule_id="r2", rule_description="Rule 2",
-                    input_value=106.0, condition="value > 100",
-                    interpretation="Above 100", evaluated_at=now,
+                    rule_id="r2",
+                    rule_description="Rule 2",
+                    input_value=106.0,
+                    condition="value > 100",
+                    interpretation="Above 100",
+                    evaluated_at=now,
                 ),
             ],
         )
@@ -205,14 +205,20 @@ class TestConfidenceCalculator:
     def test_all_supporting_high_confidence(self, calculator):
         supporting = [
             HypothesisEvidence(
-                indicator="DXY", signal_id="s1",
-                observation="DXY at 106", interpretation="Test",
-                contribution=0.64, alignment="supporting",
+                indicator="DXY",
+                signal_id="s1",
+                observation="DXY at 106",
+                interpretation="Test",
+                contribution=0.64,
+                alignment="supporting",
             ),
             HypothesisEvidence(
-                indicator="US10Y", signal_id="s2",
-                observation="US10Y at 5.2", interpretation="Test",
-                contribution=0.68, alignment="supporting",
+                indicator="US10Y",
+                signal_id="s2",
+                observation="US10Y at 5.2",
+                interpretation="Test",
+                contribution=0.68,
+                alignment="supporting",
             ),
         ]
         confidence = calculator.calculate(supporting, [])
@@ -224,16 +230,22 @@ class TestConfidenceCalculator:
     def test_mixed_evidence_moderate_confidence(self, calculator):
         supporting = [
             HypothesisEvidence(
-                indicator="DXY", signal_id="s1",
-                observation="DXY at 106", interpretation="Test",
-                contribution=0.64, alignment="supporting",
+                indicator="DXY",
+                signal_id="s1",
+                observation="DXY at 106",
+                interpretation="Test",
+                contribution=0.64,
+                alignment="supporting",
             ),
         ]
         contradicting = [
             HypothesisEvidence(
-                indicator="HG=F", signal_id="s2",
-                observation="Copper at 4.8", interpretation="Test",
-                contribution=0.385, alignment="contradicting",
+                indicator="HG=F",
+                signal_id="s2",
+                observation="Copper at 4.8",
+                interpretation="Test",
+                contribution=0.385,
+                alignment="contradicting",
             ),
         ]
         confidence = calculator.calculate(supporting, contradicting)
@@ -244,9 +256,12 @@ class TestConfidenceCalculator:
     def test_all_contradicting_low_confidence(self, calculator):
         contradicting = [
             HypothesisEvidence(
-                indicator="DXY", signal_id="s1",
-                observation="DXY at 106", interpretation="Test",
-                contribution=0.64, alignment="contradicting",
+                indicator="DXY",
+                signal_id="s1",
+                observation="DXY at 106",
+                interpretation="Test",
+                contribution=0.64,
+                alignment="contradicting",
             ),
         ]
         confidence = calculator.calculate([], contradicting)
@@ -261,13 +276,16 @@ class TestConfidenceCalculator:
     def test_confidence_in_range(self, calculator):
         """Confidence is always in 0-1 range."""
         import random
+
         for _ in range(20):
             n_supporting = random.randint(0, 5)
             n_contradicting = random.randint(0, 5)
             supporting = [
                 HypothesisEvidence(
-                    indicator="T", signal_id=f"s{i}",
-                    observation="X", interpretation="Y",
+                    indicator="T",
+                    signal_id=f"s{i}",
+                    observation="X",
+                    interpretation="Y",
                     contribution=random.uniform(0.1, 1.0),
                     alignment="supporting",
                 )
@@ -275,8 +293,10 @@ class TestConfidenceCalculator:
             ]
             contradicting = [
                 HypothesisEvidence(
-                    indicator="T", signal_id=f"c{i}",
-                    observation="X", interpretation="Y",
+                    indicator="T",
+                    signal_id=f"c{i}",
+                    observation="X",
+                    interpretation="Y",
                     contribution=random.uniform(0.1, 1.0),
                     alignment="contradicting",
                 )
@@ -287,16 +307,26 @@ class TestConfidenceCalculator:
 
     def test_agreement_score_weights(self, calculator):
         """Verify the agreement factor contributes correctly."""
-        supporting = [HypothesisEvidence(
-            indicator="A", signal_id="s1",
-            observation="X", interpretation="Y",
-            contribution=0.5, alignment="supporting",
-        )] * 3
-        contradicting = [HypothesisEvidence(
-            indicator="B", signal_id="s2",
-            observation="X", interpretation="Y",
-            contribution=0.5, alignment="contradicting",
-        )]
+        supporting = [
+            HypothesisEvidence(
+                indicator="A",
+                signal_id="s1",
+                observation="X",
+                interpretation="Y",
+                contribution=0.5,
+                alignment="supporting",
+            )
+        ] * 3
+        contradicting = [
+            HypothesisEvidence(
+                indicator="B",
+                signal_id="s2",
+                observation="X",
+                interpretation="Y",
+                contribution=0.5,
+                alignment="contradicting",
+            )
+        ]
         confidence = calculator.calculate(supporting, contradicting)
         # agreement = 3/4 = 0.75
         assert 0.55 < confidence < 0.90

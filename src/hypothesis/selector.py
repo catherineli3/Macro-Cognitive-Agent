@@ -6,11 +6,8 @@ Outputs SelectedHypothesis objects with full reasoning trail.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
-
-from src.hypothesis.competition_engine import CompetitionEngine, CompetitionRound
-from src.hypothesis.retriever import HistoricalRetriever, RetrievalContext, RetrievalReport
+from src.hypothesis.competition_engine import CompetitionRound
+from src.hypothesis.retriever import RetrievalContext, RetrievalReport
 from src.schemas.hypothesis_v3_1 import (
     CandidateHypothesis,
     SelectedHypothesis,
@@ -87,26 +84,28 @@ class HypothesisSelector:
 
             # Determine competition result description
             comp_desc = self._describe_competition_result(
-                h, competition_round, survivors,
+                h,
+                competition_round,
+                survivors,
             )
 
             # Build historical backing string
             hist_backing = self._describe_historical_backing(ctx)
 
-            selected.append(SelectedHypothesis(
-                candidate_id=h.candidate_id,
-                rank=len(selected) + 1,
-                dimension=h.dimension,
-                direction=h.direction,
-                thesis=h.thesis,
-                evidence_summary=[e.claim for e in h.evidence[:3]],
-                transmission_summary=" → ".join(
-                    s.segment_id for s in h.transmission_chain[:4]
-                ),
-                confidence=round(score, 4),
-                competition_result=comp_desc,
-                historical_backing=hist_backing,
-            ))
+            selected.append(
+                SelectedHypothesis(
+                    candidate_id=h.candidate_id,
+                    rank=len(selected) + 1,
+                    dimension=h.dimension,
+                    direction=h.direction,
+                    thesis=h.thesis,
+                    evidence_summary=[e.claim for e in h.evidence[:3]],
+                    transmission_summary=" → ".join(s.segment_id for s in h.transmission_chain[:4]),
+                    confidence=round(score, 4),
+                    competition_result=comp_desc,
+                    historical_backing=hist_backing,
+                )
+            )
 
             dim_counts[dim] = dim_counts.get(dim, 0) + 1
             covered_dims.add(dim)
@@ -122,20 +121,22 @@ class HypothesisSelector:
                     comp_desc = self._describe_competition_result(h, competition_round, survivors)
                     hist_backing = self._describe_historical_backing(ctx)
 
-                    selected.append(SelectedHypothesis(
-                        candidate_id=h.candidate_id,
-                        rank=len(selected) + 1,
-                        dimension=h.dimension,
-                        direction=h.direction,
-                        thesis=h.thesis,
-                        evidence_summary=[e.claim for e in h.evidence[:3]],
-                        transmission_summary=" → ".join(
-                            s.segment_id for s in h.transmission_chain[:4]
-                        ),
-                        confidence=round(score, 4),
-                        competition_result=comp_desc,
-                        historical_backing=hist_backing,
-                    ))
+                    selected.append(
+                        SelectedHypothesis(
+                            candidate_id=h.candidate_id,
+                            rank=len(selected) + 1,
+                            dimension=h.dimension,
+                            direction=h.direction,
+                            thesis=h.thesis,
+                            evidence_summary=[e.claim for e in h.evidence[:3]],
+                            transmission_summary=" → ".join(
+                                s.segment_id for s in h.transmission_chain[:4]
+                            ),
+                            confidence=round(score, 4),
+                            competition_result=comp_desc,
+                            historical_backing=hist_backing,
+                        )
+                    )
                     covered_dims.add(h.dimension)
 
                 if len(selected) >= self._max:
@@ -147,7 +148,8 @@ class HypothesisSelector:
 
         logger.info(
             "selection_complete selected=%d dimensions_covered=%s",
-            len(selected), sorted(covered_dims),
+            len(selected),
+            sorted(covered_dims),
         )
         return selected
 
@@ -202,8 +204,7 @@ class HypothesisSelector:
 
         # Did it survive uncontested?
         was_contradicted = any(
-            c.hypothesis_a == hypothesis.candidate_id or
-            c.hypothesis_b == hypothesis.candidate_id
+            c.hypothesis_a == hypothesis.candidate_id or c.hypothesis_b == hypothesis.candidate_id
             for c in round_.contradictions_found
         )
         if not was_contradicted:
@@ -213,7 +214,9 @@ class HypothesisSelector:
         # Check if it had any contraction where it was involved
         for c in round_.contradictions_found:
             if hypothesis.candidate_id in (c.hypothesis_a, c.hypothesis_b):
-                other = c.hypothesis_b if c.hypothesis_a == hypothesis.candidate_id else c.hypothesis_a
+                other = (
+                    c.hypothesis_b if c.hypothesis_a == hypothesis.candidate_id else c.hypothesis_a
+                )
                 if other not in round_.survivors:
                     return f"survived_contradiction_eliminated_{other}"
                 return f"survived_contradiction_coexists_with_{other}"

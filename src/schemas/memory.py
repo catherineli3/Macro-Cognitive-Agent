@@ -11,8 +11,7 @@ Key design:
     - BeliefRecord stores METADATA only — no raw signal data, no tool outputs.
 """
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -43,7 +42,7 @@ class BeliefRecord(BaseModel):
         description="ExecutionPlan.plan_id that produced this belief",
     )
     timestamp: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="When this belief was recorded",
     )
 

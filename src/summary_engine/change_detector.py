@@ -17,10 +17,9 @@ Reuses: FeatureEngine features (CHANGE_5D, TREND_20D, MOMENTUM, VOLATILITY)
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
-from src.data_pipeline.feature_engine import FeatureSnapshot, FeatureDimension
+from src.data_pipeline.feature_engine import FeatureDimension, FeatureSnapshot
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -34,6 +33,7 @@ logger = get_logger(__name__)
 @dataclass
 class MomentumSignal:
     """Single momentum signal for one indicator."""
+
     indicator: str
     trend: float  # 20-day trend magnitude
     change_5d: float
@@ -112,10 +112,10 @@ class RegimeChangeSignal:
 class ChangeSignals:
     """Complete change detection output."""
 
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     momentum_signals: list[MomentumSignal] = field(default_factory=list)
     divergence_signals: list[DivergenceSignal] = field(default_factory=list)
-    regime_change: Optional[RegimeChangeSignal] = None
+    regime_change: RegimeChangeSignal | None = None
     strongest_signals: list[str] = field(default_factory=list)  # Top-3 notable signals
     acceleration_signals: list[str] = field(default_factory=list)  # What's accelerating
 
@@ -192,7 +192,7 @@ class ChangeDetector:
     BEARISH = -0.05
 
     def __init__(self) -> None:
-        self._previous_regime: Optional[str] = None
+        self._previous_regime: str | None = None
 
     def set_previous_regime(self, regime: str) -> None:
         """Set previous regime for regime-change detection."""
@@ -253,15 +253,17 @@ class ChangeDetector:
 
             strength = self._classify_strength(t_val)
 
-            signals.append(MomentumSignal(
-                indicator=name,
-                trend=t_val,
-                change_5d=c_val,
-                momentum_20d=m_val,
-                volatility=v_val,
-                strength=strength,
-                score=max(-1.0, min(1.0, t_val * 20)),
-            ))
+            signals.append(
+                MomentumSignal(
+                    indicator=name,
+                    trend=t_val,
+                    change_5d=c_val,
+                    momentum_20d=m_val,
+                    volatility=v_val,
+                    strength=strength,
+                    score=max(-1.0, min(1.0, t_val * 20)),
+                )
+            )
 
         # Sort by absolute score
         signals.sort(key=lambda s: abs(s.score), reverse=True)
@@ -307,9 +309,13 @@ class ChangeDetector:
         dir_b = self._trend_to_direction(trend_b)
 
         # Detect divergence
-        is_diverging = (trend_a is not None and trend_b is not None
-                        and trend_a * trend_b < 0  # Opposite signs
-                        and abs(trend_a) > 0.01 and abs(trend_b) > 0.01)
+        is_diverging = (
+            trend_a is not None
+            and trend_b is not None
+            and trend_a * trend_b < 0  # Opposite signs
+            and abs(trend_a) > 0.01
+            and abs(trend_b) > 0.01
+        )
 
         # Classify divergence type
         div_type = "convergent"
@@ -331,8 +337,16 @@ class ChangeDetector:
         else:
             interpretation = self._interpret_convergence(config, dir_a, dir_b)
             evidence = [
-                f"{config['label_a']}: {dir_a} ({trend_a:+.2%})" if trend_a else f"{config['label_a']}: no data",
-                f"{config['label_b']}: {dir_b} ({trend_b:+.2%})" if trend_b else f"{config['label_b']}: no data",
+                (
+                    f"{config['label_a']}: {dir_a} ({trend_a:+.2%})"
+                    if trend_a
+                    else f"{config['label_a']}: no data"
+                ),
+                (
+                    f"{config['label_b']}: {dir_b} ({trend_b:+.2%})"
+                    if trend_b
+                    else f"{config['label_b']}: no data"
+                ),
             ]
 
         significance = self._compute_significance(trend_a, trend_b, is_diverging)
@@ -350,9 +364,7 @@ class ChangeDetector:
             evidence=evidence,
         )
 
-    def _interpret_divergence(
-        self, config: dict, div_type: str, dir_a: str, dir_b: str
-    ) -> str:
+    def _interpret_divergence(self, config: dict, div_type: str, dir_a: str, dir_b: str) -> str:
         """Interpret what a divergence means for this pair."""
         pair_key = config["pair"]
 
@@ -389,9 +401,7 @@ class ChangeDetector:
 
         return f"{config['label_a']} {dir_a}, {config['label_b']} {dir_b}"
 
-    def _interpret_convergence(
-        self, config: dict, dir_a: str, dir_b: str
-    ) -> str:
+    def _interpret_convergence(self, config: dict, dir_a: str, dir_b: str) -> str:
         """Interpret convergent movement for a pair."""
         pair_key = config["pair"]
 
@@ -425,8 +435,8 @@ class ChangeDetector:
 
     @staticmethod
     def _compute_significance(
-        trend_a: Optional[float],
-        trend_b: Optional[float],
+        trend_a: float | None,
+        trend_b: float | None,
         is_diverging: bool,
     ) -> float:
         """Compute 0-1 significance score for the divergence."""
@@ -545,7 +555,7 @@ class ChangeDetector:
     # ── Helpers ──────────────────────────────────────────────────────────────
 
     @staticmethod
-    def _get_trend(features: FeatureSnapshot, name: str) -> Optional[float]:
+    def _get_trend(features: FeatureSnapshot, name: str) -> float | None:
         """Get 20-day trend value for indicator."""
         ind = features.get_indicator(name)
         if ind is None:
@@ -554,7 +564,7 @@ class ChangeDetector:
         return fv.value if fv else None
 
     @staticmethod
-    def _trend_to_direction(trend: Optional[float]) -> str:
+    def _trend_to_direction(trend: float | None) -> str:
         """Convert trend value to direction label."""
         if trend is None:
             return "unknown"

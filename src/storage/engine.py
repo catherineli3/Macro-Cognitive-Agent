@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """Storage engine factory — Async SQLAlchemy engine creation.
 
 Supports:
@@ -8,6 +6,8 @@ Supports:
 
 Engine is created lazily and configured based on settings.yaml or DATABASE_URL env.
 """
+
+from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 
@@ -56,9 +56,7 @@ async def check_db_health() -> bool:
     try:
         engine = get_engine()
         async with engine.connect() as conn:
-            await conn.execute(
-                __import__("sqlalchemy").text("SELECT 1")
-            )
+            await conn.execute(__import__("sqlalchemy").text("SELECT 1"))
         return True
     except Exception as exc:
         logger.error("db_health_check_failed error=%s", exc)

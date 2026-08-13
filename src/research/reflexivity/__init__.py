@@ -12,20 +12,20 @@ Three components:
     ReflexivityCycleDetector — Detects boom-bust self-reinforcing cycles
 """
 
-from src.research.reflexivity.schemas import (
-    MarketBelief,
-    CapitalFlowSnapshot,
-    ReflexivityCycle,
-    ReflexivityReport,
+from src.research.reflexivity.capital_flow_tracker import (
+    CapitalFlowTracker,
 )
 from src.research.reflexivity.market_belief_model import (
     MarketBeliefModel,
 )
-from src.research.reflexivity.capital_flow_tracker import (
-    CapitalFlowTracker,
-)
 from src.research.reflexivity.reflexivity_cycle_detector import (
     ReflexivityCycleDetector,
+)
+from src.research.reflexivity.schemas import (
+    CapitalFlowSnapshot,
+    MarketBelief,
+    ReflexivityCycle,
+    ReflexivityReport,
 )
 
 __all__ = [

@@ -1,16 +1,16 @@
-from __future__ import annotations
-
 """Reliability utilities — timeout, retry wrappers, and execution safeguards.
 
 RC-1: Provides async-safe timeout enforcement and retry orchestration.
 All utilities are decorator/factory-style — zero business logic.
 """
 
+from __future__ import annotations
+
 import asyncio
 import functools
-import inspect
 import time
-from typing import Any, Awaitable, Callable, Optional, TypeVar
+from collections.abc import Awaitable, Callable
+from typing import Any, TypeVar
 
 from src.shared.logging import get_logger
 
@@ -41,10 +41,7 @@ class TaskTimeoutError(asyncio.TimeoutError):
         task_name: str = "",
         timeout_seconds: float = 0.0,
     ) -> None:
-        msg = (
-            f"Task '{task_name}' ({task_id}) timed out after "
-            f"{timeout_seconds:.1f}s"
-        )
+        msg = f"Task '{task_name}' ({task_id}) timed out after " f"{timeout_seconds:.1f}s"
         super().__init__(msg)
         self.task_id = task_id
         self.task_name = task_name
@@ -73,7 +70,7 @@ async def execute_with_timeout(
     """
     try:
         return await asyncio.wait_for(coro, timeout=timeout_seconds)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         elapsed = timeout_seconds
         logger.error(
             "task_timeout",
@@ -129,7 +126,7 @@ def with_async_retry(
 
         @functools.wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> T:
-            last_exc: Optional[Exception] = None
+            last_exc: Exception | None = None
 
             for attempt in range(1, max_attempts + 1):
                 try:
@@ -216,8 +213,8 @@ class ExecutionMetrics:
         self.end_time: float = 0.0
         self.attempts: int = 0
         self.timed_out: bool = False
-        self.error_type: Optional[str] = None
-        self.error_message: Optional[str] = None
+        self.error_type: str | None = None
+        self.error_message: str | None = None
 
     @property
     def elapsed_ms(self) -> float:

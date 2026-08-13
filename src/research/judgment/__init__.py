@@ -12,8 +12,8 @@ This is what separates a Macro Analyst from a Senior Macro Researcher.
 """
 
 from src.research.judgment.research_judgment import (
-    ResearchJudgment,
     JudgmentOutput,
+    ResearchJudgment,
     ResearchJudgmentEngine,
 )
 

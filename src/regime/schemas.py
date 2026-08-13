@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 
 @dataclass
 class MacroRegime:
     """Classification of the current macroeconomic regime."""
+
     regime_id: str = ""
     regime_label: str = ""
     confidence: float = 0.5
@@ -43,6 +43,7 @@ class MacroRegime:
 @dataclass
 class HistoricalAnalog:
     """A historical period that resembles the current regime."""
+
     period_label: str = ""
     period_name: str = ""
     similarity_score: float = 0.0
@@ -72,6 +73,7 @@ class HistoricalAnalog:
 @dataclass
 class RegimeTransitionModel:
     """Models the probability of regime transition."""
+
     current_regime: str = ""
     transition_drivers: list[dict] = field(default_factory=list)
     target_probabilities: dict[str, float] = field(default_factory=dict)
@@ -92,13 +94,14 @@ class RegimeTransitionModel:
 @dataclass
 class RegimeReport:
     """Complete regime analysis report."""
+
     report_id: str = ""
     date: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     current_regime: MacroRegime = field(default_factory=MacroRegime)
     transition_model: RegimeTransitionModel = field(default_factory=RegimeTransitionModel)
     historical_analogs: list[HistoricalAnalog] = field(default_factory=list)
-    top_analog: Optional[HistoricalAnalog] = None
+    top_analog: HistoricalAnalog | None = None
     reflexivity_state: str = ""
     capital_flow_context: str = ""
     where_in_cycle: str = ""

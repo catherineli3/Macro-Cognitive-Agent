@@ -10,35 +10,36 @@ Tests cover:
     D1: ResearchCycleEngine (full cycle integration)
 """
 
-import pytest
-import json
-import tempfile
 import os
-from datetime import datetime, timezone
-from pathlib import Path
 
-# ── Imports ────────────────────────────────────────────────────────────────
+import pytest
 
-from src.schemas.macro_snapshot import MacroSnapshot, MarketSnapshot
-from src.schemas.research_thesis import (
-    ResearchThesis, ThesisStatus, ThesisOutcome,
-)
 from src.research.evolution.regime_gate import RegimeSnapshot
-from src.research_cycle.framework_selector import (
-    FrameworkSelector, FrameworkSelection,
+from src.research_cycle.cycle_engine import (
+    CycleResult,
+    ResearchCycleEngine,
 )
-from src.research_cycle.thesis_generator import ThesisGenerator
-from src.research_cycle.research_memory import (
-    ResearchMemory, ResearchMemoryEntry, PostmortemReport,
+from src.research_cycle.framework_selector import (
+    FrameworkSelection,
+    FrameworkSelector,
 )
 from src.research_cycle.outcome_tracker import (
-    OutcomeTracker, PendingThesis,
+    OutcomeTracker,
 )
 from src.research_cycle.postmortem import Postmortem
-from src.research_cycle.cycle_engine import (
-    ResearchCycleEngine, CycleResult,
+from src.research_cycle.research_memory import (
+    ResearchMemory,
+    ResearchMemoryEntry,
 )
+from src.research_cycle.thesis_generator import ThesisGenerator
 
+# ── Imports ────────────────────────────────────────────────────────────────
+from src.schemas.macro_snapshot import MacroSnapshot, MarketSnapshot
+from src.schemas.research_thesis import (
+    ResearchThesis,
+    ThesisOutcome,
+    ThesisStatus,
+)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # D2: Schema Tests
@@ -56,7 +57,7 @@ class TestResearchThesis:
                 "Fed Balance Sheet +",
                 "USD Liquidity +",
                 "Credit Spread Compression",
-                "Long Duration Equities +"
+                "Long Duration Equities +",
             ],
             evidence=["DXY declining", "HYG outperforming", "Financial conditions easing"],
             counter_arguments=["Inflation rebound could invalidate"],
@@ -185,9 +186,14 @@ class TestMacroSnapshot:
             growth="accelerating",
             inflation="stable",
         )
-        market = MarketSnapshot(indicators={
-            "spx": 5200, "vix": 15.3, "dxy": 104.2, "us10y": 4.25,
-        })
+        market = MarketSnapshot(
+            indicators={
+                "spx": 5200,
+                "vix": 15.3,
+                "dxy": 104.2,
+                "us10y": 4.25,
+            }
+        )
         snapshot = MacroSnapshot(regime=regime, market=market)
         assert snapshot.regime_label == "Early Easing / Growth"
         assert snapshot.signal_count == 0
@@ -252,6 +258,7 @@ class TestFrameworkSelector:
 
     def test_selection_describe_with_framework(self):
         from src.schemas.research import ResearchFramework
+
         fw = ResearchFramework(name="Test FW")
         selection = FrameworkSelection(
             primary_framework=fw,
@@ -300,9 +307,14 @@ class TestThesisGenerator:
         tg = ThesisGenerator()
         snapshot = MacroSnapshot(
             regime=RegimeSnapshot(monetary_policy="easing", volatility="low"),
-            market=MarketSnapshot(indicators={
-                "us10y": 4.25, "vix": 15.3, "spx": 5200, "dxy": 104.2,
-            }),
+            market=MarketSnapshot(
+                indicators={
+                    "us10y": 4.25,
+                    "vix": 15.3,
+                    "spx": 5200,
+                    "dxy": 104.2,
+                }
+            ),
         )
         selection = FrameworkSelection(regime_label="Test")
         thesis = tg.generate(selection, snapshot)
@@ -406,10 +418,17 @@ class TestResearchMemory:
 
     def test_success_rate(self, memory):
         # Add validated
-        e1 = ResearchMemoryEntry(cycle_number=1, thesis=ResearchThesis(
-            title="T1", core_belief="B1", transmission_chain=["A","B"],
-            evidence=["E1","E2"], invalidation_conditions=["C1"], confidence=0.5,
-        ))
+        e1 = ResearchMemoryEntry(
+            cycle_number=1,
+            thesis=ResearchThesis(
+                title="T1",
+                core_belief="B1",
+                transmission_chain=["A", "B"],
+                evidence=["E1", "E2"],
+                invalidation_conditions=["C1"],
+                confidence=0.5,
+            ),
+        )
         e1.outcome = ThesisOutcome(verified=True)
         memory.record_entry(e1)
 
@@ -430,7 +449,9 @@ class TestResearchMemory:
         assert os.path.exists(result)
 
     def test_summary(self, memory):
-        entry = ResearchMemoryEntry(cycle_number=1, regime_label="Test", learning_note="Learned something")
+        entry = ResearchMemoryEntry(
+            cycle_number=1, regime_label="Test", learning_note="Learned something"
+        )
         memory.record_entry(entry)
         summary = memory.summary()
         assert "Research Memory" in summary
@@ -510,12 +531,20 @@ class TestOutcomeTracker:
     def test_pending_list(self):
         tracker = OutcomeTracker()
         thesis1 = ResearchThesis(
-            title="T1", core_belief="B", transmission_chain=["A","B"],
-            evidence=["E1","E2"], invalidation_conditions=["C1"], confidence=0.5,
+            title="T1",
+            core_belief="B",
+            transmission_chain=["A", "B"],
+            evidence=["E1", "E2"],
+            invalidation_conditions=["C1"],
+            confidence=0.5,
         )
         thesis2 = ResearchThesis(
-            title="T2", core_belief="B", transmission_chain=["A","B"],
-            evidence=["E1","E2"], invalidation_conditions=["C1"], confidence=0.5,
+            title="T2",
+            core_belief="B",
+            transmission_chain=["A", "B"],
+            evidence=["E1", "E2"],
+            invalidation_conditions=["C1"],
+            confidence=0.5,
         )
         tracker.register_thesis(thesis1)
         tracker.register_thesis(thesis2)
@@ -554,7 +583,10 @@ class TestPostmortem:
         outcome = ThesisOutcome(verified=True)
         report = pm.analyze(thesis, outcome)
         assert report.thesis_validated
-        assert "appropriate" in report.framework_assessment.lower() or "Framework" in report.framework_assessment
+        assert (
+            "appropriate" in report.framework_assessment.lower()
+            or "Framework" in report.framework_assessment
+        )
 
     def test_analyze_failure(self):
         pm = Postmortem()
@@ -578,9 +610,12 @@ class TestPostmortem:
     def test_classify_failure(self):
         pm = Postmortem()
         thesis = ResearchThesis(
-            title="T", core_belief="B",
-            transmission_chain=["A", "B"], evidence=["E1", "E2"],
-            invalidation_conditions=["C1"], confidence=0.5,
+            title="T",
+            core_belief="B",
+            transmission_chain=["A", "B"],
+            evidence=["E1", "E2"],
+            invalidation_conditions=["C1"],
+            confidence=0.5,
         )
         outcome = ThesisOutcome(verified=False)
         # Transmission notes
@@ -594,9 +629,12 @@ class TestPostmortem:
     def test_report_collection(self):
         pm = Postmortem()
         thesis = ResearchThesis(
-            title="T", core_belief="B",
-            transmission_chain=["A", "B"], evidence=["E1", "E2"],
-            invalidation_conditions=["C1"], confidence=0.5,
+            title="T",
+            core_belief="B",
+            transmission_chain=["A", "B"],
+            evidence=["E1", "E2"],
+            invalidation_conditions=["C1"],
+            confidence=0.5,
         )
 
         pm.analyze(thesis, ThesisOutcome(verified=True))
@@ -606,9 +644,12 @@ class TestPostmortem:
     def test_success_rate(self):
         pm = Postmortem()
         thesis = ResearchThesis(
-            title="T", core_belief="B",
-            transmission_chain=["A", "B"], evidence=["E1", "E2"],
-            invalidation_conditions=["C1"], confidence=0.5,
+            title="T",
+            core_belief="B",
+            transmission_chain=["A", "B"],
+            evidence=["E1", "E2"],
+            invalidation_conditions=["C1"],
+            confidence=0.5,
         )
         pm.analyze(thesis, ThesisOutcome(verified=True))
         pm.analyze(thesis, ThesisOutcome(verified=False))
@@ -642,9 +683,14 @@ class TestCycleEngine:
                 growth="stable",
                 inflation="stable",
             ),
-            market=MarketSnapshot(indicators={
-                "spx": 5200, "vix": 15.3, "dxy": 104.2, "us10y": 4.25,
-            }),
+            market=MarketSnapshot(
+                indicators={
+                    "spx": 5200,
+                    "vix": 15.3,
+                    "dxy": 104.2,
+                    "us10y": 4.25,
+                }
+            ),
         )
 
         result = engine.run_cycle(snapshot, skip_evolution=True)
@@ -685,7 +731,9 @@ class TestCycleEngine:
         previous_outcomes = {
             thesis_id: ({"spx": 5300, "prev_spx": 5200}, "Bullish outcome"),
         }
-        result2 = engine.run_cycle(snapshot2, previous_outcomes=previous_outcomes, skip_evolution=True)
+        result2 = engine.run_cycle(
+            snapshot2, previous_outcomes=previous_outcomes, skip_evolution=True
+        )
         assert result2.status == "completed"
         assert engine.memory.total_entries == 2
 
@@ -703,9 +751,12 @@ class TestCycleEngine:
     def test_cycle_result_summary(self):
         result = CycleResult(cycle_id="test-1", cycle_number=1)
         result.thesis = ResearchThesis(
-            title="Test Thesis", core_belief="B",
-            transmission_chain=["A", "B"], evidence=["E1", "E2"],
-            invalidation_conditions=["C1"], confidence=0.7,
+            title="Test Thesis",
+            core_belief="B",
+            transmission_chain=["A", "B"],
+            evidence=["E1", "E2"],
+            invalidation_conditions=["C1"],
+            confidence=0.7,
         )
         summary = result.summary()
         assert "Test Thesis" in summary
@@ -733,10 +784,15 @@ class TestFullResearchCycle:
                 growth="accelerating",
                 inflation="stable",
             ),
-            market=MarketSnapshot(indicators={
-                "spx": 5200, "vix": 14, "dxy": 103,
-                "us10y": 4.2, "hyg": 78,
-            }),
+            market=MarketSnapshot(
+                indicators={
+                    "spx": 5200,
+                    "vix": 14,
+                    "dxy": 103,
+                    "us10y": 4.2,
+                    "hyg": 78,
+                }
+            ),
         )
 
         # ── Run cycle ─────────────────────────────────────────────────
@@ -762,7 +818,7 @@ class TestFullResearchCycle:
         assert entry.regime_label != ""
 
         # ── Simulate outcome ─────────────────────────────────────────
-        actual_data = {"spx": 5350, "prev_spx": 5200, "vix": 13}
+        _actual_data = {"spx": 5350, "prev_spx": 5200, "vix": 13}
         outcome = ThesisOutcome(verified=True, realized_return=0.029)
         thesis.validate(outcome)
 
@@ -815,12 +871,13 @@ class TestArchitectureCompliance:
     def test_no_ui_dependencies(self):
         """No UI imports anywhere in the cycle package."""
         import sys
+
         for name in sys.modules:
             if "research_cycle" in name:
                 mod = sys.modules[name]
-                source = mod.__file__ if hasattr(mod, '__file__') else ''
-                if source and source.endswith('.py'):
-                    with open(source, encoding='utf-8') as f:
+                source = mod.__file__ if hasattr(mod, "__file__") else ""
+                if source and source.endswith(".py"):
+                    with open(source, encoding="utf-8") as f:
                         content = f.read()
                     # Only check actual import lines — comments may reference
                     # UI frameworks as context (e.g. "like Flask").
@@ -836,42 +893,52 @@ class TestArchitectureCompliance:
 
     def test_d1_cycle_engine_exists(self):
         from src.research_cycle import ResearchCycleEngine
+
         engine = ResearchCycleEngine()
-        assert hasattr(engine, 'run_cycle')
+        assert hasattr(engine, "run_cycle")
 
     def test_d2_thesis_schema_exists(self):
         from src.schemas.research_thesis import ResearchThesis
+
         thesis = ResearchThesis(
-            title="T", core_belief="B",
-            transmission_chain=["A","B"], evidence=["E1","E2"],
-            invalidation_conditions=["C1"], confidence=0.5,
+            title="T",
+            core_belief="B",
+            transmission_chain=["A", "B"],
+            evidence=["E1", "E2"],
+            invalidation_conditions=["C1"],
+            confidence=0.5,
         )
         assert thesis.is_well_formed
 
     def test_d3_framework_selector_exists(self):
         from src.research_cycle import FrameworkSelector
+
         fs = FrameworkSelector()
-        assert hasattr(fs, 'select')
+        assert hasattr(fs, "select")
 
     def test_d4_thesis_generator_exists(self):
         from src.research_cycle import ThesisGenerator
+
         tg = ThesisGenerator()
-        assert hasattr(tg, 'generate')
+        assert hasattr(tg, "generate")
 
     def test_d5_research_memory_exists(self):
         from src.research_cycle import ResearchMemory
+
         rm = ResearchMemory()
-        assert hasattr(rm, 'record_entry')
+        assert hasattr(rm, "record_entry")
 
     def test_d6_outcome_tracker_and_postmortem_exist(self):
         from src.research_cycle import OutcomeTracker, Postmortem
-        assert hasattr(OutcomeTracker(), 'register_thesis')
-        assert hasattr(Postmortem(), 'analyze')
+
+        assert hasattr(OutcomeTracker(), "register_thesis")
+        assert hasattr(Postmortem(), "analyze")
 
     def test_schemas_exported(self):
         from src.schemas import (
-            MacroSnapshot, MarketSnapshot,
-            ResearchThesis, ThesisStatus, ThesisOutcome,
+            MacroSnapshot,
+            ResearchThesis,
         )
+
         assert MacroSnapshot is not None
         assert ResearchThesis is not None

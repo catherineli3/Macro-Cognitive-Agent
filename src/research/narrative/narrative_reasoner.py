@@ -9,10 +9,9 @@ Core capability: "解释世界" (explain the world), not just "读取世界" (re
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any
 
-from src.research.narrative.schemas import Narrative, NarrativeObject, NarrativeResult
+from src.research.narrative.schemas import Narrative, NarrativeObject
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -211,11 +210,20 @@ ASSET_MAP: dict[str, list[str]] = {
 # ── By-direction asset direction hints ────────────────────────────────
 
 ASSET_DIRECTION: dict[str, dict[str, list[str]]] = {
-    "tightening": {"positive": ["DXY", "UST10Y", "VIX"], "negative": ["NASDAQ", "HYG", "SPX", "Gold", "Copper"]},
+    "tightening": {
+        "positive": ["DXY", "UST10Y", "VIX"],
+        "negative": ["NASDAQ", "HYG", "SPX", "Gold", "Copper"],
+    },
     "easing": {"positive": ["NASDAQ", "HYG", "SPX", "Gold"], "negative": ["DXY", "UST10Y", "VIX"]},
-    "elevated": {"positive": ["Gold", "TIPS", "XLE", "Commodities"], "negative": ["UST10Y_price", "NASDAQ", "SPX"]},
+    "elevated": {
+        "positive": ["Gold", "TIPS", "XLE", "Commodities"],
+        "negative": ["UST10Y_price", "NASDAQ", "SPX"],
+    },
     "slowdown": {"positive": ["UST10Y", "Gold", "VIX"], "negative": ["SPX", "XLI", "XLY", "IWM"]},
-    "risk_off": {"positive": ["UST10Y", "VIX", "Gold", "DXY"], "negative": ["SPX", "NASDAQ", "HYG", "IWM"]},
+    "risk_off": {
+        "positive": ["UST10Y", "VIX", "Gold", "DXY"],
+        "negative": ["SPX", "NASDAQ", "HYG", "IWM"],
+    },
     "risk_on": {"positive": ["SPX", "NASDAQ", "HYG", "IWM"], "negative": ["UST10Y", "VIX", "DXY"]},
     "strong": {"positive": ["DXY"], "negative": ["Gold", "Copper", "EM_ETF", "Oil", "XLE"]},
     "weak": {"positive": ["Gold", "Copper", "EM_ETF", "Oil"], "negative": ["DXY"]},
@@ -265,22 +273,16 @@ class NarrativeReasoner:
         causal_chain = self._build_causal_chain(narrative, direction, state_vector)
 
         # 3. Classify evidence
-        supporting, contradicting = self._classify_evidence(
-            narrative, direction, state_vector
-        )
+        supporting, contradicting = self._classify_evidence(narrative, direction, state_vector)
 
         # 4. Determine affected assets
-        affected_assets = self._determine_affected_assets(
-            narrative, direction, state_vector
-        )
+        affected_assets = self._determine_affected_assets(narrative, direction, state_vector)
 
         # 5. Assess regime fit
         regime_score = self._assess_regime_fit(narrative, regime, direction)
 
         # 6. Assess source diversity
-        source_diversity = self._assess_source_diversity(
-            narrative, mental_model_outputs
-        )
+        source_diversity = self._assess_source_diversity(narrative, mental_model_outputs)
 
         # 7. Build rich NarrativeObject
         obj = NarrativeObject(
@@ -298,13 +300,17 @@ class NarrativeReasoner:
             derived_from=[narrative.id],
             mental_models_used=(
                 [m.get("model_name", "") for m in mental_model_outputs]
-                if mental_model_outputs else []
+                if mental_model_outputs
+                else []
             ),
         )
 
         logger.debug(
             "Reasoned: %s (depth=%d, confidence=%.0f%%, regime_fit=%.0f%%)",
-            obj.title, obj.causal_depth, obj.confidence * 100, obj.regime_score * 100,
+            obj.title,
+            obj.causal_depth,
+            obj.confidence * 100,
+            obj.regime_score * 100,
         )
 
         return obj
@@ -317,10 +323,7 @@ class NarrativeReasoner:
         mental_model_outputs: list[dict] | None = None,
     ) -> list[NarrativeObject]:
         """Transform a batch of Narratives into NarrativeObjects."""
-        return [
-            self.reason(n, state_vector, regime, mental_model_outputs)
-            for n in narratives
-        ]
+        return [self.reason(n, state_vector, regime, mental_model_outputs) for n in narratives]
 
     # ── Internal Methods ──────────────────────────────────────────────
 
@@ -334,18 +337,40 @@ class NarrativeReasoner:
 
         # Check keywords
         direction_keywords = [
-            "tightening", "tighten", "hawkish", "hawk",
-            "easing", "ease", "dovish", "dove",
-            "elevated", "rising", "surge", "shock",
-            "moderating", "declining", "cooling",
-            "slowdown", "slowing", "deceleration",
-            "acceleration", "accelerating", "boom",
-            "contraction", "recession",
-            "risk_off", "risk_off", "risk-on",
-            "stress", "distress",
-            "strong", "strengthening",
-            "weak", "weakening",
-            "bubble", "overvalued",
+            "tightening",
+            "tighten",
+            "hawkish",
+            "hawk",
+            "easing",
+            "ease",
+            "dovish",
+            "dove",
+            "elevated",
+            "rising",
+            "surge",
+            "shock",
+            "moderating",
+            "declining",
+            "cooling",
+            "slowdown",
+            "slowing",
+            "deceleration",
+            "acceleration",
+            "accelerating",
+            "boom",
+            "contraction",
+            "recession",
+            "risk_off",
+            "risk_off",
+            "risk-on",
+            "stress",
+            "distress",
+            "strong",
+            "strengthening",
+            "weak",
+            "weakening",
+            "bubble",
+            "overvalued",
         ]
 
         for kw in direction_keywords:
@@ -404,7 +429,7 @@ class NarrativeReasoner:
         contradicting: list[str] = []
 
         title = narrative.title or ""
-        description = narrative.description or ""
+        _description = narrative.description or ""
 
         # Narrative itself is supporting evidence
         supporting.append(f"Narrative signal: {title[:100]}")
@@ -442,14 +467,14 @@ class NarrativeReasoner:
     ) -> list[str]:
         """Determine affected assets with direction tags."""
         category = narrative.category.lower() if narrative.category else "monetary"
-        cat_key = category
+        _cat_key = category
 
         # Get base assets for category
         assets = []
         for key in ASSET_MAP:
             if key in category:
                 assets = ASSET_MAP[key]
-                cat_key = key
+                _cat_key = key
                 break
         if not assets:
             assets = ASSET_MAP.get("monetary", ["NASDAQ", "SPX", "DXY"])
@@ -533,8 +558,16 @@ class NarrativeReasoner:
     def _infer_category(narrative: Narrative) -> str:
         """Infer narrative category from title/description."""
         text = (narrative.title + " " + narrative.description).lower()
-        for cat in ["monetary", "inflation", "growth", "liquidity", "dollar",
-                     "credit", "risk_appetite", "ai_capex"]:
+        for cat in [
+            "monetary",
+            "inflation",
+            "growth",
+            "liquidity",
+            "dollar",
+            "credit",
+            "risk_appetite",
+            "ai_capex",
+        ]:
             if cat in text:
                 return cat
         return "monetary"

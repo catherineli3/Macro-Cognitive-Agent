@@ -15,9 +15,9 @@ Architecture:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
+from src.research.models.mental_model import ResearchConclusion
 from src.research.narrative.schemas import (
     Narrative,
     NarrativeCategory,
@@ -25,7 +25,6 @@ from src.research.narrative.schemas import (
     NarrativeTemplate,
     NarrativeTimeHorizon,
 )
-from src.research.models.mental_model import ResearchConclusion
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -56,7 +55,6 @@ _NARRATIVE_TEMPLATES: list[NarrativeTemplate] = [
         affected_assets=["SP500", "Nasdaq", "EM_Equities", "Gold", "HYG"],
         base_confidence=0.75,
     ),
-
     # ── Rates / Policy narratives ────────────────────────────────────────
     NarrativeTemplate(
         title_template="Higher for Longer",
@@ -78,7 +76,6 @@ _NARRATIVE_TEMPLATES: list[NarrativeTemplate] = [
         affected_assets=["SP500", "Nasdaq", "Bonds", "Gold", "HYG"],
         base_confidence=0.65,
     ),
-
     # ── Growth narratives ────────────────────────────────────────────────
     NarrativeTemplate(
         title_template="Soft Landing",
@@ -110,7 +107,6 @@ _NARRATIVE_TEMPLATES: list[NarrativeTemplate] = [
         affected_assets=["SP500", "Russell", "Copper", "Oil"],
         base_confidence=0.65,
     ),
-
     # ── Inflation narratives ─────────────────────────────────────────────
     NarrativeTemplate(
         title_template="Inflation Reacceleration",
@@ -132,7 +128,6 @@ _NARRATIVE_TEMPLATES: list[NarrativeTemplate] = [
         affected_assets=["Nasdaq", "Bonds", "SP500"],
         base_confidence=0.70,
     ),
-
     # ── Risk narratives ──────────────────────────────────────────────────
     NarrativeTemplate(
         title_template="Risk-On Rally",
@@ -154,7 +149,6 @@ _NARRATIVE_TEMPLATES: list[NarrativeTemplate] = [
         affected_assets=["Gold", "US10Y", "VIX", "USD"],
         base_confidence=0.80,
     ),
-
     # ── Dollar narratives ────────────────────────────────────────────────
     NarrativeTemplate(
         title_template="Dollar Strength Regime",
@@ -176,7 +170,6 @@ _NARRATIVE_TEMPLATES: list[NarrativeTemplate] = [
         affected_assets=["EM_Equities", "Gold", "Copper", "Oil"],
         base_confidence=0.70,
     ),
-
     # ── Credit narratives ────────────────────────────────────────────────
     NarrativeTemplate(
         title_template="Credit Expansion",
@@ -198,7 +191,6 @@ _NARRATIVE_TEMPLATES: list[NarrativeTemplate] = [
         affected_assets=["HYG", "LQD", "SP500", "VIX"],
         base_confidence=0.75,
     ),
-
     # ── AI / Tech narratives ─────────────────────────────────────────────
     NarrativeTemplate(
         title_template="AI Capex Still Strong",
@@ -220,7 +212,6 @@ _NARRATIVE_TEMPLATES: list[NarrativeTemplate] = [
         affected_assets=["NVDA", "SMH", "ASML", "Nasdaq"],
         base_confidence=0.70,
     ),
-
     # ── Employment narratives ────────────────────────────────────────────
     NarrativeTemplate(
         title_template="Labor Market Strength",
@@ -232,7 +223,6 @@ _NARRATIVE_TEMPLATES: list[NarrativeTemplate] = [
         affected_assets=["SP500", "Russell", "USD"],
         base_confidence=0.65,
     ),
-
     # ── Contradiction / special narratives ───────────────────────────────
     NarrativeTemplate(
         title_template="Stagflation Risk",
@@ -289,7 +279,7 @@ class NarrativeDetector:
         self,
         state_vector: dict,
         conclusions: list[ResearchConclusion],
-        feature_summary: Optional[dict] = None,
+        feature_summary: dict | None = None,
     ) -> list[Narrative]:
         """Detect all active narratives.
 
@@ -356,9 +346,17 @@ class NarrativeDetector:
                     title=template.title_template,
                     description=template.description_template,
                     score=min(1.0, template.base_confidence * match_score),
-                    category=template.category.value if hasattr(template.category, 'value') else str(template.category),
+                    category=(
+                        template.category.value
+                        if hasattr(template.category, "value")
+                        else str(template.category)
+                    ),
                     strength=match_score,
-                    time_horizon=template.time_horizon.value if hasattr(template.time_horizon, 'value') else str(template.time_horizon),
+                    time_horizon=(
+                        template.time_horizon.value
+                        if hasattr(template.time_horizon, "value")
+                        else str(template.time_horizon)
+                    ),
                     affected_assets=list(template.affected_assets),
                     source_list=["template_matcher"],
                     market_consensus=0.5 + 0.3 * (0.5 - abs(0.5 - match_score)),
@@ -368,18 +366,19 @@ class NarrativeDetector:
                 for dim in template.required_dimensions:
                     dim_data = state_vector.get(dim, {})
                     if dim_data:
-                        narrative.supporting_signals.append(NarrativeSignal(
-                            source=dim,
-                            value=dim_data.get("score", 0.5),
-                            direction="supporting",
-                            interpretation=f"{dim}: {dim_data.get('direction', 'neutral')} (score={dim_data.get('score', 0.5):.2f})",
-                        ))
+                        narrative.supporting_signals.append(
+                            NarrativeSignal(
+                                source=dim,
+                                value=dim_data.get("score", 0.5),
+                                direction="supporting",
+                                interpretation=f"{dim}: {dim_data.get('direction', 'neutral')} (score={dim_data.get('score', 0.5):.2f})",
+                            )
+                        )
 
                 # Attach model conclusions
                 for c in conclusions:
                     if c.domain == template.category.value or any(
-                        dim.lower() == c.domain.lower()
-                        for dim in template.required_dimensions
+                        dim.lower() == c.domain.lower() for dim in template.required_dimensions
                     ):
                         if c.confidence >= 0.5:
                             narrative.supporting_models.append(c.model_name)
@@ -424,28 +423,40 @@ class NarrativeDetector:
                 description=c.conclusion,
                 score=c.confidence,
                 strength=c.confidence,
-                category=category_map.get(c.domain, NarrativeCategory.MONETARY).value if hasattr(category_map.get(c.domain, NarrativeCategory.MONETARY), 'value') else str(category_map.get(c.domain, NarrativeCategory.MONETARY)),
-                time_horizon=NarrativeTimeHorizon.MEDIUM.value if hasattr(NarrativeTimeHorizon.MEDIUM, 'value') else str(NarrativeTimeHorizon.MEDIUM),
+                category=(
+                    category_map.get(c.domain, NarrativeCategory.MONETARY).value
+                    if hasattr(category_map.get(c.domain, NarrativeCategory.MONETARY), "value")
+                    else str(category_map.get(c.domain, NarrativeCategory.MONETARY))
+                ),
+                time_horizon=(
+                    NarrativeTimeHorizon.MEDIUM.value
+                    if hasattr(NarrativeTimeHorizon.MEDIUM, "value")
+                    else str(NarrativeTimeHorizon.MEDIUM)
+                ),
                 source_list=["mental_model"],
             )
 
             # Extract signals from supporting evidence
             for ev in c.supporting_evidence:
-                narrative.supporting_signals.append(NarrativeSignal(
-                    source=ev.get("indicator", c.domain),
-                    value=ev.get("value", 0),
-                    direction="supporting",
-                    interpretation=ev.get("text", ""),
-                ))
+                narrative.supporting_signals.append(
+                    NarrativeSignal(
+                        source=ev.get("indicator", c.domain),
+                        value=ev.get("value", 0),
+                        direction="supporting",
+                        interpretation=ev.get("text", ""),
+                    )
+                )
 
             # Extract from contradicting evidence
             for ev in c.contradicting_evidence:
-                narrative.supporting_signals.append(NarrativeSignal(
-                    source=ev.get("indicator", c.domain),
-                    value=ev.get("value", 0),
-                    direction="contradicting",
-                    interpretation=ev.get("text", ""),
-                ))
+                narrative.supporting_signals.append(
+                    NarrativeSignal(
+                        source=ev.get("indicator", c.domain),
+                        value=ev.get("value", 0),
+                        direction="contradicting",
+                        interpretation=ev.get("text", ""),
+                    )
+                )
 
             narratives.append(narrative)
 
@@ -474,24 +485,34 @@ class NarrativeDetector:
         dxy_trend = self._get_trend(dxy_data)
 
         if gold_trend == "up" and dxy_trend == "up":
-            anomalies.append(Narrative(
-                title="Decoupling: Gold + DXY Both Rising",
-                description="Gold and USD are both strengthening — a rare divergence suggesting geopolitical risk premium and/or de-dollarization flows simultaneously with US exceptionalism.",
-                confidence=0.65,
-                strength=0.70,
-                novelty_score=0.85,
-                market_consensus=0.3,  # Contrarian
-                category=NarrativeCategory.GEOPOLITICAL,
-                time_horizon=NarrativeTimeHorizon.SHORT,
-                affected_assets=["Gold", "DXY", "EM_Equities"],
-                source_list=["anomaly_detector"],
-                supporting_signals=[
-                    NarrativeSignal(source="GOLD", value=gold_data.get("raw_value", 0),
-                                    direction="supporting", interpretation="Gold rising"),
-                    NarrativeSignal(source="DXY", value=dxy_data.get("raw_value", 0),
-                                    direction="supporting", interpretation="DXY rising"),
-                ],
-            ))
+            anomalies.append(
+                Narrative(
+                    title="Decoupling: Gold + DXY Both Rising",
+                    description="Gold and USD are both strengthening — a rare divergence suggesting geopolitical risk premium and/or de-dollarization flows simultaneously with US exceptionalism.",
+                    confidence=0.65,
+                    strength=0.70,
+                    novelty_score=0.85,
+                    market_consensus=0.3,  # Contrarian
+                    category=NarrativeCategory.GEOPOLITICAL,
+                    time_horizon=NarrativeTimeHorizon.SHORT,
+                    affected_assets=["Gold", "DXY", "EM_Equities"],
+                    source_list=["anomaly_detector"],
+                    supporting_signals=[
+                        NarrativeSignal(
+                            source="GOLD",
+                            value=gold_data.get("raw_value", 0),
+                            direction="supporting",
+                            interpretation="Gold rising",
+                        ),
+                        NarrativeSignal(
+                            source="DXY",
+                            value=dxy_data.get("raw_value", 0),
+                            direction="supporting",
+                            interpretation="DXY rising",
+                        ),
+                    ],
+                )
+            )
 
         # Pattern 2: VIX low but HYG also low (complacency vs credit stress)
         vix_data = indicators.get("VIX", {})
@@ -501,48 +522,68 @@ class NarrativeDetector:
         hyg_val = hyg_data.get("raw_value", 0)
 
         if 0 < vix_val < 15 and self._get_trend(hyg_data) == "down":
-            anomalies.append(Narrative(
-                title="Complacency Trap: Low VIX, Weak Credit",
-                description="VIX is extremely low but credit markets are weak — a warning sign that risk is mispriced in equity vol.",
-                confidence=0.60,
-                strength=0.65,
-                novelty_score=0.90,
-                market_consensus=0.25,
-                category=NarrativeCategory.RISK,
-                time_horizon=NarrativeTimeHorizon.SHORT,
-                affected_assets=["VIX", "HYG", "SP500"],
-                source_list=["anomaly_detector"],
-                supporting_signals=[
-                    NarrativeSignal(source="VIX", value=vix_val, direction="contradicting",
-                                    interpretation="VIX extremely low (complacency)"),
-                    NarrativeSignal(source="HYG", value=hyg_val, direction="supporting",
-                                    interpretation="HYG weakening (credit stress)"),
-                ],
-            ))
+            anomalies.append(
+                Narrative(
+                    title="Complacency Trap: Low VIX, Weak Credit",
+                    description="VIX is extremely low but credit markets are weak — a warning sign that risk is mispriced in equity vol.",
+                    confidence=0.60,
+                    strength=0.65,
+                    novelty_score=0.90,
+                    market_consensus=0.25,
+                    category=NarrativeCategory.RISK,
+                    time_horizon=NarrativeTimeHorizon.SHORT,
+                    affected_assets=["VIX", "HYG", "SP500"],
+                    source_list=["anomaly_detector"],
+                    supporting_signals=[
+                        NarrativeSignal(
+                            source="VIX",
+                            value=vix_val,
+                            direction="contradicting",
+                            interpretation="VIX extremely low (complacency)",
+                        ),
+                        NarrativeSignal(
+                            source="HYG",
+                            value=hyg_val,
+                            direction="supporting",
+                            interpretation="HYG weakening (credit stress)",
+                        ),
+                    ],
+                )
+            )
 
         # Pattern 3: Oil surging + bonds selling off (inflation fear)
         oil_data = indicators.get("OIL", {})
         us10y_data = indicators.get("US10Y", {})
 
         if self._get_trend(oil_data) == "up" and self._get_trend(us10y_data) == "up":
-            anomalies.append(Narrative(
-                title="Oil-Driven Inflation Scare",
-                description="Oil prices rising alongside bond yields — markets pricing in supply-side inflation risk that could delay rate cuts.",
-                confidence=0.70,
-                strength=0.75,
-                novelty_score=0.60,
-                market_consensus=0.55,
-                category=NarrativeCategory.INFLATION,
-                time_horizon=NarrativeTimeHorizon.MEDIUM,
-                affected_assets=["Oil", "US10Y", "SP500", "TIPS"],
-                source_list=["anomaly_detector"],
-                supporting_signals=[
-                    NarrativeSignal(source="OIL", value=oil_data.get("raw_value", 0),
-                                    direction="supporting", interpretation="Oil rising"),
-                    NarrativeSignal(source="US10Y", value=us10y_data.get("raw_value", 0),
-                                    direction="supporting", interpretation="Yields rising"),
-                ],
-            ))
+            anomalies.append(
+                Narrative(
+                    title="Oil-Driven Inflation Scare",
+                    description="Oil prices rising alongside bond yields — markets pricing in supply-side inflation risk that could delay rate cuts.",
+                    confidence=0.70,
+                    strength=0.75,
+                    novelty_score=0.60,
+                    market_consensus=0.55,
+                    category=NarrativeCategory.INFLATION,
+                    time_horizon=NarrativeTimeHorizon.MEDIUM,
+                    affected_assets=["Oil", "US10Y", "SP500", "TIPS"],
+                    source_list=["anomaly_detector"],
+                    supporting_signals=[
+                        NarrativeSignal(
+                            source="OIL",
+                            value=oil_data.get("raw_value", 0),
+                            direction="supporting",
+                            interpretation="Oil rising",
+                        ),
+                        NarrativeSignal(
+                            source="US10Y",
+                            value=us10y_data.get("raw_value", 0),
+                            direction="supporting",
+                            interpretation="Yields rising",
+                        ),
+                    ],
+                )
+            )
 
         return anomalies
 
@@ -557,15 +598,15 @@ class NarrativeDetector:
                 # Merge: keep the higher confidence, combine signals
                 existing = seen[key]
                 existing.supporting_signals.extend(n.supporting_signals)
-                existing.supporting_models = list(set(
-                    existing.supporting_models + n.supporting_models
-                ))
-                existing.contradicting_models = list(set(
-                    existing.contradicting_models + n.contradicting_models
-                ))
+                existing.supporting_models = list(
+                    set(existing.supporting_models + n.supporting_models)
+                )
+                existing.contradicting_models = list(
+                    set(existing.contradicting_models + n.contradicting_models)
+                )
                 existing.source_list = list(set(existing.source_list + n.source_list))
                 existing.confidence = max(existing.confidence, n.confidence)
-                existing.updated_at = datetime.now(timezone.utc)
+                existing.updated_at = datetime.now(UTC)
                 existing.version += 1
             else:
                 seen[key] = n

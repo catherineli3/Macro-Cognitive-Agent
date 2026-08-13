@@ -1,10 +1,12 @@
 """Tests for ThresholdSignalGenerator — generation, evidence, edge cases."""
 
+from datetime import UTC
+
 import pytest
 
 from src.domain.macro_indicator import MacroIndicator
 from src.schemas.macro_data import MacroDataSchema
-from src.schemas.signal import MacroSignalSchema, SignalDirection, SignalStrength
+from src.schemas.signal import SignalDirection, SignalStrength
 from src.signal.generator import ThresholdSignalGenerator
 from src.signal.rule_engine import RuleEngine
 
@@ -113,10 +115,13 @@ class TestSignalEdgeCases:
         assert len(signal.evidence) >= 1
 
     @pytest.mark.asyncio
-    async def test_indicator_without_rules_returns_neutral(self, generator: ThresholdSignalGenerator) -> None:
+    async def test_indicator_without_rules_returns_neutral(
+        self, generator: ThresholdSignalGenerator
+    ) -> None:
         """Indicator with no rules → NEUTRAL/weak, no evidence."""
+        from datetime import datetime
+
         from src.domain.macro_indicator import Frequency, HypothesisDimension
-        from datetime import datetime, timezone
 
         indicator = MacroIndicator(
             symbol="NO_RULES",
@@ -129,7 +134,7 @@ class TestSignalEdgeCases:
         )
         data = MacroDataSchema(
             symbol="NO_RULES",
-            timestamp=datetime(2026, 7, 13, tzinfo=timezone.utc),
+            timestamp=datetime(2026, 7, 13, tzinfo=UTC),
             value=100.0,
             source="Test",
         )

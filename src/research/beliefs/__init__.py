@@ -19,15 +19,6 @@ Architecture:
     BeliefStore → Persistent storage
 """
 
-from src.research.beliefs.schemas import (
-    BeliefDomain,
-    BeliefRelationType,
-    BeliefStage,
-    EvidenceItem,
-    EvidenceSource,
-    Prediction,
-    ResearchBelief,
-)
 from src.research.beliefs.belief_engine import BeliefEngine
 from src.research.beliefs.belief_graph import BeliefGraph, BeliefRelation
 from src.research.beliefs.belief_lifecycle import BeliefLifecycleManager
@@ -37,6 +28,15 @@ from src.research.beliefs.evidence_weight import (
     EVIDENCE_BASE_WEIGHTS,
     classify_evidence,
     compute_evidence_weight,
+)
+from src.research.beliefs.schemas import (
+    BeliefDomain,
+    BeliefRelationType,
+    BeliefStage,
+    EvidenceItem,
+    EvidenceSource,
+    Prediction,
+    ResearchBelief,
 )
 from src.research.beliefs.template_matcher import BeliefTemplate, TemplateMatcher
 

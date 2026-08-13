@@ -15,13 +15,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from src.research.reasoning.evidence_source_registry import (
-    EvidenceSource,
-    EVIDENCE_SOURCES,
     COVERAGE_DIMENSIONS,
+    EVIDENCE_SOURCES,
     get_sources_by_coverage,
-    SourceCategory,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════
 # Evidence Gap Analyzer
@@ -32,10 +29,10 @@ from src.research.reasoning.evidence_source_registry import (
 class EvidenceGap:
     """A single gap: one coverage dimension with insufficient evidence."""
 
-    dimension: str                          # e.g. "positioning", "policy"
-    current_coverage_pct: float = 0.0       # 0-100: how covered is this dimension?
+    dimension: str  # e.g. "positioning", "policy"
+    current_coverage_pct: float = 0.0  # 0-100: how covered is this dimension?
     needed_by_hypotheses: list[str] = field(default_factory=list)  # Which hypothesis_ids need this?
-    recommended_sources: list[str] = field(default_factory=list)   # Source names to fill this gap
+    recommended_sources: list[str] = field(default_factory=list)  # Source names to fill this gap
 
     def to_dict(self) -> dict:
         return {
@@ -112,20 +109,19 @@ class EvidenceGapAnalyzer:
             if coverage_pct < cls.COVERAGE_THRESHOLD:
                 # Recommend sources for this dimension, excluding visited
                 all_sources = get_sources_by_coverage(dim)
-                recommended = [
-                    s.name for s in all_sources
-                    if s.name not in visited_sources
-                ]
+                recommended = [s.name for s in all_sources if s.name not in visited_sources]
                 recommended.sort(
                     key=lambda name: EVIDENCE_SOURCES[name].priority,
                     reverse=True,
                 )
-                gaps.append(EvidenceGap(
-                    dimension=dim,
-                    current_coverage_pct=round(coverage_pct * 100, 1),
-                    needed_by_hypotheses=dim_to_hypotheses.get(dim, []),
-                    recommended_sources=recommended[:4],  # Top 4 per gap
-                ))
+                gaps.append(
+                    EvidenceGap(
+                        dimension=dim,
+                        current_coverage_pct=round(coverage_pct * 100, 1),
+                        needed_by_hypotheses=dim_to_hypotheses.get(dim, []),
+                        recommended_sources=recommended[:4],  # Top 4 per gap
+                    )
+                )
 
         # Sort: least covered first
         gaps.sort(key=lambda g: g.current_coverage_pct)
@@ -205,7 +201,7 @@ class SourcePlan:
     source_name: str
     category: str
     priority: int
-    fills_gap: str           # Which dimension this source fills
+    fills_gap: str  # Which dimension this source fills
     rationale: str = ""
 
     def to_dict(self) -> dict:
@@ -251,10 +247,13 @@ class SourcePlanner:
         planned_sources: set = set()
 
         # Sort gaps: more hypotheses needing + lower coverage first
-        for gap in sorted(gaps, key=lambda g: (
-            -len(g.needed_by_hypotheses),
-            g.current_coverage_pct,
-        )):
+        for gap in sorted(
+            gaps,
+            key=lambda g: (
+                -len(g.needed_by_hypotheses),
+                g.current_coverage_pct,
+            ),
+        ):
             for src_name in gap.recommended_sources:
                 if src_name in visited_sources:
                     continue
@@ -267,17 +266,19 @@ class SourcePlanner:
                 if src is None:
                     continue
 
-                plans.append(SourcePlan(
-                    source_name=src.name,
-                    category=src.category,
-                    priority=src.priority,
-                    fills_gap=gap.dimension,
-                    rationale=(
-                        f"Hypothesis domain requires {gap.dimension} coverage "
-                        f"({gap.current_coverage_pct:.0f}%); "
-                        f"{src.name} (priority={src.priority}) fills this gap"
-                    ),
-                ))
+                plans.append(
+                    SourcePlan(
+                        source_name=src.name,
+                        category=src.category,
+                        priority=src.priority,
+                        fills_gap=gap.dimension,
+                        rationale=(
+                            f"Hypothesis domain requires {gap.dimension} coverage "
+                            f"({gap.current_coverage_pct:.0f}%); "
+                            f"{src.name} (priority={src.priority}) fills this gap"
+                        ),
+                    )
+                )
                 planned_sources.add(src_name)
 
             if len(plans) >= max_new:

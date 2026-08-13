@@ -14,11 +14,9 @@ Architecture Freeze Clause:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from enum import Enum
-from typing import Optional
 from uuid import uuid4
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Enums
@@ -27,17 +25,19 @@ from uuid import uuid4
 
 class PrincipleStrength(str, Enum):
     """Progressive strength levels for Research Principles."""
-    CANDIDATE = "candidate"       # P2-P4 met, P1 pending
-    VALIDATED = "validated"       # P1-P5 all met, >=30 obs
-    MATURE = "mature"             # >=50 obs, >=3 regimes, <=2 contradictions/30 cycles
-    FOUNDATIONAL = "foundational" # >=100 obs, >=5 regimes, 0 contradictions
+
+    CANDIDATE = "candidate"  # P2-P4 met, P1 pending
+    VALIDATED = "validated"  # P1-P5 all met, >=30 obs
+    MATURE = "mature"  # >=50 obs, >=3 regimes, <=2 contradictions/30 cycles
+    FOUNDATIONAL = "foundational"  # >=100 obs, >=5 regimes, 0 contradictions
 
 
 class PrincipleStatus(str, Enum):
     """Operational status of a Research Principle."""
+
     ACTIVE = "active"
     ACTIVE_COMPETITION = "active_competition"  # Competing with another principle
-    WEAKENING = "weakening"                     # Evidence shifting against
+    WEAKENING = "weakening"  # Evidence shifting against
     RETIRED = "retired"
     ARCHIVED = "archived"
 
@@ -51,20 +51,21 @@ class FrameworkStatus(str, Enum):
 
 class ConflictResolution(str, Enum):
     """How a conflict between principles was resolved."""
+
     A_WINS = "a_wins"
     B_WINS = "b_wins"
-    MERGED = "merged"           # Principles combined into new formulation
-    UNRESOLVED = "unresolved"    # Neither dominates after evaluation period
+    MERGED = "merged"  # Principles combined into new formulation
+    UNRESOLVED = "unresolved"  # Neither dominates after evaluation period
     ARCHIVED_REGIME = "archived_regime"  # Both archived as regime-dependent
 
 
 class FindingTTLStatus(str, Enum):
     ACTIVE = "active"
-    FROZEN = "frozen"           # TTL paused due to conflict citation
-    EXTENDED = "extended"        # TTL extended due to citation
-    PROMOTED = "promoted"        # Became a Principle (immune to TTL)
-    EXPIRED = "expired"          # Auto-archived
-    ARCHIVED = "archived"        # Manually archived
+    FROZEN = "frozen"  # TTL paused due to conflict citation
+    EXTENDED = "extended"  # TTL extended due to citation
+    PROMOTED = "promoted"  # Became a Principle (immune to TTL)
+    EXPIRED = "expired"  # Auto-archived
+    ARCHIVED = "archived"  # Manually archived
 
 
 class SynthesisStrategy(str, Enum):
@@ -85,16 +86,17 @@ class PrincipleEvidence:
     G3 (F1.6): Evidence Feedback Loop — tracks prediction outcomes
     to drive strength increase/decrease/retirement decisions.
     """
+
     total_observations: int = 0
     correct_in_scope: int = 0
-    correct_count: int = 0          # G3: times principle correctly predicted outcome
-    incorrect_count: int = 0        # G3: times principle incorrectly predicted
+    correct_count: int = 0  # G3: times principle correctly predicted outcome
+    incorrect_count: int = 0  # G3: times principle incorrectly predicted
     accuracy: float = 0.0
     regimes_count: int = 0
     regimes_validated: list[str] = field(default_factory=list)
     channels_validated: list[str] = field(default_factory=list)
     last_validated_cycle: int = 0
-    last_evaluated_cycle: int = 0   # G3: last cycle this principle was evaluated
+    last_evaluated_cycle: int = 0  # G3: last cycle this principle was evaluated
     sustained_cycles: int = 0
     contradiction_count: int = 0
     failure_modes: list[str] = field(default_factory=list)  # G3: types of failures observed
@@ -113,7 +115,11 @@ class PrincipleEvidence:
         if self.total_observations == 0:
             return 0.0
         volume = min(1.0, self.total_observations / 100)
-        consistency = self.computed_accuracy if (self.correct_count + self.incorrect_count) > 0 else self.accuracy
+        consistency = (
+            self.computed_accuracy
+            if (self.correct_count + self.incorrect_count) > 0
+            else self.accuracy
+        )
         regime_bonus = min(0.1, self.regimes_count * 0.025)
         sustained_bonus = min(0.1, self.sustained_cycles / 200)
         return round(min(1.0, 0.4 * volume + 0.4 * consistency + regime_bonus + sustained_bonus), 4)
@@ -153,8 +159,8 @@ class ResearchPrinciple:
 
     principle_id: str = field(default_factory=lambda: f"pr-{uuid4().hex[:8]}")
     name: str = ""
-    statement: str = ""                              # Declarative causal claim
-    domain: str = ""                                 # Transmission channel / dimension
+    statement: str = ""  # Declarative causal claim
+    domain: str = ""  # Transmission channel / dimension
     preconditions: dict = field(default_factory=dict)
 
     strength: PrincipleStrength = PrincipleStrength.CANDIDATE
@@ -169,14 +175,14 @@ class ResearchPrinciple:
     composes_with: list[str] = field(default_factory=list)
 
     # Competition tracking
-    competes_with: list[str] = field(default_factory=list)   # IDs of competing principles
-    competition_resolution: Optional[ConflictResolution] = None
+    competes_with: list[str] = field(default_factory=list)  # IDs of competing principles
+    competition_resolution: ConflictResolution | None = None
 
     # Metadata
     created_at_cycle: int = 0
     promoted_from_findings: list[str] = field(default_factory=list)
-    last_updated: Optional[datetime] = None
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    last_updated: datetime | None = None
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def is_competition_active(self) -> bool:
@@ -213,15 +219,16 @@ class FrameworkExplainability:
 
     Review 2: A Framework that cannot explain itself is architecturally invalid.
     """
+
     name: str = ""
-    thesis: str = ""                        # >=100 char explanatory paragraph
-    confidence: float = 0.0                 # Computed, NOT labeled
+    thesis: str = ""  # >=100 char explanatory paragraph
+    confidence: float = 0.0  # Computed, NOT labeled
     supporting_principles_count: int = 0
     contradicting_principles_count: int = 0
-    historical_win_rate: float = 0.0        # Regime classification accuracy
+    historical_win_rate: float = 0.0  # Regime classification accuracy
     activated_since_cycle: int = 0
-    activated_since_date: Optional[datetime] = None
-    parent_framework: Optional[str] = None  # Framework lineage
+    activated_since_date: datetime | None = None
+    parent_framework: str | None = None  # Framework lineage
     competing_frameworks: list[str] = field(default_factory=list)
 
     def describe(self) -> str:
@@ -253,11 +260,11 @@ class ResearchFramework:
 
     framework_id: str = field(default_factory=lambda: f"fw-{uuid4().hex[:8]}")
     name: str = ""
-    thesis: str = ""                                # 1-3 paragraph explanation
+    thesis: str = ""  # 1-3 paragraph explanation
     status: FrameworkStatus = FrameworkStatus.CANDIDATE
 
     # Principle composition
-    principles: list[str] = field(default_factory=list)    # Principle IDs
+    principles: list[str] = field(default_factory=list)  # Principle IDs
     principle_weights: dict[str, float] = field(default_factory=dict)
 
     # Performance
@@ -265,19 +272,19 @@ class ResearchFramework:
     cycle_count: int = 0
 
     # Framework Set fields (Review 4)
-    framework_set_id: Optional[str] = None
+    framework_set_id: str | None = None
     domain_coverage: dict[str, float] = field(default_factory=dict)
     competes_with: list[str] = field(default_factory=list)
     synthesis_weight: float = 0.0
 
     # Lineage
-    parent_framework: Optional[str] = None
+    parent_framework: str | None = None
     created_from: str = "principle_cluster"  # "principle_cluster" | "framework_conflict"
     created_at_cycle: int = 0
-    retired_at_cycle: Optional[int] = None
-    retirement_reason: Optional[str] = None
+    retired_at_cycle: int | None = None
+    retirement_reason: str | None = None
 
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def is_active(self) -> bool:
@@ -317,16 +324,17 @@ class ResearchFramework:
 
         return round(0.4 * sup_mean + 0.2 * (1 - con_mean) + 0.3 * win_rate + 0.1 * sup_ratio, 4)
 
-    def compute_explainability(self,
-                               principles: dict[str, ResearchPrinciple]) -> FrameworkExplainability:
+    def compute_explainability(
+        self, principles: dict[str, ResearchPrinciple]
+    ) -> FrameworkExplainability:
         """Mandatory: produces the full explainability output (Review 2)."""
         supporting_count = sum(
-            1 for pid in self.principles
+            1
+            for pid in self.principles
             if (p := principles.get(pid)) and p.status != PrincipleStatus.RETIRED
         )
         contradicting_count = sum(
-            1 for pid in (self.competes_with or [])
-            if (p := principles.get(pid))
+            1 for pid in (self.competes_with or []) if (p := principles.get(pid))
         )
         return FrameworkExplainability(
             name=self.name,
@@ -364,7 +372,7 @@ class FrameworkSet:
 
     set_id: str = field(default_factory=lambda: f"fs-{uuid4().hex[:8]}")
 
-    active_frameworks: list[str] = field(default_factory=list)    # Ordered by confidence
+    active_frameworks: list[str] = field(default_factory=list)  # Ordered by confidence
     framework_weights: dict[str, float] = field(default_factory=dict)
     domain_assignment: dict[str, list[str]] = field(default_factory=dict)
 
@@ -376,8 +384,8 @@ class FrameworkSet:
     retired_frameworks: list[str] = field(default_factory=list)
 
     # Metadata
-    last_updated: Optional[datetime] = None
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    last_updated: datetime | None = None
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def active_count(self) -> int:
@@ -400,8 +408,7 @@ class FrameworkSet:
             return True
         return False  # Caller must evaluate weakest and retry
 
-    def replace_weakest(self, new_id: str, new_weight: float,
-                        retire_id: str) -> bool:
+    def replace_weakest(self, new_id: str, new_weight: float, retire_id: str) -> bool:
         """Replace the weakest framework with a new one."""
         if retire_id not in self.active_frameworks:
             return False
@@ -440,7 +447,9 @@ class FrameworkSet:
         return self.domain_assignment.get(framework_id, [])
 
     def describe(self) -> str:
-        lines = [f"FrameworkSet ({self.active_count} active, {len(self.retired_frameworks)} retired):"]
+        lines = [
+            f"FrameworkSet ({self.active_count} active, {len(self.retired_frameworks)} retired):"
+        ]
         for fid in self.active_frameworks:
             w = self.weight_for(fid)
             domains = self.domains_for(fid)
@@ -476,12 +485,12 @@ class CompetingPrinciple:
 
     # Resolution
     status: str = "competing"  # "competing" | "resolving" | "resolved"
-    resolution: Optional[ConflictResolution] = None
-    winner_id: Optional[str] = None
-    loser_id: Optional[str] = None
+    resolution: ConflictResolution | None = None
+    winner_id: str | None = None
+    loser_id: str | None = None
     resolved_at_cycle: int = 0
 
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def a_win_rate(self) -> float:
@@ -511,9 +520,11 @@ class CompetingPrinciple:
         self.cycles_since_start += 1
 
     def __repr__(self) -> str:
-        return (f"<CompetingPrinciple {self.principle_a_id[:8]} vs {self.principle_b_id[:8]} "
-                f"({self.evidence_for_a}:{self.evidence_for_b}) "
-                f"status={self.status}>")
+        return (
+            f"<CompetingPrinciple {self.principle_a_id[:8]} vs {self.principle_b_id[:8]} "
+            f"({self.evidence_for_a}:{self.evidence_for_b}) "
+            f"status={self.status}>"
+        )
 
 
 @dataclass
@@ -521,7 +532,7 @@ class ConflictRecord:
     """A record of a detected and processed conflict between principles."""
 
     conflict_id: str = field(default_factory=lambda: f"cr-{uuid4().hex[:8]}")
-    competing_pair: Optional[CompetingPrinciple] = None
+    competing_pair: CompetingPrinciple | None = None
     principle_a_id: str = ""
     principle_b_id: str = ""
 
@@ -529,14 +540,16 @@ class ConflictRecord:
     source_finding_ids: list[str] = field(default_factory=list)
 
     action: str = ""  # "queued" | "activated_competition" | "resolved" | "archived"
-    resolution: Optional[ConflictResolution] = None
+    resolution: ConflictResolution | None = None
 
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    resolved_at: Optional[datetime] = None
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    resolved_at: datetime | None = None
 
     def __repr__(self) -> str:
-        return (f"<ConflictRecord {self.principle_a_id[:8]} vs {self.principle_b_id[:8]} "
-                f"action={self.action}>")
+        return (
+            f"<ConflictRecord {self.principle_a_id[:8]} vs {self.principle_b_id[:8]} "
+            f"action={self.action}>"
+        )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -546,7 +559,7 @@ class ConflictRecord:
 
 # Default TTL for Research Findings (Review 5)
 DEFAULT_FINDING_TTL_DAYS = 90
-EXTENDED_FINDING_TTL_DAYS = 180    # For ESTABLISHED/ROBUST confidence
+EXTENDED_FINDING_TTL_DAYS = 180  # For ESTABLISHED/ROBUST confidence
 PRELIMINARY_FINDING_TTL_DAYS = 45
 CITATION_EXTENSION_DAYS = 30
 
@@ -561,20 +574,20 @@ class FindingLifecycle:
 
     finding_id: str = ""
     status: FindingTTLStatus = FindingTTLStatus.ACTIVE
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     ttl_days: int = DEFAULT_FINDING_TTL_DAYS
     expires_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc) + timedelta(days=DEFAULT_FINDING_TTL_DAYS)
+        default_factory=lambda: datetime.now(UTC) + timedelta(days=DEFAULT_FINDING_TTL_DAYS)
     )
 
     # Extensions
     extension_count: int = 0
-    last_extended_at: Optional[datetime] = None
-    frozen_at: Optional[datetime] = None  # When TTL was frozen for conflict
+    last_extended_at: datetime | None = None
+    frozen_at: datetime | None = None  # When TTL was frozen for conflict
 
     # Promotion
-    promoted_to_principle_id: Optional[str] = None
-    promoted_at: Optional[datetime] = None
+    promoted_to_principle_id: str | None = None
+    promoted_at: datetime | None = None
 
     # Conflict
     cited_in_conflicts: list[str] = field(default_factory=list)
@@ -585,13 +598,13 @@ class FindingLifecycle:
             return False
         if self.status in (FindingTTLStatus.PROMOTED, FindingTTLStatus.ARCHIVED):
             return False
-        return datetime.now(timezone.utc) > self.expires_at
+        return datetime.now(UTC) > self.expires_at
 
     @property
     def days_remaining(self) -> int:
         if self.status == FindingTTLStatus.FROZEN:
             return -1  # Indefinite while frozen
-        remaining = (self.expires_at - datetime.now(timezone.utc)).days
+        remaining = (self.expires_at - datetime.now(UTC)).days
         return max(0, remaining)
 
     def set_ttl(self, confidence_str: str) -> None:
@@ -611,12 +624,12 @@ class FindingLifecycle:
         self.status = FindingTTLStatus.EXTENDED
         self.expires_at += timedelta(days=days)
         self.extension_count += 1
-        self.last_extended_at = datetime.now(timezone.utc)
+        self.last_extended_at = datetime.now(UTC)
 
     def freeze(self, conflict_id: str) -> None:
         """Freeze TTL while finding is cited in an active conflict."""
         self.status = FindingTTLStatus.FROZEN
-        self.frozen_at = datetime.now(timezone.utc)
+        self.frozen_at = datetime.now(UTC)
         self.cited_in_conflicts.append(conflict_id)
 
     def unfreeze(self) -> None:
@@ -624,13 +637,13 @@ class FindingLifecycle:
         if self.status == FindingTTLStatus.FROZEN:
             self.status = FindingTTLStatus.ACTIVE
             # Reset expiry from now
-            self.expires_at = datetime.now(timezone.utc) + timedelta(days=self.ttl_days)
+            self.expires_at = datetime.now(UTC) + timedelta(days=self.ttl_days)
 
     def promote(self, principle_id: str) -> None:
         """Mark as promoted to Principle (immune to TTL)."""
         self.status = FindingTTLStatus.PROMOTED
         self.promoted_to_principle_id = principle_id
-        self.promoted_at = datetime.now(timezone.utc)
+        self.promoted_at = datetime.now(UTC)
 
     def expire(self) -> None:
         """Mark as expired."""
@@ -641,6 +654,8 @@ class FindingLifecycle:
         self.status = FindingTTLStatus.ARCHIVED
 
     def __repr__(self) -> str:
-        return (f"<FindingLifecycle {self.finding_id[:12]} "
-                f"status={self.status.value} "
-                f"ttl={self.days_remaining}d>")
+        return (
+            f"<FindingLifecycle {self.finding_id[:12]} "
+            f"status={self.status.value} "
+            f"ttl={self.days_remaining}d>"
+        )

@@ -5,24 +5,19 @@ Covers: Jaccard, time decay, Chinese bigram, top-K, truncation, degradation.
 
 from __future__ import annotations
 
-import json
 import math
-import tempfile
-from datetime import datetime, timedelta, timezone
-
-import pytest
+from datetime import UTC, datetime, timedelta
 
 from src.llm.retriever import (
     HistoryRecord,
     HistoryRetriever,
-    assemble_history_prompt,
+    _estimate_tokens,
     _tokenize,
     _truncate_to_chars,
-    _estimate_tokens,
+    assemble_history_prompt,
 )
 from src.memory.store import BeliefMemoryStore
 from src.schemas.memory import BeliefRecord
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -60,7 +55,7 @@ def _make_belief(
         status=BeliefStatus.HELD,
         transition=TransitionType.REINFORCED,
         evidence_summary=evidence,
-        timestamp=datetime.now(timezone.utc) - timedelta(days=days_ago),
+        timestamp=datetime.now(UTC) - timedelta(days=days_ago),
     )
 
 
@@ -164,8 +159,8 @@ class TestJaccard:
         score = inst._score(
             text="Global liquidity tightening",
             query_tokens={"global", "liquidity", "tightening"},
-            date_str=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-            now=datetime.now(timezone.utc),
+            date_str=datetime.now(UTC).strftime("%Y-%m-%d"),
+            now=datetime.now(UTC),
         )
         assert score > 0.9
 
@@ -174,8 +169,8 @@ class TestJaccard:
         score = inst._score(
             text="Equity rally tech stocks",
             query_tokens={"liquidity", "tightening", "dxy"},
-            date_str=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-            now=datetime.now(timezone.utc),
+            date_str=datetime.now(UTC).strftime("%Y-%m-%d"),
+            now=datetime.now(UTC),
         )
         assert score == 0.0
 
@@ -184,8 +179,8 @@ class TestJaccard:
         score = inst._score(
             text="Global liquidity tightening via DXY strength",
             query_tokens={"liquidity", "dxy", "risk"},
-            date_str=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-            now=datetime.now(timezone.utc),
+            date_str=datetime.now(UTC).strftime("%Y-%m-%d"),
+            now=datetime.now(UTC),
         )
         assert 0.0 < score < 1.0
 
@@ -198,7 +193,7 @@ class TestJaccard:
 class TestTimeDecay:
     def test_recent_higher_than_old(self):
         inst = HistoryRetriever()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         recent = inst._score(
             text="liquidity tightening",
             query_tokens={"liquidity", "tightening"},
@@ -216,7 +211,7 @@ class TestTimeDecay:
     def test_decay_rate_matches_spec(self):
         """Spec: 0.95^days_ago."""
         inst = HistoryRetriever()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         s_day1 = inst._score(
             text="liquidity tightening",
@@ -245,11 +240,15 @@ class TestTimeDecay:
 class TestRetriever:
     def test_retrieve_returns_top_k(self):
         records = [
-            _make_belief("B1", "liquidity", "DXY bullish tightening", days_ago=0, evidence="DXY up 0.5%"),
+            _make_belief(
+                "B1", "liquidity", "DXY bullish tightening", days_ago=0, evidence="DXY up 0.5%"
+            ),
             _make_belief("B2", "liquidity", "10Y yield stable", days_ago=1, evidence="10Y at 4.2%"),
             _make_belief("B3", "growth", "GDP slowing", days_ago=0, evidence="GDPNow 1.8%"),
             _make_belief("B4", "inflation", "CPI moderating", days_ago=2, evidence="Core PCE 2.6%"),
-            _make_belief("B5", "liquidity", "Fed hawkish stance", days_ago=0, evidence="Fed minutes"),
+            _make_belief(
+                "B5", "liquidity", "Fed hawkish stance", days_ago=0, evidence="Fed minutes"
+            ),
         ]
         store = _make_store(records)
         retriever = HistoryRetriever(belief_store=store)
@@ -275,18 +274,22 @@ class TestRetriever:
             assert r.dimension in ("liquidity", "growth", "inflation")
 
     def test_retrieve_empty_input_returns_empty(self):
-        store = _make_store([
-            _make_belief("B1", "liquidity", "test", days_ago=0),
-        ])
+        store = _make_store(
+            [
+                _make_belief("B1", "liquidity", "test", days_ago=0),
+            ]
+        )
         retriever = HistoryRetriever(belief_store=store)
         results = retriever.retrieve({})
         assert results == []
 
     def test_retrieve_no_matching_candidates(self):
-        store = _make_store([
-            _make_belief("B1", "credit", "corporate spreads widening", days_ago=0),
-            _make_belief("B2", "credit", "HY default rate up", days_ago=1),
-        ])
+        store = _make_store(
+            [
+                _make_belief("B1", "credit", "corporate spreads widening", days_ago=0),
+                _make_belief("B2", "credit", "HY default rate up", days_ago=1),
+            ]
+        )
         retriever = HistoryRetriever(belief_store=store)
         # Query about unrelated dimension
         structured_input = {
@@ -340,12 +343,14 @@ class TestPromptAssembly:
             for i in range(5)
         ]
         text, tokens = assemble_history_prompt(records)
-        assert len(text) <= HistoryRetriever.MAX_HISTORY_CHARS + 100  # tolerance for instruction suffix
+        assert (
+            len(text) <= HistoryRetriever.MAX_HISTORY_CHARS + 100
+        )  # tolerance for instruction suffix
 
     def test_single_entry_truncated_to_300_chars(self):
         long_text = "X " * 400
         record = HistoryRecord("2026-08-10", "liquidity", long_text, 0.9)
-        entry = record.to_prompt_entry(index=1)
+        _entry = record.to_prompt_entry(index=1)
         # entry text portion should be ≤ 300 chars
         assert len(record.to_prompt_entry(index=1)) <= 300 + 50  # meta overhead
 

@@ -9,8 +9,7 @@ Extended from V2 scheduler to support:
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from src.shared.logging import get_logger
 
@@ -27,8 +26,8 @@ class EvaluationScheduler:
     def __init__(self, check_interval_hours: int = 24) -> None:
         self._check_interval = check_interval_hours * 3600  # seconds
         self._running = False
-        self._task: Optional[asyncio.Task] = None
-        self._last_run: Optional[datetime] = None
+        self._task: asyncio.Task | None = None
+        self._last_run: datetime | None = None
 
     async def start(self, callback) -> None:
         """Start periodic evaluation checks."""
@@ -54,7 +53,7 @@ class EvaluationScheduler:
         """Main loop: sleep → callback → sleep."""
         while self._running:
             try:
-                self._last_run = datetime.now(timezone.utc)
+                self._last_run = datetime.now(UTC)
                 logger.info("scheduler_tick")
                 await callback()
             except Exception as e:
@@ -66,7 +65,7 @@ class EvaluationScheduler:
         return self._running
 
     @property
-    def last_run_at(self) -> Optional[datetime]:
+    def last_run_at(self) -> datetime | None:
         return self._last_run
 
 
@@ -78,6 +77,7 @@ class KPIReporter:
 
     def __init__(self, metrics_engine=None) -> None:
         from src.metrics import KPIMetricsEngine
+
         self._metrics = metrics_engine or KPIMetricsEngine()
         self._report_history: list = []
 
@@ -90,7 +90,7 @@ class KPIReporter:
         logger.info("weekly_kpi_report_generating")
         # Placeholder — actual computation depends on accumulated data
         report = {
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "status": "no_data_yet" if not self._report_history else "active",
             "reports_count": len(self._report_history),
         }

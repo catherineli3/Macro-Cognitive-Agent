@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """SignalHandler — Executor adapter for Signal Engine.
 
 Capability: "macro.signal"
@@ -7,13 +5,19 @@ Reads:      context.artifacts["processed_data"]  (MacroDataSchema[])
 Produces:   context.artifacts["signals"]         (SignalSnapshot)
 """
 
-from datetime import datetime, timezone
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from src.domain.execution import TaskResultStatus
 from src.interfaces.task_handler import TaskHandlerInterface
 from src.schemas.execution import TaskResult
 from src.schemas.macro_data import MacroDataSchema
 from src.schemas.planning import Task
+
+if TYPE_CHECKING:
+    from src.domain.macro_indicator import Frequency
 from src.schemas.signal import MacroSignalSchema, SignalSnapshot
 from src.shared.logging import get_logger
 from src.signal.generator import ThresholdSignalGenerator
@@ -57,7 +61,7 @@ class SignalHandler(TaskHandlerInterface):
             TaskResult with SignalSnapshot in artifacts["signals"].
             Returns SUCCESS with empty snapshot if no data is available.
         """
-        started = datetime.now(timezone.utc)
+        started = datetime.now(UTC)
 
         try:
             # Extract indicator data: try processed_data records, then raw_data records
@@ -77,7 +81,7 @@ class SignalHandler(TaskHandlerInterface):
                 except Exception as exc:
                     logger.warning(
                         "signal_handler_skip_indicator indicator=%s error=%s",
-                        item.indicator if hasattr(item, 'indicator') else 'unknown',
+                        item.indicator if hasattr(item, "indicator") else "unknown",
                         str(exc),
                     )
 
@@ -94,7 +98,7 @@ class SignalHandler(TaskHandlerInterface):
             return self._success(task, started, snapshot)
 
         except Exception as exc:
-            completed = datetime.now(timezone.utc)
+            completed = datetime.now(UTC)
             logger.error(
                 "signal_handler_failed task=%s error=%s",
                 task.name,
@@ -112,20 +116,22 @@ class SignalHandler(TaskHandlerInterface):
 
     # ── Private ─────────────────────────────────────────────────────────
 
-    async def _generate_signal(self, data: "MacroDataSchema") -> "MacroSignalSchema":
+    async def _generate_signal(self, data: MacroDataSchema) -> MacroSignalSchema:
         """Generate a signal for a single data point.
 
         Handles both MacroDataSchema (with indicator metadata) and simple dict-like data.
         For data without full indicator metadata, infers dimension from indicator name.
         """
-        from src.domain.macro_indicator import Frequency, MacroIndicator, HypothesisDimension
+        from src.domain.macro_indicator import HypothesisDimension, MacroIndicator
 
-        symbol = getattr(data, 'symbol', 'UNKNOWN')
-        if symbol == 'UNKNOWN' and hasattr(data, 'indicator'):
+        symbol = getattr(data, "symbol", "UNKNOWN")
+        if symbol == "UNKNOWN" and hasattr(data, "indicator"):
             symbol = str(data.indicator)
 
         # ── Dimension inference ──────────────────────────────────────
-        dimension_str = getattr(data, 'dimension', None) or getattr(data, 'hypothesis_dimension', None)
+        dimension_str = getattr(data, "dimension", None) or getattr(
+            data, "hypothesis_dimension", None
+        )
         if dimension_str is None:
             dimension_str = _infer_dimension(symbol)
 
@@ -153,17 +159,18 @@ class SignalHandler(TaskHandlerInterface):
         # ── Ensure MacroDataSchema ───────────────────────────────────
         if not isinstance(data, MacroDataSchema):
             data_dict = data if isinstance(data, dict) else {}
-            ts = data_dict.get('timestamp', datetime.now(timezone.utc))
+            ts = data_dict.get("timestamp", datetime.now(UTC))
             if isinstance(ts, str):
                 from datetime import datetime as _dt
+
                 ts = _dt.fromisoformat(ts)
                 if ts.tzinfo is None:
-                    ts = ts.replace(tzinfo=timezone.utc)
+                    ts = ts.replace(tzinfo=UTC)
             data_schema = MacroDataSchema(
-                symbol=data_dict.get('symbol') or data_dict.get('indicator', indicator.symbol),
-                value=float(data_dict.get('value', 0)),
+                symbol=data_dict.get("symbol") or data_dict.get("indicator", indicator.symbol),
+                value=float(data_dict.get("value", 0)),
                 timestamp=ts,
-                source=data_dict.get('source', 'mock'),
+                source=data_dict.get("source", "mock"),
             )
         else:
             data_schema = data
@@ -175,7 +182,7 @@ class SignalHandler(TaskHandlerInterface):
         )
 
     @staticmethod
-    def _extract_data_items(context) -> list["MacroDataSchema"]:
+    def _extract_data_items(context) -> list[MacroDataSchema]:
         """Extract indicator data items from context artifacts.
 
         Tries multiple artifact formats:
@@ -207,29 +214,33 @@ class SignalHandler(TaskHandlerInterface):
             if isinstance(rec, dict) and "indicator" in rec and "value" in rec:
                 try:
                     # Parse timestamp from string if needed
-                    ts = rec.get("timestamp", datetime.now(timezone.utc))
+                    ts = rec.get("timestamp", datetime.now(UTC))
                     if isinstance(ts, str):
                         from datetime import datetime as _dt
+
                         ts = _dt.fromisoformat(ts)
                         if ts.tzinfo is None:
-                            ts = ts.replace(tzinfo=timezone.utc)
+                            ts = ts.replace(tzinfo=UTC)
 
-                    parsed.append(MacroDataSchema(
-                        symbol=str(rec["indicator"]),
-                        value=float(rec["value"]),
-                        timestamp=ts,
-                        source=str(rec.get("source", "mock")),
-                    ))
+                    parsed.append(
+                        MacroDataSchema(
+                            symbol=str(rec["indicator"]),
+                            value=float(rec["value"]),
+                            timestamp=ts,
+                            source=str(rec.get("source", "mock")),
+                        )
+                    )
                 except (ValueError, TypeError) as e:
                     logger.warning(
                         "signal_handler_parse_error record=%s error=%s",
-                        str(rec)[:80], str(e),
+                        str(rec)[:80],
+                        str(e),
                     )
 
         return parsed
 
     @staticmethod
-    def _parse_data(raw: list) -> list["MacroDataSchema"]:
+    def _parse_data(raw: list) -> list[MacroDataSchema]:
         """Parse raw processed_data into MacroDataSchema objects.
 
         Handles MacroDataSchema, dict, tuple (from simple handlers), and object types.
@@ -251,15 +262,17 @@ class SignalHandler(TaskHandlerInterface):
                 try:
                     symbol = str(item[0]) if len(item) > 0 else "UNKNOWN"
                     value = float(item[1]) if len(item) > 1 else 0.0
-                    parsed.append(MacroDataSchema(
-                        symbol=symbol,
-                        value=value,
-                        timestamp=datetime.now(timezone.utc),
-                        source="mock",
-                    ))
+                    parsed.append(
+                        MacroDataSchema(
+                            symbol=symbol,
+                            value=value,
+                            timestamp=datetime.now(UTC),
+                            source="mock",
+                        )
+                    )
                 except (ValueError, TypeError, IndexError):
                     logger.warning("signal_handler_skip_invalid_tuple item=%s", str(item)[:50])
-            elif hasattr(item, 'indicator') and hasattr(item, 'value'):
+            elif hasattr(item, "indicator") and hasattr(item, "value"):
                 # Has required attributes — pass through
                 parsed.append(item)
         return parsed
@@ -284,7 +297,7 @@ class SignalHandler(TaskHandlerInterface):
         snapshot: SignalSnapshot,
     ) -> TaskResult:
         """Build a successful TaskResult with signal snapshot."""
-        completed = datetime.now(timezone.utc)
+        completed = datetime.now(UTC)
         return TaskResult(
             task_id=task.id,
             task_name=task.name,
@@ -390,9 +403,10 @@ def _infer_category(indicator_name: str) -> str:
     return "Other"
 
 
-def _infer_frequency(indicator_name: str) -> "Frequency":
+def _infer_frequency(indicator_name: str) -> Frequency:
     """Infer observation frequency from indicator symbol."""
     from src.domain.macro_indicator import Frequency
+
     upper = indicator_name.upper().strip()
     for key, freq_str in _INDICATOR_FREQUENCY_MAP.items():
         if key in upper:

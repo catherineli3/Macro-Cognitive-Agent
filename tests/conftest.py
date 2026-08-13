@@ -1,4 +1,5 @@
 """Pytest configuration and shared fixtures."""
+
 import sys
 from pathlib import Path
 
@@ -8,7 +9,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -28,12 +29,12 @@ def sample_settings() -> dict:
 @pytest.fixture(scope="session", autouse=True)
 def _ensure_db_tables() -> None:
     """Create all database tables once per test session (autouse)."""
+    import asyncio
+    import sys
+
     from src.storage.engine import get_engine
     from src.storage.models import Base
     from src.storage.signal_models import Base as SignalBase
-
-    import asyncio
-    import sys
 
     # Windows: use SelectorEventLoop for aiosqlite compatibility
     if sys.platform == "win32":
@@ -87,7 +88,7 @@ def sample_dxy_data_high() -> MacroDataSchema:
     """DXY at 106.5 — above 105 threshold."""
     return MacroDataSchema(
         symbol="DXY",
-        timestamp=datetime(2026, 7, 13, 10, 0, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 7, 13, 10, 0, 0, tzinfo=UTC),
         value=106.5,
         source="Yahoo",
     )
@@ -98,7 +99,7 @@ def sample_dxy_data_mid() -> MacroDataSchema:
     """DXY at 102.0 — between thresholds (no rule triggered)."""
     return MacroDataSchema(
         symbol="DXY",
-        timestamp=datetime(2026, 7, 13, 10, 0, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 7, 13, 10, 0, 0, tzinfo=UTC),
         value=102.0,
         source="Yahoo",
     )
@@ -109,7 +110,7 @@ def sample_dxy_data_low() -> MacroDataSchema:
     """DXY at 98.0 — below 100 threshold."""
     return MacroDataSchema(
         symbol="DXY",
-        timestamp=datetime(2026, 7, 13, 10, 0, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 7, 13, 10, 0, 0, tzinfo=UTC),
         value=98.0,
         source="Yahoo",
     )
@@ -120,7 +121,7 @@ def sample_vix_data_high() -> MacroDataSchema:
     """VIX at 28.0 — above 25 threshold."""
     return MacroDataSchema(
         symbol="^VIX",
-        timestamp=datetime(2026, 7, 13, 10, 0, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 7, 13, 10, 0, 0, tzinfo=UTC),
         value=28.0,
         source="Yahoo",
     )
@@ -132,7 +133,7 @@ def sample_history() -> list[MacroDataSchema]:
     return [
         MacroDataSchema(
             symbol="DXY",
-            timestamp=datetime(2026, 7, day, 10, 0, 0, tzinfo=timezone.utc),
+            timestamp=datetime(2026, 7, day, 10, 0, 0, tzinfo=UTC),
             value=104.0 + i * 0.5,
             source="Yahoo",
         )

@@ -7,18 +7,18 @@ Key design:
     - LearningUnit validated before any modification is applied
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
-
 
 # ── Learning Action Type ─────────────────────────────────────────────────────
 
 
 class LearningActionType(str, Enum):
     """Permitted learning actions on beliefs (DDR-V3-003)."""
+
     WEIGHT_ADJUST = "WEIGHT_ADJUST"
     CONFIDENCE_DECAY = "CONFIDENCE_DECAY"
     CONDITION_ADD = "CONDITION_ADD"
@@ -41,15 +41,18 @@ class PreconditionChange(BaseModel):
     DDR-V3-007: Preconditions are additive only — can be added or narrowed,
     NEVER removed.
     """
+
     action: str = Field(..., description="'add' | 'narrow' (no 'remove')")
     key: str = Field(..., min_length=1, max_length=80)
     value: Any = Field(...)
-    old_value: Optional[Any] = Field(default=None)
+    old_value: Any | None = Field(default=None)
 
     @model_validator(mode="after")
     def validate_action(self) -> "PreconditionChange":
         if self.action not in ("add", "narrow"):
-            raise ValueError(f"PreconditionChange action must be 'add' or 'narrow', got '{self.action}'")
+            raise ValueError(
+                f"PreconditionChange action must be 'add' or 'narrow', got '{self.action}'"
+            )
         return self
 
 
@@ -58,6 +61,7 @@ class EvidenceChange(BaseModel):
 
     DDR-V3-007: Evidence can be added or deprecated, never deleted.
     """
+
     action: str = Field(..., description="'add' | 'deprecate'")
     evidence_id: str = Field(..., min_length=1, max_length=64)
     reason: str = Field(default="", max_length=512)
@@ -65,7 +69,9 @@ class EvidenceChange(BaseModel):
     @model_validator(mode="after")
     def validate_action(self) -> "EvidenceChange":
         if self.action not in ("add", "deprecate"):
-            raise ValueError(f"EvidenceChange action must be 'add' or 'deprecate', got '{self.action}'")
+            raise ValueError(
+                f"EvidenceChange action must be 'add' or 'deprecate', got '{self.action}'"
+            )
         return self
 
 
@@ -82,41 +88,45 @@ class LearningUnit(BaseModel):
     belief_id: str = Field(..., min_length=1, max_length=64)
 
     # ── Attribute 1: Weight (0~1) ────────────────────────────────────────
-    weight_delta: Optional[float] = Field(
+    weight_delta: float | None = Field(
         default=None,
-        ge=-0.15, le=0.15,
+        ge=-0.15,
+        le=0.15,
         description="Weight adjustment per cycle. Bounded to ±0.15 (DDR-V3-007).",
     )
 
     # ── Attribute 2: Confidence (0~1) ────────────────────────────────────
-    confidence_delta: Optional[float] = Field(
+    confidence_delta: float | None = Field(
         default=None,
-        ge=-1.0, le=1.0,
+        ge=-1.0,
+        le=1.0,
         description="Meta-confidence adjustment about the weight itself.",
     )
 
     # ── Attribute 3: Preconditions ───────────────────────────────────────
-    precondition_change: Optional[PreconditionChange] = Field(default=None)
+    precondition_change: PreconditionChange | None = Field(default=None)
 
     # ── Attribute 4: Time Horizon ────────────────────────────────────────
-    horizon_change: Optional[str] = Field(
+    horizon_change: str | None = Field(
         default=None,
         description="New horizon value: '1d', '3d', '5d', '10d', '21d'",
     )
 
     # ── Attribute 5: Supporting Evidence ─────────────────────────────────
-    evidence_change: Optional[EvidenceChange] = Field(default=None)
+    evidence_change: EvidenceChange | None = Field(default=None)
 
     @model_validator(mode="after")
     def at_least_one_change(self) -> "LearningUnit":
         """DDR-V3-007: At least one Learning Unit attribute must be modified."""
-        has_change = any([
-            self.weight_delta is not None,
-            self.confidence_delta is not None,
-            self.precondition_change is not None,
-            self.horizon_change is not None,
-            self.evidence_change is not None,
-        ])
+        has_change = any(
+            [
+                self.weight_delta is not None,
+                self.confidence_delta is not None,
+                self.precondition_change is not None,
+                self.horizon_change is not None,
+                self.evidence_change is not None,
+            ]
+        )
         if not has_change:
             raise ValueError("LearningUnit must modify at least one of the 5 attributes")
         return self
@@ -158,7 +168,7 @@ class LearningAction(BaseModel):
     learning_unit: LearningUnit = Field(...)
     reason: str = Field(default="", max_length=512)
     executed_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     @property

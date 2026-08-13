@@ -14,13 +14,18 @@ from __future__ import annotations
 
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from src.schemas.transmission_v3_1 import (
-    BreakpointDiagnosis, BreakpointSeverity, FailureMode, FailureModeCategory,
-    SegmentDiagnosis, TransmissionAction, TransmissionEdge, TransmissionUpdateRecord,
+    BreakpointDiagnosis,
+    BreakpointSeverity,
+    FailureMode,
+    FailureModeCategory,
+    SegmentDiagnosis,
+    TransmissionAction,
+    TransmissionEdge,
+    TransmissionUpdateRecord,
 )
 from src.shared.logging import get_logger
 
@@ -80,7 +85,7 @@ class CompetitionResult:
     target: str
     context_key: str
     mechanisms: list = field(default_factory=list)
-    winner: Optional[TransmissionEdge] = None
+    winner: TransmissionEdge | None = None
     margin: float = 0.0
     analysis: str = ""
     winner_quality: float = 0.0
@@ -99,7 +104,7 @@ class TransmissionGraph:
     """Competition-aware graph with 5-attribute edges."""
 
     def __init__(self) -> None:
-        self._edges: dict[str, TransmissionEdge] = {}            # edge_id → edge
+        self._edges: dict[str, TransmissionEdge] = {}  # edge_id → edge
         self._pair_index: dict[tuple, list[str]] = defaultdict(list)  # (s,t) → [edge_id]
         self._outgoing: dict[str, list[str]] = defaultdict(list)
         self._incoming: dict[str, list[str]] = defaultdict(list)
@@ -110,11 +115,16 @@ class TransmissionGraph:
     def _initialize_graph(self) -> None:
         all_tuples = _INITIAL_EDGES + _INTER_EDGES + _CROSS_ASSET + _COMPETING_EDGES
         for src, tgt, d, m, lat, s in all_tuples:
-            self.add_edge(source=src, target=tgt, direction=d, mechanism=m,
-                          latency_days=lat, edge_strength=s)
+            self.add_edge(
+                source=src, target=tgt, direction=d, mechanism=m, latency_days=lat, edge_strength=s
+            )
         comps = sum(1 for p, ids in self._pair_index.items() if len(ids) > 1)
-        logger.info("graph_init edges=%d nodes=%d competitions=%d",
-                     len(self._edges), len(self._outgoing), comps)
+        logger.info(
+            "graph_init edges=%d nodes=%d competitions=%d",
+            len(self._edges),
+            len(self._outgoing),
+            comps,
+        )
 
     @staticmethod
     def _default_conditions(source: str, target: str) -> list[str]:
@@ -129,14 +139,25 @@ class TransmissionGraph:
 
     # ── Edge Management ──────────────────────────────────────────────────
 
-    def add_edge(self, source: str, target: str, direction: str = "+",
-                 mechanism: str = "", latency_days: int = 5,
-                 edge_strength: float = 0.50, reliability: float = 0.50,
-                 ) -> TransmissionEdge:
+    def add_edge(
+        self,
+        source: str,
+        target: str,
+        direction: str = "+",
+        mechanism: str = "",
+        latency_days: int = 5,
+        edge_strength: float = 0.50,
+        reliability: float = 0.50,
+    ) -> TransmissionEdge:
         eid = f"te-{uuid4().hex[:8]}"
         edge = TransmissionEdge(
-            edge_id=eid, source=source, target=target, direction=direction,
-            mechanism=mechanism, latency_days=latency_days, edge_strength=edge_strength,
+            edge_id=eid,
+            source=source,
+            target=target,
+            direction=direction,
+            mechanism=mechanism,
+            latency_days=latency_days,
+            edge_strength=edge_strength,
             reliability_default=reliability,
             conditions_for_validity=self._default_conditions(source, target),
         )
@@ -148,7 +169,7 @@ class TransmissionGraph:
             self._incoming[target].append(source)
         return edge
 
-    def get_edge(self, source: str, target: str, mechanism: str = "") -> Optional[TransmissionEdge]:
+    def get_edge(self, source: str, target: str, mechanism: str = "") -> TransmissionEdge | None:
         eids = self._pair_index.get((source, target), [])
         if not eids:
             return None
@@ -185,8 +206,9 @@ class TransmissionGraph:
 
     # ── Competition Resolution ───────────────────────────────────────────
 
-    def dominant_mechanism(self, source: str, target: str,
-                           context_key: str = "") -> Optional[TransmissionEdge]:
+    def dominant_mechanism(
+        self, source: str, target: str, context_key: str = ""
+    ) -> TransmissionEdge | None:
         edges = self.get_edges_between(source, target)
         if not edges:
             return None
@@ -196,26 +218,35 @@ class TransmissionGraph:
         scored.sort(key=lambda x: x[0], reverse=True)
         return scored[0][1]
 
-    def resolve_competition(self, source: str, target: str,
-                            context_key: str = "") -> CompetitionResult:
+    def resolve_competition(
+        self, source: str, target: str, context_key: str = ""
+    ) -> CompetitionResult:
         edges = self.get_edges_between(source, target)
         if len(edges) < 2:
             w = edges[0] if edges else None
-            return CompetitionResult(source=source, target=target, context_key=context_key,
-                                     mechanisms=edges, winner=w, margin=1.0 if w else 0.0,
-                                     analysis=f"Single mechanism: {w.segment_id if w else 'none'}",
-                                     winner_quality=w.quality_score() if w else 0.0)
+            return CompetitionResult(
+                source=source,
+                target=target,
+                context_key=context_key,
+                mechanisms=edges,
+                winner=w,
+                margin=1.0 if w else 0.0,
+                analysis=f"Single mechanism: {w.segment_id if w else 'none'}",
+                winner_quality=w.quality_score() if w else 0.0,
+            )
         scored = [(e.quality_score(), e) for e in edges]
         scored.sort(key=lambda x: x[0], reverse=True)
-        winner, rup = scored[0][1], scored[1][1] if len(scored) > 1 else None
+        winner, _rup = scored[0][1], scored[1][1] if len(scored) > 1 else None
         w_s, r_s = scored[0][0], scored[1][0] if len(scored) > 1 else 0.0
         margin = w_s - r_s
 
         lines = [f"Competition: {source}→{target} ({len(edges)} mechanisms)"]
         for q, e in scored:
             cr = e.reliability_in_context(context_key) if context_key else e.reliability_default
-            lines.append(f"  [{e.mechanism or 'default'}]: quality={q:.3f} rel={cr:.2f} "
-                         f"str={e.edge_strength:.2f} obs={e.observation_count}")
+            lines.append(
+                f"  [{e.mechanism or 'default'}]: quality={q:.3f} rel={cr:.2f} "
+                f"str={e.edge_strength:.2f} obs={e.observation_count}"
+            )
         if margin > 0.10:
             lines.append(f"Result: {winner.mechanism} CLEARLY dominates (margin={margin:.3f})")
         elif margin > 0.03:
@@ -224,33 +255,60 @@ class TransmissionGraph:
             lines.append(f"Result: Too close to call ({margin:.3f})")
         self._total_competitions_resolved += 1
 
-        return CompetitionResult(source=source, target=target, context_key=context_key,
-                                 mechanisms=edges, winner=winner, margin=margin,
-                                 analysis="\n".join(lines), winner_quality=w_s, runner_up_quality=r_s)
+        return CompetitionResult(
+            source=source,
+            target=target,
+            context_key=context_key,
+            mechanisms=edges,
+            winner=winner,
+            margin=margin,
+            analysis="\n".join(lines),
+            winner_quality=w_s,
+            runner_up_quality=r_s,
+        )
 
-    def promote_mechanism(self, source: str, target: str, mechanism: str,
-                          context_key: str = "", boost: float = 0.03) -> TransmissionUpdateRecord:
+    def promote_mechanism(
+        self, source: str, target: str, mechanism: str, context_key: str = "", boost: float = 0.03
+    ) -> TransmissionUpdateRecord:
         e = self.get_edge(source, target, mechanism)
         if not e:
             return TransmissionUpdateRecord(action=TransmissionAction.NO_CHANGE)
-        u = TransmissionUpdateRecord(segment_id=e.segment_id, source=source, target=target,
-                                     mechanism=mechanism, action=TransmissionAction.PROMOTE_MECHANISM,
-                                     context_key=context_key, reliability_delta=boost,
-                                     competition_delta=boost * 1.5,
-                                     reason=f"Won competition: {source}→{target}[{mechanism}]")
+        u = TransmissionUpdateRecord(
+            segment_id=e.segment_id,
+            source=source,
+            target=target,
+            mechanism=mechanism,
+            action=TransmissionAction.PROMOTE_MECHANISM,
+            context_key=context_key,
+            reliability_delta=boost,
+            competition_delta=boost * 1.5,
+            reason=f"Won competition: {source}→{target}[{mechanism}]",
+        )
         self.apply_update(u)
         return u
 
-    def demote_mechanism(self, source: str, target: str, mechanism: str,
-                         context_key: str = "", penalty: float = -0.04) -> TransmissionUpdateRecord:
+    def demote_mechanism(
+        self,
+        source: str,
+        target: str,
+        mechanism: str,
+        context_key: str = "",
+        penalty: float = -0.04,
+    ) -> TransmissionUpdateRecord:
         e = self.get_edge(source, target, mechanism)
         if not e:
             return TransmissionUpdateRecord(action=TransmissionAction.NO_CHANGE)
-        u = TransmissionUpdateRecord(segment_id=e.segment_id, source=source, target=target,
-                                     mechanism=mechanism, action=TransmissionAction.DEMOTE_MECHANISM,
-                                     context_key=context_key, reliability_delta=penalty,
-                                     competition_delta=penalty,
-                                     reason=f"Lost competition: {source}→{target}[{mechanism}]")
+        u = TransmissionUpdateRecord(
+            segment_id=e.segment_id,
+            source=source,
+            target=target,
+            mechanism=mechanism,
+            action=TransmissionAction.DEMOTE_MECHANISM,
+            context_key=context_key,
+            reliability_delta=penalty,
+            competition_delta=penalty,
+            reason=f"Lost competition: {source}→{target}[{mechanism}]",
+        )
         self.apply_update(u)
         return u
 
@@ -275,8 +333,9 @@ class TransmissionGraph:
                     queue.append((nb, np))
         return paths
 
-    def mechanism_paths(self, source: str, target: str,
-                        max_depth: int = 5) -> list[list[TransmissionEdge]]:
+    def mechanism_paths(
+        self, source: str, target: str, max_depth: int = 5
+    ) -> list[list[TransmissionEdge]]:
         node_paths = self.trace_paths(source, target, max_depth)
         edge_paths: list[list[TransmissionEdge]] = []
 
@@ -296,6 +355,7 @@ class TransmissionGraph:
                     cur.append(e)
                     _combine(idx + 1, cur)
                     cur.pop()
+
             _combine(0, [])
         return edge_paths
 
@@ -311,7 +371,10 @@ class TransmissionGraph:
         es = self.edges_on_path(path)
         if not es:
             return 0.0
-        rels = [e.reliability_in_context(context_key) if context_key else e.reliability_default for e in es]
+        rels = [
+            e.reliability_in_context(context_key) if context_key else e.reliability_default
+            for e in es
+        ]
         prod = 1.0
         for r in rels:
             prod *= max(r, 0.01)
@@ -319,8 +382,9 @@ class TransmissionGraph:
         lp = max(0.6, 1.0 - (len(es) - 1) * 0.03)
         return round(gm * lp, 4)
 
-    def strongest_path(self, source: str, target: str, context_key: str = "",
-                       max_depth: int = 5) -> Optional[tuple[list[str], float]]:
+    def strongest_path(
+        self, source: str, target: str, context_key: str = "", max_depth: int = 5
+    ) -> tuple[list[str], float] | None:
         ps = self.trace_paths(source, target, max_depth)
         if not ps:
             return None
@@ -328,24 +392,31 @@ class TransmissionGraph:
         scored.sort(key=lambda x: x[1], reverse=True)
         return scored[0]
 
-    def compare_paths(self, pa: list[str], pb: list[str],
-                      context_key: str = "") -> dict:
+    def compare_paths(self, pa: list[str], pb: list[str], context_key: str = "") -> dict:
         ra = self.path_reliability(pa, context_key)
         rb = self.path_reliability(pb, context_key)
         d = ra - rb
         w = "tie" if abs(d) < 0.03 else ("a" if d > 0 else "b")
         a_text = f"Path A ({'→'.join(pa)}) reliability={ra:.3f}"
         b_text = f"Path B ({'→'.join(pb)}) reliability={rb:.3f}"
-        return {"winner": w, "reliability_diff": d, "path_a_reliability": ra,
-                "path_b_reliability": rb, "path_a_length": len(pa) - 1,
-                "path_b_length": len(pb) - 1,
-                "analysis": f"{a_text} vs {b_text}: {'tie' if w=='tie' else w+' wins'}"}
+        return {
+            "winner": w,
+            "reliability_diff": d,
+            "path_a_reliability": ra,
+            "path_b_reliability": rb,
+            "path_a_length": len(pa) - 1,
+            "path_b_length": len(pb) - 1,
+            "analysis": f"{a_text} vs {b_text}: {'tie' if w=='tie' else w+' wins'}",
+        }
 
     # ── Breakpoint Detection ─────────────────────────────────────────────
 
-    def find_breakpoint(self, expected_chain: list[str],
-                        actual_segment_states: dict[str, bool],
-                        context_key: str = "") -> BreakpointDiagnosis:
+    def find_breakpoint(
+        self,
+        expected_chain: list[str],
+        actual_segment_states: dict[str, bool],
+        context_key: str = "",
+    ) -> BreakpointDiagnosis:
         d = BreakpointDiagnosis(expected_chain=expected_chain)
         if len(expected_chain) < 2:
             d.all_segments_healthy = True
@@ -366,8 +437,11 @@ class TransmissionGraph:
 
             ok = actual_segment_states.get(sid, False)
             edir = edge.direction if edge else "+"
-            rel = (edge.reliability_in_context(context_key)
-                   if edge and context_key else (edge.reliability_default if edge else 0.50))
+            rel = (
+                edge.reliability_in_context(context_key)
+                if edge and context_key
+                else (edge.reliability_default if edge else 0.50)
+            )
             mech = edge.mechanism if edge else ""
             is_bp = False
             sev = None
@@ -392,22 +466,32 @@ class TransmissionGraph:
                         rat = f"{sid}: BROKEN — low reliability ({rel:.2f}), not surprising"
                     if edge and edge.failure_modes:
                         for fm in edge.failure_modes:
-                            if fm.condition and all(context_key == k for k in fm.condition.get("context_keys", [])):
+                            if fm.condition and all(
+                                context_key == k for k in fm.condition.get("context_keys", [])
+                            ):
                                 mf = fm.mode_id
                                 break
                 else:
                     rat = f"{sid}: NOT transmitted (downstream of {d.breakpoint_segment})"
 
             sd = SegmentDiagnosis(
-                segment_id=sid, source=src, target=tgt, mechanism=mech,
+                segment_id=sid,
+                source=src,
+                target=tgt,
+                mechanism=mech,
                 expected_direction=edir,
                 actual_direction="unknown" if not ok else edir,
-                transmitted_correctly=ok, is_breakpoint=is_bp,
-                breakpoint_severity=sev, matched_failure_mode=mf,
-                evidence={"reliability": rel, "context": context_key,
-                          "observations": edge.observation_count if edge else 0,
-                          "strength": edge.edge_strength if edge else 0.0,
-                          "latency_days": edge.latency_days if edge else 0},
+                transmitted_correctly=ok,
+                is_breakpoint=is_bp,
+                breakpoint_severity=sev,
+                matched_failure_mode=mf,
+                evidence={
+                    "reliability": rel,
+                    "context": context_key,
+                    "observations": edge.observation_count if edge else 0,
+                    "strength": edge.edge_strength if edge else 0.0,
+                    "latency_days": edge.latency_days if edge else 0,
+                },
                 diagnosis_rationale=rat,
             )
             sds.append(sd)
@@ -422,19 +506,26 @@ class TransmissionGraph:
                 d.breakpoint_segment = bp.segment_id
                 edge = self.get_edge(bp.source, bp.target, bp.mechanism)
                 if edge:
-                    rel = (edge.reliability_in_context(context_key)
-                           if context_key else edge.reliability_default)
+                    rel = (
+                        edge.reliability_in_context(context_key)
+                        if context_key
+                        else edge.reliability_default
+                    )
                     if rel > 0.65:
                         d.root_cause_category = FailureModeCategory.EVENT_OVERRIDE
                         d.root_cause_description = f"High-reliability edge ({rel:.2f}) broke → external event in '{context_key}'"
                         d.suggested_action = TransmissionAction.REGISTER_FAILURE
                     elif rel > 0.35:
                         d.root_cause_category = FailureModeCategory.REGIME_INCOMPATIBLE
-                        d.root_cause_description = f"Moderate-reliability edge ({rel:.2f}) broke → regime incompatibility"
+                        d.root_cause_description = (
+                            f"Moderate-reliability edge ({rel:.2f}) broke → regime incompatibility"
+                        )
                         d.suggested_action = TransmissionAction.WEAKEN
                     else:
                         d.root_cause_category = FailureModeCategory.THRESHOLD_NONLINEAR
-                        d.root_cause_description = f"Low-reliability edge ({rel:.2f}) broke → structurally unreliable"
+                        d.root_cause_description = (
+                            f"Low-reliability edge ({rel:.2f}) broke → structurally unreliable"
+                        )
                         d.suggested_action = TransmissionAction.WEAKEN
                 else:
                     d.root_cause_category = FailureModeCategory.STRUCTURAL_BREAK
@@ -444,9 +535,10 @@ class TransmissionGraph:
                     d.new_failure_mode = FailureMode(
                         category=d.root_cause_category,
                         condition={"context_key": context_key} if context_key else {},
-                        description=d.root_cause_description, occurrence_count=1,
-                        first_observed=datetime.now(timezone.utc),
-                        last_observed=datetime.now(timezone.utc),
+                        description=d.root_cause_description,
+                        occurrence_count=1,
+                        first_observed=datetime.now(UTC),
+                        last_observed=datetime.now(UTC),
                     )
 
         return d
@@ -457,7 +549,7 @@ class TransmissionGraph:
         sid = update.segment_id
         # Locate edge — try by edge_id first, then segment_id matching
         edge = None
-        if hasattr(update, 'edge_id') and update.edge_id:
+        if hasattr(update, "edge_id") and update.edge_id:
             edge = self._edges.get(update.edge_id)
         if not edge and sid:
             for e in self._edges.values():
@@ -479,11 +571,15 @@ class TransmissionGraph:
         elif update.action in (TransmissionAction.WEAKEN, TransmissionAction.DEMOTE_MECHANISM):
             edge.break_count += 1
 
-        edge.reliability_default = max(0.05, min(0.95, edge.reliability_default + update.reliability_delta))
+        edge.reliability_default = max(
+            0.05, min(0.95, edge.reliability_default + update.reliability_delta)
+        )
 
         if update.context_key and update.context_reliability_delta != 0:
             cur = edge.reliability_by_context.get(update.context_key, edge.reliability_default)
-            edge.reliability_by_context[update.context_key] = max(0.05, min(0.95, cur + update.context_reliability_delta))
+            edge.reliability_by_context[update.context_key] = max(
+                0.05, min(0.95, cur + update.context_reliability_delta)
+            )
 
         if update.strength_delta != 0:
             edge.edge_strength = max(0.05, min(0.95, edge.edge_strength + update.strength_delta))
@@ -492,8 +588,10 @@ class TransmissionGraph:
             fm = FailureMode(
                 category=update.failure_category,
                 condition={"context_key": update.context_key} if update.context_key else {},
-                description=update.failure_description, occurrence_count=1,
-                first_observed=datetime.now(timezone.utc), last_observed=datetime.now(timezone.utc),
+                description=update.failure_description,
+                occurrence_count=1,
+                first_observed=datetime.now(UTC),
+                last_observed=datetime.now(UTC),
             )
             edge.failure_modes.append(fm)
 
@@ -501,21 +599,30 @@ class TransmissionGraph:
             if update.failure_description not in edge.conditions_for_validity:
                 edge.conditions_for_validity.append(update.failure_description)
 
-        edge.last_updated = datetime.now(timezone.utc)
+        edge.last_updated = datetime.now(UTC)
         update.new_reliability = edge.reliability_default
         self._total_updates += 1
         return edge
 
-    def reinforce_edge(self, source: str, target: str, context_key: str = "",
-                       amount: float = 0.02, reason: str = "",
-                       mechanism: str = "") -> TransmissionUpdateRecord:
+    def reinforce_edge(
+        self,
+        source: str,
+        target: str,
+        context_key: str = "",
+        amount: float = 0.02,
+        reason: str = "",
+        mechanism: str = "",
+    ) -> TransmissionUpdateRecord:
         edge = self.get_edge(source, target, mechanism)
         if not edge:
             self.add_edge(source, target, mechanism=mechanism)
         u = TransmissionUpdateRecord(
             segment_id=f"{source}→{target}" + (f"[{mechanism}]" if mechanism else ""),
-            source=source, target=target, mechanism=mechanism,
-            action=TransmissionAction.REINFORCE, context_key=context_key,
+            source=source,
+            target=target,
+            mechanism=mechanism,
+            action=TransmissionAction.REINFORCE,
+            context_key=context_key,
             reliability_delta=amount,
             context_reliability_delta=amount * 0.8 if context_key else 0.0,
             reason=reason or f"Transmission confirmed: {source}→{target}",
@@ -523,16 +630,25 @@ class TransmissionGraph:
         self.apply_update(u)
         return u
 
-    def weaken_edge(self, source: str, target: str, context_key: str = "",
-                    amount: float = -0.06, reason: str = "",
-                    mechanism: str = "") -> TransmissionUpdateRecord:
+    def weaken_edge(
+        self,
+        source: str,
+        target: str,
+        context_key: str = "",
+        amount: float = -0.06,
+        reason: str = "",
+        mechanism: str = "",
+    ) -> TransmissionUpdateRecord:
         edge = self.get_edge(source, target, mechanism)
         if not edge:
             self.add_edge(source, target, mechanism=mechanism)
         u = TransmissionUpdateRecord(
             segment_id=f"{source}→{target}" + (f"[{mechanism}]" if mechanism else ""),
-            source=source, target=target, mechanism=mechanism,
-            action=TransmissionAction.WEAKEN, context_key=context_key,
+            source=source,
+            target=target,
+            mechanism=mechanism,
+            action=TransmissionAction.WEAKEN,
+            context_key=context_key,
             reliability_delta=amount,
             context_reliability_delta=amount * 1.2 if context_key else 0.0,
             reason=reason or f"Transmission broken: {source}→{target}",
@@ -550,7 +666,8 @@ class TransmissionGraph:
     def node_count(self) -> int:
         ns = set()
         for e in self._edges.values():
-            ns.add(e.source); ns.add(e.target)
+            ns.add(e.source)
+            ns.add(e.target)
         return len(ns)
 
     @property
@@ -569,8 +686,7 @@ class TransmissionGraph:
 
     def top_edges(self, n: int = 5, context_key: str = "") -> list[TransmissionEdge]:
         """Top N edges by quality score."""
-        scored = [(e.quality_score(), e) for e in self._edges.values()
-                  if e.observation_count >= 3]
+        scored = [(e.quality_score(), e) for e in self._edges.values() if e.observation_count >= 3]
         scored.sort(key=lambda x: x[0], reverse=True)
         return [e for _, e in scored[:n]]
 

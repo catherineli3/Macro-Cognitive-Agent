@@ -20,9 +20,8 @@ This is the primary input to Mental Models and Hypothesis Engine.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Optional
 
 from src.data_pipeline.feature_engine import FeatureSnapshot, IndicatorFeatures
 from src.shared.logging import get_logger
@@ -68,7 +67,7 @@ class DimensionScore:
 class MacroStateVector:
     """Complete multi-dimensional macro state assessment."""
 
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     dimensions: dict[StateVectorDimension, DimensionScore] = field(default_factory=dict)
     # Overall summary
     aggregate_score: float = 0.0  # Weighted average across dimensions
@@ -76,7 +75,7 @@ class MacroStateVector:
     risk_regime: str = "normal"  # normal / cautious / risk_off / risk_on
     summary: str = ""
 
-    def get(self, dim: StateVectorDimension) -> Optional[DimensionScore]:
+    def get(self, dim: StateVectorDimension) -> DimensionScore | None:
         return self.dimensions.get(dim)
 
     def is_tightening(self) -> bool:
@@ -235,16 +234,14 @@ class StateVectorBuilder:
             drivers=drivers,
             supporting_indicators=indicator_names,
             raw_values=raw_values,
-            narrative_seeds=self._generate_narrative_seeds(
-                dim, avg_score, direction, drivers
-            ),
+            narrative_seeds=self._generate_narrative_seeds(dim, avg_score, direction, drivers),
         )
 
     @staticmethod
     def _indicator_to_dimension_score(
         ind: IndicatorFeatures,
         bias: str,
-    ) -> Optional[float]:
+    ) -> float | None:
         """Map an indicator's features to a 0-1 dimension score."""
         from src.data_pipeline.feature_engine import FeatureDimension
 
@@ -353,7 +350,7 @@ class StateVectorBuilder:
         liq_val = liquidity.score if liquidity else 0.5
         cr_val = credit.score if credit else 0.5
 
-        composite = (risk_val * 0.4 + liq_val * 0.3 + cr_val * 0.3)
+        composite = risk_val * 0.4 + liq_val * 0.3 + cr_val * 0.3
 
         if composite > 0.7:
             return "risk_on"

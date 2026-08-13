@@ -5,9 +5,7 @@ Provides CRUD operations, lifecycle management, and query capabilities.
 
 from __future__ import annotations
 
-from typing import Optional
-
-from src.schemas.research import ResearchFramework, FrameworkStatus
+from src.schemas.research import FrameworkStatus, ResearchFramework
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -31,8 +29,9 @@ class FrameworkStore:
         status = framework.status.value
         self._by_status.setdefault(status, []).append(fid)
 
-        logger.debug("Saved framework: %s (status=%s, principles=%d)",
-                     fid, status, len(framework.principles))
+        logger.debug(
+            "Saved framework: %s (status=%s, principles=%d)", fid, status, len(framework.principles)
+        )
         return fid
 
     def get(self, framework_id: str) -> ResearchFramework | None:
@@ -46,8 +45,7 @@ class FrameworkStore:
 
     def get_active(self) -> list[ResearchFramework]:
         """Get all active frameworks (not retired)."""
-        return [f for f in self._frameworks.values()
-                if f.status != FrameworkStatus.RETIRED]
+        return [f for f in self._frameworks.values() if f.status != FrameworkStatus.RETIRED]
 
     def get_candidates(self) -> list[ResearchFramework]:
         return self._get_by_status(FrameworkStatus.CANDIDATE)
@@ -72,13 +70,13 @@ class FrameworkStore:
         f.retirement_reason = reason
         self._retired[framework_id] = f
 
-        self._remove_from_status_index(framework_id, f.status.value if f.status.value != "retired"
-                                       else None)
+        self._remove_from_status_index(
+            framework_id, f.status.value if f.status.value != "retired" else None
+        )
         logger.info("Retired framework %s: %s", framework_id, reason)
         return True
 
-    def add_principle(self, framework_id: str, principle_id: str,
-                      weight: float = 1.0) -> bool:
+    def add_principle(self, framework_id: str, principle_id: str, weight: float = 1.0) -> bool:
         """Add a principle to a framework."""
         f = self._frameworks.get(framework_id)
         if not f:
@@ -121,8 +119,7 @@ class FrameworkStore:
         self._by_status.setdefault(new_status.value, []).append(framework_id)
         return True
 
-    def _remove_from_status_index(self, framework_id: str,
-                                   old_status: Optional[str]) -> None:
+    def _remove_from_status_index(self, framework_id: str, old_status: str | None) -> None:
         if old_status and old_status in self._by_status:
             self._by_status[old_status] = [
                 fid for fid in self._by_status[old_status] if fid != framework_id
@@ -134,8 +131,7 @@ class FrameworkStore:
 
     def get_for_principle(self, principle_id: str) -> list[ResearchFramework]:
         """Get all frameworks that contain a specific principle."""
-        return [f for f in self._frameworks.values()
-                if principle_id in f.principles]
+        return [f for f in self._frameworks.values() if principle_id in f.principles]
 
     @property
     def count(self) -> int:
@@ -143,8 +139,7 @@ class FrameworkStore:
 
     @property
     def active_count(self) -> int:
-        return len([f for f in self._frameworks.values()
-                    if f.status == FrameworkStatus.ACTIVE])
+        return len([f for f in self._frameworks.values() if f.status == FrameworkStatus.ACTIVE])
 
     @property
     def total_ever_created(self) -> int:

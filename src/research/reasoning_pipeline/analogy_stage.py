@@ -10,13 +10,12 @@ and critically — identifies what's different this time.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from src.research.reasoning_pipeline.schemas import (
-    ObservationOutput,
-    EvidenceOutput,
-    PatternOutput,
     AnalogyOutput,
+    EvidenceOutput,
+    ObservationOutput,
+    PatternOutput,
     StageStatus,
 )
 
@@ -71,7 +70,12 @@ class AnalogyStage:
         "2015-2016": {
             "description": "China devaluation, oil crash, manufacturing recession",
             "regime": "global slowdown / disinflation",
-            "triggers": ["china devaluation", "oil crash", "manufacturing recession", "dollar strength"],
+            "triggers": [
+                "china devaluation",
+                "oil crash",
+                "manufacturing recession",
+                "dollar strength",
+            ],
             "outcome": "Fed paused, markets recovered",
         },
         "2018 Q4": {
@@ -100,7 +104,7 @@ class AnalogyStage:
         },
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def execute(
@@ -137,9 +141,7 @@ class AnalogyStage:
         output.lessons = self._extract_lessons(output.analogies)
 
         # 3. Identify differences
-        output.differences = self._identify_differences(
-            output.analogies, observation
-        )
+        output.differences = self._identify_differences(output.analogies, observation)
 
         # 4. Select best analogy
         if output.analogies:
@@ -175,14 +177,16 @@ class AnalogyStage:
             matches = sum(1 for t in triggers if t.lower() in query_lower)
             if matches > 0:
                 similarity = "high" if matches >= 3 else ("medium" if matches >= 2 else "low")
-                scored.append({
-                    "period": period,
-                    "description": episode["description"],
-                    "similarity": similarity,
-                    "regime": episode["regime"],
-                    "outcome": episode["outcome"],
-                    "match_score": matches,
-                })
+                scored.append(
+                    {
+                        "period": period,
+                        "description": episode["description"],
+                        "similarity": similarity,
+                        "regime": episode["regime"],
+                        "outcome": episode["outcome"],
+                        "match_score": matches,
+                    }
+                )
 
         # Sort by match score
         scored.sort(key=lambda x: x["match_score"], reverse=True)
@@ -196,19 +200,31 @@ class AnalogyStage:
             outcome = analogy["outcome"]
 
             if "soft landing" in outcome:
-                lessons.append(f"{period}: Tightening does not always cause recession — soft landings possible")
+                lessons.append(
+                    f"{period}: Tightening does not always cause recession — soft landings possible"
+                )
             if "crisis" in outcome.lower() or "crash" in outcome.lower():
-                lessons.append(f"{period}: Tightening cycles can expose hidden financial vulnerabilities")
+                lessons.append(
+                    f"{period}: Tightening cycles can expose hidden financial vulnerabilities"
+                )
             if "inflation" in outcome.lower():
                 lessons.append(f"{period}: Inflation can persist longer than consensus expects")
             if "recovery" in outcome.lower():
-                lessons.append(f"{period}: Markets often recover faster than macro fundamentals suggest")
+                lessons.append(
+                    f"{period}: Markets often recover faster than macro fundamentals suggest"
+                )
             if "pivot" in outcome.lower():
-                lessons.append(f"{period}: Central banks can and will pivot when financial stability is at risk")
+                lessons.append(
+                    f"{period}: Central banks can and will pivot when financial stability is at risk"
+                )
             if "QE" in outcome.upper():
-                lessons.append(f"{period}: Unconventional policy can stabilize markets even in extreme scenarios")
+                lessons.append(
+                    f"{period}: Unconventional policy can stabilize markets even in extreme scenarios"
+                )
             if "contagion" in outcome.lower():
-                lessons.append(f"{period}: Local crises can become global through contagion channels")
+                lessons.append(
+                    f"{period}: Local crises can become global through contagion channels"
+                )
 
         return lessons[:6]
 

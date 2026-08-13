@@ -8,15 +8,15 @@ Modules:
     - HistoricalSimilarity: Match current to historical periods
 """
 
-from src.regime.schemas import (
-    MacroRegime,
-    HistoricalAnalog,
-    RegimeTransitionModel,
-    RegimeReport,
-)
+from src.regime.historical_similarity import HistoricalSimilarity
 from src.regime.regime_classifier import RegimeClassifier
 from src.regime.regime_transition import RegimeTransitionDetector
-from src.regime.historical_similarity import HistoricalSimilarity
+from src.regime.schemas import (
+    HistoricalAnalog,
+    MacroRegime,
+    RegimeReport,
+    RegimeTransitionModel,
+)
 
 __all__ = [
     "MacroRegime",

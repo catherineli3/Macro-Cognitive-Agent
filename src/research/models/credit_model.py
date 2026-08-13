@@ -89,14 +89,23 @@ class CreditModel(MentalModel):
     def _interpret_credit(name: str, value: float, features: list[dict]) -> dict:
         if name == "HYG":
             if value < 72:
-                return {"text": f"HYG weak ({value:.1f}) — high-yield stress signal", "contradicts": True}
+                return {
+                    "text": f"HYG weak ({value:.1f}) — high-yield stress signal",
+                    "contradicts": True,
+                }
             elif value > 78:
-                return {"text": f"HYG strong ({value:.1f}) — credit appetite healthy", "contradicts": False}
+                return {
+                    "text": f"HYG strong ({value:.1f}) — credit appetite healthy",
+                    "contradicts": False,
+                }
             else:
                 return {"text": f"HYG range-bound ({value:.1f})", "contradicts": False}
         if name == "LQD":
             if value < 105:
-                return {"text": f"LQD weak ({value:.1f}) — IG spreads widening", "contradicts": True}
+                return {
+                    "text": f"LQD weak ({value:.1f}) — IG spreads widening",
+                    "contradicts": True,
+                }
             elif value > 115:
                 return {"text": f"LQD strong ({value:.1f}) — IG demand solid", "contradicts": False}
             else:
@@ -104,9 +113,7 @@ class CreditModel(MentalModel):
         return {"text": f"{name}: {value:.2f}", "contradicts": False}
 
     @staticmethod
-    def _generate_narratives(
-        direction: str, supporting: list[EvidenceItem]
-    ) -> list[str]:
+    def _generate_narratives(direction: str, supporting: list[EvidenceItem]) -> list[str]:
         if direction == "contraction":
             return [
                 "Credit stress → equity risk premium repricing",

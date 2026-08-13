@@ -7,11 +7,10 @@ Key design:
     - The complete version history is the Agent's reasoning journey
 """
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
-
 
 # ── Belief Version ───────────────────────────────────────────────────────────
 
@@ -32,7 +31,7 @@ class BeliefVersion(BaseModel):
     belief_id: str = Field(..., min_length=1, max_length=64)
     version_number: int = Field(..., ge=1, description="Monotonic: 1, 2, 3...")
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     # ── Snapshot of the 5 Learning Unit attributes at this version ───────
@@ -48,13 +47,13 @@ class BeliefVersion(BaseModel):
         description="'initial' | 'prediction_outcome' | 'manual' | 'deprecation'",
     )
     trigger_detail: str = Field(default="", max_length=512)
-    diagnosis_report_id: Optional[str] = Field(
+    diagnosis_report_id: str | None = Field(
         default=None,
         description="Which diagnosis caused this version change",
     )
 
     # ── Diff from previous version (for v2+) ─────────────────────────────
-    changes_from_previous: Optional[dict[str, Any]] = Field(
+    changes_from_previous: dict[str, Any] | None = Field(
         default=None,
         description="Key-value pairs of changed attributes",
     )
@@ -89,7 +88,8 @@ class AdaptiveBelief(BaseModel):
     belief_id: str = Field(..., min_length=1, max_length=64)
     dimension: str = Field(..., min_length=1, max_length=40)
     transmission_channel: str = Field(
-        default="", max_length=80,
+        default="",
+        max_length=80,
         description="The transmission channel this belief applies to (DDR-V3-009)",
     )
 
@@ -142,7 +142,7 @@ class AdaptiveBelief(BaseModel):
     def is_deprecated(self) -> bool:
         return self.status == "deprecated"
 
-    def get_version(self, v: int) -> Optional[BeliefVersion]:
+    def get_version(self, v: int) -> BeliefVersion | None:
         """Retrieve a specific version of this belief."""
         for version in self.version_history:
             if version.version_number == v:
@@ -172,7 +172,7 @@ class AdaptiveBelief(BaseModel):
         if version is None:
             return f"Version {v} not found."
         if version.is_initial:
-            return f"v1: Initial belief — created by Hypothesis Generator."
+            return "v1: Initial belief — created by Hypothesis Generator."
         parts = [f"v{v}: "]
         if version.changes_from_previous:
             for attr, change in version.changes_from_previous.items():

@@ -11,16 +11,19 @@ Four finding categories:
 
 from __future__ import annotations
 
-from collections import defaultdict, Counter
-from datetime import datetime, timezone
+from collections import Counter, defaultdict
 
 from src.schemas.transmission_v3_1 import (
-    BreakpointDiagnosis, FailureModeCategory, FindingConfidence,
-    ResearchFinding, ResearchFindingsReport, ResearchNote, TransmissionEdge,
+    BreakpointDiagnosis,
+    FindingConfidence,
+    ResearchFinding,
+    ResearchFindingsReport,
+    ResearchNote,
+    TransmissionEdge,
 )
-from src.transmission.transmission_graph import TransmissionGraph
-from src.transmission.research_note import ResearchNoteGenerator
 from src.shared.logging import get_logger
+from src.transmission.research_note import ResearchNoteGenerator
+from src.transmission.transmission_graph import TransmissionGraph
 
 logger = get_logger(__name__)
 
@@ -72,10 +75,14 @@ class ResearchFindingsEngine:
         summary = self._build_summary(f1, f2, f3, f4, context_key)
 
         return ResearchFindingsReport(
-            context_key=context_key, cycle_number=cycle_number,
-            reliability_ranking=f1, failure_warnings=f2,
-            failure_event_correlations=f3, regime_similarities=f4,
-            research_notes=notes, summary=summary,
+            context_key=context_key,
+            cycle_number=cycle_number,
+            reliability_ranking=f1,
+            failure_warnings=f2,
+            failure_event_correlations=f3,
+            regime_similarities=f4,
+            research_notes=notes,
+            summary=summary,
         )
 
     # ── F1: Reliability Ranking ──────────────────────────────────────────
@@ -94,16 +101,24 @@ class ResearchFindingsEngine:
             if edge.named_failure_modes:
                 desc += f" Failure modes: {', '.join(edge.named_failure_modes[:3])}."
 
-            findings.append(ResearchFinding(
-                category="reliability_ranking",
-                title=f"#{rank} Most Reliable: {edge.segment_id} (q={edge.quality_score():.3f})",
-                description=desc,
-                evidence={"rank": rank, "reliability": cr, "strength": edge.edge_strength,
-                          "quality": edge.quality_score(), "observations": edge.observation_count},
-                relevance_score=round(edge.quality_score(), 3),
-                confidence=self._obs_conf(edge.observation_count),
-                source_edges=[edge.segment_id], context_key=ctx,
-            ))
+            findings.append(
+                ResearchFinding(
+                    category="reliability_ranking",
+                    title=f"#{rank} Most Reliable: {edge.segment_id} (q={edge.quality_score():.3f})",
+                    description=desc,
+                    evidence={
+                        "rank": rank,
+                        "reliability": cr,
+                        "strength": edge.edge_strength,
+                        "quality": edge.quality_score(),
+                        "observations": edge.observation_count,
+                    },
+                    relevance_score=round(edge.quality_score(), 3),
+                    confidence=self._obs_conf(edge.observation_count),
+                    source_edges=[edge.segment_id],
+                    context_key=ctx,
+                )
+            )
 
         # Weak edges (risk alerts)
         for edge in self._graph.weakest_edges(n=3):
@@ -113,16 +128,22 @@ class ResearchFindingsEngine:
                     f"Break rate {edge.break_rate:.0%} ({edge.break_count}/{edge.observation_count}). "
                     f"Strength {edge.edge_strength:.2f}. This edge is structurally unreliable."
                 )
-                findings.append(ResearchFinding(
-                    category="reliability_ranking",
-                    title=f"Weak: {edge.segment_id} (rel={edge.reliability_default:.1%})",
-                    description=desc,
-                    evidence={"reliability": edge.reliability_default,
-                              "break_rate": edge.break_rate, "strength": edge.edge_strength},
-                    relevance_score=round(1.0 - edge.reliability_default, 3),
-                    confidence=self._obs_conf(edge.observation_count),
-                    source_edges=[edge.segment_id], context_key=ctx,
-                ))
+                findings.append(
+                    ResearchFinding(
+                        category="reliability_ranking",
+                        title=f"Weak: {edge.segment_id} (rel={edge.reliability_default:.1%})",
+                        description=desc,
+                        evidence={
+                            "reliability": edge.reliability_default,
+                            "break_rate": edge.break_rate,
+                            "strength": edge.edge_strength,
+                        },
+                        relevance_score=round(1.0 - edge.reliability_default, 3),
+                        confidence=self._obs_conf(edge.observation_count),
+                        source_edges=[edge.segment_id],
+                        context_key=ctx,
+                    )
+                )
 
         return findings
 
@@ -154,38 +175,51 @@ class ResearchFindingsEngine:
                     if edge and edge.dominant_failure_mode:
                         desc += f" Primary failure: {edge.dominant_failure_mode.name}."
 
-                    findings.append(ResearchFinding(
-                        category="failure_warning",
-                        title=f"Failing: {seg_id} ({count} recent breaks)",
-                        description=desc,
-                        evidence={"recent_breaks": count, "reliability": rel,
-                                  "observations": obs},
-                        relevance_score=min(0.95, count / 10),
-                        confidence=self._obs_conf(obs),
-                        source_edges=[seg_id], context_key=ctx,
-                    ))
+                    findings.append(
+                        ResearchFinding(
+                            category="failure_warning",
+                            title=f"Failing: {seg_id} ({count} recent breaks)",
+                            description=desc,
+                            evidence={
+                                "recent_breaks": count,
+                                "reliability": rel,
+                                "observations": obs,
+                            },
+                            relevance_score=min(0.95, count / 10),
+                            confidence=self._obs_conf(obs),
+                            source_edges=[seg_id],
+                            context_key=ctx,
+                        )
+                    )
 
         # Also check edges with high break_rate
         for edge in self._graph.all_edges():
             if edge.observation_count >= 10 and edge.break_rate > 0.15:
-                if not any(f.title.startswith("Failing:") and edge.segment_id in f.title
-                           for f in findings):
+                if not any(
+                    f.title.startswith("Failing:") and edge.segment_id in f.title for f in findings
+                ):
                     desc = (
                         f"{edge.segment_id} has elevated break rate: {edge.break_rate:.1%} "
                         f"({edge.break_count}/{edge.observation_count}). "
                         f"Reliability: {edge.reliability_default:.1%}, "
                         f"Strength: {edge.edge_strength:.2f}."
                     )
-                    findings.append(ResearchFinding(
-                        category="failure_warning",
-                        title=f"Elevated breaks: {edge.segment_id} ({edge.break_rate:.0%} rate)",
-                        description=desc,
-                        evidence={"break_rate": edge.break_rate, "break_count": edge.break_count,
-                                  "observations": edge.observation_count},
-                        relevance_score=round(edge.break_rate, 3),
-                        confidence=self._obs_conf(edge.observation_count),
-                        source_edges=[edge.segment_id], context_key=ctx,
-                    ))
+                    findings.append(
+                        ResearchFinding(
+                            category="failure_warning",
+                            title=f"Elevated breaks: {edge.segment_id} ({edge.break_rate:.0%} rate)",
+                            description=desc,
+                            evidence={
+                                "break_rate": edge.break_rate,
+                                "break_count": edge.break_count,
+                                "observations": edge.observation_count,
+                            },
+                            relevance_score=round(edge.break_rate, 3),
+                            confidence=self._obs_conf(edge.observation_count),
+                            source_edges=[edge.segment_id],
+                            context_key=ctx,
+                        )
+                    )
 
         return findings
 
@@ -217,17 +251,22 @@ class ResearchFindingsEngine:
                     f"Edge reliability: {edge.reliability_default:.1%} "
                     f"({edge.observation_count} obs)."
                 )
-                findings.append(ResearchFinding(
-                    category="failure_event_correlation",
-                    title=f"Failure pattern: {seg_id} → {names[0]}",
-                    description=desc,
-                    evidence={"failure_modes": names[:5],
-                              "categories": dict(cats.most_common(5)),
-                              "total_failures": len(fms)},
-                    relevance_score=min(0.9, len(fms) / 20),
-                    confidence=self._obs_conf(edge.observation_count),
-                    source_edges=[seg_id], context_key=ctx,
-                ))
+                findings.append(
+                    ResearchFinding(
+                        category="failure_event_correlation",
+                        title=f"Failure pattern: {seg_id} → {names[0]}",
+                        description=desc,
+                        evidence={
+                            "failure_modes": names[:5],
+                            "categories": dict(cats.most_common(5)),
+                            "total_failures": len(fms),
+                        },
+                        relevance_score=min(0.9, len(fms) / 20),
+                        confidence=self._obs_conf(edge.observation_count),
+                        source_edges=[seg_id],
+                        context_key=ctx,
+                    )
+                )
 
         return findings
 
@@ -239,16 +278,18 @@ class ResearchFindingsEngine:
         if len(self._regime_snapshots) < 2:
             # Not enough history yet
             if self._diagnosis_history:
-                findings.append(ResearchFinding(
-                    category="regime_similarity",
-                    title="Building transmission history baseline",
-                    description=f"Accumulated {len(self._diagnosis_history)} diagnoses. "
-                                f"Regime comparison requires multiple cycles to "
-                                f"establish baselines for similarity analysis.",
-                    relevance_score=0.3,
-                    confidence=FindingConfidence.PRELIMINARY,
-                    context_key=ctx,
-                ))
+                findings.append(
+                    ResearchFinding(
+                        category="regime_similarity",
+                        title="Building transmission history baseline",
+                        description=f"Accumulated {len(self._diagnosis_history)} diagnoses. "
+                        f"Regime comparison requires multiple cycles to "
+                        f"establish baselines for similarity analysis.",
+                        relevance_score=0.3,
+                        confidence=FindingConfidence.PRELIMINARY,
+                        context_key=ctx,
+                    )
+                )
             return findings
 
         # Compare current graph state to historical snapshots
@@ -274,17 +315,23 @@ class ResearchFindingsEngine:
                 f"At that time, the dominant pattern was similar edge "
                 f"reliability distribution."
             )
-            findings.append(ResearchFinding(
-                category="regime_similarity",
-                title=f"Similar to cycle #{snap_cycle} ({snap_ctx}) — score {score:.0%}",
-                description=desc,
-                evidence={"similarity_score": score,
-                          "matched_cycle": snap_cycle,
-                          "matched_context": snap_ctx},
-                relevance_score=round(score, 3),
-                confidence=FindingConfidence.OBSERVED if score > 0.6 else FindingConfidence.PRELIMINARY,
-                context_key=ctx,
-            ))
+            findings.append(
+                ResearchFinding(
+                    category="regime_similarity",
+                    title=f"Similar to cycle #{snap_cycle} ({snap_ctx}) — score {score:.0%}",
+                    description=desc,
+                    evidence={
+                        "similarity_score": score,
+                        "matched_cycle": snap_cycle,
+                        "matched_context": snap_ctx,
+                    },
+                    relevance_score=round(score, 3),
+                    confidence=(
+                        FindingConfidence.OBSERVED if score > 0.6 else FindingConfidence.PRELIMINARY
+                    ),
+                    context_key=ctx,
+                )
+            )
 
         return findings
 
@@ -302,7 +349,8 @@ class ResearchFindingsEngine:
                     "break_rate": edge.break_rate,
                 }
         return {
-            "context": ctx, "cycle": cycle,
+            "context": ctx,
+            "cycle": cycle,
             "edge_count": len(edges_summary),
             "edges": edges_summary,
             "stability": self._graph.reliability_stability(),
@@ -325,19 +373,21 @@ class ResearchFindingsEngine:
         return round(max(0.0, 1.0 - avg_diff), 4)
 
     def _build_summary(self, f1, f2, f3, f4, ctx: str) -> str:
-        ctx_str = f" in {ctx}" if ctx else ""
+        _ctx_str = f" in {ctx}" if ctx else ""
         parts = [f"Research Findings Summary [{ctx or 'default'}]:"]
         parts.append(f"  Most reliable: {f1[0].title if f1 else 'insufficient data'}")
         if f2:
             parts.append(f"  Warnings: {len(f2)} transmissions showing stress")
         else:
-            parts.append(f"  Warnings: none — all transmissions within normal range")
+            parts.append("  Warnings: none — all transmissions within normal range")
         if f3:
             parts.append(f"  Failure patterns: {len(f3)} identified")
         if f4:
             parts.append(f"  Regime comparison: {f4[0].title if f4 else 'baseline'}")
-        parts.append(f"  Total evidence: {self._graph.total_observations} observations "
-                      f"across {self._graph.edge_count} edges")
+        parts.append(
+            f"  Total evidence: {self._graph.total_observations} observations "
+            f"across {self._graph.edge_count} edges"
+        )
         return "\n".join(parts)
 
     def _find_edge_by_segment(self, seg_id: str) -> TransmissionEdge | None:
@@ -348,9 +398,12 @@ class ResearchFindingsEngine:
 
     @staticmethod
     def _obs_conf(obs: int) -> FindingConfidence:
-        if obs >= 100: return FindingConfidence.ROBUST
-        if obs >= 50: return FindingConfidence.ESTABLISHED
-        if obs >= 20: return FindingConfidence.OBSERVED
+        if obs >= 100:
+            return FindingConfidence.ROBUST
+        if obs >= 50:
+            return FindingConfidence.ESTABLISHED
+        if obs >= 20:
+            return FindingConfidence.OBSERVED
         return FindingConfidence.PRELIMINARY
 
     @property

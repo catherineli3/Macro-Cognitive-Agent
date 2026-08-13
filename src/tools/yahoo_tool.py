@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """YahooMacroTool — Retrieve macro market data from Yahoo Finance.
 
 Sprint 5 design:
@@ -34,9 +32,11 @@ Sprint 5 design:
         - Multi-symbol batching
 """
 
+from __future__ import annotations
+
 import asyncio
 import time
-from datetime import datetime, timezone
+from datetime import UTC
 
 import pandas as pd
 
@@ -94,7 +94,9 @@ class YahooMacroTool(BaseTool):
 
         logger.debug(
             "yahoo_fetch_start symbol=%s period=%s interval=%s",
-            symbol, period, interval,
+            symbol,
+            period,
+            interval,
         )
 
         # ── Fetch raw data ───────────────────────────────────────────────
@@ -120,7 +122,9 @@ class YahooMacroTool(BaseTool):
 
         logger.info(
             "yahoo_fetch_done symbol=%s records=%d latency_ms=%.1f",
-            symbol, len(macro_data), latency,
+            symbol,
+            len(macro_data),
+            latency,
         )
 
         return ToolResult(
@@ -132,9 +136,7 @@ class YahooMacroTool(BaseTool):
 
     # ── Private: External Access ─────────────────────────────────────────
 
-    async def _fetch_history(
-        self, symbol: str, period: str, interval: str
-    ) -> "pd.DataFrame | None":
+    async def _fetch_history(self, symbol: str, period: str, interval: str) -> pd.DataFrame | None:
         """Fetch OHLCV history from Yahoo Finance via yfinance.
 
         Runs the synchronous yfinance call in a thread executor to avoid
@@ -154,7 +156,9 @@ class YahooMacroTool(BaseTool):
             df = await loop.run_in_executor(
                 None,
                 _yfinance_download,
-                symbol, period, interval,
+                symbol,
+                period,
+                interval,
             )
             return df
         except Exception:
@@ -162,9 +166,7 @@ class YahooMacroTool(BaseTool):
 
     # ── Private: Canonical Translation ───────────────────────────────────
 
-    def _to_canonical(
-        self, symbol: str, df: "pd.DataFrame"
-    ) -> list[MacroDataSchema]:
+    def _to_canonical(self, symbol: str, df: pd.DataFrame) -> list[MacroDataSchema]:
         """Translate raw yfinance DataFrame rows into MacroDataSchema objects.
 
         Each row (trading day) becomes one MacroDataSchema with:
@@ -182,13 +184,15 @@ class YahooMacroTool(BaseTool):
             # Ensure timezone-aware timestamp
             ts = timestamp_idx
             if hasattr(ts, "tzinfo") and ts.tzinfo is None:
-                ts = ts.replace(tzinfo=timezone.utc)
+                ts = ts.replace(tzinfo=UTC)
             elif not hasattr(ts, "tzinfo"):
-                ts = pd.Timestamp(ts).tz_localize(timezone.utc)
+                ts = pd.Timestamp(ts).tz_localize(UTC)
 
             # Map OHLCV fields for the canonical record
             close_val = float(row["Close"]) if "Close" in row else float(row["Adj Close"])
-            volume_val = int(row["Volume"]) if "Volume" in row and not pd.isna(row["Volume"]) else 0
+            _volume_val = (
+                int(row["Volume"]) if "Volume" in row and not pd.isna(row["Volume"]) else 0
+            )
 
             record = MacroDataSchema(
                 symbol=symbol,
@@ -221,7 +225,7 @@ class YahooMacroTool(BaseTool):
 # ── Module-level helper (avoid lambda in executor) ───────────────────────
 
 
-def _yfinance_download(symbol: str, period: str, interval: str) -> "pd.DataFrame":
+def _yfinance_download(symbol: str, period: str, interval: str) -> pd.DataFrame:
     """Synchronous yfinance download — designed for run_in_executor.
 
     Separated as a module-level function because lambdas and local

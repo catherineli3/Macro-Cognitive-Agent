@@ -16,8 +16,7 @@ Relationships:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from src.research.beliefs.schemas import (
     BeliefDomain,
@@ -32,12 +31,13 @@ logger = get_logger(__name__)
 @dataclass
 class BeliefRelation:
     """A directed relationship between two beliefs."""
+
     source_id: str
     target_id: str
     relation_type: BeliefRelationType
     strength: float = 0.5
     description: str = ""
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 # ── V3.2: Domain adjacency for cross-domain relationships ──────────────
@@ -127,9 +127,10 @@ TERM_SYNONYMS: dict[str, list[str]] = {
 def _tokenize_title(title: str) -> set[str]:
     """Tokenize and normalize belief title."""
     import re
+
     tokens = set()
     for word in title.lower().split():
-        word = re.sub(r'[^a-z]', '', word)
+        word = re.sub(r"[^a-z]", "", word)
         if len(word) >= 3:
             tokens.add(word)
     # Expand synonyms
@@ -149,18 +150,24 @@ def _opposite_direction(title_a: str, title_b: str) -> bool:
 
     # Check for explicit opposite word pairs
     opposite_pairs = [
-        ({"bull", "bullish", "rally", "upside", "expansion"},
-         {"bear", "bearish", "selloff", "downside", "contraction"}),
-        ({"rise", "rising", "higher", "surge", "spike"},
-         {"fall", "falling", "lower", "decline", "drop"}),
-        ({"tight", "tighten", "tightening", "hawk", "hawkish"},
-         {"easy", "easing", "loose", "dove", "dovish"}),
+        (
+            {"bull", "bullish", "rally", "upside", "expansion"},
+            {"bear", "bearish", "selloff", "downside", "contraction"},
+        ),
+        (
+            {"rise", "rising", "higher", "surge", "spike"},
+            {"fall", "falling", "lower", "decline", "drop"},
+        ),
+        (
+            {"tight", "tighten", "tightening", "hawk", "hawkish"},
+            {"easy", "easing", "loose", "dove", "dovish"},
+        ),
     ]
 
     for up_set, down_set in opposite_pairs:
-        if (tokens_a & up_set and tokens_b & down_set):
+        if tokens_a & up_set and tokens_b & down_set:
             return True
-        if (tokens_a & down_set and tokens_b & up_set):
+        if tokens_a & down_set and tokens_b & up_set:
             return True
 
     return False
@@ -182,7 +189,10 @@ def _has_causal_link(belief_a: ResearchBelief, belief_b: ResearchBelief) -> tupl
     overlap = tokens_a & tokens_b
 
     if len(overlap) >= 2 and adjacency >= 0.7:
-        return True, f"Domain adjacency ({adjacency:.0%}) + keyword overlap: {', '.join(list(overlap)[:3])}"
+        return (
+            True,
+            f"Domain adjacency ({adjacency:.0%}) + keyword overlap: {', '.join(list(overlap)[:3])}",
+        )
 
     if adjacency >= 0.85:
         return True, f"Strong domain adjacency ({adjacency:.0%})"
@@ -218,7 +228,7 @@ class BeliefGraph:
         relation_type: BeliefRelationType,
         strength: float = 0.5,
         description: str = "",
-    ) -> Optional[BeliefRelation]:
+    ) -> BeliefRelation | None:
         """Add a relationship between two beliefs."""
         if source_id not in self.beliefs or target_id not in self.beliefs:
             return None
@@ -228,9 +238,11 @@ class BeliefGraph:
 
         # Avoid duplicates
         for r in self.relations:
-            if (r.source_id == source_id
-                    and r.target_id == target_id
-                    and r.relation_type == relation_type):
+            if (
+                r.source_id == source_id
+                and r.target_id == target_id
+                and r.relation_type == relation_type
+            ):
                 return r
 
         rel = BeliefRelation(
@@ -276,7 +288,8 @@ class BeliefGraph:
             if new_belief.domain == existing.domain:
                 if _opposite_direction(new_belief.title, existing.title):
                     rel = self.add_relation(
-                        new_belief.id, existing.id,
+                        new_belief.id,
+                        existing.id,
                         BeliefRelationType.COMPETES,
                         strength=0.7,
                         description=f"Same domain ({new_belief.domain.value}) — competing interpretations",
@@ -285,7 +298,8 @@ class BeliefGraph:
                         added += 1
                 else:
                     rel = self.add_relation(
-                        new_belief.id, existing.id,
+                        new_belief.id,
+                        existing.id,
                         BeliefRelationType.SUPPORTS,
                         strength=0.55,
                         description=f"Same domain ({new_belief.domain.value}) — aligned interpretations",
@@ -300,7 +314,8 @@ class BeliefGraph:
                 adjacency = DOMAIN_ADJACENCY.get(new_belief.domain, {}).get(existing.domain, 0)
                 if adjacency >= 0.4:
                     rel = self.add_relation(
-                        new_belief.id, existing.id,
+                        new_belief.id,
+                        existing.id,
                         BeliefRelationType.CONTRADICTS,
                         strength=0.5 + adjacency * 0.3,
                         description=f"Opposite direction across {new_belief.domain.value}/{existing.domain.value}",
@@ -313,7 +328,8 @@ class BeliefGraph:
             is_explanatory, reason = _has_causal_link(new_belief, existing)
             if is_explanatory:
                 rel = self.add_relation(
-                    new_belief.id, existing.id,
+                    new_belief.id,
+                    existing.id,
                     BeliefRelationType.EXPLAINS,
                     strength=0.6,
                     description=reason,
@@ -326,7 +342,8 @@ class BeliefGraph:
             is_explanatory, reason = _has_causal_link(existing, new_belief)
             if is_explanatory:
                 rel = self.add_relation(
-                    existing.id, new_belief.id,
+                    existing.id,
+                    new_belief.id,
                     BeliefRelationType.EXPLAINS,
                     strength=0.6,
                     description=reason,
@@ -341,7 +358,8 @@ class BeliefGraph:
             overlap = tokens_a & tokens_b
             if len(overlap) >= 2:
                 rel = self.add_relation(
-                    new_belief.id, existing.id,
+                    new_belief.id,
+                    existing.id,
                     BeliefRelationType.SUPPORTS,
                     strength=0.35 + min(len(overlap) * 0.1, 0.3),
                     description=f"Cross-domain keyword overlap: {', '.join(list(overlap)[:3])}",
@@ -361,12 +379,13 @@ class BeliefGraph:
         belief_list = list(self.beliefs.values())
 
         for i, a in enumerate(belief_list):
-            for b in belief_list[i + 1:]:
+            for b in belief_list[i + 1 :]:
                 # Skip if relationship already exists (any type between these two)
                 existing = False
                 for r in self.relations:
-                    if (r.source_id == a.id and r.target_id == b.id) or \
-                       (r.source_id == b.id and r.target_id == a.id):
+                    if (r.source_id == a.id and r.target_id == b.id) or (
+                        r.source_id == b.id and r.target_id == a.id
+                    ):
                         existing = True
                         break
                 if existing:
@@ -376,20 +395,24 @@ class BeliefGraph:
                 if a.domain == b.domain:
                     if _opposite_direction(a.title, b.title):
                         rel = self.add_relation(
-                            a.id, b.id,
+                            a.id,
+                            b.id,
                             BeliefRelationType.COMPETES,
                             strength=0.7,
                             description=f"Same domain ({a.domain.value}) — competing",
                         )
-                        if rel: added += 1
+                        if rel:
+                            added += 1
                     else:
                         rel = self.add_relation(
-                            a.id, b.id,
+                            a.id,
+                            b.id,
                             BeliefRelationType.SUPPORTS,
                             strength=0.55,
                             description=f"Same domain ({a.domain.value}) — aligned",
                         )
-                        if rel: added += 1
+                        if rel:
+                            added += 1
                     continue
 
                 # CONTRADICTS
@@ -397,23 +420,31 @@ class BeliefGraph:
                     adj = DOMAIN_ADJACENCY.get(a.domain, {}).get(b.domain, 0)
                     if adj >= 0.4:
                         rel = self.add_relation(
-                            a.id, b.id,
+                            a.id,
+                            b.id,
                             BeliefRelationType.CONTRADICTS,
                             strength=0.5 + adj * 0.3,
                         )
-                        if rel: added += 1
+                        if rel:
+                            added += 1
                     continue
 
                 # EXPLAINS
                 is_expl, reason = _has_causal_link(a, b)
                 if is_expl:
-                    rel = self.add_relation(a.id, b.id, BeliefRelationType.EXPLAINS, strength=0.6, description=reason)
-                    if rel: added += 1
+                    rel = self.add_relation(
+                        a.id, b.id, BeliefRelationType.EXPLAINS, strength=0.6, description=reason
+                    )
+                    if rel:
+                        added += 1
                     continue
                 is_expl, reason = _has_causal_link(b, a)
                 if is_expl:
-                    rel = self.add_relation(b.id, a.id, BeliefRelationType.EXPLAINS, strength=0.6, description=reason)
-                    if rel: added += 1
+                    rel = self.add_relation(
+                        b.id, a.id, BeliefRelationType.EXPLAINS, strength=0.6, description=reason
+                    )
+                    if rel:
+                        added += 1
                     continue
 
                 # SUPPORTS via keywords
@@ -422,15 +453,18 @@ class BeliefGraph:
                 overlap = tokens_a & tokens_b
                 if len(overlap) >= 2:
                     rel = self.add_relation(
-                        a.id, b.id,
+                        a.id,
+                        b.id,
                         BeliefRelationType.SUPPORTS,
                         strength=0.35 + min(len(overlap) * 0.1, 0.3),
                     )
-                    if rel: added += 1
+                    if rel:
+                        added += 1
 
         logger.info(
             "belief_graph_auto_v32 | %d new relations discovered (%d beliefs)",
-            added, len(belief_list),
+            added,
+            len(belief_list),
         )
         return added
 
@@ -448,17 +482,15 @@ class BeliefGraph:
 
     def get_relations_for(self, belief_id: str) -> list[BeliefRelation]:
         """Get all relations involving this belief."""
-        return [
-            r for r in self.relations
-            if r.source_id == belief_id or r.target_id == belief_id
-        ]
+        return [r for r in self.relations if r.source_id == belief_id or r.target_id == belief_id]
 
     def get_relations_by_type(
         self, belief_id: str, relation_type: BeliefRelationType
     ) -> list[BeliefRelation]:
         """Get relations of a specific type involving this belief."""
         return [
-            r for r in self.relations
+            r
+            for r in self.relations
             if (r.source_id == belief_id or r.target_id == belief_id)
             and r.relation_type == relation_type
         ]
@@ -534,9 +566,7 @@ class BeliefGraph:
                     if neighbor not in cluster_ids:
                         queue.append(neighbor)
             if len(cluster_ids) >= 2:
-                clusters.append([
-                    self.beliefs[cid] for cid in cluster_ids if cid in self.beliefs
-                ])
+                clusters.append([self.beliefs[cid] for cid in cluster_ids if cid in self.beliefs])
 
         return clusters
 
@@ -544,9 +574,7 @@ class BeliefGraph:
         """V3.2: Get graph statistics."""
         rel_counts = {}
         for rt in BeliefRelationType:
-            rel_counts[rt.value] = sum(
-                1 for r in self.relations if r.relation_type == rt
-            )
+            rel_counts[rt.value] = sum(1 for r in self.relations if r.relation_type == rt)
 
         return {
             "belief_count": len(self.beliefs),

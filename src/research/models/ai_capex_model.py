@@ -12,7 +12,6 @@ Key chain: NVDA → TSMC → ASML → SMH → Cloud Capex → AI buildout
 from __future__ import annotations
 
 from src.research.models.mental_model import (
-    EvidenceItem,
     MentalModel,
     ModelInput,
     ResearchConclusion,
@@ -65,8 +64,7 @@ class AICapexModel(MentalModel):
             )
         else:
             conclusion_text = (
-                "AI Capex Stable — mixed signals from the semiconductor chain. "
-                f"{chain_health}"
+                "AI Capex Stable — mixed signals from the semiconductor chain. " f"{chain_health}"
             )
 
         # Concentration risk check
@@ -198,9 +196,7 @@ class AICapexModel(MentalModel):
         return None
 
     @staticmethod
-    def _generate_narratives(
-        direction: str, chain_health: str
-    ) -> list[str]:
+    def _generate_narratives(direction: str, chain_health: str) -> list[str]:
         if direction == "expansion":
             return [
                 "AI investment acceleration → semis leadership continues",

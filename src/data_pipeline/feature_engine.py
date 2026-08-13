@@ -14,12 +14,10 @@ Each indicator maps to a pre-defined set of features via FeatureDimension.
 
 from __future__ import annotations
 
-import math
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Optional
 
 from src.data_pipeline.normalizer import MacroObservation
 from src.shared.logging import get_logger
@@ -28,6 +26,7 @@ logger = get_logger(__name__)
 
 
 # ── Feature Dimension Enum ──────────────────────────────────────────────────
+
 
 class FeatureDimension(Enum):
     """Pre-defined feature types extracted from raw observations."""
@@ -65,9 +64,9 @@ class IndicatorFeatures:
     macro_dimension: str
     features: list[FeaturePoint] = field(default_factory=list)
     raw_value: float = 0.0
-    timestamp: Optional[datetime] = None
+    timestamp: datetime | None = None
 
-    def get(self, dimension: FeatureDimension) -> Optional[FeaturePoint]:
+    def get(self, dimension: FeatureDimension) -> FeaturePoint | None:
         for f in self.features:
             if f.dimension == dimension:
                 return f
@@ -78,11 +77,11 @@ class IndicatorFeatures:
 class FeatureSnapshot:
     """Complete feature extraction result for a collection cycle."""
 
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     indicators: dict[str, IndicatorFeatures] = field(default_factory=dict)
     dimension_summaries: dict[str, dict] = field(default_factory=dict)
 
-    def get_indicator(self, name: str) -> Optional[IndicatorFeatures]:
+    def get_indicator(self, name: str) -> IndicatorFeatures | None:
         return self.indicators.get(name.upper())
 
 
@@ -104,39 +103,47 @@ class FeatureEngine:
     # Feature specifications per indicator type
     _FEATURE_SPEC: dict[str, list[FeatureDimension]] = {
         # Price/index indicators
-        "DXY": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D,
-                 FeatureDimension.TREND_20D, FeatureDimension.MOMENTUM,
-                 FeatureDimension.VOLATILITY, FeatureDimension.Z_SCORE],
-        "SP500": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D,
-                   FeatureDimension.TREND_20D, FeatureDimension.MOMENTUM,
-                   FeatureDimension.VOLATILITY],
-        "Nasdaq": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D,
-                    FeatureDimension.TREND_20D, FeatureDimension.MOMENTUM],
-        "Russell": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D,
-                     FeatureDimension.TREND_20D],
+        "DXY": [
+            FeatureDimension.LEVEL,
+            FeatureDimension.CHANGE_5D,
+            FeatureDimension.TREND_20D,
+            FeatureDimension.MOMENTUM,
+            FeatureDimension.VOLATILITY,
+            FeatureDimension.Z_SCORE,
+        ],
+        "SP500": [
+            FeatureDimension.LEVEL,
+            FeatureDimension.CHANGE_5D,
+            FeatureDimension.TREND_20D,
+            FeatureDimension.MOMENTUM,
+            FeatureDimension.VOLATILITY,
+        ],
+        "Nasdaq": [
+            FeatureDimension.LEVEL,
+            FeatureDimension.CHANGE_5D,
+            FeatureDimension.TREND_20D,
+            FeatureDimension.MOMENTUM,
+        ],
+        "Russell": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D, FeatureDimension.TREND_20D],
         # Yield indicators
-        "US10Y": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D,
-                   FeatureDimension.TREND_20D, FeatureDimension.MOMENTUM],
-        "US2Y": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D,
-                  FeatureDimension.TREND_20D],
+        "US10Y": [
+            FeatureDimension.LEVEL,
+            FeatureDimension.CHANGE_5D,
+            FeatureDimension.TREND_20D,
+            FeatureDimension.MOMENTUM,
+        ],
+        "US2Y": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D, FeatureDimension.TREND_20D],
         # Volatility
-        "VIX": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D,
-                 FeatureDimension.REGIME],
+        "VIX": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D, FeatureDimension.REGIME],
         # Commodities
-        "Gold": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D,
-                  FeatureDimension.TREND_20D],
-        "Copper": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D,
-                    FeatureDimension.TREND_20D],
-        "Oil": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D,
-                 FeatureDimension.VOLATILITY],
+        "Gold": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D, FeatureDimension.TREND_20D],
+        "Copper": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D, FeatureDimension.TREND_20D],
+        "Oil": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D, FeatureDimension.VOLATILITY],
         # Credit
-        "HYG": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D,
-                 FeatureDimension.TREND_20D],
-        "LQD": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D,
-                 FeatureDimension.TREND_20D],
+        "HYG": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D, FeatureDimension.TREND_20D],
+        "LQD": [FeatureDimension.LEVEL, FeatureDimension.CHANGE_5D, FeatureDimension.TREND_20D],
         # AI Cycle
-        "NVDA": [FeatureDimension.LEVEL, FeatureDimension.MOMENTUM,
-                  FeatureDimension.VOLATILITY],
+        "NVDA": [FeatureDimension.LEVEL, FeatureDimension.MOMENTUM, FeatureDimension.VOLATILITY],
         "Semiconductor": [FeatureDimension.LEVEL, FeatureDimension.TREND_20D],
         "ASML": [FeatureDimension.LEVEL, FeatureDimension.MOMENTUM],
         "TSMC": [FeatureDimension.LEVEL, FeatureDimension.TREND_20D],
@@ -178,8 +185,8 @@ class FeatureEngine:
                 self._timestamps[key].append(obs.timestamp)
                 # Trim to window
                 if len(self._history[key]) > self._history_window:
-                    self._history[key] = self._history[key][-self._history_window:]
-                    self._timestamps[key] = self._timestamps[key][-self._history_window:]
+                    self._history[key] = self._history[key][-self._history_window :]
+                    self._timestamps[key] = self._timestamps[key][-self._history_window :]
 
         # Extract features per indicator
         for obs in observations:
@@ -218,15 +225,18 @@ class FeatureEngine:
         key: str,
         obs: MacroObservation,
         dim: FeatureDimension,
-    ) -> Optional[FeaturePoint]:
+    ) -> FeaturePoint | None:
         """Compute a single feature for a given indicator."""
         hist = self._history.get(key, [])
 
         try:
             if dim == FeatureDimension.LEVEL:
                 return FeaturePoint(
-                    symbol=key, dimension=dim, value=obs.value,
-                    label="current_level", confidence=obs.quality_score,
+                    symbol=key,
+                    dimension=dim,
+                    value=obs.value,
+                    label="current_level",
+                    confidence=obs.quality_score,
                 )
 
             elif dim == FeatureDimension.CHANGE_5D and len(hist) >= 5:
@@ -235,41 +245,61 @@ class FeatureEngine:
                     pct = (obs.value - prev) / abs(prev)
                     direction = "up" if pct > 0 else "down"
                     return FeaturePoint(
-                        symbol=key, dimension=dim, value=pct,
-                        label=f"5d_{direction}", confidence=obs.quality_score,
+                        symbol=key,
+                        dimension=dim,
+                        value=pct,
+                        label=f"5d_{direction}",
+                        confidence=obs.quality_score,
                     )
 
             elif dim == FeatureDimension.TREND_20D and len(hist) >= 10:
                 prev = hist[-min(20, len(hist))]
                 if prev != 0 and len(hist) >= 10:
                     pct = (obs.value - prev) / abs(prev)
-                    regime = "uptrend" if pct > 0.02 else ("downtrend" if pct < -0.02 else "neutral")
+                    regime = (
+                        "uptrend" if pct > 0.02 else ("downtrend" if pct < -0.02 else "neutral")
+                    )
                     return FeaturePoint(
-                        symbol=key, dimension=dim, value=pct,
-                        label=f"20d_{regime}", confidence=obs.quality_score,
+                        symbol=key,
+                        dimension=dim,
+                        value=pct,
+                        label=f"20d_{regime}",
+                        confidence=obs.quality_score,
                     )
 
             elif dim == FeatureDimension.MOMENTUM and len(hist) >= 10:
                 # Simple momentum: short MA / long MA - 1
                 short = sum(hist[-5:]) / min(5, len(hist[-5:]))
-                long = sum(hist[-min(10, len(hist)):]) / min(10, len(hist))
+                long = sum(hist[-min(10, len(hist)) :]) / min(10, len(hist))
                 if long != 0:
                     mom = (short / long) - 1
-                    regime = "accelerating" if mom > 0.01 else ("decelerating" if mom < -0.01 else "stable")
+                    regime = (
+                        "accelerating"
+                        if mom > 0.01
+                        else ("decelerating" if mom < -0.01 else "stable")
+                    )
                     return FeaturePoint(
-                        symbol=key, dimension=dim, value=mom,
-                        label=f"momentum_{regime}", confidence=obs.quality_score,
+                        symbol=key,
+                        dimension=dim,
+                        value=mom,
+                        label=f"momentum_{regime}",
+                        confidence=obs.quality_score,
                     )
 
             elif dim == FeatureDimension.VOLATILITY and len(hist) >= 10:
                 recent = hist[-10:]
                 mean_v = sum(recent) / len(recent)
                 if mean_v != 0:
-                    vol = (sum((v - mean_v) ** 2 for v in recent) / len(recent)) ** 0.5 / abs(mean_v)
+                    vol = (sum((v - mean_v) ** 2 for v in recent) / len(recent)) ** 0.5 / abs(
+                        mean_v
+                    )
                     regime = "high" if vol > 0.03 else ("low" if vol < 0.01 else "normal")
                     return FeaturePoint(
-                        symbol=key, dimension=dim, value=vol,
-                        label=f"volatility_{regime}", confidence=obs.quality_score,
+                        symbol=key,
+                        dimension=dim,
+                        value=vol,
+                        label=f"volatility_{regime}",
+                        confidence=obs.quality_score,
                     )
 
             elif dim == FeatureDimension.Z_SCORE and len(hist) >= 20:
@@ -280,8 +310,11 @@ class FeatureEngine:
                     z = (obs.value - mean_v) / std_v
                     regime = "extreme_high" if z > 2 else ("extreme_low" if z < -2 else "normal")
                     return FeaturePoint(
-                        symbol=key, dimension=dim, value=round(z, 2),
-                        label=f"zscore_{regime}", confidence=obs.quality_score,
+                        symbol=key,
+                        dimension=dim,
+                        value=round(z, 2),
+                        label=f"zscore_{regime}",
+                        confidence=obs.quality_score,
                     )
 
             elif dim == FeatureDimension.REGIME:
@@ -292,24 +325,35 @@ class FeatureEngine:
 
         return None
 
-    def _compute_regime(self, key: str, obs: MacroObservation) -> Optional[FeaturePoint]:
+    def _compute_regime(self, key: str, obs: MacroObservation) -> FeaturePoint | None:
         """Compute regime classification for special indicators."""
         if key == "VIX":
             for regime, (lo, hi) in self._VIX_REGIMES.items():
                 if lo <= obs.value < hi:
                     return FeaturePoint(
-                        symbol=key, dimension=FeatureDimension.REGIME,
-                        value={"complacency": 0.1, "normal": 0.5, "elevated": 0.75, "panic": 0.95}.get(regime, 0.5),
-                        label=regime, confidence=obs.quality_score,
+                        symbol=key,
+                        dimension=FeatureDimension.REGIME,
+                        value={
+                            "complacency": 0.1,
+                            "normal": 0.5,
+                            "elevated": 0.75,
+                            "panic": 0.95,
+                        }.get(regime, 0.5),
+                        label=regime,
+                        confidence=obs.quality_score,
                     )
 
         if key == "GOLD" or key == "GOLD":
             for regime, (lo, hi) in self._GOLD_REGIMES.items():
                 if lo <= obs.value < hi:
                     return FeaturePoint(
-                        symbol=key, dimension=FeatureDimension.REGIME,
-                        value={"safe_haven_demand": 0.8, "normal": 0.5, "weak_demand": 0.2}.get(regime, 0.5),
-                        label=regime, confidence=obs.quality_score,
+                        symbol=key,
+                        dimension=FeatureDimension.REGIME,
+                        value={"safe_haven_demand": 0.8, "normal": 0.5, "weak_demand": 0.2}.get(
+                            regime, 0.5
+                        ),
+                        label=regime,
+                        confidence=obs.quality_score,
                     )
 
         return None

@@ -11,11 +11,10 @@ Algorithm:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 
-from src.schemas.research import ResearchFramework, ResearchPrinciple
-from src.schemas.macro_snapshot import MacroSnapshot
 from src.research.evolution.regime_gate import RegimeSnapshot
+from src.schemas.macro_snapshot import MacroSnapshot
+from src.schemas.research import ResearchFramework
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -106,7 +105,7 @@ class FrameworkSelector:
             return FrameworkSelection(
                 regime_label=regime_label,
                 selection_rationale="No active frameworks available. "
-                                   "Agent has not yet developed any research frameworks.",
+                "Agent has not yet developed any research frameworks.",
             )
 
         # Compute activation scores
@@ -115,9 +114,7 @@ class FrameworkSelector:
             regime_match = self._compute_regime_match(fw, regime)
             confidence = self._get_framework_confidence(fw)
             recency = self._compute_recency(fw)
-            scores[fw.framework_id] = (
-                0.5 * regime_match + 0.3 * confidence + 0.2 * recency
-            )
+            scores[fw.framework_id] = 0.5 * regime_match + 0.3 * confidence + 0.2 * recency
 
         # Rank and select primary
         ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
@@ -135,15 +132,14 @@ class FrameworkSelector:
                 f"Primary framework '{primary.name}' selected "
                 f"(activation_score={top_score:.3f})"
             )
-            rationale_parts.append(f"  - Regime match: {self._compute_regime_match(primary, regime):.2f}")
+            rationale_parts.append(
+                f"  - Regime match: {self._compute_regime_match(primary, regime):.2f}"
+            )
             rationale_parts.append(f"  - Confidence: {self._get_framework_confidence(primary):.2f}")
             rationale_parts.append(f"  - Recency: {self._compute_recency(primary):.2f}")
             # Secondary frameworks
             if len(ranked_frameworks) > 1:
-                secondaries = [
-                    f"{fw.name}({score:.2f})"
-                    for fw, score in ranked_frameworks[1:4]
-                ]
+                secondaries = [f"{fw.name}({score:.2f})" for fw, score in ranked_frameworks[1:4]]
                 rationale_parts.append(f"  Secondaries: {', '.join(secondaries)}")
         else:
             rationale_parts.append("No framework matched current regime.")
@@ -161,8 +157,9 @@ class FrameworkSelector:
 
     # ── Scoring Components ──────────────────────────────────────────────
 
-    def _compute_regime_match(self, framework: ResearchFramework,
-                               regime: RegimeSnapshot | None) -> float:
+    def _compute_regime_match(
+        self, framework: ResearchFramework, regime: RegimeSnapshot | None
+    ) -> float:
         """Score how well a framework matches the current regime.
 
         Checks:

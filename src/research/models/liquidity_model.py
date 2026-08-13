@@ -91,9 +91,7 @@ class LiquidityModel(MentalModel):
     # ── Interpretation ──────────────────────────────────────────────────
 
     @staticmethod
-    def _interpret_liquidity(
-        name: str, value: float, features: list[dict]
-    ) -> dict:
+    def _interpret_liquidity(name: str, value: float, features: list[dict]) -> dict:
         """Interpret a single liquidity indicator."""
         interpretations = {
             "DXY": {
@@ -129,9 +127,7 @@ class LiquidityModel(MentalModel):
             return {"text": mid_text, "contradicts": mid_contradicts, "weight": 0.8}
 
     @staticmethod
-    def _generate_narratives(
-        direction: str, supporting: list[EvidenceItem]
-    ) -> list[str]:
+    def _generate_narratives(direction: str, supporting: list[EvidenceItem]) -> list[str]:
         """Generate possible narrative directions."""
         if direction == "tightening":
             return [

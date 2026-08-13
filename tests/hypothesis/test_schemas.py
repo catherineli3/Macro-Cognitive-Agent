@@ -8,12 +8,10 @@ Covers:
 """
 
 import pytest
-from datetime import datetime, timezone
 
 from src.domain.hypothesis import HypothesisStatus
 from src.schemas.hypothesis import HypothesisEvidence, HypothesisSchema, HypothesisSet
 from src.schemas.signal import SignalDirection
-
 
 # ── Fixtures ──────────────────────────────────────────────────────────────
 
@@ -213,8 +211,10 @@ class TestHypothesisSchema:
             dimension="Liquidity",
             supporting_evidence=[
                 HypothesisEvidence(
-                    indicator="DXY", signal_id="s1",
-                    observation="DXY at 106", interpretation="Test",
+                    indicator="DXY",
+                    signal_id="s1",
+                    observation="DXY at 106",
+                    interpretation="Test",
                     alignment="supporting",
                 )
             ],
@@ -234,8 +234,10 @@ class TestHypothesisSchema:
             dimension="Liquidity",
             supporting_evidence=[
                 HypothesisEvidence(
-                    indicator="DXY", signal_id="s1",
-                    observation="DXY at 106", interpretation="Test",
+                    indicator="DXY",
+                    signal_id="s1",
+                    observation="DXY at 106",
+                    interpretation="Test",
                     alignment="supporting",
                 )
             ],

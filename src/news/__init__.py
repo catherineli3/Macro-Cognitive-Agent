@@ -14,22 +14,22 @@ Output: Each news item becomes a ResearchEvent with full metadata,
 then feeds into the Evidence Graph via the Fusion Engine.
 """
 
+from src.news.event_classifier import EventClassifier
+from src.news.fusion_engine import EvidenceEdge, EvidenceNode, FusionEngine, UnifiedEvidenceGraph
+from src.news.market_expectation_extractor import MarketExpectationExtractor
+from src.news.news_collector import NewsCollector
+from src.news.news_deduplicator import NewsDeduplicator
+from src.news.policy_extractor import PolicyExtractor
 from src.news.schemas import (
-    ResearchEvent,
-    NewsArticle,
-    PolicySignal,
-    MarketExpectation,
-    NewsSourceType,
     EventCategory,
     ImpactDirection,
     ImpactSeverity,
+    MarketExpectation,
+    NewsArticle,
+    NewsSourceType,
+    PolicySignal,
+    ResearchEvent,
 )
-from src.news.news_collector import NewsCollector
-from src.news.news_deduplicator import NewsDeduplicator
-from src.news.event_classifier import EventClassifier
-from src.news.policy_extractor import PolicyExtractor
-from src.news.market_expectation_extractor import MarketExpectationExtractor
-from src.news.fusion_engine import FusionEngine, UnifiedEvidenceGraph, EvidenceNode, EvidenceEdge
 
 __all__ = [
     # Schemas

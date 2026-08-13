@@ -7,15 +7,15 @@ Goldman, Morgan Stanley, Fed Minutes, IMF, BIS, World Bank, etc.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
 
-from src.research.corpus.schemas import ResearchDocument, Paragraph, DocumentSource, DocumentType
+from src.research.corpus.schemas import DocumentSource, DocumentType, Paragraph, ResearchDocument
 
 
 @dataclass
 class PDFMetadata:
     """Extracted metadata from PDF headers/footers."""
+
     title: str = ""
     author: str = ""
     date: str = ""
@@ -33,48 +33,56 @@ class PDFParser:
 
     # Common patterns in institutional research PDFs
     SECTION_HEADER_PATTERNS = [
-        r'^(?:Executive\s+)?Summary$',
-        r'^(?:Macro\s+)?Outlook$',
-        r'^(?:Market\s+)?Review$',
-        r'^(?:Key\s+)?Themes?$',
-        r'^(?:Investment\s+)?Implications?$',
-        r'^(?:Risk\s+)?Factors?$',
-        r'^(?:Asset\s+)?Allocation$',
-        r'^(?:Economic\s+)?Projections?$',
-        r'^(?:Policy\s+)?Analysis$',
-        r'^Conclusion$',
-        r'^Disclaimer$',
+        r"^(?:Executive\s+)?Summary$",
+        r"^(?:Macro\s+)?Outlook$",
+        r"^(?:Market\s+)?Review$",
+        r"^(?:Key\s+)?Themes?$",
+        r"^(?:Investment\s+)?Implications?$",
+        r"^(?:Risk\s+)?Factors?$",
+        r"^(?:Asset\s+)?Allocation$",
+        r"^(?:Economic\s+)?Projections?$",
+        r"^(?:Policy\s+)?Analysis$",
+        r"^Conclusion$",
+        r"^Disclaimer$",
     ]
 
     # Source identification by header/footer text
     SOURCE_FINGERPRINTS = {
-        DocumentSource.BRIDGEWATER: ['bridgewater', 'daily observations', 'bw'],
-        DocumentSource.TS_LOMBARD: ['ts lombard', 'trusted sources'],
-        DocumentSource.BCA: ['bca research', 'bank credit analyst'],
-        DocumentSource.GAVEKAL: ['gavekal', 'gavekal research'],
-        DocumentSource.GOLDMAN: ['goldman sachs', 'gs macro'],
-        DocumentSource.MORGAN_STANLEY: ['morgan stanley', 'ms research'],
-        DocumentSource.FED_MINUTES: ['federal open market committee', 'fomc minutes'],
-        DocumentSource.FOMC_SPEECH: ['federal reserve', 'chair powell', 'governor'],
-        DocumentSource.ECB_SPEECH: ['european central bank', 'ecb', 'president lagarde'],
-        DocumentSource.BOJ_SPEECH: ['bank of japan', 'boj', 'governor ueda'],
-        DocumentSource.BIS: ['bank for international settlements', 'bis'],
-        DocumentSource.IMF: ['international monetary fund', 'imf', 'weo'],
-        DocumentSource.WORLD_BANK: ['world bank', 'global economic prospects'],
-        DocumentSource.BROOKINGS: ['brookings', 'hutchins center'],
-        DocumentSource.DALIO: ['ray dalio', 'principles'],
-        DocumentSource.PTJ: ['paul tudor jones', 'tudor'],
-        DocumentSource.HOWARD_MARKS: ['howard marks', 'oaktree', 'memo'],
-        DocumentSource.APOLLO: ['apollo global', 'apollo academy'],
-        DocumentSource.BLACKROCK: ['blackrock', 'weekly commentary'],
+        DocumentSource.BRIDGEWATER: ["bridgewater", "daily observations", "bw"],
+        DocumentSource.TS_LOMBARD: ["ts lombard", "trusted sources"],
+        DocumentSource.BCA: ["bca research", "bank credit analyst"],
+        DocumentSource.GAVEKAL: ["gavekal", "gavekal research"],
+        DocumentSource.GOLDMAN: ["goldman sachs", "gs macro"],
+        DocumentSource.MORGAN_STANLEY: ["morgan stanley", "ms research"],
+        DocumentSource.FED_MINUTES: ["federal open market committee", "fomc minutes"],
+        DocumentSource.FOMC_SPEECH: ["federal reserve", "chair powell", "governor"],
+        DocumentSource.ECB_SPEECH: ["european central bank", "ecb", "president lagarde"],
+        DocumentSource.BOJ_SPEECH: ["bank of japan", "boj", "governor ueda"],
+        DocumentSource.BIS: ["bank for international settlements", "bis"],
+        DocumentSource.IMF: ["international monetary fund", "imf", "weo"],
+        DocumentSource.WORLD_BANK: ["world bank", "global economic prospects"],
+        DocumentSource.BROOKINGS: ["brookings", "hutchins center"],
+        DocumentSource.DALIO: ["ray dalio", "principles"],
+        DocumentSource.PTJ: ["paul tudor jones", "tudor"],
+        DocumentSource.HOWARD_MARKS: ["howard marks", "oaktree", "memo"],
+        DocumentSource.APOLLO: ["apollo global", "apollo academy"],
+        DocumentSource.BLACKROCK: ["blackrock", "weekly commentary"],
     }
 
     TITLE_INDICATORS = [
-        'daily observations', 'macro outlook', 'global macro',
-        'weekly strategy', 'monthly outlook', 'economic outlook',
-        'market outlook', 'investment strategy', 'policy note',
-        'special report', 'global economic prospects',
-        'world economic outlook', 'annual report',
+        "daily observations",
+        "macro outlook",
+        "global macro",
+        "weekly strategy",
+        "monthly outlook",
+        "economic outlook",
+        "market outlook",
+        "investment strategy",
+        "policy note",
+        "special report",
+        "global economic prospects",
+        "world economic outlook",
+        "annual report",
     ]
 
     def __init__(self, use_ocr: bool = False, language: str = "en"):
@@ -126,6 +134,7 @@ class PDFParser:
         """Extract raw text from PDF file path."""
         try:
             import pdfplumber
+
             text_parts = []
             with pdfplumber.open(file_path) as pdf:
                 for page in pdf.pages:
@@ -137,6 +146,7 @@ class PDFParser:
         except ImportError:
             try:
                 from PyPDF2 import PdfReader
+
                 reader = PdfReader(file_path)
                 text_parts = []
                 for page in reader.pages:
@@ -152,27 +162,27 @@ class PDFParser:
 
     def _clean_page_text(self, text: str) -> str:
         """Clean extracted page text: remove headers/footers, fix hyphenation."""
-        lines = text.split('\n')
+        lines = text.split("\n")
         cleaned = []
 
         for line in lines:
             line = line.strip()
             if not line:
-                cleaned.append('')
+                cleaned.append("")
                 continue
             # Skip page numbers
-            if re.match(r'^\d{1,3}$', line):
+            if re.match(r"^\d{1,3}$", line):
                 continue
             # Skip header/footer lines (short, contains date or page)
-            if len(line) < 20 and re.search(r'(page|www\.|©|confidential)', line, re.IGNORECASE):
+            if len(line) < 20 and re.search(r"(page|www\.|©|confidential)", line, re.IGNORECASE):
                 continue
             # Fix line-break hyphenation
-            if cleaned and cleaned[-1].endswith('-') and len(cleaned[-1]) > 2:
+            if cleaned and cleaned[-1].endswith("-") and len(cleaned[-1]) > 2:
                 cleaned[-1] = cleaned[-1][:-1] + line
                 continue
             cleaned.append(line)
 
-        return '\n'.join(cleaned)
+        return "\n".join(cleaned)
 
     # ── Metadata Extraction ───────────────────────────────────────────
 
@@ -181,7 +191,7 @@ class PDFParser:
         metadata = PDFMetadata()
 
         first_2000 = text[:2000]
-        lines = first_2000.split('\n')
+        lines = first_2000.split("\n")
 
         for i, line in enumerate(lines):
             line = line.strip()
@@ -190,15 +200,18 @@ class PDFParser:
 
             # Date patterns
             date_match = re.search(
-                r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2},? \d{4})',
-                line, re.IGNORECASE
+                r"((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2},? \d{4})",
+                line,
+                re.IGNORECASE,
             )
             if date_match and not metadata.date:
                 metadata.date = date_match.group(1)
 
             # Author patterns
-            if re.search(r'^(?:By|Author|Prepared by):?\s', line, re.IGNORECASE):
-                metadata.author = re.sub(r'^(?:By|Author|Prepared by):?\s*', '', line, re.IGNORECASE)
+            if re.search(r"^(?:By|Author|Prepared by):?\s", line, re.IGNORECASE):
+                metadata.author = re.sub(
+                    r"^(?:By|Author|Prepared by):?\s*", "", line, re.IGNORECASE
+                )
 
             # Title (first substantial line)
             if not metadata.title and len(line) > 10 and not date_match:
@@ -236,14 +249,14 @@ class PDFParser:
         text_lower = text.lower()
 
         type_indicators = {
-            DocumentType.DAILY_OBSERVATION: ['daily observation', 'daily note', 'morning note'],
-            DocumentType.WEEKLY_STRATEGY: ['weekly', 'week ahead', 'week in review'],
-            DocumentType.MONTHLY_OUTLOOK: ['monthly', 'month ahead', 'monthly outlook'],
-            DocumentType.SPECIAL_REPORT: ['special report', 'deep dive', 'in focus'],
-            DocumentType.SPEECH: ['speech', 'remarks', 'prepared remarks', 'testimony'],
-            DocumentType.MINUTES: ['minutes', 'meeting of the', 'committee'],
-            DocumentType.ANNUAL_LETTER: ['annual letter', 'shareholder letter'],
-            DocumentType.POLICY_BRIEF: ['policy brief', 'policy note', 'working paper'],
+            DocumentType.DAILY_OBSERVATION: ["daily observation", "daily note", "morning note"],
+            DocumentType.WEEKLY_STRATEGY: ["weekly", "week ahead", "week in review"],
+            DocumentType.MONTHLY_OUTLOOK: ["monthly", "month ahead", "monthly outlook"],
+            DocumentType.SPECIAL_REPORT: ["special report", "deep dive", "in focus"],
+            DocumentType.SPEECH: ["speech", "remarks", "prepared remarks", "testimony"],
+            DocumentType.MINUTES: ["minutes", "meeting of the", "committee"],
+            DocumentType.ANNUAL_LETTER: ["annual letter", "shareholder letter"],
+            DocumentType.POLICY_BRIEF: ["policy brief", "policy note", "working paper"],
         }
 
         for doc_type, indicators in type_indicators.items():
@@ -254,10 +267,10 @@ class PDFParser:
 
     def _extract_title(self, text: str) -> str:
         """Extract document title."""
-        lines = text.split('\n')
+        lines = text.split("\n")
         for line in lines[:10]:
             line = line.strip()
-            if 10 < len(line) < 150 and not re.search(r'(http|www\.)', line):
+            if 10 < len(line) < 150 and not re.search(r"(http|www\.)", line):
                 has_indicator = any(ind in line.lower() for ind in self.TITLE_INDICATORS)
                 if has_indicator:
                     return line
@@ -271,9 +284,9 @@ class PDFParser:
     def _extract_date(self, text: str) -> str:
         """Extract publication date."""
         date_patterns = [
-            r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2},? \d{4})',
-            r'(\d{4}-\d{2}-\d{2})',
-            r'(\d{2}/\d{2}/\d{4})',
+            r"((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2},? \d{4})",
+            r"(\d{4}-\d{2}-\d{2})",
+            r"(\d{2}/\d{2}/\d{4})",
         ]
         first_1000 = text[:1000]
         for pattern in date_patterns:
@@ -286,7 +299,7 @@ class PDFParser:
 
     def _segment_paragraphs(self, text: str) -> list[Paragraph]:
         """Segment text into paragraphs, identifying section headings."""
-        raw_paragraphs = re.split(r'\n\s*\n', text)
+        raw_paragraphs = re.split(r"\n\s*\n", text)
         paragraphs = []
         current_section = ""
 
@@ -296,7 +309,7 @@ class PDFParser:
                 continue
 
             # Check if this is a section heading
-            compressed = ' '.join(para_text.split())
+            compressed = " ".join(para_text.split())
             is_heading = self._is_section_heading(compressed)
 
             if is_heading:
@@ -305,19 +318,21 @@ class PDFParser:
 
             # Detect citations
             citations = []
-            has_citation = bool(re.search(r'\[[\d,\s]+\]|\(\w+\s+\d{4}\)', para_text))
+            has_citation = bool(re.search(r"\[[\d,\s]+\]|\(\w+\s+\d{4}\)", para_text))
             if has_citation:
-                citation_matches = re.findall(r'\[([\d,\s]+)\]', para_text)
+                citation_matches = re.findall(r"\[([\d,\s]+)\]", para_text)
                 citations = [m.strip() for m in citation_matches]
 
-            paragraphs.append(Paragraph(
-                index=i,
-                text=compressed,
-                section_heading=current_section,
-                word_count=len(compressed.split()),
-                contains_citation=has_citation,
-                citations=citations,
-            ))
+            paragraphs.append(
+                Paragraph(
+                    index=i,
+                    text=compressed,
+                    section_heading=current_section,
+                    word_count=len(compressed.split()),
+                    contains_citation=has_citation,
+                    citations=citations,
+                )
+            )
 
         return paragraphs
 
@@ -340,7 +355,14 @@ class PDFParser:
         theme_keywords = {
             "inflation": ["inflation", "cpi", "ppi", "pce", "price pressure", "deflation"],
             "growth": ["gdp growth", "economic growth", "recession", "expansion", "slowdown"],
-            "monetary policy": ["monetary policy", "fed", "rate hike", "rate cut", "hawkish", "dovish"],
+            "monetary policy": [
+                "monetary policy",
+                "fed",
+                "rate hike",
+                "rate cut",
+                "hawkish",
+                "dovish",
+            ],
             "fiscal policy": ["fiscal policy", "deficit", "government spending", "tax"],
             "labor market": ["labor market", "employment", "unemployment", "wages", "job"],
             "china": ["china", "chinese", "pboc", "beijing"],
@@ -379,7 +401,7 @@ class PDFParser:
         if len(text.split()) > 200:
             score += 0.2
         # Check for clean text (no garbled extraction)
-        garbled_ratio = len(re.findall(r'[^\x20-\x7E\s]', text)) / max(len(text), 1)
+        garbled_ratio = len(re.findall(r"[^\x20-\x7E\s]", text)) / max(len(text), 1)
         if garbled_ratio < 0.02:
             score += 0.2
 

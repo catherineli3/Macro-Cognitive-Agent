@@ -25,9 +25,9 @@ import shutil
 import statistics
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 from uuid import uuid4
 
 # ── Adjust sys.path ───────────────────────────────────────────────────────────
@@ -50,35 +50,42 @@ class MarketSimulator:
     """
 
     CHANNEL_NOISE: dict[str, float] = {
-        "NASDAQ": 0.5,   # Low noise — equity follows liquidity reliably
-        "SPX":    0.6,   # Low-medium
-        "US10Y":  0.7,   # Low-medium (but zero drift → random)
-        "Gold":   0.8,   # Medium — commodity with some noise
-        "HYG":    1.0,   # Medium
-        "DXY":    1.4,   # High noise (zero drift → random)
-        "USD":    1.5,   # Very high noise (zero drift → random)
-        "VIX":    1.8,   # VERY high noise but strong drift → still reliable
-        "TIPS":   0.6,   # Low-medium (but zero drift → random)
+        "NASDAQ": 0.5,  # Low noise — equity follows liquidity reliably
+        "SPX": 0.6,  # Low-medium
+        "US10Y": 0.7,  # Low-medium (but zero drift → random)
+        "Gold": 0.8,  # Medium — commodity with some noise
+        "HYG": 1.0,  # Medium
+        "DXY": 1.4,  # High noise (zero drift → random)
+        "USD": 1.5,  # Very high noise (zero drift → random)
+        "VIX": 1.8,  # VERY high noise but strong drift → still reliable
+        "TIPS": 0.6,  # Low-medium (but zero drift → random)
     }
 
     # Drift per indicator: positive = goes up, zero = random walk
     # Reliable: direction matches what DIRECTION_MAP predicts
     # Unreliable: zero drift → direction is pure noise → ~50% accuracy
     BASE_DRIFT: dict[str, float] = {
-        "NASDAQ": 0.003,   # Reliable ↑ (matches liquidity→bullish)
-        "SPX":    0.002,   # Reliable ↑ (matches growth→bullish, risk→bullish)
-        "US10Y":  0.000,   # UNRELIABLE: zero drift, random direction
-        "USD":    0.000,   # UNRELIABLE: zero drift
-        "DXY":    0.000,   # UNRELIABLE: zero drift
-        "Gold":   0.002,   # Reliable ↑ (matches inflation→bullish)
-        "HYG":    0.001,   # Reliable ↑ (matches risk→bullish)
-        "VIX":   -0.005,   # Reliable ↓ (matches risk→bearish)
-        "TIPS":   0.000,   # UNRELIABLE: zero drift
+        "NASDAQ": 0.003,  # Reliable ↑ (matches liquidity→bullish)
+        "SPX": 0.002,  # Reliable ↑ (matches growth→bullish, risk→bullish)
+        "US10Y": 0.000,  # UNRELIABLE: zero drift, random direction
+        "USD": 0.000,  # UNRELIABLE: zero drift
+        "DXY": 0.000,  # UNRELIABLE: zero drift
+        "Gold": 0.002,  # Reliable ↑ (matches inflation→bullish)
+        "HYG": 0.001,  # Reliable ↑ (matches risk→bullish)
+        "VIX": -0.005,  # Reliable ↓ (matches risk→bearish)
+        "TIPS": 0.000,  # UNRELIABLE: zero drift
     }
 
     BASE: dict[str, float] = {
-        "NASDAQ": 15000, "SPX": 4500, "US10Y": 4.00, "USD": 105,
-        "DXY": 105, "Gold": 2000, "HYG": 80, "VIX": 18, "TIPS": 1.50,
+        "NASDAQ": 15000,
+        "SPX": 4500,
+        "US10Y": 4.00,
+        "USD": 105,
+        "DXY": 105,
+        "Gold": 2000,
+        "HYG": 80,
+        "VIX": 18,
+        "TIPS": 1.50,
     }
 
     def __init__(self, seed: int = 42) -> None:
@@ -101,10 +108,12 @@ class MarketSimulator:
                     shock = self._rng.gauss(0, 0.02) * noise_factor * values[indicator]
                 change = (drift * 5 + noise) * values[indicator] + shock
                 values[indicator] = max(values[indicator] + change, 0.01)
-            cycles.append(MarketCycle(
-                cycle_id=i,
-                indicators={k: (values[k], prev[k]) for k in values},
-            ))
+            cycles.append(
+                MarketCycle(
+                    cycle_id=i,
+                    indicators={k: (values[k], prev[k]) for k in values},
+                )
+            )
         return cycles
 
 
@@ -118,7 +127,7 @@ class CycleRecord:
     incorrect: int = 0
     mae: float = 0.0
     brier: float = 0.0
-    top_error: Optional[str] = None
+    top_error: str | None = None
     error_distribution: dict[str, int] = field(default_factory=dict)
     beliefs_updated: int = 0
     deprecated_channels: int = 0
@@ -126,19 +135,44 @@ class CycleRecord:
 
 
 HYPOTHESIS_SPECS = [
-    {"id": "hyp-liquidity", "dimension": "liquidity",     "statement": "Liquidity easing lifts risk assets",       "direction": "bullish"},
-    {"id": "hyp-credit",    "dimension": "credit",        "statement": "Credit stress hits HYG spreads",           "direction": "bearish"},
-    {"id": "hyp-growth",    "dimension": "growth",        "statement": "Growth acceleration lifts equities",       "direction": "bullish"},
-    {"id": "hyp-risk",      "dimension": "risk_appetite", "statement": "Risk-on regime: equities up, vol down",    "direction": "bullish"},
-    {"id": "hyp-inflation", "dimension": "inflation",     "statement": "Inflation expectations drive gold & TIPS", "direction": "bullish"},
+    {
+        "id": "hyp-liquidity",
+        "dimension": "liquidity",
+        "statement": "Liquidity easing lifts risk assets",
+        "direction": "bullish",
+    },
+    {
+        "id": "hyp-credit",
+        "dimension": "credit",
+        "statement": "Credit stress hits HYG spreads",
+        "direction": "bearish",
+    },
+    {
+        "id": "hyp-growth",
+        "dimension": "growth",
+        "statement": "Growth acceleration lifts equities",
+        "direction": "bullish",
+    },
+    {
+        "id": "hyp-risk",
+        "dimension": "risk_appetite",
+        "statement": "Risk-on regime: equities up, vol down",
+        "direction": "bullish",
+    },
+    {
+        "id": "hyp-inflation",
+        "dimension": "inflation",
+        "statement": "Inflation expectations drive gold & TIPS",
+        "direction": "bullish",
+    },
 ]
 
 # Which channels are "reliable" (drift matches prediction direction)
 RELIABLE_CHANNELS = {
-    "liquidity→equity",     # NASDAQ ↑ ✓
-    "growth→equity",        # SPX ↑ ✓
-    "risk_appetite→equity", # SPX ↑ ✓
-    "risk_appetite→credit", # HYG ↑ ✓
+    "liquidity→equity",  # NASDAQ ↑ ✓
+    "growth→equity",  # SPX ↑ ✓
+    "risk_appetite→equity",  # SPX ↑ ✓
+    "risk_appetite→credit",  # HYG ↑ ✓
     "risk_appetite→volatility",  # VIX ↓ ✓
     "inflation→commodity",  # Gold ↑ ✓
 }
@@ -158,18 +192,18 @@ class HypothesisLearningLoop:
         self._dir.mkdir(parents=True, exist_ok=True)
 
     async def run(self, cycles: list[MarketCycle]) -> tuple[list[CycleRecord], dict]:
-        from src.hypothesis_library import HypothesisLibrary
         from src.belief_versioning import BeliefVersionManager
-        from src.prediction import MultiPredictionEngine, PREDICTION_MAPPING
-        from src.evaluation import OutcomeEvaluationEngine
         from src.diagnosis import DiagnosisEngine
+        from src.evaluation import OutcomeEvaluationEngine
+        from src.hypothesis_library import HypothesisLibrary
         from src.learning_log import LearningLogRepository
         from src.learning_unit import LearningUnitValidator
-        from src.schemas.learning_unit import LearningUnit, EvidenceChange
+        from src.prediction import PREDICTION_MAPPING, MultiPredictionEngine
         from src.schemas.diagnosis import ErrorCategory
         from src.schemas.hypothesis import HypothesisSchema, HypothesisSet
-        from src.schemas.signal import SignalDirection
         from src.schemas.learning_log import LearningLogEntry
+        from src.schemas.learning_unit import EvidenceChange, LearningUnit
+        from src.schemas.signal import SignalDirection
 
         lib = HypothesisLibrary(storage_dir=self._dir / "hypothesis_library")
         bvm = BeliefVersionManager(storage_dir=self._dir / "belief_versions")
@@ -189,15 +223,23 @@ class HypothesisLearningLoop:
                 init_w = 0.70 if is_reliable else 0.50
                 init_conf = 0.65 if is_reliable else 0.45
                 bel = await bvm.create_belief(
-                    dimension=dim, transmission_channel=ch,
-                    weight=init_w, confidence=init_conf, valid_horizon="5d")
+                    dimension=dim,
+                    transmission_channel=ch,
+                    weight=init_w,
+                    confidence=init_conf,
+                    valid_horizon="5d",
+                )
                 belief_lookup[bel.belief_id] = bel
                 channel_beliefs[ch] = bel
 
         # ── Register hypotheses in library ─────────────────────────────────
         for s in HYPOTHESIS_SPECS:
-            await lib.register(hypothesis_id=s["id"], dimension=s["dimension"],
-                               statement=s["statement"], direction=s["direction"])
+            await lib.register(
+                hypothesis_id=s["id"],
+                dimension=s["dimension"],
+                statement=s["statement"],
+                direction=s["direction"],
+            )
 
         all_preds: dict[str, list] = {}
         records: list[CycleRecord] = []
@@ -210,7 +252,8 @@ class HypothesisLearningLoop:
 
             # ── Determine deprecated channels ──────────────────────────────
             deprecated_chs = {
-                ch for ch, bel in channel_beliefs.items()
+                ch
+                for ch, bel in channel_beliefs.items()
                 if bel.weight < self.DEPRECATION_WEIGHT_THRESHOLD
                 or getattr(bel, "is_deprecated", False)
             }
@@ -223,8 +266,12 @@ class HypothesisLearningLoop:
                 ls = entry.current_score.total_score if entry else 0.5
                 conf = 0.60 + 0.30 * ls
                 conf = min(0.95, max(0.25, conf))
-                h = HypothesisSchema(statement=s["statement"], dimension=s["dimension"],
-                                     direction=SignalDirection(s["direction"]), confidence=conf)
+                h = HypothesisSchema(
+                    statement=s["statement"],
+                    dimension=s["dimension"],
+                    direction=SignalDirection(s["direction"]),
+                    confidence=conf,
+                )
                 h.hypothesis_id = s["id"]
                 hypotheses.append(h)
 
@@ -234,18 +281,18 @@ class HypothesisLearningLoop:
 
             # ── 2. Generate predictions ────────────────────────────────────
             batch = await pred_eng.generate_predictions(
-                hypothesis_set=hyp_set, run_id=rid, hypothesis_library_entries=entries)
+                hypothesis_set=hyp_set, run_id=rid, hypothesis_library_entries=entries
+            )
 
             # ── Filter out deprecated channel predictions ──────────────────
             if deprecated_chs:
                 batch.predictions = [
-                    p for p in batch.predictions
-                    if p.transmission_channel not in deprecated_chs
+                    p for p in batch.predictions if p.transmission_channel not in deprecated_chs
                 ]
 
             rec.total_predictions = batch.total_predictions
-            rec.avg_confidence = (
-                sum(p.confidence for p in batch.predictions) / max(batch.total_predictions, 1)
+            rec.avg_confidence = sum(p.confidence for p in batch.predictions) / max(
+                batch.total_predictions, 1
             )
 
             # ── 3. Evaluate ────────────────────────────────────────────────
@@ -265,7 +312,8 @@ class HypothesisLearningLoop:
 
             for h in hyp_set.hypotheses:
                 all_preds.setdefault(h.hypothesis_id, []).extend(
-                    batch.by_hypothesis.get(h.hypothesis_id, []))
+                    batch.by_hypothesis.get(h.hypothesis_id, [])
+                )
 
             # ── 4. Diagnose ────────────────────────────────────────────────
             diag = await diag_eng.diagnose_batch(ev)
@@ -284,7 +332,9 @@ class HypothesisLearningLoop:
             # First pass: update consec_errors for each channel
             ch_correct_this_cycle: set[str] = set()
             for cl in diag.classifications:
-                p = next((x for x in batch.predictions if x.prediction_id == cl.prediction_id), None)
+                p = next(
+                    (x for x in batch.predictions if x.prediction_id == cl.prediction_id), None
+                )
                 if p is None:
                     continue
                 ch = p.transmission_channel
@@ -304,7 +354,9 @@ class HypothesisLearningLoop:
 
             # Second pass: generate LearningUnits with escalation
             for cl in diag.classifications:
-                p = next((x for x in batch.predictions if x.prediction_id == cl.prediction_id), None)
+                p = next(
+                    (x for x in batch.predictions if x.prediction_id == cl.prediction_id), None
+                )
                 if p is None:
                     continue
                 ch = p.transmission_channel
@@ -314,18 +366,26 @@ class HypothesisLearningLoop:
 
                 lu: Any = None
                 if cl.is_correct:
-                    if (hasattr(cl, "correct_category") and cl.correct_category
-                            and cl.correct_category.value == "CORRECT_STRONG"
-                            and bel.weight < 0.90):
+                    if (
+                        hasattr(cl, "correct_category")
+                        and cl.correct_category
+                        and cl.correct_category.value == "CORRECT_STRONG"
+                        and bel.weight < 0.90
+                    ):
                         # Strong correct → reward reliable channel
                         reward = 0.03 if ch in RELIABLE_CHANNELS else 0.01
-                        lu = LearningUnit(belief_id=bel.belief_id,
-                                          weight_delta=reward, confidence_delta=0.02)
-                    elif (hasattr(cl, "correct_category") and cl.correct_category
-                          and cl.correct_category.value == "CORRECT_WEAK"
-                          and bel.weight < 0.85):
-                        lu = LearningUnit(belief_id=bel.belief_id,
-                                          weight_delta=0.01, confidence_delta=0.01)
+                        lu = LearningUnit(
+                            belief_id=bel.belief_id, weight_delta=reward, confidence_delta=0.02
+                        )
+                    elif (
+                        hasattr(cl, "correct_category")
+                        and cl.correct_category
+                        and cl.correct_category.value == "CORRECT_WEAK"
+                        and bel.weight < 0.85
+                    ):
+                        lu = LearningUnit(
+                            belief_id=bel.belief_id, weight_delta=0.01, confidence_delta=0.01
+                        )
                 else:
                     ec = cl.error_category
                     lw = getattr(cl, "learning_weight", 1.0)
@@ -345,13 +405,19 @@ class HypothesisLearningLoop:
                     if ec_eff == ErrorCategory.WEIGHT_ERR and cw > 0.05:
                         mul = min(3.0, 1.0 + ce * 0.25)  # Escalating multiplier
                         d = max(-0.15, -0.05 * lw * mul)
-                        lu = LearningUnit(belief_id=bel.belief_id, weight_delta=round(d, 4),
-                                          confidence_delta=-0.05)
+                        lu = LearningUnit(
+                            belief_id=bel.belief_id,
+                            weight_delta=round(d, 4),
+                            confidence_delta=-0.05,
+                        )
                     elif ec_eff == ErrorCategory.HYP_ERR and cw > 0.05:
                         mul = min(3.0, 1.0 + ce * 0.25)
                         d = max(-0.15, -0.08 * lw * mul)
-                        lu = LearningUnit(belief_id=bel.belief_id, weight_delta=round(d, 4),
-                                          confidence_delta=-0.08)
+                        lu = LearningUnit(
+                            belief_id=bel.belief_id,
+                            weight_delta=round(d, 4),
+                            confidence_delta=-0.08,
+                        )
                     elif ec_eff == ErrorCategory.TIMING_ERR:
                         cur = bel.valid_horizon
                         hmap = {"1d": "3d", "3d": "5d", "5d": "10d", "10d": "21d", "21d": "21d"}
@@ -359,21 +425,28 @@ class HypothesisLearningLoop:
                         if nh != cur:
                             lu = LearningUnit(belief_id=bel.belief_id, horizon_change=nh)
                     elif ec_eff == ErrorCategory.SIGNAL_ERR and cw > 0.05:
-                        lu = LearningUnit(belief_id=bel.belief_id, weight_delta=-0.03,
-                                          confidence_delta=-0.03)
+                        lu = LearningUnit(
+                            belief_id=bel.belief_id, weight_delta=-0.03, confidence_delta=-0.03
+                        )
                     elif ec_eff == ErrorCategory.EVID_MISSING:
-                        lu = LearningUnit(belief_id=bel.belief_id,
-                                          evidence_change=EvidenceChange(
-                                              action="add", evidence_id=f"ev-{uuid4().hex[:6]}",
-                                              reason="Missing evidence for prediction"))
+                        lu = LearningUnit(
+                            belief_id=bel.belief_id,
+                            evidence_change=EvidenceChange(
+                                action="add",
+                                evidence_id=f"ev-{uuid4().hex[:6]}",
+                                reason="Missing evidence for prediction",
+                            ),
+                        )
 
                 if lu is not None:
                     ok, _ = validator.validate(lu, current_weight=bel.weight)
                     if ok:
                         await bvm.create_version(
-                            belief=bel, learning_unit=lu,
+                            belief=bel,
+                            learning_unit=lu,
                             diagnosis_report_id=diag.report_id,
-                            trigger_detail=f"Cycle {cycle_data.cycle_id}")
+                            trigger_detail=f"Cycle {cycle_data.cycle_id}",
+                        )
                         rec.beliefs_updated += 1
 
             # ── 6. Update belief performance ───────────────────────────────
@@ -387,40 +460,44 @@ class HypothesisLearningLoop:
             # ── 7. Update Library scores ───────────────────────────────────
             for s in HYPOTHESIS_SPECS:
                 preds = all_preds.get(s["id"], [])
-                dim_bels = [
-                    b for b in channel_beliefs.values()
-                    if b.dimension == s["dimension"]
-                ]
+                dim_bels = [b for b in channel_beliefs.values() if b.dimension == s["dimension"]]
                 if dim_bels:
                     await lib.update_score(
-                        hypothesis_id=s["id"], predictions=preds,
-                        belief=dim_bels[0])
+                        hypothesis_id=s["id"], predictions=preds, belief=dim_bels[0]
+                    )
 
             rec.library_avg_score = await lib.get_library_avg_score()
 
             # ── 8. Log ─────────────────────────────────────────────────────
             log_entries = []
             for outcome in ev.outcomes:
-                matching_cls = [c for c in diag.classifications
-                                if c.prediction_id == outcome.prediction_id]
+                matching_cls = [
+                    c for c in diag.classifications if c.prediction_id == outcome.prediction_id
+                ]
                 cl = matching_cls[0] if matching_cls else None
-                p = next((x for x in batch.predictions
-                         if x.prediction_id == outcome.prediction_id), None)
+                p = next(
+                    (x for x in batch.predictions if x.prediction_id == outcome.prediction_id), None
+                )
                 if p and cl:
-                    log_entries.append(LearningLogEntry(
-                        run_id=rid, prediction_id=p.prediction_id,
-                        hypothesis_id=p.source_hypothesis_id,
-                        dimension=p.dimension,
-                        transmission_channel=p.transmission_channel,
-                        prediction_tier=p.prediction_tier.value,
-                        predicted_direction=p.direction,
-                        predicted_confidence=p.confidence,
-                        horizon=p.horizon, was_correct=outcome.correct,
-                        actual_direction=outcome.actual_direction,
-                        error_magnitude=outcome.error_magnitude,
-                        error_category=cl.error_category.value if cl.error_category else None,
-                        diagnosis_confidence=cl.diagnosis_confidence,
-                        diagnosis_rationale=cl.diagnosis_rationale))
+                    log_entries.append(
+                        LearningLogEntry(
+                            run_id=rid,
+                            prediction_id=p.prediction_id,
+                            hypothesis_id=p.source_hypothesis_id,
+                            dimension=p.dimension,
+                            transmission_channel=p.transmission_channel,
+                            prediction_tier=p.prediction_tier.value,
+                            predicted_direction=p.direction,
+                            predicted_confidence=p.confidence,
+                            horizon=p.horizon,
+                            was_correct=outcome.correct,
+                            actual_direction=outcome.actual_direction,
+                            error_magnitude=outcome.error_magnitude,
+                            error_category=cl.error_category.value if cl.error_category else None,
+                            diagnosis_confidence=cl.diagnosis_confidence,
+                            diagnosis_rationale=cl.diagnosis_rationale,
+                        )
+                    )
             if log_entries:
                 await log.append_batch(log_entries)
 
@@ -435,8 +512,11 @@ class HypothesisLearningLoop:
                 return 0.0
             repeats = 0
             for i in range(1, len(recs)):
-                if (recs[i - 1].top_error and recs[i].top_error
-                        and recs[i - 1].top_error == recs[i].top_error):
+                if (
+                    recs[i - 1].top_error
+                    and recs[i].top_error
+                    and recs[i - 1].top_error == recs[i].top_error
+                ):
                     repeats += min(recs[i].incorrect, recs[i - 1].incorrect)
             return repeats / max(total_errors, 1)
 
@@ -467,7 +547,7 @@ def compute(records: list[CycleRecord], extras: dict) -> dict:
     n = len(records)
     f25, l25 = records[:25], records[-25:]
     h = n // 2
-    fh, sh = records[:h], records[h:]
+    _fh, _sh = records[:h], records[h:]
 
     m = {}
 
@@ -523,25 +603,30 @@ def compute(records: list[CycleRecord], extras: dict) -> dict:
                 "init_weight": traj[0][1],
                 "final_weight": bel.weight,
                 "versions": bel.current_version,
-                "slope": bel.get_accuracy_trajectory_slope() if hasattr(bel, "get_accuracy_trajectory_slope") else 0.0,
+                "slope": (
+                    bel.get_accuracy_trajectory_slope()
+                    if hasattr(bel, "get_accuracy_trajectory_slope")
+                    else 0.0
+                ),
                 "is_deprecated": bel.is_deprecated,
             }
     m["channel_data"] = ch_data
 
     # Deprecation count (from channel_data — must be AFTER ch_data is built)
     m["deprecated_channels"] = sum(
-        1 for d in ch_data.values()
+        1
+        for d in ch_data.values()
         if d["final_weight"] < HypothesisLearningLoop.DEPRECATION_WEIGHT_THRESHOLD
     )
     m["deprecated_channel_names"] = [
-        ch for ch, d in ch_data.items()
+        ch
+        for ch, d in ch_data.items()
         if d["final_weight"] < HypothesisLearningLoop.DEPRECATION_WEIGHT_THRESHOLD
     ]
 
     # Learning verdict: RER must decrease + at least 1 other metric must improve
-    m["learning_proven"] = (
-        m["rer_decreased"] and
-        (m["acc_improved"] or m["conf_changed"] or m["calibration_improved"] or m["lib_improved"])
+    m["learning_proven"] = m["rer_decreased"] and (
+        m["acc_improved"] or m["conf_changed"] or m["calibration_improved"] or m["lib_improved"]
     )
 
     return m
@@ -558,10 +643,14 @@ def report(records: list[CycleRecord], metrics: dict, extras: dict, path: Path) 
         L.append(s)
 
     add("# V3 Release 3.0 — Validation Report")
-    add(f"\n> Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
-    add(f"> Simulation: {n} Cycles | 5 Hypotheses | 16 Channels (pre-deprecation) | Single Regime (Easing)")
-    add(f"> Design: Reliable channels (drift-aligned) + Unreliable channels (zero drift)")
-    add(f"> Channel Deprecation: weight < {HypothesisLearningLoop.DEPRECATION_WEIGHT_THRESHOLD} → predictions stopped")
+    add(f"\n> Generated: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}")
+    add(
+        f"> Simulation: {n} Cycles | 5 Hypotheses | 16 Channels (pre-deprecation) | Single Regime (Easing)"
+    )
+    add("> Design: Reliable channels (drift-aligned) + Unreliable channels (zero drift)")
+    add(
+        f"> Channel Deprecation: weight < {HypothesisLearningLoop.DEPRECATION_WEIGHT_THRESHOLD} → predictions stopped"
+    )
     add()
 
     # 1. Simulation Design
@@ -571,7 +660,9 @@ def report(records: list[CycleRecord], metrics: dict, extras: dict, path: Path) 
     add()
     add("| Channel | Indicator | Drift | Noise | Expected Reliability |")
     add("|---------|-----------|-------|-------|---------------------|")
-    for ch in sorted(MarketSimulator.CHANNEL_NOISE, key=lambda x: MarketSimulator.CHANNEL_NOISE.get(x, 1.0)):
+    for ch in sorted(
+        MarketSimulator.CHANNEL_NOISE, key=lambda x: MarketSimulator.CHANNEL_NOISE.get(x, 1.0)
+    ):
         drift = MarketSimulator.BASE_DRIFT.get(ch, 0.0)
         nf = MarketSimulator.CHANNEL_NOISE.get(ch, 1.0)
         dr_desc = f"{drift:+.3f}" if drift != 0 else "0 (random)"
@@ -581,7 +672,9 @@ def report(records: list[CycleRecord], metrics: dict, extras: dict, path: Path) 
 
     add("### 1.2 Channel Predictability")
     add()
-    add("Reliable channels have drift aligned with predicted direction → directional accuracy ~85-95%.")
+    add(
+        "Reliable channels have drift aligned with predicted direction → directional accuracy ~85-95%."
+    )
     add("Unreliable channels have zero drift (random walk) → directional accuracy ~48-52%.")
     add("The system must learn to trust reliable channels and deprecate unreliable ones.")
     add("Per-channel noise multiplies volatility: lower noise → more consistent performance.")
@@ -616,18 +709,33 @@ def report(records: list[CycleRecord], metrics: dict, extras: dict, path: Path) 
     add()
     add("| KPI | Cycles 1-25 | Cycles 76-100 | Delta | Direction | Status |")
     add("|-----|------------|---------------|-------|-----------|--------|")
-    a, c, ce, r = metrics["acc_delta"], metrics["conf_delta"], metrics["brier_delta"], metrics["rer_delta"]
-    add(f"| HA (Hypothesis Accuracy) | {metrics['init_acc']:.1%} | {metrics['final_acc']:.1%} | {a:+.1%} | {'Improved' if metrics['acc_improved'] else 'Stable'} | {'PASS' if metrics['acc_improved'] else '—'} |")
-    add(f"| PE (Prediction Error/MAE) | {metrics['init_mae']:.4f} | {metrics['final_mae']:.4f} | {metrics['mae_delta']:+.4f} | {'Improved' if metrics['mae_improved'] else 'Worse'} | {'PASS' if metrics['mae_improved'] else '—'} |")
-    add(f"| CE (Calibration/Brier) | {metrics['init_brier']:.4f} | {metrics['final_brier']:.4f} | {ce:+.4f} | {'Improved' if metrics['calibration_improved'] else 'Worse'} | {'PASS' if metrics['calibration_improved'] else '—'} |")
-    add(f"| RER (Repeated Error Rate) | {metrics['first_rer']:.1%} | {metrics['second_rer']:.1%} | {r:+.1%} | {'Decreased' if metrics['rer_decreased'] else 'NOT decreased'} | {'PASS' if metrics['rer_decreased'] else 'FAIL'} |")
+    a, c, ce, r = (
+        metrics["acc_delta"],
+        metrics["conf_delta"],
+        metrics["brier_delta"],
+        metrics["rer_delta"],
+    )
+    add(
+        f"| HA (Hypothesis Accuracy) | {metrics['init_acc']:.1%} | {metrics['final_acc']:.1%} | {a:+.1%} | {'Improved' if metrics['acc_improved'] else 'Stable'} | {'PASS' if metrics['acc_improved'] else '—'} |"
+    )
+    add(
+        f"| PE (Prediction Error/MAE) | {metrics['init_mae']:.4f} | {metrics['final_mae']:.4f} | {metrics['mae_delta']:+.4f} | {'Improved' if metrics['mae_improved'] else 'Worse'} | {'PASS' if metrics['mae_improved'] else '—'} |"
+    )
+    add(
+        f"| CE (Calibration/Brier) | {metrics['init_brier']:.4f} | {metrics['final_brier']:.4f} | {ce:+.4f} | {'Improved' if metrics['calibration_improved'] else 'Worse'} | {'PASS' if metrics['calibration_improved'] else '—'} |"
+    )
+    add(
+        f"| RER (Repeated Error Rate) | {metrics['first_rer']:.1%} | {metrics['second_rer']:.1%} | {r:+.1%} | {'Decreased' if metrics['rer_decreased'] else 'NOT decreased'} | {'PASS' if metrics['rer_decreased'] else 'FAIL'} |"
+    )
     add()
 
     add("### 2.2 Confidence Evolution")
     add()
     add(f"Initial confidence (cycles 1-25): {metrics['init_conf']:.4f}")
     add(f"Final confidence (cycles 76-100): {metrics['final_conf']:.4f}")
-    add(f"Delta: {c:+.4f} — {'Changed significantly' if metrics['conf_changed'] else 'No significant change'}")
+    add(
+        f"Delta: {c:+.4f} — {'Changed significantly' if metrics['conf_changed'] else 'No significant change'}"
+    )
     add()
 
     # 3. Channel Weight Evolution
@@ -638,21 +746,31 @@ def report(records: list[CycleRecord], metrics: dict, extras: dict, path: Path) 
     cd = metrics.get("channel_data", {})
     for ch in sorted(cd.keys()):
         d = cd[ch]
-        expected = "↑" if d["init_weight"] < d["final_weight"] else ("↓" if d["init_weight"] > d["final_weight"] else "→")
+        expected = (
+            "↑"
+            if d["init_weight"] < d["final_weight"]
+            else ("↓" if d["init_weight"] > d["final_weight"] else "→")
+        )
         dep = "YES" if d.get("is_deprecated") or d["final_weight"] < 0.20 else "no"
-        add(f"| {ch:30s} | {expected:4s} | {d['init_weight']:.3f} | {d['final_weight']:.3f} | {d['final_weight']-d['init_weight']:+.3f} | {d['versions']:3d} | {dep:5s} |")
+        add(
+            f"| {ch:30s} | {expected:4s} | {d['init_weight']:.3f} | {d['final_weight']:.3f} | {d['final_weight']-d['init_weight']:+.3f} | {d['versions']:3d} | {dep:5s} |"
+        )
     add()
 
     # 4. Channel Deprecation
     add("## 4. Channel Deprecation")
     add()
     dep_names = metrics.get("deprecated_channel_names", [])
-    add(f"Channels deprecated (weight < {HypothesisLearningLoop.DEPRECATION_WEIGHT_THRESHOLD}): {len(dep_names)}")
+    add(
+        f"Channels deprecated (weight < {HypothesisLearningLoop.DEPRECATION_WEIGHT_THRESHOLD}): {len(dep_names)}"
+    )
     if dep_names:
         add()
         for ch in dep_names:
             d = cd.get(ch, {})
-            add(f"- **{ch}**: final weight {d.get('final_weight', 0):.3f}, versions: {d.get('versions', 0)}")
+            add(
+                f"- **{ch}**: final weight {d.get('final_weight', 0):.3f}, versions: {d.get('versions', 0)}"
+            )
     add()
     add("Deprecated channels are excluded from prediction generation, improving overall accuracy.")
     add()
@@ -660,7 +778,9 @@ def report(records: list[CycleRecord], metrics: dict, extras: dict, path: Path) 
     # 5. Library Validation
     add("## 5. Hypothesis Library Validation")
     add()
-    add(f"Library score delta: {metrics['lib_delta']:+.4f} ({'Improved' if metrics['lib_improved'] else 'Not improved'})")
+    add(
+        f"Library score delta: {metrics['lib_delta']:+.4f} ({'Improved' if metrics['lib_improved'] else 'Not improved'})"
+    )
     add()
 
     # 6. Verdict
@@ -670,11 +790,21 @@ def report(records: list[CycleRecord], metrics: dict, extras: dict, path: Path) 
     add()
     add("| # | Condition | Threshold | Actual | Result |")
     add("|---|-----------|-----------|--------|--------|")
-    add(f"| R1 | RER decreases | Δ > 0.02 | {r:+.1%} | {'PASS' if metrics['rer_decreased'] else 'FAIL'} |")
-    add(f"| R2 | Accuracy improves | Δ ≥ 0.02 | {a:+.1%} | {'PASS' if metrics['acc_improved'] else 'FAIL'} |")
-    add(f"| R3 | Confidence changes | Δ > 0.003 | {c:+.4f} | {'PASS' if metrics['conf_changed'] else 'FAIL'} |")
-    add(f"| R4 | Calibration improves | Δ < -0.005 | {ce:+.4f} | {'PASS' if metrics['calibration_improved'] else 'FAIL'} |")
-    add(f"| R5 | Library improves | Δ > 0.005 | {metrics['lib_delta']:+.4f} | {'PASS' if metrics['lib_improved'] else 'FAIL'} |")
+    add(
+        f"| R1 | RER decreases | Δ > 0.02 | {r:+.1%} | {'PASS' if metrics['rer_decreased'] else 'FAIL'} |"
+    )
+    add(
+        f"| R2 | Accuracy improves | Δ ≥ 0.02 | {a:+.1%} | {'PASS' if metrics['acc_improved'] else 'FAIL'} |"
+    )
+    add(
+        f"| R3 | Confidence changes | Δ > 0.003 | {c:+.4f} | {'PASS' if metrics['conf_changed'] else 'FAIL'} |"
+    )
+    add(
+        f"| R4 | Calibration improves | Δ < -0.005 | {ce:+.4f} | {'PASS' if metrics['calibration_improved'] else 'FAIL'} |"
+    )
+    add(
+        f"| R5 | Library improves | Δ > 0.005 | {metrics['lib_delta']:+.4f} | {'PASS' if metrics['lib_improved'] else 'FAIL'} |"
+    )
     add()
 
     if metrics["learning_proven"]:
@@ -694,7 +824,7 @@ def report(records: list[CycleRecord], metrics: dict, extras: dict, path: Path) 
         if dep_names:
             add(f"- **{len(dep_names)} channels deprecated**: {', '.join(dep_names)}")
             add(f"  → removing unreliable predictions boosted accuracy by {a:+.1%}")
-        add(f"- **342 belief versions created** across 100 cycles")
+        add("- **342 belief versions created** across 100 cycles")
         add()
         add("**Release 3.0 Validation: PASSED. Proceed to Release 3.1.**")
     else:
@@ -732,7 +862,7 @@ def report(records: list[CycleRecord], metrics: dict, extras: dict, path: Path) 
     add()
 
     add("---")
-    add(f"*Report: {datetime.now(timezone.utc).isoformat()}*")
+    add(f"*Report: {datetime.now(UTC).isoformat()}*")
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(L), encoding="utf-8")
@@ -757,9 +887,12 @@ async def main() -> int:
     records, extras = await loop.run(cycles)
 
     # Show deprecated channels
-    final_deprecated = [ch for ch, bel in extras["channel_beliefs"].items()
-                        if bel.weight < HypothesisLearningLoop.DEPRECATION_WEIGHT_THRESHOLD
-                        or getattr(bel, "is_deprecated", False)]
+    final_deprecated = [
+        ch
+        for ch, bel in extras["channel_beliefs"].items()
+        if bel.weight < HypothesisLearningLoop.DEPRECATION_WEIGHT_THRESHOLD
+        or getattr(bel, "is_deprecated", False)
+    ]
     print(f"      {len(records)} cycles complete, {extras['total_versions']} belief versions")
     print(f"      Deprecated channels: {final_deprecated}")
 

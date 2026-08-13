@@ -7,7 +7,6 @@ reasoning. Cannot skip: every pipeline must start here.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from src.research.reasoning_pipeline.schemas import (
     ObservationOutput,
@@ -27,7 +26,7 @@ class ObservationStage:
         "What do I see? What's different from yesterday? What's surprising?"
     """
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def execute(
@@ -59,9 +58,7 @@ class ObservationStage:
 
         # 1. Extract macro observations
         output.observations = self._observe_macro(macro_data)
-        output.data_surprises = self._identify_surprises(
-            macro_data, previous_observations
-        )
+        output.data_surprises = self._identify_surprises(macro_data, previous_observations)
 
         # 2. Extract market observations
         output.market_moves = self._observe_markets(market_data)
@@ -117,9 +114,18 @@ class ObservationStage:
 
         # Add raw data observations
         for key, value in data.items():
-            if key not in {"gdp", "gdp_growth", "pmi", "cpi", "core_cpi",
-                           "pce", "unemployment", "nonfarm_payrolls",
-                           "fed_rate", "ecb_rate"}:
+            if key not in {
+                "gdp",
+                "gdp_growth",
+                "pmi",
+                "cpi",
+                "core_cpi",
+                "pce",
+                "unemployment",
+                "nonfarm_payrolls",
+                "fed_rate",
+                "ecb_rate",
+            }:
                 observations.append(f"{key}: {value}")
 
         return observations
@@ -137,8 +143,8 @@ class ObservationStage:
 
         for key in set(current.keys()) & set(previous.keys()):
             try:
-                curr_val = float(str(current[key]).replace('%', ''))
-                prev_val = float(str(previous[key]).replace('%', ''))
+                curr_val = float(str(current[key]).replace("%", ""))
+                prev_val = float(str(previous[key]).replace("%", ""))
                 if prev_val != 0:
                     change_pct = (curr_val - prev_val) / abs(prev_val) * 100
                     if abs(change_pct) > 1.0:
@@ -150,9 +156,7 @@ class ObservationStage:
             except (ValueError, TypeError):
                 # Non-numeric value, compare as strings
                 if str(current[key]) != str(previous[key]):
-                    surprises.append(
-                        f"{key}: changed from {previous[key]} to {current[key]}"
-                    )
+                    surprises.append(f"{key}: changed from {previous[key]} to {current[key]}")
 
         return surprises
 
@@ -190,8 +194,17 @@ class ObservationStage:
 
         # Add any other market data
         for key, value in data.items():
-            if key not in {"sp500", "nasdaq", "us10y", "us2y",
-                           "dxy", "eurusd", "vix", "gold", "oil"}:
+            if key not in {
+                "sp500",
+                "nasdaq",
+                "us10y",
+                "us2y",
+                "dxy",
+                "eurusd",
+                "vix",
+                "gold",
+                "oil",
+            }:
                 moves.append(f"{key}: {value}")
 
         return moves
@@ -199,11 +212,28 @@ class ObservationStage:
     def _filter_significant_news(self, items: list[str]) -> list[str]:
         """Filter for genuinely significant news."""
         significance_keywords = [
-            "fomc", "fed", "rate hike", "rate cut", "ecb", "boj",
-            "recession", "crisis", "inflation surprise", "jobs report",
-            "gdp", "cpi", "pce", "employment", "geopolitical",
-            "sanctions", "trade war", "default", "bailout",
-            "intervention", "emergency meeting", "extraordinary",
+            "fomc",
+            "fed",
+            "rate hike",
+            "rate cut",
+            "ecb",
+            "boj",
+            "recession",
+            "crisis",
+            "inflation surprise",
+            "jobs report",
+            "gdp",
+            "cpi",
+            "pce",
+            "employment",
+            "geopolitical",
+            "sanctions",
+            "trade war",
+            "default",
+            "bailout",
+            "intervention",
+            "emergency meeting",
+            "extraordinary",
         ]
 
         significant = []

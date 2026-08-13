@@ -11,14 +11,13 @@ No more hand-written prompts. All prompts derived from real research.
 from __future__ import annotations
 
 import re
-from typing import Optional
 
+from src.research.corpus.memo_segmenter import MemoSection, MemoSegmenter
 from src.research.corpus.schemas import (
-    ResearchDocument,
     Paragraph,
     ReasoningUnit,
+    ResearchDocument,
 )
-from src.research.corpus.memo_segmenter import MemoSection, MemoSegmenter
 
 
 class ReasoningExtractor:
@@ -32,84 +31,84 @@ class ReasoningExtractor:
     # ── Linguistic Markers ─────────────────────────────────────────────
 
     OBSERVATION_MARKERS = [
-        r'(?:we\s+)?(?:observed?|noted?|saw|seen)\s+that',
-        r'(?:the\s+)?data\s+shows?\b',
-        r'(?:recent|latest)\s+(?:data|release|report|figure)',
-        r'(?:has\s+)?(?:risen|fallen|increased|decreased|declined|surged|plunged)',
-        r'(?:came\s+in\s+at|printed\s+at|registered)\s+',
-        r'(?:now\s+stands?\s+at|currently\s+(?:at|running\s+at))',
-        r'as\s+of\s+\w+\s+\d{1,2}',
+        r"(?:we\s+)?(?:observed?|noted?|saw|seen)\s+that",
+        r"(?:the\s+)?data\s+shows?\b",
+        r"(?:recent|latest)\s+(?:data|release|report|figure)",
+        r"(?:has\s+)?(?:risen|fallen|increased|decreased|declined|surged|plunged)",
+        r"(?:came\s+in\s+at|printed\s+at|registered)\s+",
+        r"(?:now\s+stands?\s+at|currently\s+(?:at|running\s+at))",
+        r"as\s+of\s+\w+\s+\d{1,2}",
     ]
 
     EVIDENCE_MARKERS = [
-        r'(?:as\s+)?evidence[ds]?\s+(?:by|from)',
-        r'supported\s+by',
-        r'(?:according|based)\s+to\s+(?:the\s+)?(?:latest|recent)',
-        r'(?:data\s+)?(?:confirm|support|validate|corroborate)s?\b',
-        r'(?:the\s+)?(?:chart|figure|table)\s+(?:\d+|below|above)\s+shows',
-        r'(?:source|data):\s+',
-        r'suggest(?:s|ed|ing)?\s+(?:that|a)',
+        r"(?:as\s+)?evidence[ds]?\s+(?:by|from)",
+        r"supported\s+by",
+        r"(?:according|based)\s+to\s+(?:the\s+)?(?:latest|recent)",
+        r"(?:data\s+)?(?:confirm|support|validate|corroborate)s?\b",
+        r"(?:the\s+)?(?:chart|figure|table)\s+(?:\d+|below|above)\s+shows",
+        r"(?:source|data):\s+",
+        r"suggest(?:s|ed|ing)?\s+(?:that|a)",
     ]
 
     PATTERN_MARKERS = [
-        r'(?:pattern|trend|cycle|regime)\s+(?:of|in|toward|shift)',
-        r'(?:consistent|inconsistent)\s+with',
-        r'(?:historically|typically|usually|normally)',
-        r'(?:this\s+is\s+)?reminiscent\s+of',
-        r'(?:fits?\s+(?:the|a)\s+)?(?:pattern|mold|template)',
-        r'(?:follow(?:s|ing|ed)\s+(?:the|a)\s+(?:same|similar|familiar)\s+(?:path|pattern))',
-        r'(?:the\s+)?(?:bigger|broader|larger)\s+picture',
+        r"(?:pattern|trend|cycle|regime)\s+(?:of|in|toward|shift)",
+        r"(?:consistent|inconsistent)\s+with",
+        r"(?:historically|typically|usually|normally)",
+        r"(?:this\s+is\s+)?reminiscent\s+of",
+        r"(?:fits?\s+(?:the|a)\s+)?(?:pattern|mold|template)",
+        r"(?:follow(?:s|ing|ed)\s+(?:the|a)\s+(?:same|similar|familiar)\s+(?:path|pattern))",
+        r"(?:the\s+)?(?:bigger|broader|larger)\s+picture",
     ]
 
     ANALOGY_MARKERS = [
-        r'(?:similar|comparable|analogous)\s+to\s+(?:the\s+)?(?:19|20)\d{2}',
-        r'(?:reminds?\s+(?:us|me)\s+of|recalls?\s+the)',
-        r'(?:like\s+the\s+)(?:19|20)\d{2}\b',
-        r'(?:last\s+time\s+(?:this|we)\s+(?:happened|saw))',
-        r'(?:historical\s+(?:analog|parallel|precedent))',
-        r'(?:echoes?\s+of\s+the\s+)(?:19|20)\d{2}',
-        r'(?:not\s+since\s+the\s+)(?:19|20)\d{2}',
-        r'(?:look(?:s|ing)\s+(?:a\s+lot\s+)?like)\s+(?:19|20)\d{2}',
+        r"(?:similar|comparable|analogous)\s+to\s+(?:the\s+)?(?:19|20)\d{2}",
+        r"(?:reminds?\s+(?:us|me)\s+of|recalls?\s+the)",
+        r"(?:like\s+the\s+)(?:19|20)\d{2}\b",
+        r"(?:last\s+time\s+(?:this|we)\s+(?:happened|saw))",
+        r"(?:historical\s+(?:analog|parallel|precedent))",
+        r"(?:echoes?\s+of\s+the\s+)(?:19|20)\d{2}",
+        r"(?:not\s+since\s+the\s+)(?:19|20)\d{2}",
+        r"(?:look(?:s|ing)\s+(?:a\s+lot\s+)?like)\s+(?:19|20)\d{2}",
     ]
 
     HYPOTHESIS_MARKERS = [
-        r'(?:we\s+)?(?:believe|think|expect|anticipate|forecast|project|estimate)\s+that',
-        r'(?:our\s+(?:base\s+case|central\s+case|core\s+view)\s+is\s+that)',
-        r'(?:the\s+)?(?:most\s+likely|probable)\s+(?:outcome|scenario|path)\s+is',
-        r'(?:this\s+)?(?:implies|suggests|indicates|points\s+to)\s+that',
-        r'(?:if\s+this\s+(?:continues|holds|persists|plays\s+out))\s*,?\s*(?:then)?',
-        r'(?:we\s+)?(?:are\s+)?(?:bullish|bearish|constructive|cautious)\s+on',
-        r'(?:we\s+see|favor|prefer)\s+(?:a|the)\s+(?:scenario|outcome|path)\s+(?:where|of)',
+        r"(?:we\s+)?(?:believe|think|expect|anticipate|forecast|project|estimate)\s+that",
+        r"(?:our\s+(?:base\s+case|central\s+case|core\s+view)\s+is\s+that)",
+        r"(?:the\s+)?(?:most\s+likely|probable)\s+(?:outcome|scenario|path)\s+is",
+        r"(?:this\s+)?(?:implies|suggests|indicates|points\s+to)\s+that",
+        r"(?:if\s+this\s+(?:continues|holds|persists|plays\s+out))\s*,?\s*(?:then)?",
+        r"(?:we\s+)?(?:are\s+)?(?:bullish|bearish|constructive|cautious)\s+on",
+        r"(?:we\s+see|favor|prefer)\s+(?:a|the)\s+(?:scenario|outcome|path)\s+(?:where|of)",
     ]
 
     COUNTER_MARKERS = [
-        r'(?:however|but|although|yet|that\s+said|having\s+said\s+that|nonetheless|nevertheless)',
-        r'(?:on\s+the\s+other\s+hand|conversely|alternatively)',
-        r'(?:the\s+)?(?:risk|danger|concern|worry)\s+is\s+that',
-        r'(?:a\s+)?(?:counter[\s-]?argument|counterpoint|bear\s+case)\s+(?:is|would\s+be)',
-        r'(?:skeptics?\s+(?:would|might|may|argue|point\s+out|say))',
-        r'(?:one\s+)?(?:caveat|catch|complication|problem)\s+(?:is|with\s+this)',
-        r'(?:what\s+(?:could|could)\s+go\s+wrong)',
-        r'(?:this\s+)?(?:assumes?|requires?|depends?\s+on)',
+        r"(?:however|but|although|yet|that\s+said|having\s+said\s+that|nonetheless|nevertheless)",
+        r"(?:on\s+the\s+other\s+hand|conversely|alternatively)",
+        r"(?:the\s+)?(?:risk|danger|concern|worry)\s+is\s+that",
+        r"(?:a\s+)?(?:counter[\s-]?argument|counterpoint|bear\s+case)\s+(?:is|would\s+be)",
+        r"(?:skeptics?\s+(?:would|might|may|argue|point\s+out|say))",
+        r"(?:one\s+)?(?:caveat|catch|complication|problem)\s+(?:is|with\s+this)",
+        r"(?:what\s+(?:could|could)\s+go\s+wrong)",
+        r"(?:this\s+)?(?:assumes?|requires?|depends?\s+on)",
     ]
 
     CONCLUSION_MARKERS = [
-        r'(?:in\s+(?:summary|conclusion|short|sum|brief)|to\s+sum\s+up|overall)',
-        r'(?:the\s+)?(?:bottom\s+line|net[\s-]?net|takeaway|key\s+point)\s+is',
-        r'(?:this\s+(?:means|leads\s+us\s+to|suggests)\s+that)',
-        r'(?:therefore|thus|hence|accordingly|consequently)',
-        r'(?:our\s+)?(?:conclusion|judgment|assessment)\s+(?:is|remains)',
-        r'(?:we\s+(?:therefore|thus)\s+)?(?:recommend|advise|suggest)',
+        r"(?:in\s+(?:summary|conclusion|short|sum|brief)|to\s+sum\s+up|overall)",
+        r"(?:the\s+)?(?:bottom\s+line|net[\s-]?net|takeaway|key\s+point)\s+is",
+        r"(?:this\s+(?:means|leads\s+us\s+to|suggests)\s+that)",
+        r"(?:therefore|thus|hence|accordingly|consequently)",
+        r"(?:our\s+)?(?:conclusion|judgment|assessment)\s+(?:is|remains)",
+        r"(?:we\s+(?:therefore|thus)\s+)?(?:recommend|advise|suggest)",
     ]
 
     CONFIDENCE_MARKERS: dict[str, float] = {
-        r'\b(?:almost\s+certain|certainly|undoubtedly|clearly|obviously)\b': 0.95,
-        r'\b(?:very\s+likely|highly\s+likely|highly\s+probable)\b': 0.85,
-        r'\b(?:likely|probably|we\s+expect|expected\s+to)\b': 0.75,
-        r'\b(?:more\s+likely\s+than\s+not|on\s+balance|probably)\b': 0.65,
-        r'\b(?:may|might|could|possibly|potentially)\b': 0.50,
-        r'\b(?:unlikely|improbable|doubtful)\b': 0.25,
-        r'\b(?:very\s+unlikely|highly\s+unlikely|almost\s+impossible)\b': 0.10,
+        r"\b(?:almost\s+certain|certainly|undoubtedly|clearly|obviously)\b": 0.95,
+        r"\b(?:very\s+likely|highly\s+likely|highly\s+probable)\b": 0.85,
+        r"\b(?:likely|probably|we\s+expect|expected\s+to)\b": 0.75,
+        r"\b(?:more\s+likely\s+than\s+not|on\s+balance|probably)\b": 0.65,
+        r"\b(?:may|might|could|possibly|potentially)\b": 0.50,
+        r"\b(?:unlikely|improbable|doubtful)\b": 0.25,
+        r"\b(?:very\s+unlikely|highly\s+unlikely|almost\s+impossible)\b": 0.10,
     }
 
     def __init__(self):
@@ -258,12 +257,12 @@ class ReasoningExtractor:
             return marker
 
         # Try to get a meaningful clause: from marker to end of sentence
-        clause_start = max(0, text.rfind('.', 0, pos) + 1)
+        clause_start = max(0, text.rfind(".", 0, pos) + 1)
         if clause_start == 0:
             clause_start = pos
 
         # Find sentence end
-        clause_end = text.find('.', pos + len(marker))
+        clause_end = text.find(".", pos + len(marker))
         if clause_end < 0:
             clause_end = len(text)
 
@@ -275,14 +274,14 @@ class ReasoningExtractor:
 
     def _detect_confidence(self, text: str) -> str:
         """Detect confidence level from linguistic markers."""
-        best_level = ""
+        _best_level = ""
         best_score = -1.0
 
         for pattern, score in self.CONFIDENCE_MARKERS.items():
             if re.search(pattern, text, re.IGNORECASE):
                 if score > best_score:
                     best_score = score
-                    best_level = pattern.replace(r'\b', '').strip('()')
+                    _best_level = pattern.replace(r"\b", "").strip("()")
 
         # Return human-readable confidence
         if best_score >= 0.90:
@@ -301,16 +300,29 @@ class ReasoningExtractor:
 
     def _is_meaningful(self, unit: ReasoningUnit) -> bool:
         """Check if a reasoning unit has enough content to be meaningful."""
-        filled = sum(bool(getattr(unit, field))
-                      for field in ['observation', 'hypothesis', 'conclusion',
-                                     'pattern', 'historical_analogy'])
+        filled = sum(
+            bool(getattr(unit, field))
+            for field in [
+                "observation",
+                "hypothesis",
+                "conclusion",
+                "pattern",
+                "historical_analogy",
+            ]
+        )
         # Need at least 2 filled fields for meaningful reasoning
         return filled >= 2
 
     def _has_any_content(self, unit: ReasoningUnit) -> bool:
         """Check if any field is filled."""
-        fields = ['observation', 'hypothesis', 'conclusion', 'pattern',
-                   'counter_consideration', 'historical_analogy']
+        fields = [
+            "observation",
+            "hypothesis",
+            "conclusion",
+            "pattern",
+            "counter_consideration",
+            "historical_analogy",
+        ]
         return any(bool(getattr(unit, f)) for f in fields) or bool(unit.evidence)
 
     def _score_reasoning_quality(self, unit: ReasoningUnit) -> float:

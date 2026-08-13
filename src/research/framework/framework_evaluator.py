@@ -6,7 +6,7 @@ and tracks accuracy over time.
 
 from __future__ import annotations
 
-from src.schemas.research import ResearchFramework, ResearchPrinciple, FrameworkStatus
+from src.schemas.research import FrameworkStatus, ResearchFramework, ResearchPrinciple
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -33,14 +33,11 @@ class FrameworkEvaluator:
         self._accuracy_history: dict[str, list[float]] = {}  # framework_id → [scores]
         self._validation_results: dict[str, list[bool]] = {}  # framework_id → [pass/fail]
 
-    def record_accuracy(self, framework_id: str,
-                        accuracy: float,
-                        cycle: int = 0) -> None:
+    def record_accuracy(self, framework_id: str, accuracy: float, cycle: int = 0) -> None:
         """Record a framework's accuracy for a cycle."""
         self._accuracy_history.setdefault(framework_id, []).append(accuracy)
 
-    def evaluate(self, framework: ResearchFramework,
-                 cycle: int = 0) -> FrameworkStatus:
+    def evaluate(self, framework: ResearchFramework, cycle: int = 0) -> FrameworkStatus:
         """Evaluate a framework's current status based on performance history.
 
         Returns the appropriate FrameworkStatus.
@@ -49,21 +46,27 @@ class FrameworkEvaluator:
 
         if framework.status == FrameworkStatus.CANDIDATE:
             if len(history) >= self.MIN_VALIDATION_CYCLES:
-                recent = history[-self.MIN_VALIDATION_CYCLES:]
+                recent = history[-self.MIN_VALIDATION_CYCLES :]
                 avg = sum(recent) / len(recent)
                 if avg >= self.MIN_VALIDATION_ACCURACY:
-                    logger.info("Framework %s validated: %.1f%% accuracy over %d cycles",
-                                framework.framework_id, avg * 100, self.MIN_VALIDATION_CYCLES)
+                    logger.info(
+                        "Framework %s validated: %.1f%% accuracy over %d cycles",
+                        framework.framework_id,
+                        avg * 100,
+                        self.MIN_VALIDATION_CYCLES,
+                    )
                     return FrameworkStatus.ACTIVE
 
         if framework.status in (FrameworkStatus.ACTIVE, FrameworkStatus.UNDER_REVIEW):
             if len(history) >= self.RETIREMENT_CYCLES:
-                recent = history[-self.RETIREMENT_CYCLES:]
+                recent = history[-self.RETIREMENT_CYCLES :]
                 avg = sum(recent) / len(recent)
                 if avg < self.RETIREMENT_ACCURACY_THRESHOLD:
                     logger.warning(
                         "Framework %s retirement signal: %.1f%% accuracy over %d cycles",
-                        framework.framework_id, avg * 100, self.RETIREMENT_CYCLES,
+                        framework.framework_id,
+                        avg * 100,
+                        self.RETIREMENT_CYCLES,
                     )
                     return FrameworkStatus.RETIRED
 
@@ -75,9 +78,9 @@ class FrameworkEvaluator:
 
         return framework.status
 
-    def compute_accuracy(self,
-                         framework: ResearchFramework,
-                         principles: dict[str, ResearchPrinciple]) -> float:
+    def compute_accuracy(
+        self, framework: ResearchFramework, principles: dict[str, ResearchPrinciple]
+    ) -> float:
         """Compute current accuracy from principle evidence.
 
         Accuracy = weighted average of principle accuracies, where
@@ -99,13 +102,12 @@ class FrameworkEvaluator:
 
         return weighted_acc / total_obs if total_obs > 0 else 0.0
 
-    def get_accuracy_trajectory(self, framework_id: str,
-                                window: int = 50) -> list[float]:
+    def get_accuracy_trajectory(self, framework_id: str, window: int = 50) -> list[float]:
         """Get the recent accuracy trajectory for a framework."""
         history = self._accuracy_history.get(framework_id, [])
         if not history:
             return []
-        return history[-min(window, len(history)):]
+        return history[-min(window, len(history)) :]
 
     def trend(self, framework_id: str) -> str:
         """Determine accuracy trend: 'improving', 'stable', or 'declining'."""
@@ -131,7 +133,7 @@ class FrameworkEvaluator:
         history = self._accuracy_history.get(framework_id, [])
         if len(history) < self.MIN_VALIDATION_CYCLES:
             return False
-        recent = history[-self.MIN_VALIDATION_CYCLES:]
+        recent = history[-self.MIN_VALIDATION_CYCLES :]
         return sum(recent) / len(recent) >= self.MIN_VALIDATION_ACCURACY
 
     @property

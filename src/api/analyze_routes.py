@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """Analyze API routes — Beta endpoints for macro research execution.
 
 POST /api/analyze      — Execute a full macro research pipeline run.
@@ -8,7 +6,12 @@ GET  /api/reports/latest — Get the most recent analysis report.
 GET  /api/beliefs       — Get current belief state from memory.
 """
 
+from __future__ import annotations
+
+import uuid
+
 from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel, Field
 
 from src.pipeline import MacroResearchPipeline
 from src.schemas.narrative import MacroNarrative
@@ -20,8 +23,6 @@ router = APIRouter(prefix="/api", tags=["analyze"])
 
 
 # ── Request/Response Schemas ───────────────────────────────────────────────
-
-from pydantic import BaseModel, Field
 
 
 class AnalyzeRequest(BaseModel):
@@ -42,16 +43,22 @@ class AnalyzeRequest(BaseModel):
 class AnalyzeResponse(BaseModel):
     """Response body for POST /api/analyze."""
 
-    status: str = Field(..., description="Execution status: completed | partially_completed | failed")
+    status: str = Field(
+        ..., description="Execution status: completed | partially_completed | failed"
+    )
     message: str = Field(default="", description="Human-readable status message")
     report_id: str = Field(default="", description="Unique report identifier")
     narrative: dict | None = Field(default=None, description="MacroNarrative serialized as dict")
-    narrative_markdown: str | None = Field(default=None, description="Markdown rendered report (Beta)")
+    narrative_markdown: str | None = Field(
+        default=None, description="Markdown rendered report (Beta)"
+    )
     confidence_score: float | None = Field(default=None, description="Numeric confidence (0-1)")
     confidence_level: str | None = Field(default=None, description="HIGH | MEDIUM | LOW")
     risk_count: int = Field(default=0, description="Number of risks identified")
     scenario_count: int = Field(default=0, description="Number of scenarios generated")
-    artifacts_summary: dict = Field(default_factory=dict, description="Summary of intermediate artifacts")
+    artifacts_summary: dict = Field(
+        default_factory=dict, description="Summary of intermediate artifacts"
+    )
 
 
 class BeliefItem(BaseModel):
@@ -78,8 +85,6 @@ class BeliefsResponse(BaseModel):
 
 _report_cache: dict[str, MacroNarrative] = {}
 _latest_report_id: str | None = None
-
-import uuid
 
 
 def _cache_report(narrative: MacroNarrative) -> str:
@@ -325,10 +330,6 @@ async def get_llm_narrative(
     return {
         "status": "degraded" if llm_result.degraded else "ok",
         "degraded": llm_result.degraded,
-        "data": (
-            data.model_dump()
-            if hasattr(data, "model_dump")
-            else str(data)
-        ),
+        "data": (data.model_dump() if hasattr(data, "model_dump") else str(data)),
         "error": llm_result.error,
     }

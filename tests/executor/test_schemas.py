@@ -1,6 +1,8 @@
 """Tests for Execution Schemas: TaskResult and ExecutionResult."""
+
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, timezone
 
 from src.domain.execution import ExecutionStatus, TaskResultStatus
 from src.schemas.execution import ExecutionResult, TaskResult
@@ -19,8 +21,8 @@ class TestTaskResult:
         assert tr.is_success is True
 
     def test_full_creation(self):
-        started = datetime.now(timezone.utc)
-        completed = datetime.now(timezone.utc)
+        started = datetime.now(UTC)
+        completed = datetime.now(UTC)
         tr = TaskResult(
             task_id="t_collect",
             task_name="Collect Data",
@@ -58,8 +60,8 @@ class TestTaskResult:
         assert "metadata" in tr.artifacts
 
     def test_execution_time_auto_computed(self):
-        started = datetime(2026, 7, 14, 10, 0, 0, tzinfo=timezone.utc)
-        completed = datetime(2026, 7, 14, 10, 0, 1, tzinfo=timezone.utc)
+        started = datetime(2026, 7, 14, 10, 0, 0, tzinfo=UTC)
+        completed = datetime(2026, 7, 14, 10, 0, 1, tzinfo=UTC)
         tr = TaskResult(
             task_id="t1",
             status=TaskResultStatus.SUCCESS,
@@ -85,9 +87,13 @@ class TestExecutionResult:
         assert er.has_failures is False
 
     def test_with_successful_tasks(self):
-        started = datetime.now(timezone.utc)
-        tr1 = TaskResult(task_id="t1", task_name="A", status=TaskResultStatus.SUCCESS, started_at=started)
-        tr2 = TaskResult(task_id="t2", task_name="B", status=TaskResultStatus.SUCCESS, started_at=started)
+        started = datetime.now(UTC)
+        tr1 = TaskResult(
+            task_id="t1", task_name="A", status=TaskResultStatus.SUCCESS, started_at=started
+        )
+        tr2 = TaskResult(
+            task_id="t2", task_name="B", status=TaskResultStatus.SUCCESS, started_at=started
+        )
         er = ExecutionResult(
             plan_id="p1",
             status=ExecutionStatus.COMPLETED,
@@ -99,9 +105,17 @@ class TestExecutionResult:
         assert er.has_failures is False
 
     def test_with_mixed_results(self):
-        started = datetime.now(timezone.utc)
-        tr1 = TaskResult(task_id="t1", task_name="A", status=TaskResultStatus.SUCCESS, started_at=started)
-        tr2 = TaskResult(task_id="t2", task_name="B", status=TaskResultStatus.FAILED, error="fail", started_at=started)
+        started = datetime.now(UTC)
+        tr1 = TaskResult(
+            task_id="t1", task_name="A", status=TaskResultStatus.SUCCESS, started_at=started
+        )
+        tr2 = TaskResult(
+            task_id="t2",
+            task_name="B",
+            status=TaskResultStatus.FAILED,
+            error="fail",
+            started_at=started,
+        )
         er = ExecutionResult(
             plan_id="p1",
             goal="Test",

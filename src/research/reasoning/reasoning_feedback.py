@@ -15,40 +15,44 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 
 @dataclass
 class FeedbackEntry:
     """A single feedback signal from a resolved prediction."""
+
     feedback_id: str = ""
     prediction_id: str = ""
     hypothesis_id: str = ""
 
     # What happened
-    prediction: dict = field(default_factory=dict)    # {statement, direction, confidence, ...}
-    outcome: dict = field(default_factory=dict)       # {actual_direction, magnitude, ...}
+    prediction: dict = field(default_factory=dict)  # {statement, direction, confidence, ...}
+    outcome: dict = field(default_factory=dict)  # {actual_direction, magnitude, ...}
     was_correct: bool = False
-    prediction_error: float = 0.0                     # How wrong? (0 = perfect)
+    prediction_error: float = 0.0  # How wrong? (0 = perfect)
 
     # Diagnosis
-    error_source: str = ""                             # "causal_logic", "timing", "data_quality", "confidence_calibration", "external_shock"
-    root_cause: str = ""                               # Human-readable explanation of what went wrong
+    error_source: str = (
+        ""  # "causal_logic", "timing", "data_quality", "confidence_calibration", "external_shock"
+    )
+    root_cause: str = ""  # Human-readable explanation of what went wrong
     what_would_have_made_it_right: str = ""
 
     # Lessons
     lessons: list[str] = field(default_factory=list)
-    confidence_adjustment: float = 0.0                 # -0.2 to +0.2 adjustment to future confidence
-    belief_weight_adjustment: float = 0.0              # -0.2 to +0.2 adjustment to belief weight
+    confidence_adjustment: float = 0.0  # -0.2 to +0.2 adjustment to future confidence
+    belief_weight_adjustment: float = 0.0  # -0.2 to +0.2 adjustment to belief weight
 
     # Timestamp
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
 @dataclass
 class FeedbackReport:
     """Aggregated feedback across multiple resolved predictions."""
+
     report_id: str = ""
     period_start: str = ""
     period_end: str = ""
@@ -66,8 +70,8 @@ class FeedbackReport:
     recommended_actions: list[str] = field(default_factory=list)
 
     # Calibration
-    average_confidence_bias: float = 0.0               # positive = overconfident, negative = underconfident
-    calibration_score: float = 0.0                     # Brier score or similar
+    average_confidence_bias: float = 0.0  # positive = overconfident, negative = underconfident
+    calibration_score: float = 0.0  # Brier score or similar
 
     def was_improvement(self) -> bool:
         """Did accuracy improve vs prior period?"""
@@ -93,7 +97,7 @@ class ReasoningFeedback:
         self,
         prediction: dict,
         outcome: dict,
-        hypothesis: Optional[Any] = None,
+        hypothesis: Any | None = None,
     ) -> FeedbackEntry:
         """Process a single prediction outcome.
 
@@ -115,7 +119,7 @@ class ReasoningFeedback:
         if was_correct:
             error = 1.0 - confidence  # Underconfidence if right with low confidence
         else:
-            error = confidence         # Overconfidence if wrong with high confidence
+            error = confidence  # Overconfidence if wrong with high confidence
 
         # Diagnose error source
         error_source, root_cause = self._diagnose_error(
@@ -130,11 +134,11 @@ class ReasoningFeedback:
 
         # Confidence adjustment
         if was_correct and confidence < 0.6:
-            conf_adj = +0.05           # Underconfident and right → increase
+            conf_adj = +0.05  # Underconfident and right → increase
         elif was_correct and confidence > 0.8:
-            conf_adj = 0.0             # Rightfully confident → no change
+            conf_adj = 0.0  # Rightfully confident → no change
         elif not was_correct and confidence > 0.7:
-            conf_adj = -0.1            # Overconfident and wrong → decrease
+            conf_adj = -0.1  # Overconfident and wrong → decrease
         elif not was_correct:
             conf_adj = -0.05
         else:
@@ -185,8 +189,7 @@ class ReasoningFeedback:
     # ── Diagnosis ──
 
     def _diagnose_error(
-        self, prediction: dict, outcome: dict, was_correct: bool,
-        hypothesis: Optional[Any]
+        self, prediction: dict, outcome: dict, was_correct: bool, hypothesis: Any | None
     ) -> tuple[str, str]:
         """Diagnose WHY a prediction was wrong.
 
@@ -231,20 +234,22 @@ class ReasoningFeedback:
         """What would have made this prediction correct?"""
         fixes = {
             "causal_logic": "Explicitly state and test the key assumption that broke. "
-                           "Add counter-argument with higher weight.",
+            "Add counter-argument with higher weight.",
             "timing": "Mark prediction timeframe more explicitly. Use regime transition "
-                      "signals to time entries better.",
+            "signals to time entries better.",
             "data_quality": "Increase evidence quality threshold before making prediction. "
-                           "Require minimum 3 confirming data points.",
+            "Require minimum 3 confirming data points.",
             "confidence_calibration": "Reduce confidence on similar patterns by 0.1-0.15. "
-                                      "Use Brier score tracking for calibration.",
+            "Use Brier score tracking for calibration.",
             "external_shock": "Add geopolitical/event-risk overlay to all predictions. "
-                             "Hedge tail risks if event probabilities are elevated.",
+            "Hedge tail risks if event probabilities are elevated.",
             "none": "Prediction was correct — maintain current approach.",
         }
         return fixes.get(error_source, "Review the full reasoning chain.")
 
-    def _extract_lessons(self, was_correct: bool, error_source: str, confidence: float) -> list[str]:
+    def _extract_lessons(
+        self, was_correct: bool, error_source: str, confidence: float
+    ) -> list[str]:
         """Extract actionable lessons."""
         lessons = []
 
@@ -254,9 +259,13 @@ class ReasoningFeedback:
             else:
                 lessons.append("Reasoning approach validated — reinforce this pattern")
         else:
-            lessons.append(f"Error type: {error_source} — review this class of errors systematically")
+            lessons.append(
+                f"Error type: {error_source} — review this class of errors systematically"
+            )
             if confidence > 0.7:
-                lessons.append("Overconfidence detected — calibrate confidence downward on similar patterns")
+                lessons.append(
+                    "Overconfidence detected — calibrate confidence downward on similar patterns"
+                )
             if error_source == "causal_logic":
                 lessons.append("Causal chain needs explicit testing before deployment")
 
@@ -281,7 +290,7 @@ class ReasoningFeedback:
             if e.was_correct:
                 conf_biases.append(conf - 0.5)  # Overconfident if positive bias
             else:
-                conf_biases.append(-conf)        # Wrong with high confidence = negative
+                conf_biases.append(-conf)  # Wrong with high confidence = negative
 
         avg_bias = sum(conf_biases) / len(conf_biases) if conf_biases else 0.0
 
@@ -297,7 +306,7 @@ class ReasoningFeedback:
             actions.append("Accuracy below 50% — review overall reasoning framework")
 
         # Calibration score (simplified Brier)
-        brier = sum(e.prediction_error ** 2 for e in entries) / total if total > 0 else 0.0
+        brier = sum(e.prediction_error**2 for e in entries) / total if total > 0 else 0.0
 
         return FeedbackReport(
             report_id=f"FBR_{str(uuid.uuid4())[:8]}",

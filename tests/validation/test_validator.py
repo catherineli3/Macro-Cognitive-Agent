@@ -7,7 +7,7 @@ Covers:
     - Quality score computation
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -26,7 +26,7 @@ def validator() -> DataValidator:
 def valid_dxy() -> MacroDataSchema:
     return MacroDataSchema(
         symbol="DXY",
-        timestamp=datetime(2026, 7, 13, 10, 0, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 7, 13, 10, 0, 0, tzinfo=UTC),
         value=104.5,
         currency="USD",
         unit="Index",
@@ -41,12 +41,16 @@ class TestValueRange:
         result = validator.validate_sync(valid_dxy)
         assert result.value == 104.5
 
-    def test_negative_dxy_rejected(self, validator: DataValidator, valid_dxy: MacroDataSchema) -> None:
+    def test_negative_dxy_rejected(
+        self, validator: DataValidator, valid_dxy: MacroDataSchema
+    ) -> None:
         data = valid_dxy.model_copy(update={"value": -5.0})
         with pytest.raises(ValidationError, match="below minimum"):
             validator.validate_sync(data)
 
-    def test_extreme_high_value_rejected(self, validator: DataValidator, valid_dxy: MacroDataSchema) -> None:
+    def test_extreme_high_value_rejected(
+        self, validator: DataValidator, valid_dxy: MacroDataSchema
+    ) -> None:
         data = valid_dxy.model_copy(update={"value": 99999.0})
         with pytest.raises(ValidationError, match="above maximum"):
             validator.validate_sync(data)
@@ -54,7 +58,7 @@ class TestValueRange:
     def test_negative_yield_rejected(self, validator: DataValidator) -> None:
         data = MacroDataSchema(
             symbol="US10Y",  # mapped to LIQUIDITY → range 0-200
-            timestamp=datetime(2026, 7, 13, tzinfo=timezone.utc),
+            timestamp=datetime(2026, 7, 13, tzinfo=UTC),
             value=-500.0,  # < 0 → reject
             source="Yahoo",
         )
@@ -65,14 +69,16 @@ class TestValueRange:
 class TestTimestampValidation:
     """Reject timestamps unreasonably in the future."""
 
-    def test_current_timestamp_passes(self, validator: DataValidator, valid_dxy: MacroDataSchema) -> None:
+    def test_current_timestamp_passes(
+        self, validator: DataValidator, valid_dxy: MacroDataSchema
+    ) -> None:
         result = validator.validate_sync(valid_dxy)
         assert result is not None
 
-    def test_far_future_rejected(self, validator: DataValidator, valid_dxy: MacroDataSchema) -> None:
-        data = valid_dxy.model_copy(
-            update={"timestamp": datetime(2099, 1, 1, tzinfo=timezone.utc)}
-        )
+    def test_far_future_rejected(
+        self, validator: DataValidator, valid_dxy: MacroDataSchema
+    ) -> None:
+        data = valid_dxy.model_copy(update={"timestamp": datetime(2099, 1, 1, tzinfo=UTC)})
         with pytest.raises(ValidationError, match="future"):
             validator.validate_sync(data)
 
@@ -80,7 +86,7 @@ class TestTimestampValidation:
         """Within the ~26h grace window should be allowed."""
         from datetime import timedelta
 
-        near_future = datetime.now(timezone.utc) + timedelta(hours=2)
+        near_future = datetime.now(UTC) + timedelta(hours=2)
         data = valid_dxy.model_copy(update={"timestamp": near_future})
         result = validator.validate_sync(data)
         assert result is not None
@@ -90,7 +96,6 @@ class TestValueFiniteness:
     """Reject NaN, Infinity, and None values."""
 
     def test_nan_rejected(self, validator: DataValidator, valid_dxy: MacroDataSchema) -> None:
-        import math
 
         data = valid_dxy.model_copy(update={"value": float("nan")})
         with pytest.raises(ValidationError, match="NaN"):
@@ -105,7 +110,9 @@ class TestValueFiniteness:
 class TestQualityComputation:
     """Quality score is computed during validation."""
 
-    def test_quality_score_attached(self, validator: DataValidator, valid_dxy: MacroDataSchema) -> None:
+    def test_quality_score_attached(
+        self, validator: DataValidator, valid_dxy: MacroDataSchema
+    ) -> None:
         result = validator.validate_sync(valid_dxy)
         assert isinstance(result.quality, QualityScore)
         assert result.quality.overall > 0
@@ -115,13 +122,15 @@ class TestQualityComputation:
         # Old data will have low timeliness → low overall score
         old_data = valid_dxy.model_copy(
             update={
-                "timestamp": datetime(2026, 7, 1, tzinfo=timezone.utc),  # 12 days old
+                "timestamp": datetime(2026, 7, 1, tzinfo=UTC),  # 12 days old
             }
         )
         with pytest.raises(ValidationError, match="Quality score"):
             strict.validate_sync(old_data)
 
-    def test_quality_flags_empty_by_default(self, validator: DataValidator, valid_dxy: MacroDataSchema) -> None:
+    def test_quality_flags_empty_by_default(
+        self, validator: DataValidator, valid_dxy: MacroDataSchema
+    ) -> None:
         result = validator.validate_sync(valid_dxy)
         assert result.quality.flags == []
 
@@ -151,13 +160,17 @@ class TestGuessDimension:
 class TestValidationError:
     """ValidationError carries context for debugging."""
 
-    def test_error_contains_reason(self, validator: DataValidator, valid_dxy: MacroDataSchema) -> None:
+    def test_error_contains_reason(
+        self, validator: DataValidator, valid_dxy: MacroDataSchema
+    ) -> None:
         data = valid_dxy.model_copy(update={"value": float("nan")})
         with pytest.raises(ValidationError) as exc_info:
             validator.validate_sync(data)
         assert "NaN" in str(exc_info.value)
 
-    def test_error_contains_schema(self, validator: DataValidator, valid_dxy: MacroDataSchema) -> None:
+    def test_error_contains_schema(
+        self, validator: DataValidator, valid_dxy: MacroDataSchema
+    ) -> None:
         data = valid_dxy.model_copy(update={"value": float("nan")})
         with pytest.raises(ValidationError) as exc_info:
             validator.validate_sync(data)

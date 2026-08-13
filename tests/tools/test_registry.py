@@ -1,14 +1,16 @@
 """Tests for ToolRegistry — capability → Tool mapping."""
+
 import pytest
 
+from src.domain.tool import ToolResultStatus
+from src.schemas.tool import ToolResult
 from src.tools.base import BaseTool
 from src.tools.registry import ToolRegistry
-from src.schemas.tool import ToolResult
-from src.domain.tool import ToolResultStatus
 
 
 class _MockTool(BaseTool):
     """Minimal tool implementation for testing."""
+
     def tool_name(self) -> str:
         return self._name
 

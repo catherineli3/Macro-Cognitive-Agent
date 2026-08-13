@@ -9,12 +9,10 @@ Key design:
     - Regression gate blocks any deployment that degrades any KPI > threshold
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
-
 
 # ── Rolling Window ───────────────────────────────────────────────────────────
 
@@ -33,6 +31,7 @@ class KPI1_HypothesisAccuracy(BaseModel):
 
     Source: Hypothesis Library average scores.
     """
+
     library_avg_score: float = Field(default=0.5, ge=0.0, le=1.0)
     top3_accuracy: float = Field(default=0.5, ge=0.0, le=1.0)
     deprecation_rate: float = Field(default=0.0, ge=0.0, le=1.0)
@@ -44,15 +43,16 @@ class KPI1_HypothesisAccuracy(BaseModel):
     def composite_score(self) -> float:
         """Weighted composite of sub-metrics."""
         return (
-            0.40 * self.library_avg_score +
-            0.30 * self.top3_accuracy +
-            0.20 * (1.0 - self.deprecation_rate) +
-            0.10 * max(0.0, min(1.0, 0.5 + self.score_trajectory_slope * 10))
+            0.40 * self.library_avg_score
+            + 0.30 * self.top3_accuracy
+            + 0.20 * (1.0 - self.deprecation_rate)
+            + 0.10 * max(0.0, min(1.0, 0.5 + self.score_trajectory_slope * 10))
         )
 
 
 class KPI2_PredictionError(BaseModel):
     """KPI-2: Prediction accuracy metrics."""
+
     directional_accuracy: float = Field(default=0.5, ge=0.0, le=1.0)
     mae: float = Field(default=0.0, ge=0.0)
     rmse: float = Field(default=0.0, ge=0.0)
@@ -65,19 +65,22 @@ class KPI2_PredictionError(BaseModel):
     def composite_score(self) -> float:
         """Higher is better (normalized)."""
         return (
-            0.50 * self.directional_accuracy +
-            0.30 * max(0.0, 1.0 - min(self.mae, 1.0)) +
-            0.20 * max(0.0, 1.0 - min(self.rmse, 1.0))
+            0.50 * self.directional_accuracy
+            + 0.30 * max(0.0, 1.0 - min(self.mae, 1.0))
+            + 0.20 * max(0.0, 1.0 - min(self.rmse, 1.0))
         )
 
 
 class KPI3_ConfidenceCalibration(BaseModel):
     """KPI-3: Confidence calibration quality."""
+
     ece: float = Field(default=0.25, ge=0.0, le=1.0, description="Expected Calibration Error")
     brier_score: float = Field(default=0.25, ge=0.0, le=1.0)
     calibration_curve_points: int = Field(default=0, ge=0)
     overconfidence_ratio: float = Field(
-        default=0.5, ge=0.0, le=1.0,
+        default=0.5,
+        ge=0.0,
+        le=1.0,
         description="Ratio of predictions where confidence > accuracy",
     )
 
@@ -93,16 +96,22 @@ class KPI4_LearningSpeed(BaseModel):
     DDR-V3-004: This validates the entire closed loop.
     Requires ≥200 LearningLog entries to compute meaningfully.
     """
+
     error_recurrence_rate: float = Field(
-        default=0.5, ge=0.0, le=1.0,
+        default=0.5,
+        ge=0.0,
+        le=1.0,
         description="Fraction of errors that are repeats of prior errors",
     )
     time_to_correction_days: float = Field(
-        default=30.0, ge=0.0,
+        default=30.0,
+        ge=0.0,
         description="Average days from first error to pattern fix",
     )
     pattern_fix_rate: float = Field(
-        default=0.0, ge=0.0, le=1.0,
+        default=0.0,
+        ge=0.0,
+        le=1.0,
         description="Fraction of detected patterns that have been addressed",
     )
     total_errors_classified: int = Field(default=0, ge=0)
@@ -119,9 +128,9 @@ class KPI4_LearningSpeed(BaseModel):
         if not self.is_significant:
             return 0.5  # Neutral until meaningful
         return (
-            0.40 * (1.0 - self.error_recurrence_rate) +
-            0.30 * max(0.0, 1.0 - self.time_to_correction_days / 90.0) +
-            0.30 * self.pattern_fix_rate
+            0.40 * (1.0 - self.error_recurrence_rate)
+            + 0.30 * max(0.0, 1.0 - self.time_to_correction_days / 90.0)
+            + 0.30 * self.pattern_fix_rate
         )
 
 
@@ -137,7 +146,7 @@ class FourKPIReport(BaseModel):
     report_id: str = Field(default="")
     window: WindowPeriod = Field(default=WindowPeriod.D30)
     generated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     # ── Individual KPIs ──────────────────────────────────────────────────
@@ -158,10 +167,10 @@ class FourKPIReport(BaseModel):
     def overall_score(self) -> float:
         """Equal-weighted average of all 4 KPI composite scores."""
         return (
-            0.25 * self.kpi1_hypothesis_accuracy.composite_score +
-            0.25 * self.kpi2_prediction_error.composite_score +
-            0.25 * self.kpi3_calibration.composite_score +
-            0.25 * self.kpi4_learning_speed.composite_score
+            0.25 * self.kpi1_hypothesis_accuracy.composite_score
+            + 0.25 * self.kpi2_prediction_error.composite_score
+            + 0.25 * self.kpi3_calibration.composite_score
+            + 0.25 * self.kpi4_learning_speed.composite_score
         )
 
     def summary(self) -> dict[str, float]:
@@ -194,12 +203,14 @@ class RegressionCheck(BaseModel):
     previous_report: FourKPIReport = Field(...)
     current_report: FourKPIReport = Field(...)
     checked_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     # ── Thresholds ───────────────────────────────────────────────────────
     degradation_threshold: float = Field(
-        default=0.05, ge=0.0, le=1.0,
+        default=0.05,
+        ge=0.0,
+        le=1.0,
         description="Max allowed KPI degradation (5%)",
     )
 
@@ -212,10 +223,14 @@ class RegressionCheck(BaseModel):
     @property
     def any_degraded(self) -> bool:
         """Whether any KPI degraded beyond threshold."""
-        return any([
-            self.kpi1_degraded, self.kpi2_degraded,
-            self.kpi3_degraded, self.kpi4_degraded,
-        ])
+        return any(
+            [
+                self.kpi1_degraded,
+                self.kpi2_degraded,
+                self.kpi3_degraded,
+                self.kpi4_degraded,
+            ]
+        )
 
     @property
     def pass_gate(self) -> bool:

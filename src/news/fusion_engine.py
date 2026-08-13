@@ -4,11 +4,11 @@ Quality: Professional researchers don't analyze data and news separately.
 They ask: "Does today's CPI explain today's market?", not "CPI is 2.8%."
 
 This engine:
-    1. Takes ALL evidence sources (macro data, news, capital flow, beliefs, 
+    1. Takes ALL evidence sources (macro data, news, capital flow, beliefs,
        historical analog)
     2. Cross-references them — does the news confirm the data?
     3. Evaluates each piece of evidence against each belief
-    4. Produces a Unified Evidence Graph with support/contradict/neutral/unknown 
+    4. Produces a Unified Evidence Graph with support/contradict/neutral/unknown
        labels for every belief-evidence pair
 
 The Evidence Graph is the single source of truth for the reasoning pipeline.
@@ -17,9 +17,8 @@ The Evidence Graph is the single source of truth for the reasoning pipeline.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from datetime import UTC, datetime
 
 
 @dataclass
@@ -31,11 +30,12 @@ class EvidenceNode:
     - Type (data, news, flow, belief, analog)
     - Impact vector (how does it affect each belief?)
     """
+
     node_id: str = ""
     title: str = ""
     description: str = ""
-    source_type: str = ""               # "macro_data", "news", "capital_flow", "belief", "historical_analog"
-    source_id: str = ""                  # Reference to original source
+    source_type: str = ""  # "macro_data", "news", "capital_flow", "belief", "historical_analog"
+    source_id: str = ""  # Reference to original source
     timestamp: str = ""
 
     # Impact on beliefs
@@ -47,8 +47,8 @@ class EvidenceNode:
 
     # Quality
     confidence: float = 0.5
-    recency: float = 0.5                 # 0-1, how fresh?
-    relevance: float = 0.5               # 0-1, how relevant to macro?
+    recency: float = 0.5  # 0-1, how fresh?
+    relevance: float = 0.5  # 0-1, how relevant to macro?
 
     def to_dict(self) -> dict:
         return {
@@ -71,11 +71,12 @@ class EvidenceEdge:
     - explains: Node A explains why Node B happened
     - relates_to: General relationship
     """
+
     edge_id: str = ""
     from_node: str = ""
     to_node: str = ""
-    relationship: str = ""               # "confirms", "contradicts", "explains", "relates_to"
-    strength: float = 0.5                # 0-1
+    relationship: str = ""  # "confirms", "contradicts", "explains", "relates_to"
+    strength: float = 0.5  # 0-1
     description: str = ""
 
 
@@ -86,8 +87,9 @@ class UnifiedEvidenceGraph:
     This is the master document for the reasoning pipeline.
     MemoWriter reads from here. HypothesisBuilder reads from here.
     """
+
     graph_id: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     # Nodes
     nodes: list[EvidenceNode] = field(default_factory=list)
@@ -119,13 +121,17 @@ class UnifiedEvidenceGraph:
     def summary(self) -> str:
         """Text summary of the evidence graph."""
         parts = [f"Unified Evidence Graph: {self.total_nodes} nodes, {self.total_edges} edges"]
-        parts.append(f"  Data: {self.data_node_count}, News: {self.news_node_count}, "
-                     f"Flows: {self.flow_node_count}, Beliefs: {self.belief_node_count}, "
-                     f"Analogs: {self.analog_node_count}")
+        parts.append(
+            f"  Data: {self.data_node_count}, News: {self.news_node_count}, "
+            f"Flows: {self.flow_node_count}, Beliefs: {self.belief_node_count}, "
+            f"Analogs: {self.analog_node_count}"
+        )
         for bid, assessment in self.belief_net_assessment.items():
-            parts.append(f"  Belief {bid}: {assessment.get('net_direction', 'unknown')} "
-                         f"(supports: {assessment.get('support_count', 0)}, "
-                         f"contradicts: {assessment.get('contradict_count', 0)})")
+            parts.append(
+                f"  Belief {bid}: {assessment.get('net_direction', 'unknown')} "
+                f"(supports: {assessment.get('support_count', 0)}, "
+                f"contradicts: {assessment.get('contradict_count', 0)})"
+            )
         return "\n".join(parts)
 
 
@@ -146,9 +152,9 @@ class FusionEngine:
         self,
         market_data: dict,
         news_events: list[dict] = None,
-        capital_flow_result: Optional[dict] = None,
+        capital_flow_result: dict | None = None,
         beliefs: list = None,
-        regime_result: Optional[dict] = None,
+        regime_result: dict | None = None,
     ) -> UnifiedEvidenceGraph:
         """Fuse all evidence sources into a unified graph.
 
@@ -206,17 +212,19 @@ class FusionEngine:
             direction = sig.get("direction", "neutral") if isinstance(sig, dict) else "neutral"
             strength = sig.get("strength", 0.5) if isinstance(sig, dict) else 0.5
 
-            nodes.append(EvidenceNode(
-                node_id=f"DATA_{str(uuid.uuid4())[:8]}",
-                title=f"Macro Signal: {name}",
-                description=desc,
-                source_type="macro_data",
-                source_id=name,
-                quantitative_values={"direction": direction, "strength": strength},
-                confidence=0.7,
-                recency=0.8,
-                relevance=0.7,
-            ))
+            nodes.append(
+                EvidenceNode(
+                    node_id=f"DATA_{str(uuid.uuid4())[:8]}",
+                    title=f"Macro Signal: {name}",
+                    description=desc,
+                    source_type="macro_data",
+                    source_id=name,
+                    quantitative_values={"direction": direction, "strength": strength},
+                    confidence=0.7,
+                    recency=0.8,
+                    relevance=0.7,
+                )
+            )
 
         # Price data
         prices = market_data.get("prices", {})
@@ -228,17 +236,23 @@ class FusionEngine:
                     except (ValueError, TypeError):
                         continue
                     if abs(v) > 0.001:
-                        nodes.append(EvidenceNode(
-                            node_id=f"PRICE_{str(uuid.uuid4())[:8]}",
-                            title=f"Price: {asset} ({period})",
-                            description=f"{asset} price change {period}: {v:+.2%}" if abs(v) < 1 else f"{asset} {period}: {v}",
-                            source_type="macro_data",
-                            source_id=f"{asset}_{period}",
-                            quantitative_values={"asset": asset, "period": period, "change": v},
-                            confidence=0.9,
-                            recency=0.9,
-                            relevance=0.6,
-                        ))
+                        nodes.append(
+                            EvidenceNode(
+                                node_id=f"PRICE_{str(uuid.uuid4())[:8]}",
+                                title=f"Price: {asset} ({period})",
+                                description=(
+                                    f"{asset} price change {period}: {v:+.2%}"
+                                    if abs(v) < 1
+                                    else f"{asset} {period}: {v}"
+                                ),
+                                source_type="macro_data",
+                                source_id=f"{asset}_{period}",
+                                quantitative_values={"asset": asset, "period": period, "change": v},
+                                confidence=0.9,
+                                recency=0.9,
+                                relevance=0.6,
+                            )
+                        )
 
         return nodes
 
@@ -253,20 +267,28 @@ class FusionEngine:
                 title = getattr(event, "title", str(event))
                 desc = getattr(event, "description", str(event))
 
-            nodes.append(EvidenceNode(
-                node_id=f"NEWS_{str(uuid.uuid4())[:8]}",
-                title=title[:100],
-                description=desc[:200],
-                source_type="news",
-                source_id=event.get("event_id", "") if isinstance(event, dict) else getattr(event, "event_id", ""),
-                confidence=event.get("impact_confidence", 0.6) if isinstance(event, dict) else 0.6,
-                recency=0.9,
-                relevance=0.6,
-            ))
+            nodes.append(
+                EvidenceNode(
+                    node_id=f"NEWS_{str(uuid.uuid4())[:8]}",
+                    title=title[:100],
+                    description=desc[:200],
+                    source_type="news",
+                    source_id=(
+                        event.get("event_id", "")
+                        if isinstance(event, dict)
+                        else getattr(event, "event_id", "")
+                    ),
+                    confidence=(
+                        event.get("impact_confidence", 0.6) if isinstance(event, dict) else 0.6
+                    ),
+                    recency=0.9,
+                    relevance=0.6,
+                )
+            )
 
         return nodes
 
-    def _create_flow_nodes(self, cf_result: Optional[dict]) -> list[EvidenceNode]:
+    def _create_flow_nodes(self, cf_result: dict | None) -> list[EvidenceNode]:
         """Create nodes from capital flow analysis."""
         if not cf_result:
             return []
@@ -274,17 +296,21 @@ class FusionEngine:
         direction = cf_result.get("direction", cf_result.get("flow_direction", "neutral"))
         strength = cf_result.get("strength", cf_result.get("confidence", 0.5))
 
-        return [EvidenceNode(
-            node_id=f"FLOW_{str(uuid.uuid4())[:8]}",
-            title=f"Capital Flow Signal: {direction}",
-            description=str(cf_result.get("summary", cf_result.get("description", "Capital flow analysis"))),
-            source_type="capital_flow",
-            source_id="capital_flow_engine",
-            quantitative_values={"direction": direction, "strength": strength},
-            confidence=0.6,
-            recency=0.7,
-            relevance=0.7,
-        )]
+        return [
+            EvidenceNode(
+                node_id=f"FLOW_{str(uuid.uuid4())[:8]}",
+                title=f"Capital Flow Signal: {direction}",
+                description=str(
+                    cf_result.get("summary", cf_result.get("description", "Capital flow analysis"))
+                ),
+                source_type="capital_flow",
+                source_id="capital_flow_engine",
+                quantitative_values={"direction": direction, "strength": strength},
+                confidence=0.6,
+                recency=0.7,
+                relevance=0.7,
+            )
+        ]
 
     def _create_belief_nodes(self, beliefs: list) -> list[EvidenceNode]:
         """Create nodes from active beliefs (beliefs themselves are evidence about priors)."""
@@ -295,21 +321,23 @@ class FusionEngine:
             stage = bd.get("stage", "")
             confidence = bd.get("confidence", bd.get("prior_mean", 0.5))
 
-            nodes.append(EvidenceNode(
-                node_id=f"BEL_{str(uuid.uuid4())[:8]}",
-                title=f"Active Belief: {name}",
-                description=f"Belief in stage: {stage}, confidence: {confidence}",
-                source_type="belief",
-                source_id=bd.get("id", bd.get("belief_id", "")),
-                quantitative_values={"confidence": confidence},
-                confidence=confidence,
-                recency=0.5,
-                relevance=0.9,
-            ))
+            nodes.append(
+                EvidenceNode(
+                    node_id=f"BEL_{str(uuid.uuid4())[:8]}",
+                    title=f"Active Belief: {name}",
+                    description=f"Belief in stage: {stage}, confidence: {confidence}",
+                    source_type="belief",
+                    source_id=bd.get("id", bd.get("belief_id", "")),
+                    quantitative_values={"confidence": confidence},
+                    confidence=confidence,
+                    recency=0.5,
+                    relevance=0.9,
+                )
+            )
 
         return nodes
 
-    def _create_analog_nodes(self, regime_result: Optional[dict]) -> list[EvidenceNode]:
+    def _create_analog_nodes(self, regime_result: dict | None) -> list[EvidenceNode]:
         """Create nodes from historical analogs."""
         if not regime_result:
             return []
@@ -317,18 +345,20 @@ class FusionEngine:
         nodes = []
         analog = regime_result.get("historical_analog", regime_result.get("analog", {}))
         if analog and isinstance(analog, dict) and analog.get("period"):
-            nodes.append(EvidenceNode(
-                node_id=f"HIST_{str(uuid.uuid4())[:8]}",
-                title=f"Historical Analog: {analog.get('period')}",
-                description=f"Analog period: {analog.get('period')} — {analog.get('label', '')} "
-                            f"(similarity: {analog.get('similarity_score', 'N/A')})",
-                source_type="historical_analog",
-                source_id=analog.get("period", ""),
-                quantitative_values={"similarity": analog.get("similarity_score", 0.5)},
-                confidence=analog.get("similarity_score", 0.5),
-                recency=0.3,
-                relevance=0.5,
-            ))
+            nodes.append(
+                EvidenceNode(
+                    node_id=f"HIST_{str(uuid.uuid4())[:8]}",
+                    title=f"Historical Analog: {analog.get('period')}",
+                    description=f"Analog period: {analog.get('period')} — {analog.get('label', '')} "
+                    f"(similarity: {analog.get('similarity_score', 'N/A')})",
+                    source_type="historical_analog",
+                    source_id=analog.get("period", ""),
+                    quantitative_values={"similarity": analog.get("similarity_score", 0.5)},
+                    confidence=analog.get("similarity_score", 0.5),
+                    recency=0.3,
+                    relevance=0.5,
+                )
+            )
 
         return nodes
 
@@ -393,44 +423,52 @@ class FusionEngine:
             for nn in news_nodes:
                 rel, strength = self._data_news_relationship(dn, nn)
                 if rel != "unrelated":
-                    edges.append(EvidenceEdge(
-                        edge_id=f"EDGE_{str(uuid.uuid4())[:8]}",
-                        from_node=dn.node_id,
-                        to_node=nn.node_id,
-                        relationship=rel,
-                        strength=strength,
-                        description=f"Data '{dn.title}' {rel} news '{nn.title}'",
-                    ))
+                    edges.append(
+                        EvidenceEdge(
+                            edge_id=f"EDGE_{str(uuid.uuid4())[:8]}",
+                            from_node=dn.node_id,
+                            to_node=nn.node_id,
+                            relationship=rel,
+                            strength=strength,
+                            description=f"Data '{dn.title}' {rel} news '{nn.title}'",
+                        )
+                    )
 
         # Flow ↔ Data
         for fn in flow_nodes:
             for dn in data_nodes[:5]:  # Limit connections
-                edges.append(EvidenceEdge(
-                    edge_id=f"EDGE_{str(uuid.uuid4())[:8]}",
-                    from_node=fn.node_id,
-                    to_node=dn.node_id,
-                    relationship="relates_to",
-                    strength=0.5,
-                    description=f"Flow signal relates to data signal",
-                ))
+                edges.append(
+                    EvidenceEdge(
+                        edge_id=f"EDGE_{str(uuid.uuid4())[:8]}",
+                        from_node=fn.node_id,
+                        to_node=dn.node_id,
+                        relationship="relates_to",
+                        strength=0.5,
+                        description="Flow signal relates to data signal",
+                    )
+                )
 
         # Belief ↔ Everything (beliefs are central nodes)
         for bn in belief_nodes:
             for node in data_nodes[:3] + news_nodes[:3] + flow_nodes:
                 bi = node.belief_impacts.get(bn.source_id, {})
                 if bi and bi.get("direction") in ("supports", "contradicts"):
-                    edges.append(EvidenceEdge(
-                        edge_id=f"EDGE_{str(uuid.uuid4())[:8]}",
-                        from_node=bn.node_id,
-                        to_node=node.node_id,
-                        relationship=bi["direction"] + "s",
-                        strength=bi.get("strength", 0.5),
-                        description=f"Belief {bi['direction']}ed by {node.title[:60]}",
-                    ))
+                    edges.append(
+                        EvidenceEdge(
+                            edge_id=f"EDGE_{str(uuid.uuid4())[:8]}",
+                            from_node=bn.node_id,
+                            to_node=node.node_id,
+                            relationship=bi["direction"] + "s",
+                            strength=bi.get("strength", 0.5),
+                            description=f"Belief {bi['direction']}ed by {node.title[:60]}",
+                        )
+                    )
 
         return edges
 
-    def _data_news_relationship(self, data_node: EvidenceNode, news_node: EvidenceNode) -> tuple[str, float]:
+    def _data_news_relationship(
+        self, data_node: EvidenceNode, news_node: EvidenceNode
+    ) -> tuple[str, float]:
         """Determine if news confirms or contradicts data."""
         data_desc = data_node.description.lower()
         news_text = (news_node.title + " " + news_node.description).lower()

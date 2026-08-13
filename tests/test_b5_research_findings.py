@@ -10,31 +10,28 @@ Tests:
     7. Regime-aware competition dynamics
 """
 
-import math
+import os
 import random
 import sys
-import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.schemas.transmission_v3_1 import (
-    BreakpointDiagnosis, FailureMode, FailureModeCategory,
-    FindingConfidence, ResearchNote, ResearchFinding,
-    ResearchFindingsReport, TransmissionEdge,
-)
 from src.schemas.evaluation_v3 import EvaluationReport
 from src.schemas.prediction_v3 import V3PredictionOutcome
-from src.transmission.transmission_graph import TransmissionGraph, CompetitionResult
-from src.transmission.research_note import ResearchNoteGenerator
+from src.schemas.transmission_v3_1 import (
+    BreakpointDiagnosis,
+    FailureModeCategory,
+    FindingConfidence,
+)
 from src.transmission.research_findings import ResearchFindingsEngine
+from src.transmission.research_note import ResearchNoteGenerator
+from src.transmission.transmission_graph import TransmissionGraph
 from src.transmission.transmission_orchestrator import TransmissionOrchestrator
-from src.transmission.update_engine import TransmissionUpdateEngine
-from src.belief_versioning.contextual_belief import ContextualBeliefManager
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test 1: Five-Attribute Edge
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def test_five_attribute_edge():
     """Verify edges have all 5 attributes."""
@@ -43,11 +40,11 @@ def test_five_attribute_edge():
 
     # All 5 attributes must be present
     assert edge is not None, "Edge must exist"
-    assert hasattr(edge, 'reliability_default'), "Missing reliability"
-    assert hasattr(edge, 'latency_days'), "Missing latency"
-    assert hasattr(edge, 'edge_strength'), "Missing strength"
-    assert hasattr(edge, 'failure_modes'), "Missing failure_modes"
-    assert hasattr(edge, 'observation_count'), "Missing evidence count"
+    assert hasattr(edge, "reliability_default"), "Missing reliability"
+    assert hasattr(edge, "latency_days"), "Missing latency"
+    assert hasattr(edge, "edge_strength"), "Missing strength"
+    assert hasattr(edge, "failure_modes"), "Missing failure_modes"
+    assert hasattr(edge, "observation_count"), "Missing evidence count"
 
     # Verify reasonable defaults
     assert 0.0 <= edge.reliability_default <= 1.0
@@ -61,8 +58,10 @@ def test_five_attribute_edge():
     assert 0.0 <= qs <= 1.0, f"quality_score {qs} out of range"
 
     print(f"  Edge: {edge.segment_id}")
-    print(f"    reliability={edge.reliability_default:.2f} latency={edge.latency_days}d "
-          f"strength={edge.edge_strength:.2f} evidence={edge.observation_count}")
+    print(
+        f"    reliability={edge.reliability_default:.2f} latency={edge.latency_days}d "
+        f"strength={edge.edge_strength:.2f} evidence={edge.observation_count}"
+    )
     print(f"    quality_score={qs:.3f}")
     print("  [PASS] Five-attribute edge verified")
 
@@ -70,6 +69,7 @@ def test_five_attribute_edge():
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test 2: Transmission Competition
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def test_competition_multiple_mechanisms():
     """Verify multiple mechanisms can compete between same nodes."""
@@ -87,7 +87,7 @@ def test_competition_multiple_mechanisms():
 
     # credit → SPX should also have competition
     edges2 = graph.get_edges_between("credit", "SPX")
-    assert len(edges2) >= 2, f"credit→SPX should have competing edges"
+    assert len(edges2) >= 2, "credit→SPX should have competing edges"
     print(f"  credit→SPX mechanisms: {[e.mechanism for e in edges2]}")
 
     print(f"  Total competitions: {graph.competition_count}")
@@ -100,29 +100,33 @@ def test_competition_multiple_mechanisms():
 # Test 3: Competition Resolution
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def test_competition_resolution():
     """Verify competition winner determination."""
     graph = TransmissionGraph()
 
     # Before any training, both should have similar quality
     cr = graph.resolve_competition("USD", "Gold", context_key="easing")
-    print(f"  USD→Gold competition:")
+    print("  USD→Gold competition:")
     print(f"    {cr.analysis}")
     assert cr.winner is not None
     assert cr.margin >= 0
 
     # Train one mechanism to dominate
     for _ in range(10):
-        graph.reinforce_edge("USD", "Gold", context_key="easing",
-                            mechanism="real_yield_channel", amount=0.05)
-        graph.weaken_edge("USD", "Gold", context_key="easing",
-                         mechanism="liquidity_channel", amount=-0.04)
+        graph.reinforce_edge(
+            "USD", "Gold", context_key="easing", mechanism="real_yield_channel", amount=0.05
+        )
+        graph.weaken_edge(
+            "USD", "Gold", context_key="easing", mechanism="liquidity_channel", amount=-0.04
+        )
 
     cr2 = graph.resolve_competition("USD", "Gold", context_key="easing")
-    print(f"  After training real_yield:")
+    print("  After training real_yield:")
     print(f"    {cr2.analysis}")
-    assert cr2.winner.mechanism == "real_yield_channel", \
-        f"Expected real_yield_channel winner, got {cr2.winner.mechanism}"
+    assert (
+        cr2.winner.mechanism == "real_yield_channel"
+    ), f"Expected real_yield_channel winner, got {cr2.winner.mechanism}"
     assert cr2.margin > cr.margin, "Margin should increase after training"
     assert cr2.is_conclusive, "Should be conclusive after training"
 
@@ -133,6 +137,7 @@ def test_competition_resolution():
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test 4: Research Note Generation
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def test_research_note_generation():
     """Verify breakpoint → research note transformation."""
@@ -178,6 +183,7 @@ def test_research_note_generation():
 # Test 5: Research Findings Engine (4 categories)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def test_research_findings_engine():
     """Verify all 4 finding categories are produced."""
     graph = TransmissionGraph()
@@ -186,7 +192,7 @@ def test_research_findings_engine():
     # Generate some training data
     for i in range(30):
         correct = random.random() < 0.6
-        outcomes = []
+        _outcomes = []
         bp_list = []
         for edge in ["liquidity→NASDAQ", "credit→SPX", "risk_appetite→VIX"]:
             parts = edge.split("→")
@@ -225,6 +231,7 @@ def test_research_findings_engine():
 # Test 6: Full B.5 Pipeline
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def test_b5_full_pipeline():
     """Full B.5 pipeline: bootstrap → cycles → research findings."""
     orch = TransmissionOrchestrator()
@@ -237,18 +244,24 @@ def test_b5_full_pipeline():
     result = HypothesisEvolutionResult(
         regime="easing",
         snapshot_summary="Liquidity expansion phase",
-        signals_detected=5, themes_identified=2,
-        candidates_generated=14, historical_matches=10,
+        signals_detected=5,
+        themes_identified=2,
+        candidates_generated=14,
+        historical_matches=10,
         selected_hypotheses=[
             SelectedHypothesis(
-                candidate_id="cand-001", rank=1, dimension="liquidity",
+                candidate_id="cand-001",
+                rank=1,
+                dimension="liquidity",
                 direction="bullish",
                 thesis="Liquidity easing → risk assets rise",
                 transmission_summary="liquidity → credit → risk_appetite → NASDAQ",
                 confidence=0.72,
             ),
             SelectedHypothesis(
-                candidate_id="cand-002", rank=2, dimension="credit",
+                candidate_id="cand-002",
+                rank=2,
+                dimension="credit",
                 direction="bullish",
                 thesis="Credit conditions improving → HYG spreads tighten",
                 transmission_summary="credit → HYG",
@@ -297,12 +310,14 @@ def test_b5_full_pipeline():
         )
 
         if cycle % 10 == 0:
-            print(f"  Cycle {cycle}: {cr.breakpoints_found} breaks, "
-                  f"{cr.competitions_conclusive} comps resolved, "
-                  f"{cr.findings_report.total_findings} findings")
+            print(
+                f"  Cycle {cycle}: {cr.breakpoints_found} breaks, "
+                f"{cr.competitions_conclusive} comps resolved, "
+                f"{cr.findings_report.total_findings} findings"
+            )
 
     # Verify final state
-    print(f"\n  Final state:")
+    print("\n  Final state:")
     print(f"    Cycles: {orch.cycles_completed}")
     print(f"    Breakpoints: {orch.total_breakpoints}")
     print(f"    Competition pairs: {orch.graph.competition_count}")
@@ -316,10 +331,12 @@ def test_b5_full_pipeline():
 
     # Check that easing/tightening have different transmission behaviors
     # Count easing vs tightening edges
-    easing_edges = [e for e in orch.graph.all_edges()
-                    if e.reliability_by_context.get("easing", 0.5) > 0.55]
-    tightening_edges = [e for e in orch.graph.all_edges()
-                        if e.reliability_by_context.get("tightening", 0.5) > 0.55]
+    easing_edges = [
+        e for e in orch.graph.all_edges() if e.reliability_by_context.get("easing", 0.5) > 0.55
+    ]
+    tightening_edges = [
+        e for e in orch.graph.all_edges() if e.reliability_by_context.get("tightening", 0.5) > 0.55
+    ]
     print(f"    Easing-reliable edges: {len(easing_edges)}")
     print(f"    Tightening-reliable edges: {len(tightening_edges)}")
 
@@ -334,14 +351,16 @@ def test_b5_full_pipeline():
 # Test 7: Competition Edge Describe
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def test_edge_describe():
     """Verify edge.describe() produces research-quality output."""
     graph = TransmissionGraph()
 
     # Train an edge a bit
     for _ in range(20):
-        graph.reinforce_edge("liquidity", "credit", context_key="easing",
-                            mechanism="credit_channel", amount=0.03)
+        graph.reinforce_edge(
+            "liquidity", "credit", context_key="easing", mechanism="credit_channel", amount=0.03
+        )
 
     edge = graph.get_edge("liquidity", "credit", "credit_channel")
     desc = edge.describe()
@@ -368,6 +387,7 @@ def test_edge_describe():
 # Test 8: Mechanism Paths (competition-aware)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def test_mechanism_paths():
     """Verify mechanism-level path finding works with competition."""
     graph = TransmissionGraph()
@@ -390,6 +410,7 @@ def test_mechanism_paths():
 # ═══════════════════════════════════════════════════════════════════════════════
 # Test 9: Five attributes in graph summary
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def test_graph_summary_five_attrs():
     """Verify graph summary shows competition and 5-attribute edges."""
@@ -415,6 +436,7 @@ def test_graph_summary_five_attrs():
 # Test 10: Research note confidence levels
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def test_note_confidence_progression():
     """Verify research note confidence improves with evidence."""
     graph = TransmissionGraph()
@@ -430,6 +452,7 @@ def test_note_confidence_progression():
 
     # Generate note for this edge — with segment diagnoses that carry evidence
     from src.schemas.transmission_v3_1 import SegmentDiagnosis
+
     bp = BreakpointDiagnosis(
         prediction_id="pred-conf-test",
         transmission_channel="VIX→SPX",
@@ -438,7 +461,9 @@ def test_note_confidence_progression():
         all_segments_healthy=True,
         segment_diagnoses=[
             SegmentDiagnosis(
-                segment_id="VIX→SPX", source="VIX", target="SPX",
+                segment_id="VIX→SPX",
+                source="VIX",
+                target="SPX",
                 transmitted_correctly=True,
                 evidence={"observations": obs, "reliability": edge.reliability_default},
                 diagnosis_rationale="Transmitted correctly",
@@ -449,8 +474,10 @@ def test_note_confidence_progression():
     print(f"  Confidence after ~{obs} obs: {note.confidence.value}")
 
     # Should be ESTABLISHED or higher
-    assert note.confidence in (FindingConfidence.ESTABLISHED, FindingConfidence.ROBUST), \
-        f"Expected ESTABLISHED/ROBUST, got {note.confidence.value}"
+    assert note.confidence in (
+        FindingConfidence.ESTABLISHED,
+        FindingConfidence.ROBUST,
+    ), f"Expected ESTABLISHED/ROBUST, got {note.confidence.value}"
 
     # Fresh edge (no observations)
     graph2 = TransmissionGraph()
@@ -497,6 +524,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"  [FAIL] {e}")
             import traceback
+
             traceback.print_exc()
             failed += 1
 

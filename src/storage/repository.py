@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """SqlMacroRepository — Repository pattern implementation for macro data.
 
 Implements RepositoryInterface. Depends on Storage Interface (SQLAlchemy),
@@ -8,10 +6,11 @@ NOT on a concrete database.
 Collector NEVER touches the database directly — it goes through this repository.
 """
 
+from __future__ import annotations
+
 from datetime import datetime
 
 from sqlalchemy import select
-from sqlalchemy.dialects.sqlite import insert as sqlite_upsert
 
 from src.interfaces.repository import RepositoryInterface
 from src.schemas.macro_data import MacroDataSchema, QualityScore

@@ -9,15 +9,15 @@ Capabilities:
 - NarrativeCompetition: Multi-narrative generation with probability scoring
 """
 
-from src.research.narrative.schemas import (
-    Narrative,
-    NarrativeObject,
-    NarrativeResult,
-    NarrativeCompetitionResult,
-)
+from src.research.narrative.narrative_competition import NarrativeCompetition
 from src.research.narrative.narrative_detector import NarrativeDetector
 from src.research.narrative.narrative_reasoner import NarrativeReasoner
-from src.research.narrative.narrative_competition import NarrativeCompetition
+from src.research.narrative.schemas import (
+    Narrative,
+    NarrativeCompetitionResult,
+    NarrativeObject,
+    NarrativeResult,
+)
 
 __all__ = [
     # Schemas

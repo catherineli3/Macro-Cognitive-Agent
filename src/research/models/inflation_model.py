@@ -68,9 +68,7 @@ class InflationModel(MentalModel):
                 "Disinflationary trend supports Fed policy normalization."
             )
         else:
-            conclusion_text = (
-                "Inflation Stable — no clear directional signal from commodities."
-            )
+            conclusion_text = "Inflation Stable — no clear directional signal from commodities."
 
         confidence = self._compute_confidence(
             score, len(supporting), len(contradicting), len(self._INDICATORS)
@@ -104,16 +102,28 @@ class InflationModel(MentalModel):
     def _interpret_inflation(name: str, value: float, features: list[dict]) -> dict:
         if name == "GOLD":
             if value > 2000:
-                return {"text": f"Gold elevated (${value:.0f}) — inflation fear / safe-haven bid", "contradicts": False}
+                return {
+                    "text": f"Gold elevated (${value:.0f}) — inflation fear / safe-haven bid",
+                    "contradicts": False,
+                }
             elif value < 1800:
-                return {"text": f"Gold subdued (${value:.0f}) — inflation expectations anchored", "contradicts": False}
+                return {
+                    "text": f"Gold subdued (${value:.0f}) — inflation expectations anchored",
+                    "contradicts": False,
+                }
             else:
                 return {"text": f"Gold moderate (${value:.0f})", "contradicts": False}
         if name == "OIL":
             if value > 85:
-                return {"text": f"Oil elevated (${value:.1f}) — cost-push inflation pressure", "contradicts": False}
+                return {
+                    "text": f"Oil elevated (${value:.1f}) — cost-push inflation pressure",
+                    "contradicts": False,
+                }
             elif value < 65:
-                return {"text": f"Oil low (${value:.1f}) — disinflationary tailwind", "contradicts": True}
+                return {
+                    "text": f"Oil low (${value:.1f}) — disinflationary tailwind",
+                    "contradicts": True,
+                }
             else:
                 return {"text": f"Oil moderate (${value:.1f})", "contradicts": False}
         return {"text": f"{name}: {value:.2f}", "contradicts": False}
@@ -139,9 +149,7 @@ class InflationModel(MentalModel):
         return None
 
     @staticmethod
-    def _generate_narratives(
-        direction: str, supporting: list[EvidenceItem]
-    ) -> list[str]:
+    def _generate_narratives(direction: str, supporting: list[EvidenceItem]) -> list[str]:
         if direction == "rising":
             return [
                 "Inflation persistence → Fed hawkish risk → rate-sensitive selloff",

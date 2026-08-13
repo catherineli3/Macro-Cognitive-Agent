@@ -12,9 +12,8 @@ Design (DDR-v2):
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 from src.schemas.memory import BeliefRecord
 from src.schemas.outcome import (
@@ -39,8 +38,8 @@ class OutcomeEvaluator:
     @staticmethod
     def evaluate(
         outcome: PredictionOutcome,
-        observed_value: Optional[float] = None,
-        observed_direction: Optional[OutcomeDirection] = None,
+        observed_value: float | None = None,
+        observed_direction: OutcomeDirection | None = None,
     ) -> PredictionOutcome:
         """Evaluate a pending outcome against observed data.
 
@@ -61,9 +60,12 @@ class OutcomeEvaluator:
             outcome.realized_value = observed_value
             outcome.observed_direction = OutcomeDirection.UNKNOWN
 
-        outcome.evaluated_at = datetime.now(timezone.utc)
+        outcome.evaluated_at = datetime.now(UTC)
 
-        if outcome.observed_direction is None or outcome.observed_direction == OutcomeDirection.UNKNOWN:
+        if (
+            outcome.observed_direction is None
+            or outcome.observed_direction == OutcomeDirection.UNKNOWN
+        ):
             outcome.verdict = OutcomeVerdict.PENDING
             outcome.verdict_rationale = "Insufficient observed data for evaluation."
             outcome.verdict_confidence = 0.1
@@ -96,15 +98,13 @@ class OutcomeEvaluator:
                 outcome.verdict = OutcomeVerdict.PARTIALLY_CORRECT
                 outcome.verdict_confidence = 0.50
                 outcome.verdict_rationale = (
-                    f"Predicted neutral but observed {observed} — "
-                    f"no strong directional error."
+                    f"Predicted neutral but observed {observed} — " f"no strong directional error."
                 )
         elif observed == "flat":
             outcome.verdict = OutcomeVerdict.PARTIALLY_CORRECT
             outcome.verdict_confidence = 0.55
             outcome.verdict_rationale = (
-                f"Predicted {predicted} but observed flat — "
-                f"direction was not realized."
+                f"Predicted {predicted} but observed flat — " f"direction was not realized."
             )
         else:
             outcome.verdict = OutcomeVerdict.INCORRECT
@@ -219,7 +219,7 @@ class OutcomeTracker:
     v2.0: Stores outcomes alongside belief memory for historical querying.
     """
 
-    def __init__(self, file_path: Optional[str] = None) -> None:
+    def __init__(self, file_path: str | None = None) -> None:
         if file_path is None:
             base = Path(__file__).resolve().parent.parent.parent
             file_path = str(base / "data" / "memory" / "outcomes.json")
@@ -235,11 +235,9 @@ class OutcomeTracker:
             import json
 
             try:
-                with open(self._file_path, "r", encoding="utf-8") as f:
+                with open(self._file_path, encoding="utf-8") as f:
                     data = json.load(f)
-                self._records = [
-                    OutcomeRecord(**r) for r in data.get("records", [])
-                ]
+                self._records = [OutcomeRecord(**r) for r in data.get("records", [])]
             except Exception as e:
                 logger.warning("Failed to load outcomes, starting fresh: %s", str(e))
                 self._records = []
@@ -253,12 +251,14 @@ class OutcomeTracker:
         self._file_path.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             "version": "1.0",
-            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(UTC).isoformat(),
             "count": len(self._records),
             "records": [r.model_dump(mode="json") for r in self._records],
         }
         tmp_fd, tmp_path = tempfile.mkstemp(
-            suffix=".json", prefix="outcomes_", dir=str(self._file_path.parent),
+            suffix=".json",
+            prefix="outcomes_",
+            dir=str(self._file_path.parent),
         )
         try:
             with os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
@@ -323,7 +323,7 @@ class OutcomeEngine:
         3. summary() — compute aggregate metrics.
     """
 
-    def __init__(self, tracker: Optional[OutcomeTracker] = None) -> None:
+    def __init__(self, tracker: OutcomeTracker | None = None) -> None:
         self._tracker = tracker or OutcomeTracker()
         self._evaluator = OutcomeEvaluator()
 
@@ -365,8 +365,8 @@ class OutcomeEngine:
     def evaluate(
         self,
         outcome: PredictionOutcome,
-        observed_direction: Optional[OutcomeDirection] = None,
-        observed_value: Optional[float] = None,
+        observed_direction: OutcomeDirection | None = None,
+        observed_value: float | None = None,
     ) -> PredictionOutcome:
         """Evaluate a pending outcome against observed direction."""
         result = self._evaluator.evaluate(
@@ -411,7 +411,7 @@ class OutcomeEngine:
         """Compute current outcome summary."""
         return self._tracker.summary()
 
-    def get_history(self, dimension: Optional[str] = None) -> list[OutcomeRecord]:
+    def get_history(self, dimension: str | None = None) -> list[OutcomeRecord]:
         """Get outcome history, optionally filtered by dimension."""
         if dimension:
             return self._tracker.get_by_dimension(dimension)

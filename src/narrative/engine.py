@@ -10,8 +10,7 @@ v2.0 Upgrade:
 All content sources from cognitive chain + v2.0 engines — no free generation.
 """
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from src.domain.narrative import ConfidenceLevel
 from src.schemas.calibration import CalibratedConfidenceSet
@@ -27,13 +26,14 @@ from src.schemas.narrative import (
     ScenarioProbability,
 )
 from src.schemas.outcome import OutcomeSummary
-from src.schemas.reflection import ReflectionFinding, ReflectionReport, ReflectionSet
-from src.schemas.signal import MacroSignalSchema, SignalSnapshot
+from src.schemas.reflection import ReflectionSet
+from src.schemas.signal import SignalSnapshot
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
 
 _DIMENSION_NAMES = ["liquidity", "credit", "growth", "inflation"]
+
 
 def _reflection_sentence(refs) -> str:
     """Build an evidence-accurate reflection sentence from actual review counts.
@@ -47,13 +47,18 @@ def _reflection_sentence(refs) -> str:
     confirmed = len(refs.confirmed)
     refuted = len(refs.refuted)
     if confirmed > refuted:
-        return (f"Reflection supports the prevailing view "
-                f"({confirmed} confirmed, {refuted} refuted of {count} reviewed).")
+        return (
+            f"Reflection supports the prevailing view "
+            f"({confirmed} confirmed, {refuted} refuted of {count} reviewed)."
+        )
     if refuted > confirmed:
-        return (f"Reflection challenges the prevailing view "
-                f"({confirmed} confirmed, {refuted} refuted of {count} reviewed).")
-    return (f"Reflection is split "
-            f"({confirmed} confirmed, {refuted} refuted of {count} reviewed).")
+        return (
+            f"Reflection challenges the prevailing view "
+            f"({confirmed} confirmed, {refuted} refuted of {count} reviewed)."
+        )
+    return (
+        f"Reflection is split " f"({confirmed} confirmed, {refuted} refuted of {count} reviewed)."
+    )
 
 
 def _smart_truncate(text: str, limit: int) -> str:
@@ -86,53 +91,47 @@ _SCENARIO_TEMPLATES = [
         ),
         "base_probability": 0.55,
         "rationale": "Growth signals remain supportive while inflation pressures ease. "
-                      "{reflection} "
-                      "This is consistent with a controlled slowdown toward trend growth.",
+        "{reflection} "
+        "This is consistent with a controlled slowdown toward trend growth.",
         "watch": ["PMI", "CPI", "NFP", "Retail Sales"],
     },
     {
         "name": "Hard Landing / Recession",
         "condition": lambda sigs, hyps, refs: (
-            _count_bearish(sigs, "growth") >= 1
-            and len(refs.refuted) >= len(refs.confirmed)
+            _count_bearish(sigs, "growth") >= 1 and len(refs.refuted) >= len(refs.confirmed)
         ),
         "base_probability": 0.30,
         "rationale": "Growth signals are deteriorating and reflection refutes key "
-                      "supporting hypotheses. Risk of an abrupt economic contraction "
-                      "is elevated relative to baseline.",
+        "supporting hypotheses. Risk of an abrupt economic contraction "
+        "is elevated relative to baseline.",
         "watch": ["Initial Claims", "ISM New Orders", "Yield Curve", "Consumer Confidence"],
     },
     {
         "name": "Inflation Re-acceleration",
-        "condition": lambda sigs, hyps, refs: (
-            _count_bullish(sigs, "inflation") >= 1
-        ),
+        "condition": lambda sigs, hyps, refs: (_count_bullish(sigs, "inflation") >= 1),
         "base_probability": 0.25,
         "rationale": "Inflation signals suggest upward pressure. If growth remains "
-                      "resilient, the Fed may need to maintain or resume tightening, "
-                      "creating a stagflationary risk.",
+        "resilient, the Fed may need to maintain or resume tightening, "
+        "creating a stagflationary risk.",
         "watch": ["CPI MoM", "PCE Core", "Wage Growth", "Inflation Expectations"],
     },
     {
         "name": "Dollar Strength Regime",
-        "condition": lambda sigs, hyps, refs: (
-            _count_bullish(sigs, "liquidity") >= 1
-        ),
+        "condition": lambda sigs, hyps, refs: (_count_bullish(sigs, "liquidity") >= 1),
         "base_probability": 0.45,
         "rationale": "Liquidity signals point to dollar strength, which tightens "
-                      "global financial conditions and pressures emerging markets.",
+        "global financial conditions and pressures emerging markets.",
         "watch": ["DXY", "Fed Funds Futures", "EM FX Indices", "Carry Trade"],
     },
     {
         "name": "Risk-On Rally",
         "condition": lambda sigs, hyps, refs: (
-            _count_bullish(sigs, "credit") >= 1
-            and _count_bullish(sigs, "growth") >= 1
+            _count_bullish(sigs, "credit") >= 1 and _count_bullish(sigs, "growth") >= 1
         ),
         "base_probability": 0.40,
         "rationale": "Credit and growth signals both supportive — risk appetite "
-                      "appears to be broadening. Watch for confirmation in volume "
-                      "and breadth indicators.",
+        "appears to be broadening. Watch for confirmation in volume "
+        "and breadth indicators.",
         "watch": ["VIX", "Credit Spreads", "HYG Flows", "Equity Breadth"],
     },
 ]
@@ -140,17 +139,17 @@ _SCENARIO_TEMPLATES = [
 
 def _count_bullish(signals: SignalSnapshot, dimension: str) -> int:
     return sum(
-        1 for s in signals.signals
-        if s.dimension.lower() == dimension.lower()
-        and s.direction.value == "bullish"
+        1
+        for s in signals.signals
+        if s.dimension.lower() == dimension.lower() and s.direction.value == "bullish"
     )
 
 
 def _count_bearish(signals: SignalSnapshot, dimension: str) -> int:
     return sum(
-        1 for s in signals.signals
-        if s.dimension.lower() == dimension.lower()
-        and s.direction.value == "bearish"
+        1
+        for s in signals.signals
+        if s.dimension.lower() == dimension.lower() and s.direction.value == "bearish"
     )
 
 
@@ -159,10 +158,7 @@ def _get_by_dimension_ci(
     dimension: str,
 ) -> list[HypothesisSchema]:
     dim_lower = dimension.lower()
-    return [
-        h for h in hypotheses.hypotheses
-        if h.dimension.lower() == dim_lower
-    ]
+    return [h for h in hypotheses.hypotheses if h.dimension.lower() == dim_lower]
 
 
 class NarrativeEngine:
@@ -170,14 +166,14 @@ class NarrativeEngine:
 
     def narrate(
         self,
-        signals: Optional[SignalSnapshot] = None,
-        hypotheses: Optional[HypothesisSet] = None,
-        reflections: Optional[ReflectionSet] = None,
-        belief_records: Optional[list[BeliefRecord]] = None,
+        signals: SignalSnapshot | None = None,
+        hypotheses: HypothesisSet | None = None,
+        reflections: ReflectionSet | None = None,
+        belief_records: list[BeliefRecord] | None = None,
         # ── v2.0 inputs ──────────────────────────────────────────────────
-        learning_summary: Optional[LearningSummary] = None,
-        calibrated_confidence: Optional[CalibratedConfidenceSet] = None,
-        outcome_summary: Optional[OutcomeSummary] = None,
+        learning_summary: LearningSummary | None = None,
+        calibrated_confidence: CalibratedConfidenceSet | None = None,
+        outcome_summary: OutcomeSummary | None = None,
     ) -> MacroNarrative:
         """Synthesize all cognitive + learning outputs into a MacroNarrative.
 
@@ -217,7 +213,10 @@ class NarrativeEngine:
 
         confidence_level = self._classify_confidence(confidence_score)
         confidence_explanation = self._build_confidence_explanation(
-            confidence_score, confidence_level, hyps, refs,
+            confidence_score,
+            confidence_level,
+            hyps,
+            refs,
         )
 
         # Summary and story
@@ -238,9 +237,9 @@ class NarrativeEngine:
         belief_changes_text = self._render_belief_changes_text(changes)
 
         # ── v2.0: Learning sections ─────────────────────────────────────
-        learning_section = self._build_what_we_learned(learning_summary, outcome_summary)
-        accuracy_section = self._build_prediction_accuracy(outcome_summary)
-        calibration_section = self._build_calibration_section(calibrated_confidence)
+        _learning_section = self._build_what_we_learned(learning_summary, outcome_summary)
+        _accuracy_section = self._build_prediction_accuracy(outcome_summary)
+        _calibration_section = self._build_calibration_section(calibrated_confidence)
 
         return MacroNarrative(
             summary=summary,
@@ -265,12 +264,18 @@ class NarrativeEngine:
             confidence_score=confidence_score,
             confidence_explanation=confidence_explanation,
             confidence=confidence_score,
-            generated_at=datetime.now(timezone.utc),
+            generated_at=datetime.now(UTC),
             # v2.0: Attach learning data as metadata for renderers
             metadata={
-                "learning_summary": learning_summary.model_dump(mode="json") if learning_summary else None,
-                "calibrated_confidence": calibrated_confidence.model_dump(mode="json") if calibrated_confidence else None,
-                "outcome_summary": outcome_summary.model_dump(mode="json") if outcome_summary else None,
+                "learning_summary": (
+                    learning_summary.model_dump(mode="json") if learning_summary else None
+                ),
+                "calibrated_confidence": (
+                    calibrated_confidence.model_dump(mode="json") if calibrated_confidence else None
+                ),
+                "outcome_summary": (
+                    outcome_summary.model_dump(mode="json") if outcome_summary else None
+                ),
             },
         )
 
@@ -278,8 +283,8 @@ class NarrativeEngine:
 
     def _build_what_we_learned(
         self,
-        learning: Optional[LearningSummary],
-        outcomes: Optional[OutcomeSummary],
+        learning: LearningSummary | None,
+        outcomes: OutcomeSummary | None,
     ) -> str:
         """Build the 'What We Learned' section from v2.0 data."""
         if learning is None and outcomes is None:
@@ -299,7 +304,9 @@ class NarrativeEngine:
             parts.append("|-----------|----------|--------|-------|--------|")
             for bw in learning.belief_weights:
                 if bw.total_predictions > 0:
-                    trend_icon = {"improving": "↑", "declining": "↓", "stable": "→"}.get(bw.accuracy_trend, "")
+                    trend_icon = {"improving": "↑", "declining": "↓", "stable": "→"}.get(
+                        bw.accuracy_trend, ""
+                    )
                     streak_str = f"+{bw.streak}" if bw.streak > 0 else str(bw.streak)
                     parts.append(
                         f"| {bw.dimension.title()} | {bw.historical_accuracy:.0%} | "
@@ -309,12 +316,16 @@ class NarrativeEngine:
 
         if outcomes:
             parts.append("### Global Metrics\n")
-            parts.append(f"- **Hit Rate**: {outcomes.hit_rate:.0%} ({outcomes.correct_count}/{outcomes.evaluated_count} correct)")
+            parts.append(
+                f"- **Hit Rate**: {outcomes.hit_rate:.0%} ({outcomes.correct_count}/{outcomes.evaluated_count} correct)"
+            )
             parts.append(f"- **Brier Score**: {outcomes.brier_score:.3f} (lower is better)")
             parts.append(f"- **Directional Accuracy**: {outcomes.directional_accuracy:.0%}")
             parts.append(f"- **Total Tracked**: {outcomes.total_predictions} predictions")
             if outcomes.pending_predictions > 0:
-                parts.append(f"- **Pending**: {outcomes.pending_predictions} predictions awaiting evaluation")
+                parts.append(
+                    f"- **Pending**: {outcomes.pending_predictions} predictions awaiting evaluation"
+                )
             parts.append("")
 
         else:
@@ -322,7 +333,7 @@ class NarrativeEngine:
 
         return "\n".join(parts)
 
-    def _build_prediction_accuracy(self, outcomes: Optional[OutcomeSummary]) -> str:
+    def _build_prediction_accuracy(self, outcomes: OutcomeSummary | None) -> str:
         """Build the 'Prediction Accuracy' section."""
         if outcomes is None:
             return ""
@@ -356,7 +367,7 @@ class NarrativeEngine:
 
     def _build_calibration_section(
         self,
-        calibrated: Optional[CalibratedConfidenceSet],
+        calibrated: CalibratedConfidenceSet | None,
     ) -> str:
         """Build the 'Confidence Calibration' section."""
         if calibrated is None:
@@ -393,7 +404,7 @@ class NarrativeEngine:
         self,
         hypotheses: HypothesisSet,
         reflections: ReflectionSet,
-        learning: Optional[LearningSummary] = None,
+        learning: LearningSummary | None = None,
     ) -> str:
         """Build a one-line macro summary, enriched with learning data."""
         if hypotheses.count == 0:
@@ -405,7 +416,11 @@ class NarrativeEngine:
 
         confirmed = len(reflections.confirmed)
         refuted = len(reflections.refuted)
-        dims = ", ".join(hypotheses.dimensions_covered) if hypotheses.dimensions_covered else "macro conditions"
+        dims = (
+            ", ".join(hypotheses.dimensions_covered)
+            if hypotheses.dimensions_covered
+            else "macro conditions"
+        )
 
         base = ""
         if confirmed > refuted:
@@ -437,8 +452,8 @@ class NarrativeEngine:
         self,
         hypotheses: HypothesisSet,
         reflections: ReflectionSet,
-        scenarios: Optional[list[ScenarioProbability]] = None,
-        learning: Optional[LearningSummary] = None,
+        scenarios: list[ScenarioProbability] | None = None,
+        learning: LearningSummary | None = None,
     ) -> str:
         """Build 2-3 paragraph macro narrative with learning context."""
         if hypotheses.count == 0:
@@ -449,7 +464,11 @@ class NarrativeEngine:
         # Paragraph 1: Overall macro picture
         top = hypotheses.get_highest_confidence()
         if top:
-            dims_str = ", ".join(hypotheses.dimensions_covered) if hypotheses.dimensions_covered else "macro"
+            dims_str = (
+                ", ".join(hypotheses.dimensions_covered)
+                if hypotheses.dimensions_covered
+                else "macro"
+            )
             paras = [
                 f"The current {dims_str} environment presents a complex picture. "
                 f"{top.statement} Evidence strength is assessed at "
@@ -460,7 +479,7 @@ class NarrativeEngine:
             if scenarios:
                 dominant = max(scenarios, key=lambda s: s.probability)
                 paras.append(
-                    f"The most probable macro scenario is \"{dominant.name}\" "
+                    f'The most probable macro scenario is "{dominant.name}" '
                     f"({dominant.probability:.0%} probability). {dominant.rationale}"
                 )
             paragraphs.append(" ".join(paras))
@@ -481,9 +500,15 @@ class NarrativeEngine:
 
         # Paragraph 3: Reflection synthesis
         if reflections.count > 0:
-            confirmed_pct = len(reflections.confirmed) / reflections.count * 100 if reflections.count else 0
-            refuted_pct = len(reflections.refuted) / reflections.count * 100 if reflections.count else 0
-            uncertain_pct = len(reflections.uncertain) / reflections.count * 100 if reflections.count else 0
+            confirmed_pct = (
+                len(reflections.confirmed) / reflections.count * 100 if reflections.count else 0
+            )
+            refuted_pct = (
+                len(reflections.refuted) / reflections.count * 100 if reflections.count else 0
+            )
+            uncertain_pct = (
+                len(reflections.uncertain) / reflections.count * 100 if reflections.count else 0
+            )
             paragraphs.append(
                 f"After belief review: {confirmed_pct:.0f}% of hypotheses confirmed, "
                 f"{refuted_pct:.0f}% refuted, and {uncertain_pct:.0f}% remain uncertain. "
@@ -516,7 +541,7 @@ class NarrativeEngine:
         belief_changes: list[BeliefChangeNote],
         signals: SignalSnapshot,
         reflections: ReflectionSet,
-        learning: Optional[LearningSummary] = None,
+        learning: LearningSummary | None = None,
     ) -> str:
         """Build the 'Today's Key Changes' section with v2.0 learning context."""
         parts: list[str] = []
@@ -528,7 +553,9 @@ class NarrativeEngine:
                 items = []
                 for bc in changed[:3]:
                     dim = bc.dimension or "macro"
-                    arrow = {"increased": "↑", "decreased": "↓", "reversed": "⇄", "new": "🆕"}.get(bc.direction, "→")
+                    arrow = {"increased": "↑", "decreased": "↓", "reversed": "⇄", "new": "🆕"}.get(
+                        bc.direction, "→"
+                    )
                     items.append(
                         f"{arrow} **{dim.title()}**: {_smart_truncate(bc.hypothesis_statement, 100)} "
                         f"({bc.previous_confidence:.0%} → {bc.current_confidence:.0%})"
@@ -552,9 +579,11 @@ class NarrativeEngine:
                 + (
                     "Conviction in the current macro view is strengthening."
                     if confirmed > refuted
-                    else "The macro view faces significant challenges."
-                    if refuted > confirmed
-                    else "The macro outlook remains uncertain with mixed evidence."
+                    else (
+                        "The macro view faces significant challenges."
+                        if refuted > confirmed
+                        else "The macro outlook remains uncertain with mixed evidence."
+                    )
                 )
             )
 
@@ -604,12 +633,23 @@ class NarrativeEngine:
         if dim_signals:
             bullish = sum(1 for s in dim_signals if s.direction.value == "bullish")
             bearish = sum(1 for s in dim_signals if s.direction.value == "bearish")
-            bias = "accommodative / supportive" if bullish > bearish else "tightening / restrictive" if bearish > bullish else "neutral / balanced"
+            bias = (
+                "accommodative / supportive"
+                if bullish > bearish
+                else "tightening / restrictive" if bearish > bullish else "neutral / balanced"
+            )
             summary = f"{dim.title()} conditions are {bias} ({len(dim_signals)} signals: {bullish}B/{bearish}S). Confidence: {dim_conf:.0%}."
         else:
             summary = f"No {dim} signals available for assessment."
         analysis = self._build_dimension_analysis(dim, signals, hypotheses, reflections)
-        return DimensionNarrative(dimension=dim, summary=summary, analysis=analysis, key_signals=key_signal_descs, hypothesis_summary=hyp_summary, confidence=dim_conf)
+        return DimensionNarrative(
+            dimension=dim,
+            summary=summary,
+            analysis=analysis,
+            key_signals=key_signal_descs,
+            hypothesis_summary=hyp_summary,
+            confidence=dim_conf,
+        )
 
     def _build_dimension_analysis(self, dim, signals, hypotheses, reflections):
         dim_signals = [s for s in signals.signals if s.dimension.lower() == dim.lower()]
@@ -618,7 +658,10 @@ class NarrativeEngine:
             return f"No data available for {dim} analysis in this cycle."
         parts = []
         if dim_signals:
-            signal_parts = [f"{s.indicator} signals {s.direction.value.upper()} ({s.confidence:.0%} confidence)" for s in dim_signals]
+            signal_parts = [
+                f"{s.indicator} signals {s.direction.value.upper()} ({s.confidence:.0%} confidence)"
+                for s in dim_signals
+            ]
             parts.append(f"**Signal Assessment**: {', '.join(signal_parts)}. ")
             bullish = sum(1 for s in dim_signals if s.direction.value == "bullish")
             bearish = sum(1 for s in dim_signals if s.direction.value == "bearish")
@@ -630,17 +673,25 @@ class NarrativeEngine:
                 parts.append(f"The {dim} signal bias is neutral. ")
         if dim_hyps:
             best = max(dim_hyps, key=lambda h: h.confidence)
-            parts.append(f"**Dominant Hypothesis**: {best.statement} ({len(best.supporting_evidence)} supporting / {len(best.contradicting_evidence)} contradicting evidence items). ")
-        relevant_reports = [r for r in reflections.reports for h in dim_hyps if r.hypothesis_id == h.hypothesis_id]
+            parts.append(
+                f"**Dominant Hypothesis**: {best.statement} ({len(best.supporting_evidence)} supporting / {len(best.contradicting_evidence)} contradicting evidence items). "
+            )
+        relevant_reports = [
+            r for r in reflections.reports for h in dim_hyps if r.hypothesis_id == h.hypothesis_id
+        ]
         if relevant_reports:
             confirmed = sum(1 for r in relevant_reports if r.verdict.value == "confirmed")
             refuted = sum(1 for r in relevant_reports if r.verdict.value == "refuted")
             uncertain = sum(1 for r in relevant_reports if r.verdict.value == "uncertain")
-            parts.append(f"**Belief Review**: {confirmed} confirmed, {refuted} refuted, {uncertain} uncertain across {len(relevant_reports)} reviews.")
+            parts.append(
+                f"**Belief Review**: {confirmed} confirmed, {refuted} refuted, {uncertain} uncertain across {len(relevant_reports)} reviews."
+            )
         return "".join(parts)
 
     def _build_risk_appetite_analysis(self, signals, hypotheses, reflections):
-        risk_signals = [s for s in signals.signals if s.dimension.lower() in ("risk_appetite", "credit")]
+        risk_signals = [
+            s for s in signals.signals if s.dimension.lower() in ("risk_appetite", "credit")
+        ]
         risk_hyps = _get_by_dimension_ci(hypotheses, "Risk_Appetite")
         parts = []
         if risk_signals:
@@ -670,7 +721,9 @@ class NarrativeEngine:
                 matches = False
             if not matches:
                 prob = max(0.05, tmpl["base_probability"] * 0.3)
-                supporting, contradicting = [], [f"Current signals do not match {tmpl['name']} pattern"]
+                supporting, contradicting = [], [
+                    f"Current signals do not match {tmpl['name']} pattern"
+                ]
             else:
                 prob = tmpl["base_probability"]
                 if reflections.count > 0:
@@ -680,11 +733,24 @@ class NarrativeEngine:
                 contradicting = []
             prob = round(max(0.05, min(0.95, prob)), 2)
             if matches:
-                rationale = tmpl["rationale"].replace("{reflection}", _reflection_sentence(reflections))
+                rationale = tmpl["rationale"].replace(
+                    "{reflection}", _reflection_sentence(reflections)
+                )
             else:
-                rationale = (f"Pattern conditions are not currently met. "
-                             f"{_reflection_sentence(reflections)}")
-            scenarios.append(ScenarioProbability(name=tmpl["name"], probability=prob, rationale=rationale, supporting_signals=supporting, contradicting_signals=contradicting, key_indicators_to_watch=tmpl["watch"]))
+                rationale = (
+                    f"Pattern conditions are not currently met. "
+                    f"{_reflection_sentence(reflections)}"
+                )
+            scenarios.append(
+                ScenarioProbability(
+                    name=tmpl["name"],
+                    probability=prob,
+                    rationale=rationale,
+                    supporting_signals=supporting,
+                    contradicting_signals=contradicting,
+                    key_indicators_to_watch=tmpl["watch"],
+                )
+            )
         if scenarios and all(s.probability < 0.30 for s in scenarios):
             best = max(scenarios, key=lambda s: s.probability)
             best.probability = min(0.95, best.probability * 2.0)
@@ -694,7 +760,17 @@ class NarrativeEngine:
         changes = []
         if not records:
             for hyp in hypotheses.hypotheses:
-                changes.append(BeliefChangeNote(hypothesis_statement=hyp.statement, previous_confidence=0.0, current_confidence=hyp.confidence, direction="new", note=f"First belief formed for {hyp.dimension} dimension.", prior_summary="No prior belief", dimension=hyp.dimension))
+                changes.append(
+                    BeliefChangeNote(
+                        hypothesis_statement=hyp.statement,
+                        previous_confidence=0.0,
+                        current_confidence=hyp.confidence,
+                        direction="new",
+                        note=f"First belief formed for {hyp.dimension} dimension.",
+                        prior_summary="No prior belief",
+                        dimension=hyp.dimension,
+                    )
+                )
             return changes
         prior_by_dim = {}
         for r in records:
@@ -702,24 +778,50 @@ class NarrativeEngine:
             if dim_key not in prior_by_dim or r.timestamp > prior_by_dim[dim_key].timestamp:
                 prior_by_dim[dim_key] = r
         for hyp in hypotheses.hypotheses:
-            dim_key = hyp.dimension.lower() if hasattr(hyp, 'dimension') else "unknown"
+            dim_key = hyp.dimension.lower() if hasattr(hyp, "dimension") else "unknown"
             prior = prior_by_dim.get(dim_key)
             if prior is None:
-                changes.append(BeliefChangeNote(hypothesis_statement=hyp.statement, previous_confidence=0.0, current_confidence=hyp.confidence, direction="new", note=f"First belief formed for {hyp.dimension} dimension.", prior_summary="No prior belief", dimension=hyp.dimension))
+                changes.append(
+                    BeliefChangeNote(
+                        hypothesis_statement=hyp.statement,
+                        previous_confidence=0.0,
+                        current_confidence=hyp.confidence,
+                        direction="new",
+                        note=f"First belief formed for {hyp.dimension} dimension.",
+                        prior_summary="No prior belief",
+                        dimension=hyp.dimension,
+                    )
+                )
                 continue
             delta = hyp.confidence - prior.confidence
-            direction = "unchanged" if abs(delta) < 0.05 else "increased" if delta > 0 else "decreased"
+            direction = (
+                "unchanged" if abs(delta) < 0.05 else "increased" if delta > 0 else "decreased"
+            )
             prior_summary = f"Prior: {_smart_truncate(prior.statement, 120)} (direction={prior.direction.value}, confidence={prior.confidence:.0%})"
-            if hasattr(hyp, 'direction') and hasattr(prior, 'direction') and hyp.direction != prior.direction:
+            if (
+                hasattr(hyp, "direction")
+                and hasattr(prior, "direction")
+                and hyp.direction != prior.direction
+            ):
                 direction = "reversed"
-                note = f"Direction reversed from {prior.direction.value} to {hyp.direction.value} in {hyp.dimension}. Prior: \"{_smart_truncate(prior.statement, 100)}\""
+                note = f'Direction reversed from {prior.direction.value} to {hyp.direction.value} in {hyp.dimension}. Prior: "{_smart_truncate(prior.statement, 100)}"'
             elif direction == "increased":
                 note = f"Confidence strengthened: {prior.confidence:.0%} → {hyp.confidence:.0%}. Prior evidence: {prior.evidence_summary}"
             elif direction == "decreased":
                 note = f"Confidence weakened: {prior.confidence:.0%} → {hyp.confidence:.0%}. Review: {_smart_truncate(prior.review_summary, 100) if prior.review_summary else 'No review available'}"
             else:
                 note = f"Belief stable at {hyp.confidence:.0%} confidence."
-            changes.append(BeliefChangeNote(hypothesis_statement=hyp.statement, previous_confidence=prior.confidence, current_confidence=hyp.confidence, direction=direction, note=note, prior_summary=prior_summary, dimension=hyp.dimension))
+            changes.append(
+                BeliefChangeNote(
+                    hypothesis_statement=hyp.statement,
+                    previous_confidence=prior.confidence,
+                    current_confidence=hyp.confidence,
+                    direction=direction,
+                    note=note,
+                    prior_summary=prior_summary,
+                    dimension=hyp.dimension,
+                )
+            )
         return changes
 
     def _render_belief_changes_text(self, changes):
@@ -729,25 +831,66 @@ class NarrativeEngine:
         for bc in changes:
             if bc.direction == "unchanged":
                 continue
-            arrow = {"increased": "↑ Strengthened", "decreased": "↓ Weakened", "reversed": "⇄ Reversed", "new": "🆕 New"}.get(bc.direction, "→")
+            arrow = {
+                "increased": "↑ Strengthened",
+                "decreased": "↓ Weakened",
+                "reversed": "⇄ Reversed",
+                "new": "🆕 New",
+            }.get(bc.direction, "→")
             dim_label = f"[{bc.dimension}] " if bc.dimension else ""
-            lines.append(f"{arrow}: {dim_label}{_smart_truncate(bc.hypothesis_statement, 120)}\n  {bc.previous_confidence:.0%} → {bc.current_confidence:.0%} | {bc.note}")
+            lines.append(
+                f"{arrow}: {dim_label}{_smart_truncate(bc.hypothesis_statement, 120)}\n  {bc.previous_confidence:.0%} → {bc.current_confidence:.0%} | {bc.note}"
+            )
         return "\n".join(lines) if lines else "All beliefs are stable (no significant changes)."
 
     def _extract_risks(self, reflections):
         risks = []
         for report in reflections.reports:
             if report.verdict.value == "refuted":
-                risks.append(RiskItem(category="hypothesis_refuted", description=f"Hypothesis '{_smart_truncate(report.statement, 120)}' was refuted after belief review. Original confidence: {report.original_confidence:.0%}.", severity="medium", related_hypothesis=report.hypothesis_id))
+                risks.append(
+                    RiskItem(
+                        category="hypothesis_refuted",
+                        description=f"Hypothesis '{_smart_truncate(report.statement, 120)}' was refuted after belief review. Original confidence: {report.original_confidence:.0%}.",
+                        severity="medium",
+                        related_hypothesis=report.hypothesis_id,
+                    )
+                )
             for finding in report.findings:
                 if finding.severity.value in ("critical", "major"):
-                    risks.append(RiskItem(category=finding.type, description=finding.description, severity="high" if finding.severity.value == "critical" else "medium", related_hypothesis=report.hypothesis_id))
+                    risks.append(
+                        RiskItem(
+                            category=finding.type,
+                            description=finding.description,
+                            severity="high" if finding.severity.value == "critical" else "medium",
+                            related_hypothesis=report.hypothesis_id,
+                        )
+                    )
             if report.evidence_sufficiency == "low":
-                risks.append(RiskItem(category="insufficient_evidence", description=f"Insufficient evidence for hypothesis: '{_smart_truncate(report.statement, 120)}'. Assessment may be unreliable.", severity="high", related_hypothesis=report.hypothesis_id))
+                risks.append(
+                    RiskItem(
+                        category="insufficient_evidence",
+                        description=f"Insufficient evidence for hypothesis: '{_smart_truncate(report.statement, 120)}'. Assessment may be unreliable.",
+                        severity="high",
+                        related_hypothesis=report.hypothesis_id,
+                    )
+                )
             if report.evidence_consistency == "conflicting":
-                risks.append(RiskItem(category="conflicting_evidence", description=f"Conflicting evidence detected for: '{_smart_truncate(report.statement, 120)}'. Directional bias may be unreliable.", severity="medium", related_hypothesis=report.hypothesis_id))
+                risks.append(
+                    RiskItem(
+                        category="conflicting_evidence",
+                        description=f"Conflicting evidence detected for: '{_smart_truncate(report.statement, 120)}'. Directional bias may be unreliable.",
+                        severity="medium",
+                        related_hypothesis=report.hypothesis_id,
+                    )
+                )
         if not risks:
-            risks.append(RiskItem(category="no_risks_identified", description="No significant risks identified in the current analysis cycle.", severity="low"))
+            risks.append(
+                RiskItem(
+                    category="no_risks_identified",
+                    description="No significant risks identified in the current analysis cycle.",
+                    severity="low",
+                )
+            )
         return risks
 
     def _generate_action_items(self, hypotheses, reflections, belief_records=None):
@@ -755,19 +898,27 @@ class NarrativeEngine:
         if belief_records:
             for rec in belief_records:
                 if rec.is_reversal:
-                    items.append(f"Reassess: Belief in {rec.dimension} reversed from {rec.transition.value}. Review '{_smart_truncate(rec.statement, 80)}' with additional data before committing.")
+                    items.append(
+                        f"Reassess: Belief in {rec.dimension} reversed from {rec.transition.value}. Review '{_smart_truncate(rec.statement, 80)}' with additional data before committing."
+                    )
         for report in reflections.uncertain[:3]:
-            items.append(f"Monitor: Hypothesis '{_smart_truncate(report.statement, 80)}' is uncertain — seek additional evidence before acting.")
+            items.append(
+                f"Monitor: Hypothesis '{_smart_truncate(report.statement, 80)}' is uncertain — seek additional evidence before acting."
+            )
         for report in reflections.confirmed:
             if report.updated_confidence > 0.7:
-                items.append(f"Act: Hypothesis '{_smart_truncate(report.statement, 80)}' is confirmed with high confidence ({report.updated_confidence:.0%}). Consider incorporating into positioning framework.")
+                items.append(
+                    f"Act: Hypothesis '{_smart_truncate(report.statement, 80)}' is confirmed with high confidence ({report.updated_confidence:.0%}). Consider incorporating into positioning framework."
+                )
         if hypotheses.count == 0:
             items.append("Collect more data to enable hypothesis generation.")
         if reflections.count == 0:
             items.append("Complete belief review cycle before drawing conclusions.")
         if not items:
             for hyp in hypotheses.hypotheses[:3]:
-                items.append(f"Continue monitoring {hyp.dimension}: '{_smart_truncate(hyp.statement, 60)}' (confidence: {hyp.confidence:.0%})")
+                items.append(
+                    f"Continue monitoring {hyp.dimension}: '{_smart_truncate(hyp.statement, 60)}' (confidence: {hyp.confidence:.0%})"
+                )
         return items
 
     def _compute_overall_confidence(self, hypotheses, reflections):
@@ -790,26 +941,61 @@ class NarrativeEngine:
         return ConfidenceLevel.LOW
 
     def _build_confidence_explanation(self, score, level, hypotheses, reflections):
-        verdict_breakdown = {"confirmed": len(reflections.confirmed), "refuted": len(reflections.refuted), "uncertain": len(reflections.uncertain), "total": reflections.count}
+        verdict_breakdown = {
+            "confirmed": len(reflections.confirmed),
+            "refuted": len(reflections.refuted),
+            "uncertain": len(reflections.uncertain),
+            "total": reflections.count,
+        }
         if level == ConfidenceLevel.LOW:
             reasons = []
             if verdict_breakdown["refuted"] > verdict_breakdown["confirmed"]:
-                reasons.append(f"More hypotheses were refuted ({verdict_breakdown['refuted']}) than confirmed ({verdict_breakdown['confirmed']}), indicating the current macro view has weak evidential support.")
+                reasons.append(
+                    f"More hypotheses were refuted ({verdict_breakdown['refuted']}) than confirmed ({verdict_breakdown['confirmed']}), indicating the current macro view has weak evidential support."
+                )
             if verdict_breakdown["uncertain"] > 0:
-                reasons.append(f"{verdict_breakdown['uncertain']} hypotheses remain uncertain due to insufficient or conflicting evidence.")
+                reasons.append(
+                    f"{verdict_breakdown['uncertain']} hypotheses remain uncertain due to insufficient or conflicting evidence."
+                )
             if hypotheses.count == 0:
-                reasons.append("No hypotheses were generated — the system lacks sufficient data for meaningful analysis.")
+                reasons.append(
+                    "No hypotheses were generated — the system lacks sufficient data for meaningful analysis."
+                )
             if not reasons:
-                reasons.append("Overall evidence quality is insufficient to support high-confidence conclusions.")
+                reasons.append(
+                    "Overall evidence quality is insufficient to support high-confidence conclusions."
+                )
             why_low = " ".join(reasons)
         else:
             why_low = ""
-        supporting_parts = [f"Confirmed: \"{_smart_truncate(report.statement, 100)}\" (confidence adjusted from {report.original_confidence:.0%} to {report.updated_confidence:.0%})" for report in reflections.confirmed[:2]]
-        supporting_summary = "; ".join(supporting_parts) if supporting_parts else "No strongly confirmed hypotheses."
-        contradicting_parts = [f"Refuted: \"{_smart_truncate(report.statement, 100)}\" (original confidence {report.original_confidence:.0%} → {report.updated_confidence:.0%} after review)" for report in reflections.refuted[:2]]
-        contradicting_summary = "; ".join(contradicting_parts) if contradicting_parts else "No refuted hypotheses."
+        supporting_parts = [
+            f'Confirmed: "{_smart_truncate(report.statement, 100)}" (confidence adjusted from {report.original_confidence:.0%} to {report.updated_confidence:.0%})'
+            for report in reflections.confirmed[:2]
+        ]
+        supporting_summary = (
+            "; ".join(supporting_parts) if supporting_parts else "No strongly confirmed hypotheses."
+        )
+        contradicting_parts = [
+            f'Refuted: "{_smart_truncate(report.statement, 100)}" (original confidence {report.original_confidence:.0%} → {report.updated_confidence:.0%} after review)'
+            for report in reflections.refuted[:2]
+        ]
+        contradicting_summary = (
+            "; ".join(contradicting_parts) if contradicting_parts else "No refuted hypotheses."
+        )
         all_findings = []
         for report in reflections.reports:
             all_findings.extend(report.findings)
-        findings_summary = "; ".join([f.description[:100] for f in all_findings[:4]]) if all_findings else "No critical findings from belief review."
-        return ConfidenceExplanation(level=level, score=score, why_low=why_low, supporting_evidence_summary=supporting_summary, contradicting_evidence_summary=contradicting_summary, reflection_findings_summary=findings_summary, hypothesis_verdict_breakdown=verdict_breakdown)
+        findings_summary = (
+            "; ".join([f.description[:100] for f in all_findings[:4]])
+            if all_findings
+            else "No critical findings from belief review."
+        )
+        return ConfidenceExplanation(
+            level=level,
+            score=score,
+            why_low=why_low,
+            supporting_evidence_summary=supporting_summary,
+            contradicting_evidence_summary=contradicting_summary,
+            reflection_findings_summary=findings_summary,
+            hypothesis_verdict_breakdown=verdict_breakdown,
+        )

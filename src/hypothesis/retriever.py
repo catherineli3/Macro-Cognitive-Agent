@@ -7,10 +7,9 @@ Returns historical context for each candidate hypothesis to inform competition.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 from src.hypothesis.signal_engine import SignalReport
-from src.schemas.hypothesis_library import HypothesisLibraryEntry, HypothesisScore
+from src.schemas.hypothesis_library import HypothesisLibraryEntry
 from src.schemas.hypothesis_v3_1 import CandidateHypothesis
 from src.shared.logging import get_logger
 
@@ -23,12 +22,13 @@ logger = get_logger(__name__)
 @dataclass
 class HistoricalMatch:
     """A single historical hypothesis matched to a candidate."""
+
     entry: HypothesisLibraryEntry
-    similarity_score: float = 0.0         # 0~1
+    similarity_score: float = 0.0  # 0~1
     regime_match: bool = False
     dimension_match: bool = False
     direction_match: bool = False
-    historical_accuracy: float = 0.0      # 0~1
+    historical_accuracy: float = 0.0  # 0~1
 
     @property
     def is_strong_match(self) -> bool:
@@ -38,9 +38,10 @@ class HistoricalMatch:
 @dataclass
 class RetrievalContext:
     """Historical context for a candidate hypothesis."""
+
     candidate_id: str
     matches: list[HistoricalMatch] = field(default_factory=list)
-    best_match: Optional[HistoricalMatch] = None
+    best_match: HistoricalMatch | None = None
     avg_historical_accuracy: float = 0.0
     regime_support: float = 0.0
     recommendation: str = ""
@@ -49,6 +50,7 @@ class RetrievalContext:
 @dataclass
 class RetrievalReport:
     """Complete retrieval output for all candidates."""
+
     total_matches: int = 0
     contexts: dict = field(default_factory=dict)
     analog_periods_found: int = 0
@@ -58,23 +60,97 @@ class RetrievalReport:
 
 # Dimension-related keywords for similarity scoring
 _DIMENSION_KEYWORDS: dict[str, list[str]] = {
-    "liquidity": ["liquidity", "dollar", "fed", "easing", "tightening", "monetary",
-                  "balance sheet", "reserve", "capital flow", "funding", "rate cut"],
-    "credit": ["credit", "spread", "high yield", "hyg", "default", "corporate bond",
-               "leverage", "lending", "bank", "financial condition"],
-    "growth": ["growth", "gdp", "expansion", "recession", "slowdown", "recovery",
-               "employment", "earnings", "industrial", "manufacturing", "pmi"],
-    "risk_appetite": ["risk", "appetite", "volatility", "vix", "sentiment",
-                      "positioning", "crowded", "fear", "greed", "safe haven"],
-    "inflation": ["inflation", "cpi", "ppi", "deflation", "disinflation",
-                  "real yield", "tips", "breakeven", "commodity", "gold"],
+    "liquidity": [
+        "liquidity",
+        "dollar",
+        "fed",
+        "easing",
+        "tightening",
+        "monetary",
+        "balance sheet",
+        "reserve",
+        "capital flow",
+        "funding",
+        "rate cut",
+    ],
+    "credit": [
+        "credit",
+        "spread",
+        "high yield",
+        "hyg",
+        "default",
+        "corporate bond",
+        "leverage",
+        "lending",
+        "bank",
+        "financial condition",
+    ],
+    "growth": [
+        "growth",
+        "gdp",
+        "expansion",
+        "recession",
+        "slowdown",
+        "recovery",
+        "employment",
+        "earnings",
+        "industrial",
+        "manufacturing",
+        "pmi",
+    ],
+    "risk_appetite": [
+        "risk",
+        "appetite",
+        "volatility",
+        "vix",
+        "sentiment",
+        "positioning",
+        "crowded",
+        "fear",
+        "greed",
+        "safe haven",
+    ],
+    "inflation": [
+        "inflation",
+        "cpi",
+        "ppi",
+        "deflation",
+        "disinflation",
+        "real yield",
+        "tips",
+        "breakeven",
+        "commodity",
+        "gold",
+    ],
 }
 
 _DIRECTION_KEYWORDS: dict[str, list[str]] = {
-    "bullish": ["rising", "higher", "increase", "expansion", "easing", "weakening dollar",
-                "rally", "upside", "growth", "accelerating", "outperform"],
-    "bearish": ["falling", "lower", "decrease", "contraction", "tightening", "strengthening dollar",
-                "selloff", "downside", "decline", "decelerating", "underperform"],
+    "bullish": [
+        "rising",
+        "higher",
+        "increase",
+        "expansion",
+        "easing",
+        "weakening dollar",
+        "rally",
+        "upside",
+        "growth",
+        "accelerating",
+        "outperform",
+    ],
+    "bearish": [
+        "falling",
+        "lower",
+        "decrease",
+        "contraction",
+        "tightening",
+        "strengthening dollar",
+        "selloff",
+        "downside",
+        "decline",
+        "decelerating",
+        "underperform",
+    ],
 }
 
 
@@ -125,7 +201,9 @@ class HistoricalRetriever:
 
         logger.info(
             "retrieval_complete candidates=%d matches=%d analogs=%d",
-            len(candidates), report.total_matches, report.analog_periods_found,
+            len(candidates),
+            report.total_matches,
+            report.analog_periods_found,
         )
         return report
 
@@ -148,28 +226,24 @@ class HistoricalRetriever:
 
             accuracy = entry.current_score.prediction_accuracy if entry.current_score else 0.5
 
-            matches.append(HistoricalMatch(
-                entry=entry,
-                similarity_score=round(similarity, 4),
-                regime_match=self._regime_matches(entry, current_regime),
-                dimension_match=entry.dimension.lower() == candidate.dimension.lower(),
-                direction_match=entry.direction.lower() == candidate.direction.lower(),
-                historical_accuracy=accuracy,
-            ))
+            matches.append(
+                HistoricalMatch(
+                    entry=entry,
+                    similarity_score=round(similarity, 4),
+                    regime_match=self._regime_matches(entry, current_regime),
+                    dimension_match=entry.dimension.lower() == candidate.dimension.lower(),
+                    direction_match=entry.direction.lower() == candidate.direction.lower(),
+                    historical_accuracy=accuracy,
+                )
+            )
 
         # Sort by similarity descending
         matches.sort(key=lambda m: m.similarity_score, reverse=True)
 
         # Compute aggregate stats
         best = matches[0] if matches else None
-        avg_acc = (
-            sum(m.historical_accuracy for m in matches) / len(matches)
-            if matches else 0.0
-        )
-        regime_frac = (
-            sum(1 for m in matches if m.regime_match) / len(matches)
-            if matches else 0.0
-        )
+        avg_acc = sum(m.historical_accuracy for m in matches) / len(matches) if matches else 0.0
+        regime_frac = sum(1 for m in matches if m.regime_match) / len(matches) if matches else 0.0
 
         # Recommendation
         if best and best.similarity_score >= 0.70 and best.historical_accuracy >= 0.65:
@@ -225,7 +299,9 @@ class HistoricalRetriever:
         if current_regime == "easing":
             return any(w in stmt for w in ["easing", "dovish", "loosening", "expansionary"])
         elif current_regime == "tightening":
-            return any(w in stmt for w in ["tightening", "hawkish", "restrictive", "contractionary"])
+            return any(
+                w in stmt for w in ["tightening", "hawkish", "restrictive", "contractionary"]
+            )
         return True  # neutral matches everything
 
     @staticmethod

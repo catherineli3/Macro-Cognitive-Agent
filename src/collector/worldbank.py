@@ -3,11 +3,10 @@
 World Bank Data API: https://api.worldbank.org/v2/
 Rate limit: None documented, but be respectful (~5 req/sec).
 """
+
 from __future__ import annotations
 
-import time
-from datetime import datetime, timezone
-from typing import Optional, Dict, Any
+from datetime import UTC, datetime
 
 import requests
 
@@ -21,15 +20,15 @@ logger = get_logger(__name__)
 
 # WorldBank indicator codes for US macro data
 # (Latest available value is typically prior year)
-WB_INDICATOR_MAP: Dict[str, str] = {
-    "GDP":           "NY.GDP.MKTP.CD",      # GDP (current US$)
-    "GDP_CAP":       "NY.GDP.PCAP.CD",      # GDP per capita
-    "CPI":           "FP.CPI.TOTL.ZG",      # Inflation, consumer prices (annual %)
-    "UNEMPLOYMENT":  "SL.UEM.TOTL.ZS",      # Unemployment, total (% of labor force)
-    "TRADE_BALANCE": "NE.RSB.GNFS.ZS",      # Trade (% of GDP)
-    "GFCF":          "NE.GDI.FTOT.ZS",      # Gross fixed capital formation (% GDP)
-    "INDUSTRY":      "NV.IND.TOTL.ZS",      # Industry value added (% GDP)
-    "EXPORTS":       "NE.EXP.GNFS.ZS",      # Exports (% GDP)
+WB_INDICATOR_MAP: dict[str, str] = {
+    "GDP": "NY.GDP.MKTP.CD",  # GDP (current US$)
+    "GDP_CAP": "NY.GDP.PCAP.CD",  # GDP per capita
+    "CPI": "FP.CPI.TOTL.ZG",  # Inflation, consumer prices (annual %)
+    "UNEMPLOYMENT": "SL.UEM.TOTL.ZS",  # Unemployment, total (% of labor force)
+    "TRADE_BALANCE": "NE.RSB.GNFS.ZS",  # Trade (% of GDP)
+    "GFCF": "NE.GDI.FTOT.ZS",  # Gross fixed capital formation (% GDP)
+    "INDUSTRY": "NV.IND.TOTL.ZS",  # Industry value added (% GDP)
+    "EXPORTS": "NE.EXP.GNFS.ZS",  # Exports (% GDP)
 }
 
 BASE_URL = "https://api.worldbank.org/v2"
@@ -45,10 +44,7 @@ def fetch_wb_indicator(indicator_code: str, per_page: int = 3) -> float:
     Returns:
         The latest non-null value, or raises CollectionError.
     """
-    url = (
-        f"{BASE_URL}/country/US/indicator/{indicator_code}"
-        f"?format=json&per_page={per_page}"
-    )
+    url = f"{BASE_URL}/country/US/indicator/{indicator_code}" f"?format=json&per_page={per_page}"
     resp = requests.get(url, timeout=30)
     if resp.status_code != 200:
         raise CollectionError(
@@ -90,7 +86,9 @@ class WorldBankCollector(CollectorInterface):
         """Fetch a macro indicator from WorldBank."""
         wb_code = WB_INDICATOR_MAP.get(indicator.symbol, indicator.symbol)
         logger.info(
-            "worldbank_collect", symbol=indicator.symbol, wb_code=wb_code,
+            "worldbank_collect",
+            symbol=indicator.symbol,
+            wb_code=wb_code,
         )
 
         try:
@@ -99,7 +97,7 @@ class WorldBankCollector(CollectorInterface):
                 symbol=indicator.symbol,
                 value=value,
                 source="WorldBank",
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 quality=QualityScore(
                     overall=0.85,
                     factors={
@@ -138,7 +136,9 @@ class WorldBankCollector(CollectorInterface):
         """Synchronous version for use in sync pipeline flows."""
         wb_code = WB_INDICATOR_MAP.get(indicator.symbol, indicator.symbol)
         logger.info(
-            "worldbank_collect_sync", symbol=indicator.symbol, wb_code=wb_code,
+            "worldbank_collect_sync",
+            symbol=indicator.symbol,
+            wb_code=wb_code,
         )
 
         try:
@@ -147,7 +147,7 @@ class WorldBankCollector(CollectorInterface):
                 symbol=indicator.symbol,
                 value=value,
                 source="WorldBank",
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 quality=QualityScore(
                     overall=0.85,
                     factors={

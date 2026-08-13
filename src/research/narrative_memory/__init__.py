@@ -19,7 +19,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from typing import Any, Optional
 
 from src.shared.logging import get_logger
@@ -74,12 +74,32 @@ class NarrativeMemoryEntry:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "NarrativeMemoryEntry":
-        return cls(**{k: data.get(k, "" if k in ("date", "dominant_narrative",) else
-                        [] if k in ("competing_narratives", "key_events") else
-                        {} if k == "key_data_points" else
-                        0.0 if isinstance(getattr(cls, k, 0.0), float) else "")
-                      for k in cls.__dataclass_fields__})
+    def from_dict(cls, data: dict) -> NarrativeMemoryEntry:
+        return cls(
+            **{
+                k: data.get(
+                    k,
+                    (
+                        ""
+                        if k
+                        in (
+                            "date",
+                            "dominant_narrative",
+                        )
+                        else (
+                            []
+                            if k in ("competing_narratives", "key_events")
+                            else (
+                                {}
+                                if k == "key_data_points"
+                                else 0.0 if isinstance(getattr(cls, k, 0.0), float) else ""
+                            )
+                        )
+                    ),
+                )
+                for k in cls.__dataclass_fields__
+            }
+        )
 
 
 @dataclass
@@ -132,18 +152,16 @@ class NarrativeMemory:
         """Load existing memory from disk."""
         try:
             if os.path.exists(self._entries_path()):
-                with open(self._entries_path(), "r", encoding="utf-8") as f:
+                with open(self._entries_path(), encoding="utf-8") as f:
                     data = json.load(f)
-                    self._entries = {
-                        k: NarrativeMemoryEntry.from_dict(v) for k, v in data.items()
-                    }
+                    self._entries = {k: NarrativeMemoryEntry.from_dict(v) for k, v in data.items()}
                 logger.info("Loaded %d narrative memory entries", len(self._entries))
         except Exception as e:
             logger.warning("Failed to load narrative entries: %s", e)
 
         try:
             if os.path.exists(self._transitions_path()):
-                with open(self._transitions_path(), "r", encoding="utf-8") as f:
+                with open(self._transitions_path(), encoding="utf-8") as f:
                     data = json.load(f)
                     self._transitions = [NarrativeTransition(**t) for t in data]
                 logger.info("Loaded %d narrative transitions", len(self._transitions))
@@ -156,7 +174,9 @@ class NarrativeMemory:
             with open(self._entries_path(), "w", encoding="utf-8") as f:
                 json.dump(
                     {k: v.to_dict() for k, v in self._entries.items()},
-                    f, indent=2, ensure_ascii=False,
+                    f,
+                    indent=2,
+                    ensure_ascii=False,
                 )
         except Exception as e:
             logger.error("Failed to save narrative entries: %s", e)
@@ -165,7 +185,9 @@ class NarrativeMemory:
             with open(self._transitions_path(), "w", encoding="utf-8") as f:
                 json.dump(
                     [t.__dict__ for t in self._transitions],
-                    f, indent=2, ensure_ascii=False,
+                    f,
+                    indent=2,
+                    ensure_ascii=False,
                 )
         except Exception as e:
             logger.error("Failed to save transitions: %s", e)
@@ -187,7 +209,7 @@ class NarrativeMemory:
 
         Also detects narrative transitions if the dominant narrative changed.
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         date_str = now.strftime("%Y-%m-%d")
 
         # Compute narrative entropy (how much disagreement among competing narratives)
@@ -229,7 +251,10 @@ class NarrativeMemory:
 
         logger.info(
             "Recorded narrative snapshot: %s → %s (conf: %.2f, entropy: %.2f)",
-            date_str, dominant_narrative[:50], narrative_confidence, entropy,
+            date_str,
+            dominant_narrative[:50],
+            narrative_confidence,
+            entropy,
         )
         return entry
 
@@ -238,27 +263,31 @@ class NarrativeMemory:
         sorted_entries = sorted(self._entries.values(), key=lambda e: e.date, reverse=True)
         return sorted_entries[:days]
 
-    def get_today(self) -> Optional[NarrativeMemoryEntry]:
+    def get_today(self) -> NarrativeMemoryEntry | None:
         """Get today's narrative snapshot if recorded."""
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
         return self._entries.get(today)
 
     def get_transitions(self, days: int = 90) -> list[NarrativeTransition]:
         """Get narrative transitions in the last N days."""
-        cutoff = (datetime.now(timezone.utc).strftime("%Y-%m-%d")
-                  if days >= 365 else datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+        cutoff = (
+            datetime.now(UTC).strftime("%Y-%m-%d")
+            if days >= 365
+            else datetime.now(UTC).strftime("%Y-%m-%d")
+        )
         return [t for t in self._transitions if t.transition_date >= cutoff]
 
-    def find_similar_narratives(
-        self, query: str, top_n: int = 5
-    ) -> list[NarrativeMemoryEntry]:
+    def find_similar_narratives(self, query: str, top_n: int = 5) -> list[NarrativeMemoryEntry]:
         """Find historical periods with similar narratives (simple keyword match)."""
         query_lower = query.lower()
         scored = []
         for entry in self._entries.values():
             # Score by keyword overlap
-            text = (entry.dominant_narrative + " " +
-                    " ".join(n.get("title", "") for n in entry.competing_narratives)).lower()
+            text = (
+                entry.dominant_narrative
+                + " "
+                + " ".join(n.get("title", "") for n in entry.competing_narratives)
+            ).lower()
             score = sum(1 for word in query_lower.split() if word in text)
             if score > 0:
                 scored.append((score, entry))
@@ -266,9 +295,7 @@ class NarrativeMemory:
         scored.sort(key=lambda x: x[0], reverse=True)
         return [entry for _, entry in scored[:top_n]]
 
-    def get_narrative_lifecycle(
-        self, narrative_title: str
-    ) -> list[dict]:
+    def get_narrative_lifecycle(self, narrative_title: str) -> list[dict]:
         """Trace the lifecycle of a specific narrative over time.
 
         Returns a timeline of how the narrative evolved.
@@ -277,20 +304,24 @@ class NarrativeMemory:
         for entry in sorted(self._entries.values(), key=lambda e: e.date):
             # Check if this narrative appears as dominant or competing
             if narrative_title.lower() in entry.dominant_narrative.lower():
-                timeline.append({
-                    "date": entry.date,
-                    "role": "dominant",
-                    "confidence": entry.narrative_confidence,
-                    "stage": entry.narrative_stage,
-                })
+                timeline.append(
+                    {
+                        "date": entry.date,
+                        "role": "dominant",
+                        "confidence": entry.narrative_confidence,
+                        "stage": entry.narrative_stage,
+                    }
+                )
             else:
                 for cn in entry.competing_narratives:
                     if narrative_title.lower() in cn.get("title", "").lower():
-                        timeline.append({
-                            "date": entry.date,
-                            "role": "competing",
-                            "probability": cn.get("probability", 0),
-                        })
+                        timeline.append(
+                            {
+                                "date": entry.date,
+                                "role": "competing",
+                                "probability": cn.get("probability", 0),
+                            }
+                        )
         return timeline
 
     def get_narrative_evolution_summary(self, days: int = 14) -> str:
@@ -301,7 +332,11 @@ class NarrativeMemory:
 
         parts = []
         for entry in history:
-            trend = "↑" if entry.narrative_confidence > 0.6 else ("↓" if entry.narrative_confidence < 0.4 else "→")
+            trend = (
+                "↑"
+                if entry.narrative_confidence > 0.6
+                else ("↓" if entry.narrative_confidence < 0.4 else "→")
+            )
             parts.append(
                 f"{entry.date}: [{entry.narrative_stage or '?'}] {entry.dominant_narrative[:60]} "
                 f"(conf:{entry.narrative_confidence:.2f}) {trend}"
@@ -331,7 +366,11 @@ class NarrativeMemory:
 
         # Check if entropy is decreasing (narrowing consensus)
         entropies = [e.narrative_entropy for e in history[:days] if e.narrative_entropy > 0]
-        entropy_trend = "narrowing" if entropies and len(entropies) >= 3 and entropies[-1] < entropies[0] * 0.8 else "stable"
+        entropy_trend = (
+            "narrowing"
+            if entropies and len(entropies) >= 3 and entropies[-1] < entropies[0] * 0.8
+            else "stable"
+        )
 
         return {
             "trend": trend,
@@ -343,7 +382,7 @@ class NarrativeMemory:
 
     # ── Internal helpers ──────────────────────────────────────────────
 
-    def _get_previous_entry(self, current_date: str) -> Optional[NarrativeMemoryEntry]:
+    def _get_previous_entry(self, current_date: str) -> NarrativeMemoryEntry | None:
         """Get the most recent entry before the given date."""
         prev = None
         for date_str, entry in sorted(self._entries.items()):
@@ -358,7 +397,7 @@ class NarrativeMemory:
         to_narrative: str,
         transition_date: str,
         regime_change: bool = False,
-        prev_entry: Optional[NarrativeMemoryEntry] = None,
+        prev_entry: NarrativeMemoryEntry | None = None,
     ):
         """Record a narrative transition."""
         catalyst = ""
@@ -380,7 +419,10 @@ class NarrativeMemory:
         self._transitions.append(transition)
         logger.info(
             "Narrative transition: [%s] → [%s] on %s (regime_change=%s)",
-            from_narrative[:40], to_narrative[:40], transition_date, regime_change,
+            from_narrative[:40],
+            to_narrative[:40],
+            transition_date,
+            regime_change,
         )
 
     @staticmethod

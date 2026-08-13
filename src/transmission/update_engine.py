@@ -10,8 +10,8 @@ Core responsibility:
 Key insight (from design doc Section 6.2):
     A belief's weight is NOT an independent parameter.
     It is a function of its transmission segments' reliability:
-    
-        belief.context_weight[context] = 
+
+        belief.context_weight[context] =
             avg(edge_i.reliability[context]) × (1 - penalty_for_recent_failures)
 
     When a segment's reliability drops, ALL beliefs depending on it in that
@@ -22,20 +22,16 @@ Key insight (from design doc Section 6.2):
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import datetime, timezone
-from typing import Optional
 
 from src.schemas.transmission_v3_1 import (
     BreakpointDiagnosis,
-    ContextProfile,
     ContextualBelief,
-    FailureModeCategory,
     TransmissionAction,
     TransmissionUpdateBatch,
     TransmissionUpdateRecord,
 )
-from src.transmission.transmission_graph import TransmissionGraph
 from src.shared.logging import get_logger
+from src.transmission.transmission_graph import TransmissionGraph
 
 logger = get_logger(__name__)
 
@@ -135,9 +131,7 @@ class TransmissionUpdateEngine:
                     else:
                         amount = REINFORCE_AMOUNT * 0.5  # Reduced reinforcement
 
-                    update = self._create_reinforce_update(
-                        sd, bp, context_key, run_id, amount
-                    )
+                    update = self._create_reinforce_update(sd, bp, context_key, run_id, amount)
                     updates.append(update)
 
                 # Downstream segments (after breakpoint) → skip
@@ -145,9 +139,7 @@ class TransmissionUpdateEngine:
 
             # If new failure mode discovered
             if bp.new_failure_mode and bp.breakpoint_found:
-                update = self._create_failure_registration(
-                    bp, context_key, run_id
-                )
+                update = self._create_failure_registration(bp, context_key, run_id)
                 updates.append(update)
 
         # Collapse multiple updates to the same segment (take the strongest action)
@@ -185,7 +177,8 @@ class TransmissionUpdateEngine:
         if cascade_beliefs:
             logger.info(
                 "cascade_triggered beliefs=%d updates=%d",
-                len(cascade_beliefs), len(batch.updates),
+                len(cascade_beliefs),
+                len(batch.updates),
             )
 
         return cascade_beliefs
@@ -207,10 +200,7 @@ class TransmissionUpdateEngine:
             if not belief:
                 continue
 
-            old_weights = {
-                ctx: profile.derived_weight
-                for ctx, profile in belief.contexts.items()
-            }
+            old_weights = {ctx: profile.derived_weight for ctx, profile in belief.contexts.items()}
 
             self.recalculate_belief_weight(belief)
 
@@ -260,7 +250,11 @@ class TransmissionUpdateEngine:
             for seg_id in active:
                 edge = self._find_edge(seg_id)
                 if edge:
-                    rel = edge.reliability_in_context(ctx_key) if ctx_key else edge.reliability_default
+                    rel = (
+                        edge.reliability_in_context(ctx_key)
+                        if ctx_key
+                        else edge.reliability_default
+                    )
                     reliabilities.append(rel)
                     failure_count += edge.break_count
                     total_obs += edge.observation_count
@@ -290,7 +284,7 @@ class TransmissionUpdateEngine:
 
             # Adjust confidence based on reliability spread
             rel_spread = max(reliabilities) - min(reliabilities) if len(reliabilities) > 1 else 0
-            confidence *= (1.0 - rel_spread * 0.3)  # High spread → lower confidence
+            confidence *= 1.0 - rel_spread * 0.3  # High spread → lower confidence
 
             profile.derived_confidence = round(max(0.10, min(0.95, confidence)), 4)
 

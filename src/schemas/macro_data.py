@@ -6,7 +6,7 @@ Direct dict, JSON, or DataFrame across module boundaries is PROHIBITED.
 This is the canonical data format enforced from Sprint 1 onward.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 
 from pydantic import BaseModel, Field, model_validator
@@ -45,7 +45,10 @@ class QualityScore(BaseModel):
         },
         description="Per-factor quality scores 0-1",
     )
-    flags: list[str] = Field(default_factory=list, description="Human-readable quality flags, e.g. ['delayed', 'interpolated']")
+    flags: list[str] = Field(
+        default_factory=list,
+        description="Human-readable quality flags, e.g. ['delayed', 'interpolated']",
+    )
 
     def is_acceptable(self, threshold: float = 0.7) -> bool:
         """Return True if overall quality meets the minimum threshold."""
@@ -69,17 +72,23 @@ class MacroDataSchema(BaseModel):
         ... )
     """
 
-    symbol: str = Field(..., min_length=1, max_length=20, description="Ticker symbol, e.g. 'DXY', 'US10Y'")
+    symbol: str = Field(
+        ..., min_length=1, max_length=20, description="Ticker symbol, e.g. 'DXY', 'US10Y'"
+    )
     timestamp: datetime = Field(..., description="Observation timestamp (must be timezone-aware)")
     value: float = Field(..., description="Numeric observation value")
     currency: str = Field(default="USD", description="Currency denomination")
-    unit: str = Field(default="Index", description="Unit of measurement, e.g. 'Percent', 'Index', 'USD'")
+    unit: str = Field(
+        default="Index", description="Unit of measurement, e.g. 'Percent', 'Index', 'USD'"
+    )
     source: str = Field(..., min_length=1, description="Data source name, e.g. 'Yahoo', 'FRED'")
-    quality: QualityScore = Field(default_factory=QualityScore, description="Data quality assessment")
+    quality: QualityScore = Field(
+        default_factory=QualityScore, description="Data quality assessment"
+    )
 
     # ── Pipeline metadata (auto-populated) ──────────────────────────────
     ingested_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="Timestamp when the data entered the pipeline",
     )
 
@@ -87,7 +96,7 @@ class MacroDataSchema(BaseModel):
     def _ensure_tz_aware(self) -> "MacroDataSchema":
         """All timestamps MUST be timezone-aware (UTC enforced)."""
         if self.timestamp.tzinfo is None:
-            self.timestamp = self.timestamp.replace(tzinfo=timezone.utc)
+            self.timestamp = self.timestamp.replace(tzinfo=UTC)
         return self
 
     def __repr__(self) -> str:

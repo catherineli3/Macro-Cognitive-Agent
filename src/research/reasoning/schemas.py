@@ -13,9 +13,7 @@ Key data flows:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
-
+from datetime import UTC, datetime
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Evidence Structures
@@ -29,25 +27,26 @@ class EvidenceCluster:
     Not just a list — each cluster tells a mini-story about what the
     evidence means as a group.
     """
+
     cluster_id: str = ""
-    theme: str = ""                     # e.g., "Labor Market Tightness", "Inflation Persistence"
-    description: str = ""               # Narrative description of what this cluster says
+    theme: str = ""  # e.g., "Labor Market Tightness", "Inflation Persistence"
+    description: str = ""  # Narrative description of what this cluster says
     evidence_items: list[dict] = field(default_factory=list)
     # Each item: {source, description, direction, strength, recency}
 
     # Scoring
-    net_direction: str = ""             # "supporting_bullish", "supporting_bearish", "mixed", "neutral"
-    weight_score: float = 0.0           # 0-1: How weighty is this cluster?
-    quality_score: float = 0.0          # 0-1: How trustworthy is the evidence?
-    recency_score: float = 0.0          # 0-1: How fresh is the data?
+    net_direction: str = ""  # "supporting_bullish", "supporting_bearish", "mixed", "neutral"
+    weight_score: float = 0.0  # 0-1: How weighty is this cluster?
+    quality_score: float = 0.0  # 0-1: How trustworthy is the evidence?
+    recency_score: float = 0.0  # 0-1: How fresh is the data?
 
     # Bridge to beliefs
     relevant_beliefs: list[str] = field(default_factory=list)  # belief IDs this affects
-    supports: list[str] = field(default_factory=list)          # beliefs this supports
-    contradicts: list[str] = field(default_factory=list)       # beliefs this contradicts
+    supports: list[str] = field(default_factory=list)  # beliefs this supports
+    contradicts: list[str] = field(default_factory=list)  # beliefs this contradicts
 
     # Missing
-    data_gaps: list[str] = field(default_factory=list)         # What data would clarify this?
+    data_gaps: list[str] = field(default_factory=list)  # What data would clarify this?
 
     def to_dict(self) -> dict:
         return {
@@ -72,16 +71,17 @@ class EvidenceAssessment:
 
     The key question this answers: "On net, what does the evidence say?"
     """
+
     clusters: list[EvidenceCluster] = field(default_factory=list)
     total_evidence_points: int = 0
 
     # Net assessment
-    net_weight_bullish: float = 0.0     # Total weight for bullish evidence
-    net_weight_bearish: float = 0.0     # Total weight for bearish evidence
-    net_direction: str = ""             # "bullish", "bearish", "mixed"
+    net_weight_bullish: float = 0.0  # Total weight for bullish evidence
+    net_weight_bearish: float = 0.0  # Total weight for bearish evidence
+    net_direction: str = ""  # "bullish", "bearish", "mixed"
 
     # Quality
-    evidence_quality: str = ""          # "high" / "moderate" / "low" / "insufficient"
+    evidence_quality: str = ""  # "high" / "moderate" / "low" / "insufficient"
     overall_quality_score: float = 0.0  # 0-100 numeric score for Research Loop gating
     evidence_coverage: dict = field(default_factory=dict)  # V10.1: per-dimension coverage
     contradictory_signals: list[str] = field(default_factory=list)
@@ -122,10 +122,11 @@ class Hypothesis:
     - Falsification conditions
     - Confidence calibration
     """
+
     hypothesis_id: str = ""
-    title: str = ""                     # One-line summary
-    statement: str = ""                 # Full hypothesis statement
-    domain: str = ""                    # Growth, Inflation, Policy, etc.
+    title: str = ""  # One-line summary
+    statement: str = ""  # Full hypothesis statement
+    domain: str = ""  # Growth, Inflation, Policy, etc.
 
     # Causal chain
     causal_chain: list[str] = field(default_factory=list)
@@ -137,10 +138,10 @@ class Hypothesis:
     # Evidence linkage
     supporting_evidence: list[dict] = field(default_factory=list)
     contradicting_evidence: list[dict] = field(default_factory=list)
-    evidence_weight: float = 0.0        # Net evidence support (-1 to 1)
+    evidence_weight: float = 0.0  # Net evidence support (-1 to 1)
 
     # Confidence
-    confidence: float = 0.5             # 0-1
+    confidence: float = 0.5  # 0-1
     confidence_breakdown: dict = field(default_factory=dict)
     # e.g., {"causal_logic": 0.7, "data_quality": 0.6, "timing": 0.4}
 
@@ -153,7 +154,7 @@ class Hypothesis:
     asset_impact: list[dict] = field(default_factory=list)
 
     # Meta
-    source: str = ""                    # How was this generated?
+    source: str = ""  # How was this generated?
     generated_at: str = ""
 
     def to_dict(self) -> dict:
@@ -180,14 +181,15 @@ class CounterArgument:
     Professional researchers don't just state a view — they argue against it.
     This is what separates good research from echo-chamber analysis.
     """
+
     counter_id: str = ""
     target_hypothesis_id: str = ""
 
     # The counter
-    title: str = ""                     # Counter-argument thesis
-    argument: str = ""                  # Full counter-argument reasoning
-    probability: float = 0.0            # How likely is the counter to be right?
-    severity: str = ""                  # "fatal" (if true, hypothesis is dead) / "major" / "minor"
+    title: str = ""  # Counter-argument thesis
+    argument: str = ""  # Full counter-argument reasoning
+    probability: float = 0.0  # How likely is the counter to be right?
+    severity: str = ""  # "fatal" (if true, hypothesis is dead) / "major" / "minor"
 
     # Mechanism
     why_the_hypothesis_could_be_wrong: str = ""
@@ -227,24 +229,25 @@ class ReasoningChain:
     This is the traceable path of logic that a professional researcher
     follows. Every conclusion links to evidence, every assumption is named.
     """
+
     chain_id: str = ""
 
     # Steps
-    observations: list[str] = field(default_factory=list)         # What we see
-    inferences: list[str] = field(default_factory=list)           # What we conclude from what we see
-    deductions: list[str] = field(default_factory=list)           # What logically follows
-    conclusions: list[str] = field(default_factory=list)          # Final judgments
+    observations: list[str] = field(default_factory=list)  # What we see
+    inferences: list[str] = field(default_factory=list)  # What we conclude from what we see
+    deductions: list[str] = field(default_factory=list)  # What logically follows
+    conclusions: list[str] = field(default_factory=list)  # Final judgments
 
     # Assumptions
     explicit_assumptions: list[str] = field(default_factory=list)
     implicit_assumptions: list[str] = field(default_factory=list)
 
     # Risk points
-    weakest_links: list[str] = field(default_factory=list)        # Where the chain might break
+    weakest_links: list[str] = field(default_factory=list)  # Where the chain might break
 
     # Confidence
-    overall_logic_strength: float = 0.0    # 0-1
-    weakest_link_probability: float = 0.0   # Probability the weakest link holds
+    overall_logic_strength: float = 0.0  # 0-1
+    weakest_link_probability: float = 0.0  # Probability the weakest link holds
 
     def summary(self) -> str:
         """Summarize the reasoning chain in 3 sentences."""
@@ -277,6 +280,7 @@ class ReasoningChain:
 @dataclass
 class MemoSection:
     """A single section of the research memo."""
+
     heading: str = ""
     content: str = ""
     word_count: int = 0
@@ -297,7 +301,7 @@ class ResearchMemo:
 
     memo_id: str = ""
     date: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     # ══ Structure ══
 
@@ -347,7 +351,7 @@ class ResearchMemo:
     word_count: int = 0
     citation_count: int = 0
     hallucination_check: bool = False
-    evidence_coverage: float = 0.0     # % of claims backed by evidence
+    evidence_coverage: float = 0.0  # % of claims backed by evidence
     counter_argument_coverage: float = 0.0  # % of hypotheses with counters
 
     # ══ Source Data ══
@@ -358,7 +362,7 @@ class ResearchMemo:
 
     # ══ Full text ══
 
-    full_memo_text: str = ""            # The complete memo as one text block
+    full_memo_text: str = ""  # The complete memo as one text block
     sections: list[MemoSection] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -428,13 +432,14 @@ class LoopState:
 
     Tracks deltas between rounds to determine when research has converged.
     """
+
     iteration: int = 0
 
     # Scores this round
-    quality: float = 0.0                # Memo quality (0-100)
-    market_score: float = 0.0           # Market Challenge score (0-100)
-    evidence_score: float = 0.0         # Evidence quality (0-100)
-    evidence_coverage: float = 0.0      # Evidence coverage pct (0-100)
+    quality: float = 0.0  # Memo quality (0-100)
+    market_score: float = 0.0  # Market Challenge score (0-100)
+    evidence_score: float = 0.0  # Evidence quality (0-100)
+    evidence_coverage: float = 0.0  # Evidence coverage pct (0-100)
 
     # Hypothesis tracking
     hypothesis_count: int = 0

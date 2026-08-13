@@ -17,8 +17,8 @@ import json
 import os
 import re
 import time
-from dataclasses import dataclass, field
-from typing import Any, Optional, Callable
+from dataclasses import dataclass
+from typing import Any
 
 from src.shared.logging import get_logger
 
@@ -35,13 +35,13 @@ class LLMResponse:
     """Normalized LLM response across all providers."""
 
     content: str = ""
-    parsed_json: Optional[dict] = None
+    parsed_json: dict | None = None
     model: str = ""
     provider: str = ""
     elapsed_ms: float = 0.0
     tokens_used: int = 0
     finish_reason: str = ""  # "stop", "length", "error"
-    error: Optional[str] = None
+    error: str | None = None
 
     @property
     def success(self) -> bool:
@@ -53,7 +53,7 @@ class LLMResponse:
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def extract_json_from_text(text: str) -> Optional[dict]:
+def extract_json_from_text(text: str) -> dict | None:
     """Extract JSON object from LLM text output.
 
     Handles:
@@ -230,7 +230,8 @@ class LLMClient:
         except ImportError as e:
             logger.warning(
                 "LLM provider '%s' not available: %s. Will use mock responses.",
-                self.provider, e,
+                self.provider,
+                e,
             )
             self._initialized = True  # Don't keep trying
 
@@ -275,8 +276,8 @@ class LLMClient:
     def chat(
         self,
         messages: list[dict],
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
         parse_json: bool = True,
     ) -> LLMResponse:
         """Send a chat completion request.
@@ -410,8 +411,9 @@ class LLMClient:
         # Convert to Google format
         contents = []
         for m in messages:
-            contents.append({"role": "user" if m["role"] != "assistant" else "model",
-                             "parts": [m["content"]]})
+            contents.append(
+                {"role": "user" if m["role"] != "assistant" else "model", "parts": [m["content"]]}
+            )
 
         response = model.generate_content(
             contents,

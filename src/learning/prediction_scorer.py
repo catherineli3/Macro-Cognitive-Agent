@@ -11,9 +11,6 @@ Plus composite score + letter grade (A+ through F).
 
 from __future__ import annotations
 
-import math
-from typing import Any
-
 from src.learning.schemas import (
     PredictionOutcome,
     PredictionScore,
@@ -21,8 +18,12 @@ from src.learning.schemas import (
 )
 
 GRADE_THRESHOLDS = [
-    (0.90, "A+"), (0.80, "A"), (0.65, "B"),
-    (0.50, "C"), (0.35, "D"), (0.00, "F"),
+    (0.90, "A+"),
+    (0.80, "A"),
+    (0.65, "B"),
+    (0.50, "C"),
+    (0.35, "D"),
+    (0.00, "F"),
 ]
 
 
@@ -50,10 +51,7 @@ class PredictionScorer:
         )
 
     def score_batch(self, outcomes: list) -> list[ScoredPrediction]:
-        return [
-            ScoredPrediction(outcome=o, score=self.score_prediction(o))
-            for o in outcomes
-        ]
+        return [ScoredPrediction(outcome=o, score=self.score_prediction(o)) for o in outcomes]
 
     def _score_direction(self, o: PredictionOutcome) -> float:
         if o.was_correct:
@@ -72,7 +70,10 @@ class PredictionScorer:
             return 0.3
         if o.actual_change_pct == 0:
             return 0.5
-        error_pct = abs(abs(o.actual_change_pct) - abs(o.predicted_direction == o.actual_direction and o.predicted_value or 0))
+        error_pct = abs(
+            abs(o.actual_change_pct)
+            - abs(o.predicted_direction == o.actual_direction and o.predicted_value or 0)
+        )
         if o.predicted_value > 0 and abs(o.predicted_value) > 0:
             error_pct = abs(o.actual_change_pct - o.predicted_value)
         else:
@@ -114,12 +115,16 @@ class PredictionScorer:
                 return grade
         return "F"
 
-    def compute_batch_metrics(
-        self, scored: list[ScoredPrediction]
-    ) -> dict:
+    def compute_batch_metrics(self, scored: list[ScoredPrediction]) -> dict:
         """Aggregate metrics across a batch of scored predictions."""
         if not scored:
-            return {"n": 0, "accuracy": 0, "avg_brier": 0, "avg_composite": 0, "grade_distribution": {}}
+            return {
+                "n": 0,
+                "accuracy": 0,
+                "avg_brier": 0,
+                "avg_composite": 0,
+                "grade_distribution": {},
+            }
 
         n = len(scored)
         accuracy = sum(1 for s in scored if s.outcome.was_correct) / n

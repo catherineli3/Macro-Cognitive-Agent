@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """CLI entry point for Macro Research Agent (Beta).
 
 Subcommands:
@@ -15,6 +13,8 @@ Usage:
     python -m src.cli.main latest
     python -m src.cli.main beliefs
 """
+
+from __future__ import annotations
 
 import argparse
 import asyncio
@@ -63,12 +63,14 @@ Examples:
         help="Output format (default: markdown)",
     )
     analyze_parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         default=None,
         help="Output file path (default: stdout)",
     )
     analyze_parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Enable verbose logging",
     )
@@ -123,9 +125,9 @@ Examples:
 
     args = parser.parse_args()
 
-    if args.verbose and hasattr(args, 'verbose') and args.command == "analyze":
-        import logging
+    if args.verbose and hasattr(args, "verbose") and args.command == "analyze":
         from src.shared.logging import configure_logging
+
         configure_logging(level="DEBUG")
 
     if args.command == "analyze":
@@ -161,7 +163,10 @@ def _cmd_analyze(args) -> None:
     # Render output
     if args.format == "json":
         import json as _json
-        output = result.narrative_json or _json.dumps(result.narrative_obj.model_dump(mode="json"), indent=2, ensure_ascii=False)
+
+        output = result.narrative_json or _json.dumps(
+            result.narrative_obj.model_dump(mode="json"), indent=2, ensure_ascii=False
+        )
     elif args.format == "text":
         output = _render_plaintext(result.narrative_obj)
     else:
@@ -182,20 +187,25 @@ def _cmd_report(args) -> None:
 
     narrative = _report_cache.get(args.report_id)
     if narrative is None:
-        print(f"Report '{args.report_id}' not found. Generate one via 'analyze' first.", file=sys.stderr)
+        print(
+            f"Report '{args.report_id}' not found. Generate one via 'analyze' first.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     if args.format == "json":
         import json as _json
+
         print(_json.dumps(narrative.model_dump(mode="json"), indent=2, ensure_ascii=False))
     else:
         from src.renderer.markdown import MarkdownRenderer
+
         print(MarkdownRenderer().render(narrative))
 
 
 def _cmd_latest(args) -> None:
     """Handle 'latest' command."""
-    from src.api.analyze_routes import _report_cache, _latest_report_id
+    from src.api.analyze_routes import _latest_report_id, _report_cache
 
     if _latest_report_id is None or _latest_report_id not in _report_cache:
         print("No reports generated yet. Run 'analyze' first.", file=sys.stderr)
@@ -203,6 +213,7 @@ def _cmd_latest(args) -> None:
 
     narrative = _report_cache[_latest_report_id]
     from src.renderer.markdown import MarkdownRenderer
+
     print(MarkdownRenderer().render(narrative))
 
 
@@ -223,11 +234,16 @@ def _cmd_beliefs() -> None:
         print("=" * 70)
         for b in all_beliefs[:20]:
             trans_icon = {
-                "NEW": "🆕", "STABLE": "→", "REINFORCED": "↑",
-                "WEAKENED": "↓", "REVERSED": "⇄"
+                "NEW": "🆕",
+                "STABLE": "→",
+                "REINFORCED": "↑",
+                "WEAKENED": "↓",
+                "REVERSED": "⇄",
             }.get(b.transition.value, "?")
-            print(f"\n{trans_icon} [{b.dimension}] {b.direction.value} "
-                  f"(confidence: {b.confidence:.0%})")
+            print(
+                f"\n{trans_icon} [{b.dimension}] {b.direction.value} "
+                f"(confidence: {b.confidence:.0%})"
+            )
             print(f"  Statement: {b.statement[:120]}")
             print(f"  Status: {b.status.value} | Transition: {b.transition.value}")
             print(f"  Evidence: +{b.supporting_count} / -{b.contradicting_count}")
@@ -236,7 +252,9 @@ def _cmd_beliefs() -> None:
             print(f"  Recorded: {b.timestamp.strftime('%Y-%m-%d %H:%M UTC')}")
         print(f"\n{'=' * 70}")
         print(f"Total beliefs: {len(all_beliefs)}")
-        print(f"Last updated: {max(b.timestamp for b in all_beliefs).strftime('%Y-%m-%d %H:%M UTC')}")
+        print(
+            f"Last updated: {max(b.timestamp for b in all_beliefs).strftime('%Y-%m-%d %H:%M UTC')}"
+        )
 
     except Exception as e:
         print(f"Failed to retrieve beliefs: {e}", file=sys.stderr)
@@ -255,24 +273,24 @@ async def _run_pipeline(goal: str, indicators: list[str] | None):
 def _render_plaintext(narrative: MacroNarrative) -> str:
     """Render MacroNarrative as plain text."""
     lines = [
-        f"MACRO RESEARCH REPORT",
+        "MACRO RESEARCH REPORT",
         f"{'=' * 60}",
         f"Generated: {narrative.generated_at.strftime('%Y-%m-%d %H:%M UTC')}",
         f"Confidence: {narrative.confidence_level.value} ({narrative.confidence_score:.0%})",
-        f"",
-        f"EXECUTIVE SUMMARY",
+        "",
+        "EXECUTIVE SUMMARY",
         f"{'-' * 40}",
         narrative.summary,
-        f"",
-        f"TODAY'S KEY CHANGES",
+        "",
+        "TODAY'S KEY CHANGES",
         f"{'-' * 40}",
         narrative.today_key_changes,
-        f"",
-        f"MACRO STORY",
+        "",
+        "MACRO STORY",
         f"{'-' * 40}",
         narrative.macro_story,
-        f"",
-        f"DIMENSION ANALYSIS",
+        "",
+        "DIMENSION ANALYSIS",
         f"{'-' * 40}",
     ]
 
@@ -282,27 +300,27 @@ def _render_plaintext(narrative: MacroNarrative) -> str:
         ("GROWTH", narrative.growth),
         ("INFLATION", narrative.inflation),
     ]:
-        lines.append(f"")
+        lines.append("")
         lines.append(f"{dim_name} [{dim_obj.confidence:.0%}]")
         lines.append(f"  {dim_obj.summary}")
 
     if narrative.scenario_analysis:
-        lines.append(f"")
-        lines.append(f"SCENARIO ANALYSIS")
+        lines.append("")
+        lines.append("SCENARIO ANALYSIS")
         lines.append(f"{'-' * 40}")
         for s in narrative.scenario_analysis:
             lines.append(f"  {s.name}: {s.probability:.0%} — {s.rationale[:100]}")
 
     if narrative.risks:
-        lines.append(f"")
-        lines.append(f"KEY RISKS")
+        lines.append("")
+        lines.append("KEY RISKS")
         lines.append(f"{'-' * 40}")
         for risk in narrative.risks:
             lines.append(f"  [{risk.severity.upper()}] [{risk.category}] {risk.description[:120]}")
 
     if narrative.action_items:
-        lines.append(f"")
-        lines.append(f"ACTION ITEMS")
+        lines.append("")
+        lines.append("ACTION ITEMS")
         lines.append(f"{'-' * 40}")
         for i, item in enumerate(narrative.action_items, 1):
             lines.append(f"  {i}. {item}")
@@ -313,6 +331,7 @@ def _render_plaintext(narrative: MacroNarrative) -> str:
 def _render_fallback_markdown(narrative: MacroNarrative) -> str:
     """Fallback Markdown renderer using the Renderer module."""
     from src.renderer.markdown import MarkdownRenderer
+
     return MarkdownRenderer().render(narrative)
 
 
@@ -333,8 +352,10 @@ def _cmd_predict(args) -> None:
         for h_id, preds in batch.by_hypothesis.items():
             print(f"\n  Hypothesis {h_id[:8]}:")
             for p in preds:
-                print(f"    [{p.prediction_tier.value}] {p.indicator} {p.direction} "
-                      f"({p.transmission_channel}) c={p.confidence:.0%} horizon={p.horizon}")
+                print(
+                    f"    [{p.prediction_tier.value}] {p.indicator} {p.direction} "
+                    f"({p.transmission_channel}) c={p.confidence:.0%} horizon={p.horizon}"
+                )
 
     if result.evaluation_report:
         er = result.evaluation_report
@@ -344,7 +365,9 @@ def _cmd_predict(args) -> None:
 
     if result.diagnosis_report:
         dr = result.diagnosis_report
-        print(f"\nDiagnosis: {dr.total_diagnosed} classified, {dr.correct_count} correct, {dr.incorrect_count} errors")
+        print(
+            f"\nDiagnosis: {dr.total_diagnosed} classified, {dr.correct_count} correct, {dr.incorrect_count} errors"
+        )
         if dr.error_distribution:
             print(f"  Errors: {dr.error_distribution}")
 
@@ -373,11 +396,14 @@ def _cmd_metrics() -> None:
     print("=" * 60)
     try:
         from src.metrics import KPIMetricsEngine
+
         km = KPIMetricsEngine()
         if km._baseline:
             b = km._baseline
             print(f"  Baseline [{b.window.value}]: overall={b.overall_score:.3f}")
-            print(f"    KPI-1 Hypothesis Accuracy: {b.kpi1_hypothesis_accuracy.composite_score:.3f}")
+            print(
+                f"    KPI-1 Hypothesis Accuracy: {b.kpi1_hypothesis_accuracy.composite_score:.3f}"
+            )
             print(f"    KPI-2 Prediction Error:    {b.kpi2_prediction_error.composite_score:.3f}")
             print(f"    KPI-3 Calibration:         {b.kpi3_calibration.composite_score:.3f}")
             print(f"    KPI-4 Learning Speed:      {b.kpi4_learning_speed.composite_score:.3f}")
@@ -397,16 +423,19 @@ def _cmd_library() -> None:
         print(f"  Active:           {result['active']}")
         print(f"  Deprecated:       {result['deprecated']}")
         print(f"  Avg Score:        {result['avg_score']:.3f}")
-        if result['top']:
-            print(f"\n  Top Hypotheses:")
-            for e in result['top']:
-                print(f"    [{e.dimension}] score={e.current_score.total_score:.2f} | {e.statement[:80]}")
+        if result["top"]:
+            print("\n  Top Hypotheses:")
+            for e in result["top"]:
+                print(
+                    f"    [{e.dimension}] score={e.current_score.total_score:.2f} | {e.statement[:80]}"
+                )
     except Exception as e:
         print(f"  Failed: {e}")
 
 
 async def _get_library_status() -> dict:
     from src.hypothesis_library import HypothesisLibrary
+
     lib = HypothesisLibrary()
     active = await lib.get_all_active()
     deprecated = await lib.get_deprecated()

@@ -8,11 +8,10 @@ Covers:
 
 from __future__ import annotations
 
-import pytest
-
 from src.calibration.calibration_engine import CalibrationEngine
 from src.domain.signal import SignalDirection
 from src.learning.learning_engine import LearningEngine
+from src.research.beliefs.belief_store import BeliefStore
 from src.research.beliefs.evidence_weight import (
     EVIDENCE_BASE_WEIGHTS,
     classify_evidence,
@@ -23,11 +22,9 @@ from src.research.beliefs.evidence_weight import (
 from src.research.beliefs.schemas import (
     BeliefDomain,
     BeliefStage,
-    EvidenceItem,
     EvidenceSource,
     ResearchBelief,
 )
-from src.research.beliefs.belief_store import BeliefStore
 from src.schemas.calibration import ConfidenceCalibration
 from src.schemas.hypothesis import HypothesisSchema
 from src.schemas.outcome import (
@@ -36,7 +33,6 @@ from src.schemas.outcome import (
     OutcomeVerdict,
     PredictionOutcome,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Evidence Weight Tests
@@ -69,11 +65,15 @@ class TestEvidenceWeight:
     def test_corroboration_bonus_capped(self):
         """Many corroborations → bonus capped at 1.15x."""
         w_none = compute_evidence_weight(
-            EvidenceSource.MACRO_DATA, confidence=0.8, recency_days=0,
+            EvidenceSource.MACRO_DATA,
+            confidence=0.8,
+            recency_days=0,
             corroboration_count=0,
         )
         w_many = compute_evidence_weight(
-            EvidenceSource.MACRO_DATA, confidence=0.8, recency_days=0,
+            EvidenceSource.MACRO_DATA,
+            confidence=0.8,
+            recency_days=0,
             corroboration_count=100,
         )
         ratio = w_many / w_none
@@ -82,10 +82,16 @@ class TestEvidenceWeight:
     def test_recency_decay_halflife(self):
         """At half-life (30 days), weight ~50% of fresh."""
         w_fresh = compute_evidence_weight(
-            EvidenceSource.MACRO_DATA, 0.8, 0, 0,
+            EvidenceSource.MACRO_DATA,
+            0.8,
+            0,
+            0,
         )
         w_old = compute_evidence_weight(
-            EvidenceSource.MACRO_DATA, 0.8, 30, 0,
+            EvidenceSource.MACRO_DATA,
+            0.8,
+            30,
+            0,
         )
         ratio = w_old / w_fresh
         assert 0.45 <= ratio <= 0.55
@@ -93,14 +99,20 @@ class TestEvidenceWeight:
     def test_floor_weight(self):
         """Weight never below 0.05."""
         w = compute_evidence_weight(
-            EvidenceSource.NEWS, 0.01, 365, 0,
+            EvidenceSource.NEWS,
+            0.01,
+            365,
+            0,
         )
         assert w >= 0.05
 
     def test_ceiling_weight(self):
         """Weight never above 1.0."""
         w = compute_evidence_weight(
-            EvidenceSource.MARKET_DATA, 1.0, 0, 0,
+            EvidenceSource.MARKET_DATA,
+            1.0,
+            0,
+            0,
         )
         assert w <= 1.0
 
@@ -122,7 +134,10 @@ class TestEvidenceWeight:
         assert classify_evidence("Apple earnings beat estimates") == EvidenceSource.COMPANY
 
     def test_classify_history_keywords(self):
-        assert classify_evidence("Historically this pattern precedes recessions") == EvidenceSource.HISTORY
+        assert (
+            classify_evidence("Historically this pattern precedes recessions")
+            == EvidenceSource.HISTORY
+        )
 
     def test_classify_default_inference(self):
         assert classify_evidence("Model suggests continued expansion") == EvidenceSource.INFERENCE
@@ -158,7 +173,9 @@ class TestEvidenceWeight:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def _belief(bid: str, title: str = "Test", domain=BeliefDomain.LIQUIDITY, stage=BeliefStage.HYPOTHESIS) -> ResearchBelief:
+def _belief(
+    bid: str, title: str = "Test", domain=BeliefDomain.LIQUIDITY, stage=BeliefStage.HYPOTHESIS
+) -> ResearchBelief:
     b = ResearchBelief(id=bid, title=title, description=title, domain=domain, stage=stage)
     return b
 
@@ -307,8 +324,12 @@ class TestBeliefStore:
         store.add(_belief("b1", stage=BeliefStage.HYPOTHESIS, domain=BeliefDomain.LIQUIDITY))
         store.add(_belief("b2", stage=BeliefStage.CONFIRMATION, domain=BeliefDomain.CREDIT))
         # Snapshots are separate from active store; save persists current state
-        store.save([_belief("b1", domain=BeliefDomain.LIQUIDITY, stage=BeliefStage.HYPOTHESIS),
-                    _belief("b2", domain=BeliefDomain.CREDIT, stage=BeliefStage.CONFIRMATION)])
+        store.save(
+            [
+                _belief("b1", domain=BeliefDomain.LIQUIDITY, stage=BeliefStage.HYPOTHESIS),
+                _belief("b2", domain=BeliefDomain.CREDIT, stage=BeliefStage.CONFIRMATION),
+            ]
+        )
         s = store.summary()
         assert s["total_active"] == 2
         assert s["total_snapshots"] >= 1
@@ -360,7 +381,9 @@ class TestBeliefStore:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def _po(hid: str, dim: str = "Liquidity", conf: float = 0.8, correct: bool = True) -> PredictionOutcome:
+def _po(
+    hid: str, dim: str = "Liquidity", conf: float = 0.8, correct: bool = True
+) -> PredictionOutcome:
     return PredictionOutcome(
         hypothesis_id=hid,
         dimension=dim,
@@ -439,9 +462,9 @@ class TestCalibrationEngine:
 
     def test_platt_scale_with_curve(self):
         engine = CalibrationEngine()
-        engine.build_calibration_curve([
-            _po(f"h{i}", conf=0.8, correct=(i < 15)) for i in range(20)
-        ])
+        engine.build_calibration_curve(
+            [_po(f"h{i}", conf=0.8, correct=(i < 15)) for i in range(20)]
+        )
         scaled = engine.platt_scale(0.85)
         assert 0.0 <= scaled <= 1.0
 
@@ -500,11 +523,14 @@ class TestCalibrationEngine:
         # Feed learning engine with data
         records = []
         for i in range(10):
-            records.append(OutcomeRecord(
-                run_id=f"r{i}",
-                outcome=_po(f"h{i}"),
-            ))
+            records.append(
+                OutcomeRecord(
+                    run_id=f"r{i}",
+                    outcome=_po(f"h{i}"),
+                )
+            )
         from src.outcome.engine import OutcomeMetrics
+
         summary = OutcomeMetrics.compute_summary(records)
         le.learn(summary, records)
 

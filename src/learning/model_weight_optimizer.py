@@ -22,7 +22,6 @@ from src.learning.schemas import (
     ModelPerformance,
     ModelWeightRecommendation,
     ScoredPrediction,
-    PredictionOutcome,
 )
 
 
@@ -62,9 +61,7 @@ class ModelWeightOptimizer:
         correct = sum(1 for sp in scored if sp.outcome.was_correct)
         accuracy = correct / total if total > 0 else 0.0
 
-        avg_conf = (
-            sum(sp.outcome.confidence for sp in scored) / total if total > 0 else 0.0
-        )
+        avg_conf = sum(sp.outcome.confidence for sp in scored) / total if total > 0 else 0.0
         cal_error = abs(accuracy - avg_conf) if total > 0 else 0.0
 
         # Recent accuracy (last 10)
@@ -72,8 +69,7 @@ class ModelWeightOptimizer:
         recent = sorted(recent, key=lambda s: s.outcome.resolved_at, reverse=True)[:10]
         recent_n = len(recent)
         recent_acc = (
-            sum(1 for sp in recent if sp.outcome.was_correct) / recent_n
-            if recent_n > 0 else 0.0
+            sum(1 for sp in recent if sp.outcome.was_correct) / recent_n if recent_n > 0 else 0.0
         )
 
         # Momentum: is performance improving?
@@ -121,15 +117,13 @@ class ModelWeightOptimizer:
         raw_weights = {}
         for perf in performances:
             # Decay weight if too few predictions (insufficient sample)
-            sample_bonus = 1.0 - self.max_samples_decay ** perf.total_predictions
+            sample_bonus = 1.0 - self.max_samples_decay**perf.total_predictions
             # Momentum bonus: slightly reward improving models
             momentum_bonus = max(0.0, perf.momentum) * 0.5
             # Calibration penalty: penalize poorly calibrated models
             cal_penalty = max(0.0, perf.calibration_error - 0.15)
             raw_weights[perf.model_name] = (
-                perf.accuracy * sample_bonus
-                + momentum_bonus
-                - cal_penalty
+                perf.accuracy * sample_bonus + momentum_bonus - cal_penalty
             )
 
         # Normalize to sum to 1
@@ -163,13 +157,15 @@ class ModelWeightOptimizer:
                 reasons.append("insufficient sample")
             reason_str = "; ".join(reasons) if reasons else "maintain"
 
-            recommendations.append(ModelWeightRecommendation(
-                model_name=perf.model_name,
-                current_weight=round(current, 3),
-                recommended_weight=round(recommended, 3),
-                adjustment=round(recommended - current, 3),
-                reason=reason_str,
-            ))
+            recommendations.append(
+                ModelWeightRecommendation(
+                    model_name=perf.model_name,
+                    current_weight=round(current, 3),
+                    recommended_weight=round(recommended, 3),
+                    adjustment=round(recommended - current, 3),
+                    reason=reason_str,
+                )
+            )
 
         # Re-normalize recommendations
         total_rec = sum(r.recommended_weight for r in recommendations) or 1.0
@@ -191,9 +187,7 @@ class ModelWeightOptimizer:
         total = sum(updated.values()) or 1.0
         return {k: v / total for k, v in updated.items()}
 
-    def get_model_rankings(
-        self, performances: list[ModelPerformance]
-    ) -> list[dict]:
+    def get_model_rankings(self, performances: list[ModelPerformance]) -> list[dict]:
         """Rank models by accuracy and reliability."""
         ranked = sorted(
             performances,

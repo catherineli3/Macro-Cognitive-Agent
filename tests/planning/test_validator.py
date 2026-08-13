@@ -3,8 +3,8 @@
 import pytest
 
 from src.domain.planning import TaskType
-from src.schemas.planning import ExecutionPlan, Task
 from src.planning.validator import PlanValidator
+from src.schemas.planning import ExecutionPlan, Task
 from src.shared.exceptions import PlanValidationError
 
 
@@ -120,8 +120,12 @@ class TestCircularDependency:
     def test_long_chain_no_cycle(self) -> None:
         """5-node linear chain — no cycle."""
         tasks = [
-            Task(id=f"t{i}", name=f"T{i}", type=TaskType.PROCESS,
-                 dependencies=[f"t{i-1}"] if i > 0 else [])
+            Task(
+                id=f"t{i}",
+                name=f"T{i}",
+                type=TaskType.PROCESS,
+                dependencies=[f"t{i-1}"] if i > 0 else [],
+            )
             for i in range(5)
         ]
         plan = ExecutionPlan(goal="Test", tasks=tasks)

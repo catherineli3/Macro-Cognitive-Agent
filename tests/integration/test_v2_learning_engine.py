@@ -1,16 +1,17 @@
 """v2.0 Learning Engine tests — BeliefUpdater, PatternMiner, LearningEngine."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
+from src.domain.signal import SignalDirection
 from src.learning.learning_engine import (
     BeliefUpdater,
     ConfidenceDecay,
     LearningEngine,
     PatternMiner,
 )
-from src.schemas.learning import BeliefWeight, LearningSummary
+from src.schemas.learning import LearningSummary
 from src.schemas.outcome import (
     OutcomeDirection,
     OutcomeRecord,
@@ -18,8 +19,6 @@ from src.schemas.outcome import (
     OutcomeVerdict,
     PredictionOutcome,
 )
-from src.domain.signal import SignalDirection
-
 
 # ── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -36,18 +35,26 @@ def make_outcome(h_id, dim, direction, confidence, correct=True):
             predicted_confidence=confidence,
             verdict=OutcomeVerdict.CORRECT if correct else OutcomeVerdict.INCORRECT,
             observed_direction=(
-                OutcomeDirection.UP if direction == SignalDirection.BULLISH and correct
-                else OutcomeDirection.DOWN if direction == SignalDirection.BEARISH and correct
-                else OutcomeDirection.DOWN if direction == SignalDirection.BULLISH and not correct
-                else OutcomeDirection.UP
+                OutcomeDirection.UP
+                if direction == SignalDirection.BULLISH and correct
+                else (
+                    OutcomeDirection.DOWN
+                    if direction == SignalDirection.BEARISH and correct
+                    else (
+                        OutcomeDirection.DOWN
+                        if direction == SignalDirection.BULLISH and not correct
+                        else OutcomeDirection.UP
+                    )
+                )
             ),
-            evaluated_at=datetime.now(timezone.utc),
+            evaluated_at=datetime.now(UTC),
         ),
     )
 
 
 def make_outcome_summary(records, dim_accuracy=None):
     from src.outcome.engine import OutcomeMetrics
+
     return OutcomeMetrics.compute_summary(records)
 
 
@@ -67,7 +74,9 @@ class TestBeliefUpdater:
         updater = BeliefUpdater(learning_rate=0.3)
         weights = updater.initialize_weights()
 
-        records = [make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.8) for i in range(10)]
+        records = [
+            make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.8) for i in range(10)
+        ]
         summary = make_outcome_summary(records)
 
         updated = updater.update_from_summary(weights, summary, records)
@@ -85,7 +94,9 @@ class TestBeliefUpdater:
         records = []
         for i in range(10):
             correct = i < 2  # only 2/10 correct
-            records.append(make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.8, correct=correct))
+            records.append(
+                make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.8, correct=correct)
+            )
 
         summary = make_outcome_summary(records)
         updated = updater.update_from_summary(weights, summary, records)
@@ -96,7 +107,9 @@ class TestBeliefUpdater:
         updater = BeliefUpdater()
         weights = updater.initialize_weights()
 
-        records = [make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.8) for i in range(5)]
+        records = [
+            make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.8) for i in range(5)
+        ]
         summary = make_outcome_summary(records)
         updated = updater.update_from_summary(weights, summary, records)
         liq = [w for w in updated if w.dimension == "liquidity"][0]
@@ -110,7 +123,9 @@ class TestBeliefUpdater:
         for dim, count, accuracy in [("Liquidity", 5, 1.0), ("Growth", 5, 0.4)]:
             for i in range(count):
                 correct = i < int(count * accuracy)
-                records.append(make_outcome(f"h_{dim}_{i}", dim, SignalDirection.BULLISH, 0.8, correct=correct))
+                records.append(
+                    make_outcome(f"h_{dim}_{i}", dim, SignalDirection.BULLISH, 0.8, correct=correct)
+                )
 
         summary = make_outcome_summary(records)
         updated = updater.update_from_summary(weights, summary, records)
@@ -148,7 +163,9 @@ class TestConfidenceDecay:
 
     def test_recency_weights(self):
         decay = ConfidenceDecay()
-        records = [make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.8) for i in range(5)]
+        records = [
+            make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.8) for i in range(5)
+        ]
         rw = decay.get_recency_weights(records)
         assert len(rw) == 5
         # All very recent (today's test) — should all be near 1.0
@@ -165,7 +182,9 @@ class TestPatternMiner:
         for i in range(10):
             records.append(make_outcome(f"liq{i}", "Liquidity", SignalDirection.BULLISH, 0.8))
         for i in range(5):
-            records.append(make_outcome(f"gr{i}", "Growth", SignalDirection.BULLISH, 0.8, correct=(i < 2)))
+            records.append(
+                make_outcome(f"gr{i}", "Growth", SignalDirection.BULLISH, 0.8, correct=(i < 2))
+            )
 
         summary = make_outcome_summary(records)
         patterns = PatternMiner.discover(records, summary)
@@ -176,14 +195,20 @@ class TestPatternMiner:
         records = []
         for i in range(10):
             correct = i < 4  # only 4/10 correct
-            records.append(make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.85, correct=correct))
+            records.append(
+                make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.85, correct=correct)
+            )
 
         summary = make_outcome_summary(records)
         patterns = PatternMiner.discover(records, summary)
-        assert any("overconfident" in p.lower() for p in patterns) or any("unreliable" in p.lower() for p in patterns)
+        assert any("overconfident" in p.lower() for p in patterns) or any(
+            "unreliable" in p.lower() for p in patterns
+        )
 
     def test_discovers_bullish_accuracy(self):
-        records = [make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.7) for i in range(8)]
+        records = [
+            make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.7) for i in range(8)
+        ]
         summary = make_outcome_summary(records)
         patterns = PatternMiner.discover(records, summary)
         assert any("Bullish" in p or "bullish" in p for p in patterns)
@@ -225,7 +250,9 @@ class TestLearningEngine:
 
     def test_get_weight_after_learning(self):
         engine = LearningEngine()
-        records = [make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.8) for i in range(10)]
+        records = [
+            make_outcome(f"h{i}", "Liquidity", SignalDirection.BULLISH, 0.8) for i in range(10)
+        ]
         summary = make_outcome_summary(records)
         engine.learn(summary, records)
         assert engine.get_weight("liquidity") > 0.5
@@ -234,7 +261,10 @@ class TestLearningEngine:
         engine = LearningEngine()
         assert engine.get_accuracy("liquidity") == 0.5
 
-        records = [make_outcome(f"h{i}", "Growth", SignalDirection.BULLISH, 0.8, correct=(i < 8)) for i in range(10)]
+        records = [
+            make_outcome(f"h{i}", "Growth", SignalDirection.BULLISH, 0.8, correct=(i < 8))
+            for i in range(10)
+        ]
         summary = make_outcome_summary(records)
         engine.learn(summary, records)
         assert engine.get_accuracy("growth") == pytest.approx(0.8, abs=0.05)

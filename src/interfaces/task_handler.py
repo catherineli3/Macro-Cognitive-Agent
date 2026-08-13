@@ -13,9 +13,13 @@ Design (Sprint 4):
 """
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 from src.schemas.execution import TaskResult
 from src.schemas.planning import Task
+
+if TYPE_CHECKING:
+    from src.executor.context import ExecutionContext
 
 
 class TaskHandlerInterface(ABC):

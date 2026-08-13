@@ -13,8 +13,7 @@ This module:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
 from src.research.reflexivity.schemas import MarketBelief
 from src.shared.logging import get_logger
@@ -91,9 +90,7 @@ BELIEF_ARCHETYPES: dict[str, dict] = {
 # ── Stage transition rules ────────────────────────────────────────────────
 
 
-def _determine_belief_stage(
-    consensus: float, evidence: float, vulnerability: float
-) -> str:
+def _determine_belief_stage(consensus: float, evidence: float, vulnerability: float) -> str:
     """Determine belief lifecycle stage based on metrics."""
     if consensus < 0.2:
         return "forming"
@@ -149,12 +146,17 @@ class MarketBeliefModel:
             List of active MarketBelief objects
         """
         beliefs = []
-        now = datetime.now(timezone.utc).isoformat()
-        narrative_text = (dominant_narrative + " " +
-                          " ".join(str(n) for n in (narrative_objects or [])[:3])).lower()
+        now = datetime.now(UTC).isoformat()
+        narrative_text = (
+            dominant_narrative + " " + " ".join(str(n) for n in (narrative_objects or [])[:3])
+        ).lower()
 
         # ── Match monetary beliefs ──
-        if "hiking" in narrative_text or "tightening" in narrative_text or "hawkish" in narrative_text:
+        if (
+            "hiking" in narrative_text
+            or "tightening" in narrative_text
+            or "hawkish" in narrative_text
+        ):
             beliefs.append(self._build_belief("fed_hiking", market_data, now))
         if "cutting" in narrative_text or "easing" in narrative_text or "dovish" in narrative_text:
             beliefs.append(self._build_belief("fed_cutting", market_data, now))
@@ -162,7 +164,7 @@ class MarketBeliefModel:
         # ── Match growth beliefs ──
         vix = float(market_data.get("vix", 0))
         spx_ytd = float(market_data.get("spx_ytd", 0) or market_data.get("nasdaq_ytd", 0))
-        hyg = float(market_data.get("hyg_spread", 0))
+        _hyg = float(market_data.get("hyg_spread", 0))
 
         if spx_ytd > 15 and vix < 18:
             beliefs.append(self._build_belief("soft_landing", market_data, now))
@@ -200,7 +202,7 @@ class MarketBeliefModel:
             beliefs.append(self._build_belief("commodity_supercycle", market_data, now))
 
         # ── Record history ──
-        key = datetime.now(timezone.utc).strftime("%Y%m%d")
+        key = datetime.now(UTC).strftime("%Y%m%d")
         self._belief_history.setdefault(key, []).extend(beliefs)
 
         logger.info("Identified %d active market beliefs on %s", len(beliefs), key)
@@ -240,19 +242,22 @@ class MarketBeliefModel:
             last_updated=timestamp,
             stage=stage,
             crowding_risk=0.7 if stage == "extreme" else (0.5 if stage == "consensus" else 0.2),
-            reversal_magnitude_estimate="severe" if vulnerability > 0.7 and stage == "extreme"
-                                       else ("moderate" if vulnerability > 0.4 else "small"),
+            reversal_magnitude_estimate=(
+                "severe"
+                if vulnerability > 0.7 and stage == "extreme"
+                else ("moderate" if vulnerability > 0.4 else "small")
+            ),
         )
 
-    def update_belief(
-        self, belief: MarketBelief, new_market_data: dict
-    ) -> MarketBelief:
+    def update_belief(self, belief: MarketBelief, new_market_data: dict) -> MarketBelief:
         """Update belief metrics with new market data.
 
         Tracks belief evolution — strengthening or weakening over time.
         """
-        now = datetime.now(timezone.utc).isoformat()
-        new_evidence = self._compute_evidence_support(belief.belief_id.split("-")[0], new_market_data)
+        now = datetime.now(UTC).isoformat()
+        new_evidence = self._compute_evidence_support(
+            belief.belief_id.split("-")[0], new_market_data
+        )
 
         # Update
         updated = MarketBelief(
@@ -318,80 +323,131 @@ class MarketBeliefModel:
         oil = float(market_data.get("oil", 0))
 
         if archetype_key == "fed_cutting":
-            if us10y < us2y: signals.append(0.6)  # Inverted curve
-            if cpi < 3: signals.append(0.8)
-            if vix > 25: signals.append(0.4)  # Market stress = cut pressure
-            if cpi > 5: signals.append(-0.7)
-            if dxy > 105: signals.append(-0.3)
+            if us10y < us2y:
+                signals.append(0.6)  # Inverted curve
+            if cpi < 3:
+                signals.append(0.8)
+            if vix > 25:
+                signals.append(0.4)  # Market stress = cut pressure
+            if cpi > 5:
+                signals.append(-0.7)
+            if dxy > 105:
+                signals.append(-0.3)
 
         elif archetype_key == "fed_hiking":
-            if cpi > 4: signals.append(0.7)
-            if dxy > 102: signals.append(0.5)
-            if us10y > 4: signals.append(0.6)
-            if vix > 30: signals.append(-0.4)  # Stress = pause
-            if cpi < 2.5: signals.append(-0.6)
+            if cpi > 4:
+                signals.append(0.7)
+            if dxy > 102:
+                signals.append(0.5)
+            if us10y > 4:
+                signals.append(0.6)
+            if vix > 30:
+                signals.append(-0.4)  # Stress = pause
+            if cpi < 2.5:
+                signals.append(-0.6)
 
         elif archetype_key == "soft_landing":
-            if spx_ytd > 10: signals.append(0.6)
-            if vix < 18: signals.append(0.5)
-            if cpi < 3.5: signals.append(0.7)
-            if hyg < 400: signals.append(0.5)
-            if spx_ytd < -5: signals.append(-0.6)
-            if vix > 25: signals.append(-0.7)
+            if spx_ytd > 10:
+                signals.append(0.6)
+            if vix < 18:
+                signals.append(0.5)
+            if cpi < 3.5:
+                signals.append(0.7)
+            if hyg < 400:
+                signals.append(0.5)
+            if spx_ytd < -5:
+                signals.append(-0.6)
+            if vix > 25:
+                signals.append(-0.7)
 
         elif archetype_key == "hard_landing":
-            if spx_ytd < -10: signals.append(0.6)
-            if vix > 25: signals.append(0.7)
-            if hyg > 500: signals.append(0.6)
-            if spx_ytd > 15: signals.append(-0.7)
-            if vix < 15: signals.append(-0.6)
+            if spx_ytd < -10:
+                signals.append(0.6)
+            if vix > 25:
+                signals.append(0.7)
+            if hyg > 500:
+                signals.append(0.6)
+            if spx_ytd > 15:
+                signals.append(-0.7)
+            if vix < 15:
+                signals.append(-0.6)
 
         elif archetype_key == "inflation_persistent":
-            if cpi > 5: signals.append(0.8)
-            if oil > 80: signals.append(0.5)
-            if gold > 1800: signals.append(0.4)
-            if cpi < 3: signals.append(-0.8)
-            if us10y < 3: signals.append(-0.5)
+            if cpi > 5:
+                signals.append(0.8)
+            if oil > 80:
+                signals.append(0.5)
+            if gold > 1800:
+                signals.append(0.4)
+            if cpi < 3:
+                signals.append(-0.8)
+            if us10y < 3:
+                signals.append(-0.5)
 
         elif archetype_key == "inflation_transitory":
-            if cpi < 3.5: signals.append(0.7)
-            if cpi > 5: signals.append(-0.9)
-            if oil > 90: signals.append(-0.5)
+            if cpi < 3.5:
+                signals.append(0.7)
+            if cpi > 5:
+                signals.append(-0.9)
+            if oil > 90:
+                signals.append(-0.5)
 
         elif archetype_key == "us_exceptionalism":
-            if dxy > 100: signals.append(0.5)
-            if spx_ytd > 10: signals.append(0.5)
-            if us10y > 3.5: signals.append(0.4)
-            if dxy < 95: signals.append(-0.7)
+            if dxy > 100:
+                signals.append(0.5)
+            if spx_ytd > 10:
+                signals.append(0.5)
+            if us10y > 3.5:
+                signals.append(0.4)
+            if dxy < 95:
+                signals.append(-0.7)
 
         elif archetype_key == "dollar_decline":
-            if dxy < 98: signals.append(0.6)
-            if gold > 1800: signals.append(0.5)
-            if dxy > 105: signals.append(-0.8)
+            if dxy < 98:
+                signals.append(0.6)
+            if gold > 1800:
+                signals.append(0.5)
+            if dxy > 105:
+                signals.append(-0.8)
 
         elif archetype_key == "ai_bubble":
             # Would need sector-specific data; approximate
-            if spx_ytd > 25: signals.append(0.5)
-            if vix < 15: signals.append(0.4)
-            if vix > 25: signals.append(-0.5)
+            if spx_ytd > 25:
+                signals.append(0.5)
+            if vix < 15:
+                signals.append(0.4)
+            if vix > 25:
+                signals.append(-0.5)
 
         elif archetype_key == "commodity_supercycle":
-            if oil > 85: signals.append(0.6)
-            if gold > 1900: signals.append(0.5)
-            if cpi > 4: signals.append(0.5)
-            if dxy > 105: signals.append(-0.4)
+            if oil > 85:
+                signals.append(0.6)
+            if gold > 1900:
+                signals.append(0.5)
+            if cpi > 4:
+                signals.append(0.5)
+            if dxy > 105:
+                signals.append(-0.4)
 
         elif archetype_key == "risk_on_everything":
-            if vix < 15: signals.append(0.7)
-            if spx_ytd > 15: signals.append(0.6)
-            if hyg < 350: signals.append(0.5)
-            if vix > 20: signals.append(-0.6)
+            if vix < 15:
+                signals.append(0.7)
+            if spx_ytd > 15:
+                signals.append(0.6)
+            if hyg < 350:
+                signals.append(0.5)
+            if vix > 20:
+                signals.append(-0.6)
 
         elif archetype_key == "risk_off_flight":
-            if vix > 25: signals.append(0.7)
-            if hyg > 500: signals.append(0.6)
-            if spx_ytd < 0: signals.append(0.5)
-            if vix < 15: signals.append(-0.7)
+            if vix > 25:
+                signals.append(0.7)
+            if hyg > 500:
+                signals.append(0.6)
+            if spx_ytd < 0:
+                signals.append(0.5)
+            if vix < 15:
+                signals.append(-0.7)
 
         if not signals:
             return 0.0

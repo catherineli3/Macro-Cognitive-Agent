@@ -9,18 +9,15 @@ Verifies:
 """
 
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
 from src.domain.execution import TaskResultStatus
-from src.executor.context import ExecutionContext
 from src.executor.executor import AgentExecutor
 from src.interfaces.task_handler import TaskHandlerInterface
 from src.schemas.execution import TaskResult
-from src.schemas.planning import ExecutionPlan, Task
-from src.schemas.planning import TaskType
-
+from src.schemas.planning import ExecutionPlan, Task, TaskType
 
 # ── Test Handlers ───────────────────────────────────────────────────────────
 
@@ -40,8 +37,8 @@ class FastHandler(TaskHandlerInterface):
             task_name=task.name,
             status=TaskResultStatus.SUCCESS,
             artifacts={"result": "fast"},
-            started_at=datetime.now(timezone.utc),
-            completed_at=datetime.now(timezone.utc),
+            started_at=datetime.now(UTC),
+            completed_at=datetime.now(UTC),
         )
 
 
@@ -64,8 +61,8 @@ class SlowHandler(TaskHandlerInterface):
             task_name=task.name,
             status=TaskResultStatus.SUCCESS,
             artifacts={"result": "slow_done"},
-            started_at=datetime.now(timezone.utc),
-            completed_at=datetime.now(timezone.utc),
+            started_at=datetime.now(UTC),
+            completed_at=datetime.now(UTC),
         )
 
 
@@ -91,8 +88,8 @@ class FlakyHandler(TaskHandlerInterface):
             task_name=task.name,
             status=TaskResultStatus.SUCCESS,
             artifacts={"result": f"success_on_attempt_{self._attempts}"},
-            started_at=datetime.now(timezone.utc),
-            completed_at=datetime.now(timezone.utc),
+            started_at=datetime.now(UTC),
+            completed_at=datetime.now(UTC),
         )
 
 
@@ -250,12 +247,14 @@ class TestGracefulDegradation:
         """Non-critical task failure → downstream task still runs."""
         executor = AgentExecutor()
         executor.register(CrashHandler())  # test.crash — always fails
-        executor.register(FastHandler())   # test.fast — always succeeds
+        executor.register(FastHandler())  # test.fast — always succeeds
 
-        plan = _make_dag_plan([
-            ("t_upstream", "Upstream", "test.crash", [], {"critical": False}),
-            ("t_downstream", "Downstream", "test.fast", ["t_upstream"], {}),
-        ])
+        plan = _make_dag_plan(
+            [
+                ("t_upstream", "Upstream", "test.crash", [], {"critical": False}),
+                ("t_downstream", "Downstream", "test.fast", ["t_upstream"], {}),
+            ]
+        )
 
         result = await executor.execute(plan)
 
@@ -275,10 +274,12 @@ class TestGracefulDegradation:
         executor.register(CrashHandler())
         executor.register(FastHandler())
 
-        plan = _make_dag_plan([
-            ("t_upstream", "Upstream", "test.crash", [], {"critical": True}),
-            ("t_downstream", "Downstream", "test.fast", ["t_upstream"], {}),
-        ])
+        plan = _make_dag_plan(
+            [
+                ("t_upstream", "Upstream", "test.crash", [], {"critical": True}),
+                ("t_downstream", "Downstream", "test.fast", ["t_upstream"], {}),
+            ]
+        )
 
         result = await executor.execute(plan)
 
@@ -287,9 +288,9 @@ class TestGracefulDegradation:
         assert tr_up.status == TaskResultStatus.FAILED
 
         # Downstream should NOT run
-        assert "t_downstream" not in result.task_results, (
-            "Downstream task ran despite critical upstream failure"
-        )
+        assert (
+            "t_downstream" not in result.task_results
+        ), "Downstream task ran despite critical upstream failure"
 
     @pytest.mark.asyncio
     async def test_critical_is_default(self) -> None:
@@ -298,10 +299,12 @@ class TestGracefulDegradation:
         executor.register(CrashHandler())
         executor.register(FastHandler())
 
-        plan = _make_dag_plan([
-            ("t_upstream", "Upstream", "test.crash", [], {}),  # no "critical" key
-            ("t_downstream", "Downstream", "test.fast", ["t_upstream"], {}),
-        ])
+        plan = _make_dag_plan(
+            [
+                ("t_upstream", "Upstream", "test.crash", [], {}),  # no "critical" key
+                ("t_downstream", "Downstream", "test.fast", ["t_upstream"], {}),
+            ]
+        )
 
         result = await executor.execute(plan)
 
@@ -338,10 +341,12 @@ class TestExceptionIsolation:
         executor.register(CrashHandler())
         executor.register(FastHandler())
 
-        plan = _make_dag_plan([
-            ("t_crash", "Crash", "test.crash", [], {"critical": False}),
-            ("t_fast", "Fast", "test.fast", [], {}),
-        ])
+        plan = _make_dag_plan(
+            [
+                ("t_crash", "Crash", "test.crash", [], {"critical": False}),
+                ("t_fast", "Fast", "test.fast", [], {}),
+            ]
+        )
 
         result = await executor.execute(plan)
 

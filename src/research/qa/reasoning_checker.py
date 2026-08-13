@@ -10,7 +10,6 @@ Checks:
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from src.research.qa.schemas import DimensionScore, MemoGrade
 
@@ -20,29 +19,39 @@ class ReasoningChecker:
 
     # Contradiction pair patterns
     CONTRADICTION_PAIRS = [
-        (r'\b(?:hawkish|tightening|hiking)\b', r'\b(?:dovish|easing|cutting)\b'),
-        (r'\b(?:bullish|positive|constructive)\b', r'\b(?:bearish|negative|cautious)\b'),
-        (r'\b(?:strong\s+(?:growth|economy|demand))\b', r'\b(?:weak\s+(?:growth|economy|demand))\b'),
-        (r'\b(?:high\s+inflation)\b', r'\b(?:low\s+inflation|deflation)\b'),
-        (r'\b(?:tight\s+labor)\b', r'\b(?:weak\s+labor|slack)\b'),
-        (r'\b(?:rising\s+(?:yields?|rates?))\b', r'\b(?:falling\s+(?:yields?|rates?))\b'),
+        (r"\b(?:hawkish|tightening|hiking)\b", r"\b(?:dovish|easing|cutting)\b"),
+        (r"\b(?:bullish|positive|constructive)\b", r"\b(?:bearish|negative|cautious)\b"),
+        (
+            r"\b(?:strong\s+(?:growth|economy|demand))\b",
+            r"\b(?:weak\s+(?:growth|economy|demand))\b",
+        ),
+        (r"\b(?:high\s+inflation)\b", r"\b(?:low\s+inflation|deflation)\b"),
+        (r"\b(?:tight\s+labor)\b", r"\b(?:weak\s+labor|slack)\b"),
+        (r"\b(?:rising\s+(?:yields?|rates?))\b", r"\b(?:falling\s+(?:yields?|rates?))\b"),
     ]
 
     LOGICAL_CONNECTORS = [
-        r'\btherefore\b', r'\bthus\b', r'\bhence\b', r'\baccordingly\b',
-        r'\bconsequently\b', r'\bas\s+a\s+result\b',
-        r'\bthis\s+(?:implies|suggests|indicates|means|points\s+to)\b',
-        r'\bbecause\b', r'\bsince\b', r'\bdue\s+to\b',
-        r'\bgiven\s+that\b', r'\b(?:if|when)\s+.+\bthen\b',
+        r"\btherefore\b",
+        r"\bthus\b",
+        r"\bhence\b",
+        r"\baccordingly\b",
+        r"\bconsequently\b",
+        r"\bas\s+a\s+result\b",
+        r"\bthis\s+(?:implies|suggests|indicates|means|points\s+to)\b",
+        r"\bbecause\b",
+        r"\bsince\b",
+        r"\bdue\s+to\b",
+        r"\bgiven\s+that\b",
+        r"\b(?:if|when)\s+.+\bthen\b",
     ]
 
     REASONING_MARKERS = [
-        r'\bobservation\b',
-        r'\bhypothesis\b',
-        r'\bevidence\b',
-        r'\bconclusion\b',
-        r'\bimplies\b',
-        r'\btherefore\b',
+        r"\bobservation\b",
+        r"\bhypothesis\b",
+        r"\bevidence\b",
+        r"\bconclusion\b",
+        r"\bimplies\b",
+        r"\btherefore\b",
     ]
 
     def __init__(self):
@@ -71,10 +80,7 @@ class ReasoningChecker:
         deductions = 0
 
         # 1. Check for reasoning structure markers
-        reasoning_markers = sum(
-            1 for p in self.REASONING_MARKERS
-            if re.search(p, text_lower)
-        )
+        reasoning_markers = sum(1 for p in self.REASONING_MARKERS if re.search(p, text_lower))
         if reasoning_markers < 3:
             deductions += 20
             score.findings.append(
@@ -83,20 +89,13 @@ class ReasoningChecker:
             )
         elif reasoning_markers < 5:
             deductions += 10
-            score.findings.append(
-                "Moderate reasoning structure — some steps missing"
-            )
+            score.findings.append("Moderate reasoning structure — some steps missing")
 
         # 2. Check for logical connectors
-        logical_count = sum(
-            len(re.findall(p, text_lower))
-            for p in self.LOGICAL_CONNECTORS
-        )
+        logical_count = sum(len(re.findall(p, text_lower)) for p in self.LOGICAL_CONNECTORS)
         if logical_count < 5:
             deductions += 15
-            score.findings.append(
-                "Few logical connectors — reasoning may be assertion-based"
-            )
+            score.findings.append("Few logical connectors — reasoning may be assertion-based")
 
         # 3. Check for contradictions
         contradictions = self._find_contradictions(text_lower)
@@ -107,23 +106,19 @@ class ReasoningChecker:
             )
 
         # 4. Check argument structure
-        paragraphs = [p for p in text.split('\n\n') if p.strip()]
+        paragraphs = [p for p in text.split("\n\n") if p.strip()]
         if len(paragraphs) < 4:
             deductions += 15
-            score.findings.append(
-                "Too few paragraphs for coherent reasoning structure"
-            )
+            score.findings.append("Too few paragraphs for coherent reasoning structure")
 
         # 5. Check for unqualified jumps
         jump_markers = re.findall(
-            r'\b(?:therefore|thus|hence)\s+.*?[.!?]',
+            r"\b(?:therefore|thus|hence)\s+.*?[.!?]",
             text_lower,
         )
         if len(jump_markers) > 5:
             deductions += 10
-            score.findings.append(
-                "Many 'therefore/thus/hence' jumps — check each logical leap"
-            )
+            score.findings.append("Many 'therefore/thus/hence' jumps — check each logical leap")
 
         score.score = max(100 - deductions, 0)
         score.grade = self._to_grade(score.score)
@@ -132,9 +127,7 @@ class ReasoningChecker:
             score.recommendations.append(
                 "Structure arguments as: Observation → Evidence → Hypothesis → Conclusion"
             )
-            score.recommendations.append(
-                "Ensure each 'therefore' has explicit preceding evidence"
-            )
+            score.recommendations.append("Ensure each 'therefore' has explicit preceding evidence")
 
         return score
 

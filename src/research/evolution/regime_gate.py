@@ -16,9 +16,9 @@ Two regimes are "distinct" if >=2 dimensions differ in category.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from src.schemas.research import ResearchPrinciple, PrincipleStrength
+from src.schemas.research import ResearchPrinciple
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -27,13 +27,14 @@ logger = get_logger(__name__)
 @dataclass
 class RegimeSnapshot:
     """A snapshot of the macro regime at a specific point in time."""
+
     regime_id: str = ""
-    monetary_policy: str = "neutral"    # "tightening" | "neutral" | "easing"
-    fiscal_stance: str = "neutral"      # "expansionary" | "neutral" | "contractionary"
-    volatility: str = "moderate"        # "low" | "moderate" | "high"
-    growth: str = "stable"             # "accelerating" | "stable" | "decelerating" | "contracting"
-    inflation: str = "stable"           # "rising" | "stable" | "falling"
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    monetary_policy: str = "neutral"  # "tightening" | "neutral" | "easing"
+    fiscal_stance: str = "neutral"  # "expansionary" | "neutral" | "contractionary"
+    volatility: str = "moderate"  # "low" | "moderate" | "high"
+    growth: str = "stable"  # "accelerating" | "stable" | "decelerating" | "contracting"
+    inflation: str = "stable"  # "rising" | "stable" | "falling"
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     cycle: int = 0
 
     def to_dict(self) -> dict:
@@ -100,11 +101,13 @@ class RegimeGate:
         # Only add to history if distinct from last entry
         if not self._regime_history or regime.is_distinct_from(self._regime_history[-1]):
             self._regime_history.append(regime)
-            logger.info("New regime detected: %s (total: %d distinct regimes)",
-                        regime.key, len(self._regime_history))
+            logger.info(
+                "New regime detected: %s (total: %d distinct regimes)",
+                regime.key,
+                len(self._regime_history),
+            )
 
-    def record_principle_observation(self, principle_id: str,
-                                      regime: RegimeSnapshot) -> None:
+    def record_principle_observation(self, principle_id: str, regime: RegimeSnapshot) -> None:
         """Record that a principle was observed under a specific regime."""
         if principle_id not in self._principle_regimes:
             self._principle_regimes[principle_id] = []
@@ -161,6 +164,8 @@ class RegimeGate:
         return len(self._regime_history)
 
     def summary(self) -> str:
-        return (f"RegimeGate: {self.distinct_regime_count} distinct regimes "
-                f"across {self.total_observations} observations. "
-                f"Current: {self._current_regime.describe() if self._current_regime else 'N/A'}")
+        return (
+            f"RegimeGate: {self.distinct_regime_count} distinct regimes "
+            f"across {self.total_observations} observations. "
+            f"Current: {self._current_regime.describe() if self._current_regime else 'N/A'}"
+        )

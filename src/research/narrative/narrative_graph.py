@@ -12,10 +12,10 @@ from __future__ import annotations
 
 from src.research.narrative.schemas import (
     Narrative,
+    NarrativeCategory,
     NarrativeGraph,
     NarrativeRelation,
     NarrativeRelationType,
-    NarrativeCategory,
 )
 from src.shared.logging import get_logger
 
@@ -27,65 +27,125 @@ logger = get_logger(__name__)
 # Pre-defined relationship patterns between narrative categories/directions
 _RELATIONSHIP_RULES: list[dict] = [
     # Dollar strength → liquidity tightening
-    {"source_pattern": "Dollar Strength", "target_pattern": "Liquidity",
-     "type": NarrativeRelationType.CAUSES, "strength": 0.85,
-     "desc": "Dollar strength causes global liquidity tightening"},
+    {
+        "source_pattern": "Dollar Strength",
+        "target_pattern": "Liquidity",
+        "type": NarrativeRelationType.CAUSES,
+        "strength": 0.85,
+        "desc": "Dollar strength causes global liquidity tightening",
+    },
     # Liquidity tightening → growth scare
-    {"source_pattern": "Liquidity", "target_pattern": "Growth Scare",
-     "type": NarrativeRelationType.CAUSES, "strength": 0.70,
-     "desc": "Liquidity tightening can lead to growth scares"},
+    {
+        "source_pattern": "Liquidity",
+        "target_pattern": "Growth Scare",
+        "type": NarrativeRelationType.CAUSES,
+        "strength": 0.70,
+        "desc": "Liquidity tightening can lead to growth scares",
+    },
     # Liquidity easing → risk-on
-    {"source_pattern": "Liquidity Easing", "target_pattern": "Risk-On",
-     "type": NarrativeRelationType.SUPPORTS, "strength": 0.80,
-     "desc": "Liquidity easing supports risk-on sentiment"},
+    {
+        "source_pattern": "Liquidity Easing",
+        "target_pattern": "Risk-On",
+        "type": NarrativeRelationType.SUPPORTS,
+        "strength": 0.80,
+        "desc": "Liquidity easing supports risk-on sentiment",
+    },
     # Higher for longer → dollar strength
-    {"source_pattern": "Higher for Longer", "target_pattern": "Dollar",
-     "type": NarrativeRelationType.SUPPORTS, "strength": 0.75,
-     "desc": "Higher rates support USD strength"},
+    {
+        "source_pattern": "Higher for Longer",
+        "target_pattern": "Dollar",
+        "type": NarrativeRelationType.SUPPORTS,
+        "strength": 0.75,
+        "desc": "Higher rates support USD strength",
+    },
     # Higher for longer → contradicts Soft Landing
-    {"source_pattern": "Higher for Longer", "target_pattern": "Soft Landing",
-     "type": NarrativeRelationType.CONTRADICTS, "strength": 0.65,
-     "desc": "Prolonged tight policy makes soft landing harder"},
+    {
+        "source_pattern": "Higher for Longer",
+        "target_pattern": "Soft Landing",
+        "type": NarrativeRelationType.CONTRADICTS,
+        "strength": 0.65,
+        "desc": "Prolonged tight policy makes soft landing harder",
+    },
     # Fed pivot → supports Soft Landing
-    {"source_pattern": "Fed Pivot", "target_pattern": "Soft Landing",
-     "type": NarrativeRelationType.SUPPORTS, "strength": 0.80,
-     "desc": "Fed pivot enables soft landing scenario"},
+    {
+        "source_pattern": "Fed Pivot",
+        "target_pattern": "Soft Landing",
+        "type": NarrativeRelationType.SUPPORTS,
+        "strength": 0.80,
+        "desc": "Fed pivot enables soft landing scenario",
+    },
     # AI Capex → supports Growth Resilience
-    {"source_pattern": "AI Capex", "target_pattern": "Growth",
-     "type": NarrativeRelationType.SUPPORTS, "strength": 0.60,
-     "desc": "AI investment supports growth resilience"},
+    {
+        "source_pattern": "AI Capex",
+        "target_pattern": "Growth",
+        "type": NarrativeRelationType.SUPPORTS,
+        "strength": 0.60,
+        "desc": "AI investment supports growth resilience",
+    },
     # Inflation cooling → supports Fed pivot
-    {"source_pattern": "Disinflation", "target_pattern": "Fed Pivot",
-     "type": NarrativeRelationType.CAUSES, "strength": 0.85,
-     "desc": "Disinflation trend enables Fed pivot"},
+    {
+        "source_pattern": "Disinflation",
+        "target_pattern": "Fed Pivot",
+        "type": NarrativeRelationType.CAUSES,
+        "strength": 0.85,
+        "desc": "Disinflation trend enables Fed pivot",
+    },
     # Inflation rising → contradicts Fed pivot
-    {"source_pattern": "Inflation", "target_pattern": "Fed Pivot",
-     "type": NarrativeRelationType.CONTRADICTS, "strength": 0.80,
-     "desc": "Rising inflation prevents Fed pivot"},
+    {
+        "source_pattern": "Inflation",
+        "target_pattern": "Fed Pivot",
+        "type": NarrativeRelationType.CONTRADICTS,
+        "strength": 0.80,
+        "desc": "Rising inflation prevents Fed pivot",
+    },
     # Credit stress → contradicts risk-on
-    {"source_pattern": "Credit", "target_pattern": "Risk-On",
-     "type": NarrativeRelationType.CONTRADICTS, "strength": 0.75,
-     "desc": "Credit stress undermines risk-on sentiment"},
+    {
+        "source_pattern": "Credit",
+        "target_pattern": "Risk-On",
+        "type": NarrativeRelationType.CONTRADICTS,
+        "strength": 0.75,
+        "desc": "Credit stress undermines risk-on sentiment",
+    },
     # Stagflation → contradicts Goldilocks
-    {"source_pattern": "Stagflation", "target_pattern": "Goldilocks",
-     "type": NarrativeRelationType.CONTRADICTS, "strength": 0.95,
-     "desc": "Stagflation and Goldilocks are opposites"},
+    {
+        "source_pattern": "Stagflation",
+        "target_pattern": "Goldilocks",
+        "type": NarrativeRelationType.CONTRADICTS,
+        "strength": 0.95,
+        "desc": "Stagflation and Goldilocks are opposites",
+    },
     # Risk-off → supports Dollar Strength
-    {"source_pattern": "Risk-Off", "target_pattern": "Dollar",
-     "type": NarrativeRelationType.SUPPORTS, "strength": 0.70,
-     "desc": "Flight to safety supports USD"},
+    {
+        "source_pattern": "Risk-Off",
+        "target_pattern": "Dollar",
+        "type": NarrativeRelationType.SUPPORTS,
+        "strength": 0.70,
+        "desc": "Flight to safety supports USD",
+    },
     # Risk-off → supports Gold (safe haven)
-    {"source_pattern": "Risk-Off", "target_pattern": "Gold",
-     "type": NarrativeRelationType.SUPPORTS, "strength": 0.65,
-     "desc": "Risk-off drives safe-haven gold demand"},
+    {
+        "source_pattern": "Risk-Off",
+        "target_pattern": "Gold",
+        "type": NarrativeRelationType.SUPPORTS,
+        "strength": 0.65,
+        "desc": "Risk-off drives safe-haven gold demand",
+    },
     # Labor market strength → supports Growth Resilience
-    {"source_pattern": "Labor", "target_pattern": "Growth",
-     "type": NarrativeRelationType.SUPPORTS, "strength": 0.75,
-     "desc": "Strong labor market supports growth"},
+    {
+        "source_pattern": "Labor",
+        "target_pattern": "Growth",
+        "type": NarrativeRelationType.SUPPORTS,
+        "strength": 0.75,
+        "desc": "Strong labor market supports growth",
+    },
     # AI Capex Peak → Growth Scare (if AI-dependent)
-    {"source_pattern": "AI Capex Peak", "target_pattern": "Growth Scare",
-     "type": NarrativeRelationType.CAUSES, "strength": 0.55,
-     "desc": "AI investment pullback could trigger growth concerns"},
+    {
+        "source_pattern": "AI Capex Peak",
+        "target_pattern": "Growth Scare",
+        "type": NarrativeRelationType.CAUSES,
+        "strength": 0.55,
+        "desc": "AI investment pullback could trigger growth concerns",
+    },
 ]
 
 
@@ -114,24 +174,20 @@ class NarrativeGraphBuilder:
 
         # ── Rule-based relationships ─────────────────────────────────────
         for rule in self._rules:
-            sources = self._find_matching(
-                narratives, rule["source_pattern"]
-            )
-            targets = self._find_matching(
-                narratives, rule["target_pattern"]
-            )
+            sources = self._find_matching(narratives, rule["source_pattern"])
+            targets = self._find_matching(narratives, rule["target_pattern"])
             for src in sources:
                 for tgt in targets:
-                    if src.id != tgt.id and not self._relation_exists(
-                        graph, src.id, tgt.id
-                    ):
-                        graph.relations.append(NarrativeRelation(
-                            source_id=src.id,
-                            target_id=tgt.id,
-                            relation_type=rule["type"],
-                            strength=rule["strength"],
-                            description=rule["desc"],
-                        ))
+                    if src.id != tgt.id and not self._relation_exists(graph, src.id, tgt.id):
+                        graph.relations.append(
+                            NarrativeRelation(
+                                source_id=src.id,
+                                target_id=tgt.id,
+                                relation_type=rule["type"],
+                                strength=rule["strength"],
+                                description=rule["desc"],
+                            )
+                        )
 
         # ── Same-category competition ────────────────────────────────────
         by_category: dict[NarrativeCategory, list[Narrative]] = {}
@@ -142,17 +198,19 @@ class NarrativeGraphBuilder:
             if len(cat_narratives) >= 2:
                 # Narratives in same category with opposite directions compete
                 for i, n1 in enumerate(cat_narratives):
-                    for n2 in cat_narratives[i + 1:]:
+                    for n2 in cat_narratives[i + 1 :]:
                         if not self._relation_exists(graph, n1.id, n2.id):
                             # Check if they have conflicting supporting models
                             if self._are_competing(n1, n2):
-                                graph.relations.append(NarrativeRelation(
-                                    source_id=n1.id,
-                                    target_id=n2.id,
-                                    relation_type=NarrativeRelationType.COMPETES,
-                                    strength=0.60,
-                                    description=f"Competing narratives in {n1.category.value}",
-                                ))
+                                graph.relations.append(
+                                    NarrativeRelation(
+                                        source_id=n1.id,
+                                        target_id=n2.id,
+                                        relation_type=NarrativeRelationType.COMPETES,
+                                        strength=0.60,
+                                        description=f"Competing narratives in {n1.category.value}",
+                                    )
+                                )
 
         # ── Cross-category contradictions ────────────────────────────────
         # Opposing directions across linked categories (e.g., Growth↑ but Credit↓)
@@ -171,13 +229,15 @@ class NarrativeGraphBuilder:
                     if not self._relation_exists(graph, a.id, b.id):
                         # Check opposite directions via supporting models
                         if self._have_opposite_directions(a, b):
-                            graph.relations.append(NarrativeRelation(
-                                source_id=a.id,
-                                target_id=b.id,
-                                relation_type=NarrativeRelationType.CONTRADICTS,
-                                strength=0.50,
-                                description=f"{cat_a.value} vs {cat_b.value} divergence",
-                            ))
+                            graph.relations.append(
+                                NarrativeRelation(
+                                    source_id=a.id,
+                                    target_id=b.id,
+                                    relation_type=NarrativeRelationType.CONTRADICTS,
+                                    strength=0.50,
+                                    description=f"{cat_a.value} vs {cat_b.value} divergence",
+                                )
+                            )
 
         logger.info(
             "narrative_graph_built | narratives=%d relations=%d",
@@ -195,10 +255,7 @@ class NarrativeGraphBuilder:
     ) -> list[Narrative]:
         """Find narratives whose title contains the pattern (case-insensitive)."""
         pattern_lower = pattern.lower()
-        return [
-            n for n in narratives
-            if pattern_lower in n.title.lower()
-        ]
+        return [n for n in narratives if pattern_lower in n.title.lower()]
 
     @staticmethod
     def _relation_exists(
@@ -229,10 +286,29 @@ class NarrativeGraphBuilder:
     @staticmethod
     def _have_opposite_directions(a: Narrative, b: Narrative) -> bool:
         """Check if two narratives imply opposite market directions."""
-        bullish = {"easing", "expansion", "cooling", "dovish", "strengthening",
-                    "growth", "risk_on", "soft_landing", "goldilocks"}
-        bearish = {"tightening", "contraction", "rising", "hawkish", "weakening",
-                    "recession", "risk_off", "stagflation", "scare", "stress"}
+        bullish = {
+            "easing",
+            "expansion",
+            "cooling",
+            "dovish",
+            "strengthening",
+            "growth",
+            "risk_on",
+            "soft_landing",
+            "goldilocks",
+        }
+        bearish = {
+            "tightening",
+            "contraction",
+            "rising",
+            "hawkish",
+            "weakening",
+            "recession",
+            "risk_off",
+            "stagflation",
+            "scare",
+            "stress",
+        }
 
         title_a = a.title.lower()
         title_b = b.title.lower()

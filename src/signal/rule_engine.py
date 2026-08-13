@@ -10,9 +10,6 @@ Architecture:
     thresholds in Python code.
 """
 
-from datetime import datetime, timezone
-from typing import Optional
-
 from pydantic import BaseModel, Field
 
 from src.domain.signal import RuleType
@@ -44,7 +41,7 @@ class SignalRuleDefinition(BaseModel):
     type: str  # RuleType value — Sprint 2: "threshold" only
     condition: RuleCondition
     signal_direction: str  # bullish | bearish | neutral
-    signal_strength: str   # strong | moderate | weak
+    signal_strength: str  # strong | moderate | weak
     signal_confidence: float = 0.5
     interpretation: str
 
@@ -54,7 +51,7 @@ class RuleEvaluation(BaseModel):
 
     rule: SignalRuleDefinition
     triggered: bool = False
-    input_value: Optional[float] = None
+    input_value: float | None = None
     condition_str: str = ""
 
 

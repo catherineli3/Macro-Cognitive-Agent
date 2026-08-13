@@ -8,7 +8,7 @@ Full version history is retained for audit and trajectory analysis.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 from uuid import uuid4
@@ -77,7 +77,9 @@ class BeliefVersionManager:
 
         self._beliefs[belief_id] = belief
         await self._persist_belief(belief)
-        logger.info("belief_created id=%s dim=%s channel=%s v=1", belief_id, dimension, transmission_channel)
+        logger.info(
+            "belief_created id=%s dim=%s channel=%s v=1", belief_id, dimension, transmission_channel
+        )
         return belief
 
     async def create_version(
@@ -117,7 +119,7 @@ class BeliefVersionManager:
 
         if learning_unit.precondition_change is not None:
             pc = learning_unit.precondition_change
-            old_val = new_preconditions.get(pc.key)
+            _old_val = new_preconditions.get(pc.key)
             new_preconditions[pc.key] = pc.value
             changes["preconditions"] = f"+{pc.key}={pc.value}"
 
@@ -162,11 +164,13 @@ class BeliefVersionManager:
         await self._persist_belief(belief)
         logger.info(
             "belief_versioned id=%s v=%d changes=%s",
-            belief.belief_id, new_version_num, list(changes.keys()),
+            belief.belief_id,
+            new_version_num,
+            list(changes.keys()),
         )
         return belief
 
-    async def get(self, belief_id: str) -> Optional[AdaptiveBelief]:
+    async def get(self, belief_id: str) -> AdaptiveBelief | None:
         """Retrieve a belief by ID."""
         await self._ensure_loaded()
         return self._beliefs.get(belief_id)
@@ -179,18 +183,12 @@ class BeliefVersionManager:
     async def get_by_dimension(self, dimension: str) -> list[AdaptiveBelief]:
         """Get all beliefs for a dimension."""
         await self._ensure_loaded()
-        return [
-            b for b in self._beliefs.values()
-            if b.dimension.lower() == dimension.lower()
-        ]
+        return [b for b in self._beliefs.values() if b.dimension.lower() == dimension.lower()]
 
     async def get_by_channel(self, channel: str) -> list[AdaptiveBelief]:
         """Get all beliefs for a transmission channel."""
         await self._ensure_loaded()
-        return [
-            b for b in self._beliefs.values()
-            if b.transmission_channel == channel
-        ]
+        return [b for b in self._beliefs.values() if b.transmission_channel == channel]
 
     async def get_version_history(self, belief_id: str) -> list[BeliefVersion]:
         """Get full version history for a belief."""
@@ -203,7 +201,7 @@ class BeliefVersionManager:
         self,
         belief_id: str,
         was_correct: bool,
-    ) -> Optional[AdaptiveBelief]:
+    ) -> AdaptiveBelief | None:
         """Update cycle_count, correct_count, and streak after an outcome."""
         belief = await self.get(belief_id)
         if belief is None:
@@ -223,7 +221,7 @@ class BeliefVersionManager:
         await self._persist_belief(belief)
         return belief
 
-    async def rollback(self, belief_id: str, target_version: int) -> Optional[AdaptiveBelief]:
+    async def rollback(self, belief_id: str, target_version: int) -> AdaptiveBelief | None:
         """Emergency rollback to a prior version."""
         belief = await self.get(belief_id)
         if belief is None:
@@ -256,7 +254,12 @@ class BeliefVersionManager:
         belief.version_history.append(new_v)
 
         await self._persist_belief(belief)
-        logger.warning("belief_rolled_back id=%s from=v%d to=v%d", belief_id, belief.current_version, target_version)
+        logger.warning(
+            "belief_rolled_back id=%s from=v%d to=v%d",
+            belief_id,
+            belief.current_version,
+            target_version,
+        )
         return belief
 
     # ── Migration: V2 → V3 ──────────────────────────────────────────────
@@ -320,6 +323,8 @@ class BeliefVersionManager:
         data = {
             "beliefs": beliefs_data,
             "total": len(beliefs_data),
-            "persisted_at": datetime.now(timezone.utc).isoformat(),
+            "persisted_at": datetime.now(UTC).isoformat(),
         }
-        index_path.write_text(json.dumps(data, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+        index_path.write_text(
+            json.dumps(data, indent=2, ensure_ascii=False, default=str), encoding="utf-8"
+        )

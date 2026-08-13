@@ -14,14 +14,12 @@ Adds to MacroSnapshot:
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 from src.data_pipeline.feature_engine import FeatureSnapshot
-from src.data_pipeline.state_vector import MacroStateVector, StateVectorDimension
+from src.data_pipeline.state_vector import MacroStateVector
 from src.data_pipeline.validator import ValidationResult
 from src.shared.logging import get_logger
 
@@ -41,7 +39,7 @@ class QualityReport:
     failed: int = 0
     pass_rate: float = 1.0
     issues: list[str] = field(default_factory=list)
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 @dataclass
@@ -50,7 +48,7 @@ class SourceReport:
 
     sources_used: list[str] = field(default_factory=list)
     indicators_per_source: dict[str, int] = field(default_factory=dict)
-    collection_timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    collection_timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     notes: str = ""
 
 
@@ -79,7 +77,7 @@ class SnapshotBuilder:
         self,
         state_vector: MacroStateVector,
         features: FeatureSnapshot,
-        validation: Optional[ValidationResult] = None,
+        validation: ValidationResult | None = None,
     ) -> dict:
         """Build the final MacroSnapshot as a dictionary.
 
@@ -93,7 +91,7 @@ class SnapshotBuilder:
         snapshot = {
             "meta": {
                 "pipeline_version": "M1",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "risk_regime": state_vector.risk_regime,
                 "dominant_theme": state_vector.dominant_theme,
                 "aggregate_score": state_vector.aggregate_score,
@@ -150,7 +148,7 @@ class SnapshotBuilder:
         )
         return snapshot
 
-    def persist(self, snapshot: dict, date_str: Optional[str] = None) -> str:
+    def persist(self, snapshot: dict, date_str: str | None = None) -> str:
         """Persist snapshot to JSON file.
 
         Args:
@@ -161,7 +159,7 @@ class SnapshotBuilder:
             Path to the saved file.
         """
         if date_str is None:
-            date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            date_str = datetime.now(UTC).strftime("%Y-%m-%d")
 
         filename = self._output_dir / f"macro_snapshot_{date_str}.json"
         with open(filename, "w", encoding="utf-8") as f:

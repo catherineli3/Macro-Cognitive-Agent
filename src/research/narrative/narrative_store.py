@@ -10,9 +10,8 @@ Narratives evolve over time. The store provides:
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 from src.research.narrative.schemas import Narrative
 from src.shared.logging import get_logger
@@ -41,7 +40,7 @@ class NarrativeStore:
     def save(
         self,
         narratives: list[Narrative],
-        date_str: Optional[str] = None,
+        date_str: str | None = None,
     ) -> str:
         """Save narratives to disk.
 
@@ -52,13 +51,13 @@ class NarrativeStore:
         Returns:
             Path to saved file.
         """
-        date_str = date_str or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        date_str = date_str or datetime.now(UTC).strftime("%Y-%m-%d")
         date_dir = self._store_dir / date_str
         date_dir.mkdir(parents=True, exist_ok=True)
 
         data = {
             "date": date_str,
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "narrative_count": len(narratives),
             "narratives": [n.to_dict() for n in narratives],
         }
@@ -75,32 +74,32 @@ class NarrativeStore:
         logger.info("narrative_store_saved | %s | %d narratives", date_str, len(narratives))
         return str(filepath)
 
-    def load_latest(self) -> Optional[list[Narrative]]:
+    def load_latest(self) -> list[Narrative] | None:
         """Load the most recent narratives."""
         latest_path = self._store_dir / "latest.json"
         if not latest_path.exists():
             logger.warning("narrative_store_no_latest")
             return None
 
-        with open(latest_path, "r", encoding="utf-8") as f:
+        with open(latest_path, encoding="utf-8") as f:
             data = json.load(f)
 
         return self._deserialize(data.get("narratives", []))
 
-    def load_date(self, date_str: str) -> Optional[list[Narrative]]:
+    def load_date(self, date_str: str) -> list[Narrative] | None:
         """Load narratives for a specific date."""
         filepath = self._store_dir / date_str / "narratives.json"
         if not filepath.exists():
             return None
 
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(filepath, encoding="utf-8") as f:
             data = json.load(f)
 
         return self._deserialize(data.get("narratives", []))
 
     def detect_changes(
         self,
-        previous: Optional[list[Narrative]],
+        previous: list[Narrative] | None,
         current: list[Narrative],
     ) -> dict:
         """Detect what changed between two narrative sets.
@@ -172,17 +171,19 @@ class NarrativeStore:
         for date_dir in date_dirs:
             filepath = date_dir / "narratives.json"
             if filepath.exists():
-                with open(filepath, "r", encoding="utf-8") as f:
+                with open(filepath, encoding="utf-8") as f:
                     data = json.load(f)
                 for n_data in data.get("narratives", []):
                     if n_data.get("title") == narrative_title:
-                        history.append({
-                            "date": date_dir.name,
-                            "confidence": n_data["confidence"],
-                            "composite_score": n_data["composite_score"],
-                            "strength": n_data["strength"],
-                            "is_active": n_data.get("is_active", True),
-                        })
+                        history.append(
+                            {
+                                "date": date_dir.name,
+                                "confidence": n_data["confidence"],
+                                "composite_score": n_data["composite_score"],
+                                "strength": n_data["strength"],
+                                "is_active": n_data.get("is_active", True),
+                            }
+                        )
                         break
 
         return history

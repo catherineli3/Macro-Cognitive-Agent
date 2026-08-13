@@ -96,8 +96,7 @@ class ConfidenceCalculator:
         confidence = max(0.0, min(1.0, confidence))
 
         logger.debug(
-            "confidence_calculated "
-            "agreement=%.2f strength=%.2f coverage=%.2f → final=%.2f",
+            "confidence_calculated " "agreement=%.2f strength=%.2f coverage=%.2f → final=%.2f",
             agreement,
             strength,
             coverage,

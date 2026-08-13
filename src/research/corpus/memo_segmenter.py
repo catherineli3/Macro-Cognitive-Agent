@@ -10,14 +10,14 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Optional
 
-from src.research.corpus.schemas import ResearchDocument, Paragraph
+from src.research.corpus.schemas import Paragraph, ResearchDocument
 
 
 @dataclass
 class MemoSection:
     """A named, semantically meaningful section of a research memo."""
+
     name: str
     heading: str
     paragraphs: list[Paragraph] = field(default_factory=list)
@@ -27,7 +27,7 @@ class MemoSection:
 
     @property
     def text(self) -> str:
-        return ' '.join(p.text for p in self.paragraphs)
+        return " ".join(p.text for p in self.paragraphs)
 
 
 class MemoSegmenter:
@@ -47,50 +47,71 @@ class MemoSegmenter:
     # Section heading patterns mapped to standard section names
     SECTION_PATTERNS: dict[str, list[str]] = {
         "executive_summary": [
-            r'executive\s+summary', r'summary\s+(?:and\s+)?conclusions?',
-            r'key\s+takeaways?', r'in\s+brief', r'at\s+a\s+glance',
-            r'bottom\s+line', r'overview',
+            r"executive\s+summary",
+            r"summary\s+(?:and\s+)?conclusions?",
+            r"key\s+takeaways?",
+            r"in\s+brief",
+            r"at\s+a\s+glance",
+            r"bottom\s+line",
+            r"overview",
         ],
         "market_review": [
-            r'market\s+(?:review|recap|wrap|summary|update)',
-            r'(?:last|this)\s+week(?:\s+in\s+markets?)?',
-            r'performance\s+review', r'market\s+action',
-            r'price\s+action', r'asset\s+class\s+performance',
+            r"market\s+(?:review|recap|wrap|summary|update)",
+            r"(?:last|this)\s+week(?:\s+in\s+markets?)?",
+            r"performance\s+review",
+            r"market\s+action",
+            r"price\s+action",
+            r"asset\s+class\s+performance",
         ],
         "macro_outlook": [
-            r'macro\s+(?:outlook|view|forecast|update)',
-            r'economic\s+(?:outlook|projections?|forecast|update)',
-            r'growth\s+(?:outlook|forecast)', r'global\s+(?:outlook|economy)',
-            r'gdp\s+(?:growth\s+)?(?:forecast|outlook)',
+            r"macro\s+(?:outlook|view|forecast|update)",
+            r"economic\s+(?:outlook|projections?|forecast|update)",
+            r"growth\s+(?:outlook|forecast)",
+            r"global\s+(?:outlook|economy)",
+            r"gdp\s+(?:growth\s+)?(?:forecast|outlook)",
         ],
         "key_themes": [
-            r'key\s+themes?', r'(?:dominant|major|top)\s+(?:themes?|narratives?)',
-            r'what\s+(?:we|i)\s+(?:are|am)\s+(?:watching|tracking|monitoring)',
-            r'(?:our|the)\s+(?:view|take|read)',
+            r"key\s+themes?",
+            r"(?:dominant|major|top)\s+(?:themes?|narratives?)",
+            r"what\s+(?:we|i)\s+(?:are|am)\s+(?:watching|tracking|monitoring)",
+            r"(?:our|the)\s+(?:view|take|read)",
         ],
         "policy_analysis": [
-            r'(?:monetary|fiscal)\s+policy', r'central\s+bank',
-            r'fed(?:eral\s+reserve)?\s+(?:policy|outlook|watch)',
-            r'ecb|boj|pboc|boe', r'rate\s+(?:decision|path|outlook)',
-            r'policy\s+(?:analysis|outlook|update|review)',
+            r"(?:monetary|fiscal)\s+policy",
+            r"central\s+bank",
+            r"fed(?:eral\s+reserve)?\s+(?:policy|outlook|watch)",
+            r"ecb|boj|pboc|boe",
+            r"rate\s+(?:decision|path|outlook)",
+            r"policy\s+(?:analysis|outlook|update|review)",
         ],
         "risk_factors": [
-            r'risk\s+(?:factors?|assessment|analysis|monitor|watch)',
-            r'key\s+risks?', r'downside\s+risks?', r'upside\s+risks?',
-            r'tail\s+risks?', r'what\s+(?:could|could)\s+go\s+wrong',
-            r'vulnerabilit', r'worries?', r'concerns?',
+            r"risk\s+(?:factors?|assessment|analysis|monitor|watch)",
+            r"key\s+risks?",
+            r"downside\s+risks?",
+            r"upside\s+risks?",
+            r"tail\s+risks?",
+            r"what\s+(?:could|could)\s+go\s+wrong",
+            r"vulnerabilit",
+            r"worries?",
+            r"concerns?",
         ],
         "investment_implications": [
-            r'investment\s+(?:implications?|conclusions?|strategy|view)',
-            r'portfolio\s+(?:implications?|strategy|positioning)',
-            r'asset\s+allocation', r'positioning',
-            r'what\s+(?:to\s+do|this\s+means)', r'strategy\s+implications?',
-            r'trade\s+(?:ideas?|recommendations?)',
+            r"investment\s+(?:implications?|conclusions?|strategy|view)",
+            r"portfolio\s+(?:implications?|strategy|positioning)",
+            r"asset\s+allocation",
+            r"positioning",
+            r"what\s+(?:to\s+do|this\s+means)",
+            r"strategy\s+implications?",
+            r"trade\s+(?:ideas?|recommendations?)",
         ],
         "conclusion": [
-            r'conclusion', r'final\s+thoughts?', r'wrap(?:\s*up|-up)',
-            r'summary\s+(?:and\s+)?outlook', r'looking\s+ahead',
-            r'what\s+(?:comes|lies)\s+ahead', r'forward\s+(?:view|outlook)',
+            r"conclusion",
+            r"final\s+thoughts?",
+            r"wrap(?:\s*up|-up)",
+            r"summary\s+(?:and\s+)?outlook",
+            r"looking\s+ahead",
+            r"what\s+(?:comes|lies)\s+ahead",
+            r"forward\s+(?:view|outlook)",
         ],
     }
 
@@ -137,6 +158,7 @@ class MemoSegmenter:
     def segment_text(self, text: str) -> list[MemoSection]:
         """Segment raw text (quick path without full ResearchDocument)."""
         from src.research.corpus.pdf_parser import PDFParser
+
         parser = PDFParser()
         doc = parser.parse_from_text(text)
         return self.segment(doc)
@@ -157,7 +179,7 @@ class MemoSegmenter:
         Returns: list of (paragraph_index, section_name, matched_heading)
         """
         boundaries = []
-        compressed = re.compile(r'\s+')
+        compressed = re.compile(r"\s+")
 
         for i, para in enumerate(paragraphs):
             text = para.text
@@ -165,7 +187,7 @@ class MemoSegmenter:
             if para.word_count > 20:
                 continue
 
-            text_normalized = compressed.sub(' ', text.lower())
+            text_normalized = compressed.sub(" ", text.lower())
 
             for section_name, patterns in self.SECTION_PATTERNS.items():
                 for pattern in patterns:
@@ -199,14 +221,16 @@ class MemoSegmenter:
 
             word_count = sum(p.word_count for p in section_paras)
 
-            sections.append(MemoSection(
-                name=name,
-                heading=heading,
-                paragraphs=section_paras,
-                start_index=start_idx,
-                end_index=end_idx,
-                word_count=word_count,
-            ))
+            sections.append(
+                MemoSection(
+                    name=name,
+                    heading=heading,
+                    paragraphs=section_paras,
+                    start_index=start_idx,
+                    end_index=end_idx,
+                    word_count=word_count,
+                )
+            )
 
         return sections
 
@@ -218,17 +242,17 @@ class MemoSegmenter:
         """Attempt to classify sections labeled 'preamble' using content signals."""
         content_signals = {
             "executive_summary": [
-                r'(?:in\s+summary|key\s+takeaway|bottom\s+line|our\s+core\s+view)',
-                r'(?:we\s+(?:believe|see|expect|think|forecast|project))',
+                r"(?:in\s+summary|key\s+takeaway|bottom\s+line|our\s+core\s+view)",
+                r"(?:we\s+(?:believe|see|expect|think|forecast|project))",
             ],
             "market_review": [
-                r'(?:s&p\s+500|nasdaq|dow\s+jones|equity\s+market)',
-                r'(?:treasury\s+yield|bond\s+market|credit\s+spread)',
-                r'(?:rall(?:y|ied)|s(?:old\s+off|elloff)|decline)',
+                r"(?:s&p\s+500|nasdaq|dow\s+jones|equity\s+market)",
+                r"(?:treasury\s+yield|bond\s+market|credit\s+spread)",
+                r"(?:rall(?:y|ied)|s(?:old\s+off|elloff)|decline)",
             ],
             "macro_outlook": [
-                r'(?:gdp\s+growth|economic\s+growth|recession|expansion)',
-                r'(?:leading\s+indicators?|pmi|ism|industrial\s+production)',
+                r"(?:gdp\s+growth|economic\s+growth|recession|expansion)",
+                r"(?:leading\s+indicators?|pmi|ism|industrial\s+production)",
             ],
         }
 
@@ -236,7 +260,7 @@ class MemoSegmenter:
             if section.name != "preamble":
                 continue
 
-            section_text = ' '.join(p.text.lower() for p in section.paragraphs)
+            section_text = " ".join(p.text.lower() for p in section.paragraphs)
 
             best_match = ""
             best_score = 0
@@ -279,8 +303,11 @@ class MemoSegmenter:
     def find_reasoning_sections(self, doc: ResearchDocument) -> list[MemoSection]:
         """Find sections most likely to contain causal reasoning."""
         reasoning_section_names = {
-            "key_themes", "macro_outlook", "policy_analysis",
-            "investment_implications", "conclusion",
+            "key_themes",
+            "macro_outlook",
+            "policy_analysis",
+            "investment_implications",
+            "conclusion",
         }
         sections = self.segment(doc)
         return [s for s in sections if s.name in reasoning_section_names]

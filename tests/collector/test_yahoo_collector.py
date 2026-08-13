@@ -7,7 +7,7 @@ Covers:
     - Source name property
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -39,10 +39,12 @@ class TestYahooCollector:
     def test_source_name(self, collector: YahooCollector) -> None:
         assert collector.source_name == "Yahoo"
 
-    def test_raw_to_schema_mapping(self, collector: YahooCollector, dxy_indicator: MacroIndicator) -> None:
+    def test_raw_to_schema_mapping(
+        self, collector: YahooCollector, dxy_indicator: MacroIndicator
+    ) -> None:
         """Verify the internal mapping from raw dict to MacroDataSchema."""
         raw = {
-            "date": datetime(2026, 7, 13, 10, 0, 0, tzinfo=timezone.utc),
+            "date": datetime(2026, 7, 13, 10, 0, 0, tzinfo=UTC),
             "open": 104.0,
             "high": 105.0,
             "low": 103.5,
@@ -59,7 +61,9 @@ class TestYahooCollector:
 
     @pytest.mark.asyncio
     @pytest.mark.external_api  # Depends on Yahoo Finance — may be rate-limited
-    async def test_collect_dxy(self, collector: YahooCollector, dxy_indicator: MacroIndicator) -> None:
+    async def test_collect_dxy(
+        self, collector: YahooCollector, dxy_indicator: MacroIndicator
+    ) -> None:
         """Integration test: fetch DXY from Yahoo Finance.
 
         Note: Yahoo Finance API may rate-limit. If this test fails with

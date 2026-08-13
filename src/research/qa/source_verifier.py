@@ -9,7 +9,6 @@ Every claim should be traceable to either:
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from src.research.qa.schemas import DimensionScore, MemoGrade
 
@@ -37,9 +36,9 @@ class SourceVerifier:
     }
 
     CITATION_PATTERNS = [
-        r'\[(\d+(?:,\s*\d+)*)\]',           # [1], [1,2,3]
-        r'\(([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),\s*(\d{4})\)',  # (Author, 2024)
-        r'\(([A-Z]+),\s*(\d{4})\)',          # (BLS, 2024)
+        r"\[(\d+(?:,\s*\d+)*)\]",  # [1], [1,2,3]
+        r"\(([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),\s*(\d{4})\)",  # (Author, 2024)
+        r"\(([A-Z]+),\s*(\d{4})\)",  # (BLS, 2024)
     ]
 
     def __init__(self):
@@ -94,30 +93,22 @@ class SourceVerifier:
             )
         elif len(found_sources) < 5:
             deductions += 15
-            score.findings.append(
-                f"Moderate source diversity: {len(found_sources)} sources"
-            )
+            score.findings.append(f"Moderate source diversity: {len(found_sources)} sources")
 
         # Explicit citations
         if len(citations) < 2:
             deductions += 25
-            score.findings.append(
-                "Few formal citations — data claims need explicit referencing"
-            )
+            score.findings.append("Few formal citations — data claims need explicit referencing")
         elif len(citations) < 5:
             deductions += 10
-            score.findings.append(
-                f"Limited formal citations: {len(citations)} found"
-            )
+            score.findings.append(f"Limited formal citations: {len(citations)} found")
 
         # Coverage: key source types
         key_types = ["FED", "BLS", "BEA", "IMF", "BIS"]
         missing = [s for s in key_types if s not in found_sources]
         if len(missing) > 3:
             deductions += 20
-            score.findings.append(
-                f"Missing key source types: {', '.join(missing[:3])}"
-            )
+            score.findings.append(f"Missing key source types: {', '.join(missing[:3])}")
 
         score.score = max(100 - deductions, 0)
         score.grade = self._to_grade(score.score)
@@ -126,12 +117,8 @@ class SourceVerifier:
             score.details = f"Sources found: {', '.join(sorted(found_sources))}"
 
         if score.score < 80:
-            score.recommendations.append(
-                "Add explicit data source citations (BLS, BEA, Fed, etc.)"
-            )
-            score.recommendations.append(
-                "Include formal citation brackets [1], [2] for key claims"
-            )
+            score.recommendations.append("Add explicit data source citations (BLS, BEA, Fed, etc.)")
+            score.recommendations.append("Include formal citation brackets [1], [2] for key claims")
 
         return score
 

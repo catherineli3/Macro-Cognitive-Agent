@@ -10,8 +10,7 @@ Key concepts (from Soros):
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
 
 @dataclass
@@ -74,7 +73,7 @@ class CapitalFlowSnapshot:
     the capital leg of the Narrative → Capital → Price triangle.
     """
 
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     # Equity flows
     equity_flow_direction: str = ""  # "inflow" / "outflow" / "neutral"
@@ -171,7 +170,7 @@ class ReflexivityCycle:
     reversal_candidates: list[str] = field(default_factory=list)
 
     # Meta
-    detected_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    detected_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     confidence: float = 0.0
 
     def to_dict(self) -> dict:
@@ -202,20 +201,20 @@ class ReflexivityReport:
     """Complete reflexivity analysis output."""
 
     report_id: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     # Active beliefs
     active_beliefs: list[MarketBelief] = field(default_factory=list)
 
     # Latest capital flow
-    capital_flows: Optional[CapitalFlowSnapshot] = None
+    capital_flows: CapitalFlowSnapshot | None = None
 
     # Detected cycles
     detected_cycles: list[ReflexivityCycle] = field(default_factory=list)
 
     # Summary
     reflexivity_score: float = 0.0  # Overall reflexivity intensity (0-1)
-    most_dangerous_cycle: Optional[ReflexivityCycle] = None
+    most_dangerous_cycle: ReflexivityCycle | None = None
     key_warning_signals: list[str] = field(default_factory=list)
     summary: str = ""
 
@@ -227,8 +226,9 @@ class ReflexivityReport:
             "active_beliefs_count": len(self.active_beliefs),
             "detected_cycles_count": len(self.detected_cycles),
             "cycles": [c.to_dict() for c in self.detected_cycles],
-            "most_dangerous_cycle": self.most_dangerous_cycle.to_dict()
-                                   if self.most_dangerous_cycle else None,
+            "most_dangerous_cycle": (
+                self.most_dangerous_cycle.to_dict() if self.most_dangerous_cycle else None
+            ),
             "key_warnings": self.key_warning_signals,
             "capital_flows": self.capital_flows.to_dict() if self.capital_flows else None,
             "summary": self.summary,

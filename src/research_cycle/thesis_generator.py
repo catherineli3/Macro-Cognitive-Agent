@@ -13,11 +13,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.schemas.research import ResearchFramework, ResearchPrinciple, PrincipleStrength
-from src.schemas.research_thesis import ResearchThesis, ThesisStatus
-from src.schemas.macro_snapshot import MacroSnapshot
-from src.schemas.hypothesis import HypothesisSchema, HypothesisSet
 from src.research_cycle.framework_selector import FrameworkSelection
+from src.schemas.hypothesis import HypothesisSet
+from src.schemas.macro_snapshot import MacroSnapshot
+from src.schemas.research import ResearchPrinciple
+from src.schemas.research_thesis import ResearchThesis, ThesisStatus
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -53,9 +53,9 @@ class ThesisGenerator:
         macro_snapshot: MacroSnapshot,
         hypotheses: HypothesisSet | None = None,
         extra_evidence: list[str] | None = None,
-        narratives: list | None = None,     # V3.1
-        beliefs: list | None = None,         # V3.1
-        judgments: Any = None,                # V3.2: JudgmentOutput
+        narratives: list | None = None,  # V3.1
+        beliefs: list | None = None,  # V3.1
+        judgments: Any = None,  # V3.2: JudgmentOutput
     ) -> ResearchThesis:
         """Generate a Research Thesis from framework selection and data.
 
@@ -75,7 +75,9 @@ class ThesisGenerator:
 
         # ── Step 1: Synthesize core belief ──────────────────────────
         thesis.core_belief = self._synthesize_core_belief(
-            selection, hypotheses, macro_snapshot,
+            selection,
+            hypotheses,
+            macro_snapshot,
             narratives=narratives,
             beliefs=beliefs,
             judgments=judgments,
@@ -84,12 +86,15 @@ class ThesisGenerator:
 
         # ── Step 2: Derive transmission chain ───────────────────────
         thesis.transmission_chain = self._derive_transmission_chain(
-            selection, macro_snapshot,
+            selection,
+            macro_snapshot,
         )
 
         # ── Step 3: Collect evidence ────────────────────────────────
         thesis.evidence = self._collect_evidence(
-            selection, macro_snapshot, extra_evidence,
+            selection,
+            macro_snapshot,
+            extra_evidence,
             narratives=narratives,
             beliefs=beliefs,
             judgments=judgments,
@@ -97,12 +102,16 @@ class ThesisGenerator:
 
         # ── Step 4: Generate counter arguments ──────────────────────
         thesis.counter_arguments = self._generate_counter_arguments(
-            selection, macro_snapshot, judgments=judgments,
+            selection,
+            macro_snapshot,
+            judgments=judgments,
         )
 
         # ── Step 5: Define invalidation conditions ──────────────────
         thesis.invalidation_conditions = self._define_invalidation_conditions(
-            selection, macro_snapshot, judgments=judgments,
+            selection,
+            macro_snapshot,
+            judgments=judgments,
         )
 
         # ── Step 6: Set confidence ──────────────────────────────────
@@ -124,12 +133,19 @@ class ThesisGenerator:
         if thesis.is_well_formed:
             thesis.status = ThesisStatus.DRAFT
         else:
-            logger.warning("Thesis not well-formed: title=%s, chain=%d, evidence=%d",
-                           bool(thesis.title), len(thesis.transmission_chain),
-                           len(thesis.evidence))
+            logger.warning(
+                "Thesis not well-formed: title=%s, chain=%d, evidence=%d",
+                bool(thesis.title),
+                len(thesis.transmission_chain),
+                len(thesis.evidence),
+            )
 
-        logger.info("Generated thesis '%s' confidence=%.2f regime=%s",
-                     thesis.title, thesis.confidence, thesis.regime_label)
+        logger.info(
+            "Generated thesis '%s' confidence=%.2f regime=%s",
+            thesis.title,
+            thesis.confidence,
+            thesis.regime_label,
+        )
         return thesis
 
     # ── Synthesis Steps ────────────────────────────────────────────────
@@ -156,29 +172,27 @@ class ThesisGenerator:
         parts = []
 
         # ── V3.2: Research Judgment convictions (highest priority) ──
-        if judgments and hasattr(judgments, 'judgments'):
-            judge_list = sorted(
-                judgments.judgments, key=lambda j: j.confidence, reverse=True
-            )[:2]
+        if judgments and hasattr(judgments, "judgments"):
+            judge_list = sorted(judgments.judgments, key=lambda j: j.confidence, reverse=True)[:2]
             for j in judge_list:
                 parts.append(f"I believe: {j.conviction_statement} ({j.confidence:.0%})")
 
         # ── V3.1: Narrative-derived beliefs ─────────────────────────
         if beliefs:
-            top_beliefs = sorted(
-                beliefs, key=lambda b: getattr(b, 'confidence', 0), reverse=True
-            )[:3]
+            top_beliefs = sorted(beliefs, key=lambda b: getattr(b, "confidence", 0), reverse=True)[
+                :3
+            ]
             for b in top_beliefs:
-                title = getattr(b, 'title', '') or getattr(b, 'belief_title', '')
-                conf = getattr(b, 'confidence', 0)
+                title = getattr(b, "title", "") or getattr(b, "belief_title", "")
+                conf = getattr(b, "confidence", 0)
                 if title:
                     parts.append(f"Belief[{conf:.0%}]: {title}")
         if narratives:
             top_narr = sorted(
-                narratives, key=lambda n: getattr(n, 'composite_score', 0), reverse=True
+                narratives, key=lambda n: getattr(n, "composite_score", 0), reverse=True
             )[:2]
             for n in top_narr:
-                title = getattr(n, 'title', '')
+                title = getattr(n, "title", "")
                 if title and not any(title.lower() in p.lower() for p in parts):
                     parts.append(f"Narrative: {title}")
 
@@ -190,7 +204,7 @@ class ThesisGenerator:
         # Hypothesis provides the directional view
         if hypotheses and hypotheses.hypotheses:
             top_h = hypotheses.hypotheses[0]
-            belief = getattr(top_h, 'belief_summary', None) or getattr(top_h, 'description', None)
+            belief = getattr(top_h, "belief_summary", None) or getattr(top_h, "description", None)
             if belief:
                 parts.append(str(belief)[:150])
 
@@ -280,8 +294,14 @@ class ThesisGenerator:
         # From macro_snapshot signals
         for signal in macro_snapshot.signals[:5]:
             if hasattr(signal, "indicator") and hasattr(signal, "direction"):
-                direction = signal.direction.value if hasattr(signal.direction, "value") else str(signal.direction)
-                evidence.append(f"{signal.indicator}: {direction} (confidence: {getattr(signal, 'confidence', 'N/A')})")
+                direction = (
+                    signal.direction.value
+                    if hasattr(signal.direction, "value")
+                    else str(signal.direction)
+                )
+                evidence.append(
+                    f"{signal.indicator}: {direction} (confidence: {getattr(signal, 'confidence', 'N/A')})"
+                )
 
         # From framework principles
         principles = self._get_principles(selection)
@@ -302,7 +322,7 @@ class ThesisGenerator:
             evidence.extend(extra_evidence)
 
         # ── V3.2: Judgment reasoning chains ─────────────────────────
-        if judgments and hasattr(judgments, 'judgments'):
+        if judgments and hasattr(judgments, "judgments"):
             for j in judgments.judgments[:2]:
                 for reason in j.reasoning_chain[:2]:
                     evidence.append(f"Judgment reason: {reason[:120]}")
@@ -310,13 +330,13 @@ class ThesisGenerator:
         # ── V3.1: Narrative + Belief evidence ──────────────────────
         if narratives:
             for n in narratives[:2]:
-                title = getattr(n, 'title', '')
+                title = getattr(n, "title", "")
                 if title:
                     evidence.append(f"Narrative: {title}")
         if beliefs:
             for b in beliefs[:2]:
-                title = getattr(b, 'title', '') or getattr(b, 'belief_title', '')
-                conf = getattr(b, 'confidence', 0)
+                title = getattr(b, "title", "") or getattr(b, "belief_title", "")
+                conf = getattr(b, "confidence", 0)
                 if title:
                     evidence.append(f"Belief[{conf:.0%}]: {title}")
 
@@ -345,7 +365,7 @@ class ThesisGenerator:
         counter_args = []
 
         # ── V3.2: Competing beliefs from judgment graph ─────────────
-        if judgments and hasattr(judgments, 'judgments'):
+        if judgments and hasattr(judgments, "judgments"):
             for j in judgments.judgments:
                 for comp_title in j.competing_beliefs:
                     entry = f"Competing belief: {comp_title}"
@@ -360,9 +380,7 @@ class ThesisGenerator:
         if len(selection.ranked) > 1:
             second_fw = selection.ranked[1][0]
             if second_fw.thesis:
-                counter_args.append(
-                    f"Competing view ({second_fw.name}): {second_fw.thesis[:150]}"
-                )
+                counter_args.append(f"Competing view ({second_fw.name}): {second_fw.thesis[:150]}")
 
         # Counter from regime risk
         regime = macro_snapshot.regime
@@ -386,7 +404,7 @@ class ThesisGenerator:
         # Counter from data
         if macro_snapshot.market.indicators:
             # Check for conflicting signals
-            dxy = macro_snapshot.market.get("dxy", 0)
+            _dxy = macro_snapshot.market.get("dxy", 0)
             vix = macro_snapshot.market.get("vix", 0)
             if vix > 25:
                 counter_args.append(
@@ -412,7 +430,7 @@ class ThesisGenerator:
         conditions = []
 
         # ── V3.2: Falsification conditions from ResearchJudgment ────
-        if judgments and hasattr(judgments, 'judgments'):
+        if judgments and hasattr(judgments, "judgments"):
             for j in judgments.judgments[:3]:
                 for cond in j.falsification_conditions[:2]:
                     conditions.append(f"{cond}")
@@ -476,7 +494,7 @@ class ThesisGenerator:
         """
         # ── V3.2: Judgment confidence (primary) ────────────────────
         judgment_conf = 0.5
-        if judgments and hasattr(judgments, 'judgments') and judgments.judgments:
+        if judgments and hasattr(judgments, "judgments") and judgments.judgments:
             confs = [j.confidence for j in judgments.judgments]
             judgment_conf = sum(confs) / len(confs)
 
@@ -550,7 +568,9 @@ class ThesisGenerator:
                 # Filter to principles from selected frameworks
                 selected_fw_ids = {fw.framework_id for fw, _ in selection.ranked[:3]}
                 for p in all_principles:
-                    if any(fid in selected_fw_ids for fid in (p.metadata or {}).get("frameworks", [])):
+                    if any(
+                        fid in selected_fw_ids for fid in (p.metadata or {}).get("frameworks", [])
+                    ):
                         principles.append(p)
                 # If no framework-linked principles, return all active
                 if not principles:

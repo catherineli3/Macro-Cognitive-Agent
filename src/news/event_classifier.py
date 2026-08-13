@@ -7,10 +7,12 @@ and auditable.
 
 from __future__ import annotations
 
-from typing import Any, Optional
-
 from src.news.schemas import (
-    ResearchEvent, EventCategory, ImpactDirection, ImpactSeverity, NewsSourceType,
+    EventCategory,
+    ImpactDirection,
+    ImpactSeverity,
+    NewsSourceType,
+    ResearchEvent,
 )
 
 
@@ -30,7 +32,7 @@ class EventClassifier:
         "crypto": ["bitcoin", "crypto", "btc", "eth", "digital asset"],
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def classify(self, event: ResearchEvent) -> ResearchEvent:
@@ -83,22 +85,90 @@ class EventClassifier:
 
         # Text-based rules
         rules = [
-            (["rate hike", "rate cut", "interest rate decision", "fomc", "monetary",
-              "tighten", "easing", "qe", "quantitative", "balance sheet",
-              "forward guidance"], EventCategory.MONETARY_POLICY),
-            (["fiscal", "budget", "deficit", "spending bill", "tax cut", "tax increase",
-              "stimulus", "debt ceiling", "treasury borrowing"], EventCategory.FISCAL_POLICY),
-            (["gdp", "cpi", "ppi", "nfp", "payroll", "unemployment", "jobs report",
-              "pmi", "ism", "retail sales", "housing starts", "consumer confidence",
-              "industrial production", "trade balance"], EventCategory.ECONOMIC_DATA),
-            (["war", "sanction", "conflict", "election", "tariff", "trade dispute",
-              "geopolit", "tension", "invasion"], EventCategory.GEOPOLITICAL),
-            (["stock market", "bond market", "currency", "oil price", "gold price",
-              "market sell", "market rally", "volatility"], EventCategory.MARKET_EVENT),
-            (["speech", "remarks", "testimony", "press conference", "interview"],
-             EventCategory.SPEECH_COMMENTARY),
-            (["regulation", "sec", "cftc", "fdic", "compliance", "capital rule",
-              "basel"], EventCategory.REGULATORY),
+            (
+                [
+                    "rate hike",
+                    "rate cut",
+                    "interest rate decision",
+                    "fomc",
+                    "monetary",
+                    "tighten",
+                    "easing",
+                    "qe",
+                    "quantitative",
+                    "balance sheet",
+                    "forward guidance",
+                ],
+                EventCategory.MONETARY_POLICY,
+            ),
+            (
+                [
+                    "fiscal",
+                    "budget",
+                    "deficit",
+                    "spending bill",
+                    "tax cut",
+                    "tax increase",
+                    "stimulus",
+                    "debt ceiling",
+                    "treasury borrowing",
+                ],
+                EventCategory.FISCAL_POLICY,
+            ),
+            (
+                [
+                    "gdp",
+                    "cpi",
+                    "ppi",
+                    "nfp",
+                    "payroll",
+                    "unemployment",
+                    "jobs report",
+                    "pmi",
+                    "ism",
+                    "retail sales",
+                    "housing starts",
+                    "consumer confidence",
+                    "industrial production",
+                    "trade balance",
+                ],
+                EventCategory.ECONOMIC_DATA,
+            ),
+            (
+                [
+                    "war",
+                    "sanction",
+                    "conflict",
+                    "election",
+                    "tariff",
+                    "trade dispute",
+                    "geopolit",
+                    "tension",
+                    "invasion",
+                ],
+                EventCategory.GEOPOLITICAL,
+            ),
+            (
+                [
+                    "stock market",
+                    "bond market",
+                    "currency",
+                    "oil price",
+                    "gold price",
+                    "market sell",
+                    "market rally",
+                    "volatility",
+                ],
+                EventCategory.MARKET_EVENT,
+            ),
+            (
+                ["speech", "remarks", "testimony", "press conference", "interview"],
+                EventCategory.SPEECH_COMMENTARY,
+            ),
+            (
+                ["regulation", "sec", "cftc", "fdic", "compliance", "capital rule", "basel"],
+                EventCategory.REGULATORY,
+            ),
         ]
 
         for keywords, cat in rules:
@@ -110,8 +180,11 @@ class EventClassifier:
     def _determine_severity(self, event: ResearchEvent) -> ImpactSeverity:
         """Determine event impact severity."""
         # Source authority boosts severity
-        authoritative_sources = {NewsSourceType.CENTRAL_BANK, NewsSourceType.GOVERNMENT_AGENCY,
-                                  NewsSourceType.INTERNATIONAL_ORG}
+        authoritative_sources = {
+            NewsSourceType.CENTRAL_BANK,
+            NewsSourceType.GOVERNMENT_AGENCY,
+            NewsSourceType.INTERNATIONAL_ORG,
+        }
         if event.source_type in authoritative_sources:
             base = ImpactSeverity.HIGH
         else:
@@ -178,13 +251,19 @@ class EventClassifier:
         if event.impact_severity in (ImpactSeverity.CRITICAL, ImpactSeverity.HIGH):
             return True
 
-        authoritative = {NewsSourceType.CENTRAL_BANK, NewsSourceType.GOVERNMENT_AGENCY,
-                          NewsSourceType.INTERNATIONAL_ORG}
+        authoritative = {
+            NewsSourceType.CENTRAL_BANK,
+            NewsSourceType.GOVERNMENT_AGENCY,
+            NewsSourceType.INTERNATIONAL_ORG,
+        }
         if event.source_type in authoritative:
             return True
 
-        macro_categories = {EventCategory.MONETARY_POLICY, EventCategory.FISCAL_POLICY,
-                             EventCategory.ECONOMIC_DATA}
+        macro_categories = {
+            EventCategory.MONETARY_POLICY,
+            EventCategory.FISCAL_POLICY,
+            EventCategory.ECONOMIC_DATA,
+        }
         if event.category in macro_categories:
             if event.key_numbers or event.surprise is not None:
                 return True

@@ -1,17 +1,14 @@
 """Tests for ReflectionHandler — Executor integration."""
 
-from typing import Optional
-
 import pytest
 
 from src.domain.execution import TaskResultStatus
 from src.domain.signal import SignalDirection
+from src.handlers.reflection_handler import ReflectionHandler
+from src.interfaces.task_handler import TaskHandlerInterface
 from src.schemas.hypothesis import HypothesisEvidence, HypothesisSchema, HypothesisSet
 from src.schemas.planning import Task
 from src.schemas.reflection import ReflectionSet
-from src.handlers.reflection_handler import ReflectionHandler
-from src.interfaces.task_handler import TaskHandlerInterface
-
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -56,7 +53,7 @@ def _make_hypothesis(
 class MockContext:
     """Minimal mock of ExecutionContext for handler testing."""
 
-    def __init__(self, artifacts: Optional[dict] = None):
+    def __init__(self, artifacts: dict | None = None):
         self._artifacts = artifacts or {}
 
     def get_artifact(self, key: str, default=None):

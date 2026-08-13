@@ -14,7 +14,6 @@ Checks:
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from src.research.qa.schemas import DimensionScore, MemoGrade
 
@@ -24,50 +23,50 @@ class HallucinationChecker:
 
     # Patterns that suggest unsupported claims
     NUMERICAL_CLAIMS = re.compile(
-        r'\b(\d+(?:\.\d+)?)\s*(?:%|bps|points?|dollars?|trillion|billion|million)\b',
+        r"\b(\d+(?:\.\d+)?)\s*(?:%|bps|points?|dollars?|trillion|billion|million)\b",
         re.IGNORECASE,
     )
 
     CAUSAL_CLAIMS = re.compile(
-        r'\b(?:because|due\s+to|as\s+a\s+result|led\s+to|caused|driven\s+by|resulted\s+in)\b',
+        r"\b(?:because|due\s+to|as\s+a\s+result|led\s+to|caused|driven\s+by|resulted\s+in)\b",
         re.IGNORECASE,
     )
 
     FORECAST_CLAIMS = re.compile(
-        r'\b(?:will\s+(?:be|rise|fall|grow|decline|increase|decrease)|'
-        r'expected\s+to|forecast\s+to|projected\s+to)\b',
+        r"\b(?:will\s+(?:be|rise|fall|grow|decline|increase|decrease)|"
+        r"expected\s+to|forecast\s+to|projected\s+to)\b",
         re.IGNORECASE,
     )
 
     ATTRIBUTION_MARKERS = [
-        r'according\s+to',
-        r'(?:data|source|report)\s+(?:from|by)',
-        r'(?:released|published|reported)\s+by',
-        r'(?:said|stated|noted|commented)\s+(?:that\s+)?',
-        r'(?:per|via)\s+',
-        r'\[[\d,\s]+\]',           # Citation brackets
-        r'\(\w+(?:\s+\w+)*,\s*\d{4}\)',  # Author (Year)
-        r'(?:BLS|BEA|Fed|ECB|IMF|BIS|OECD)\s+(?:data|report|survey)',
+        r"according\s+to",
+        r"(?:data|source|report)\s+(?:from|by)",
+        r"(?:released|published|reported)\s+by",
+        r"(?:said|stated|noted|commented)\s+(?:that\s+)?",
+        r"(?:per|via)\s+",
+        r"\[[\d,\s]+\]",  # Citation brackets
+        r"\(\w+(?:\s+\w+)*,\s*\d{4}\)",  # Author (Year)
+        r"(?:BLS|BEA|Fed|ECB|IMF|BIS|OECD)\s+(?:data|report|survey)",
     ]
 
     # High-risk phrases (often hallucinated)
     HIGH_RISK_PHRASES = [
-        'all experts agree',
-        'everyone knows',
-        'it is obvious that',
-        'clearly',
-        'undoubtedly',
-        'without question',
-        'always',
-        'never',
-        'guaranteed',
-        'certain to',
-        'definitely',
+        "all experts agree",
+        "everyone knows",
+        "it is obvious that",
+        "clearly",
+        "undoubtedly",
+        "without question",
+        "always",
+        "never",
+        "guaranteed",
+        "certain to",
+        "definitely",
     ]
 
     def __init__(self):
         self.attribution_pattern = re.compile(
-            '|'.join(self.ATTRIBUTION_MARKERS),
+            "|".join(self.ATTRIBUTION_MARKERS),
             re.IGNORECASE,
         )
 
@@ -121,9 +120,7 @@ class HallucinationChecker:
                 )
             elif attribution_ratio < 0.5:
                 deductions += 15
-                score.findings.append(
-                    f"Moderate attribution ratio: {attributions}/{total_claims}"
-                )
+                score.findings.append(f"Moderate attribution ratio: {attributions}/{total_claims}")
 
         # 2. Numerical claims without nearby attribution
         if numerical_count > 5 and attributions < 3:
@@ -150,7 +147,7 @@ class HallucinationChecker:
             )
 
         # 5. Check if extreme certainty language without evidence
-        if re.search(r'(?:certain|definitely|guaranteed)', text, re.IGNORECASE):
+        if re.search(r"(?:certain|definitely|guaranteed)", text, re.IGNORECASE):
             if attributions < 3:
                 deductions += 10
                 score.findings.append(
@@ -161,16 +158,12 @@ class HallucinationChecker:
         score.grade = self._to_grade(score.score)
 
         if score.score < 60:
-            score.recommendations.append(
-                "CRITICAL: Add sources/citations for all factual claims"
-            )
+            score.recommendations.append("CRITICAL: Add sources/citations for all factual claims")
         if score.score < 80:
             score.recommendations.append(
                 "Replace absolute language with probabilistic/qualified statements"
             )
-            score.recommendations.append(
-                "Ensure every numerical claim cites its source"
-            )
+            score.recommendations.append("Ensure every numerical claim cites its source")
 
         return score
 

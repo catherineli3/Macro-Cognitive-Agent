@@ -1,12 +1,12 @@
 """Tests for ToolManager — single entry point for Handlers."""
+
 import pytest
 
-from src.tools.base import BaseTool
-from src.tools.registry import ToolRegistry
-from src.tools.manager import ToolManager
-from src.schemas.tool import ToolResult
 from src.domain.tool import ToolResultStatus
-
+from src.schemas.tool import ToolResult
+from src.tools.base import BaseTool
+from src.tools.manager import ToolManager
+from src.tools.registry import ToolRegistry
 
 # ── Test Tools ─────────────────────────────────────────────────────────────
 
@@ -114,9 +114,7 @@ class TestToolManagerExecution:
 
     @pytest.mark.asyncio
     async def test_successful_execution(self, populated_manager):
-        result = await populated_manager.execute(
-            "test.success", {"symbol": "DXY"}
-        )
+        result = await populated_manager.execute("test.success", {"symbol": "DXY"})
         assert result.is_success is True
         assert result.status == ToolResultStatus.SUCCESS
         assert result.tool_name == "SuccessTool"

@@ -9,13 +9,15 @@ Integrates with FrameworkSet for multi-framework coexistence.
 
 from __future__ import annotations
 
-from src.schemas.research import (
-    ResearchFramework, ResearchPrinciple, FrameworkSet, FrameworkStatus,
-    SynthesisStrategy, FrameworkExplainability,
-)
 from src.research.framework.cluster_detector import PrincipleClusterDetector
 from src.research.framework.framework_evaluator import FrameworkEvaluator
 from src.research.framework.framework_store import FrameworkStore
+from src.schemas.research import (
+    FrameworkSet,
+    FrameworkStatus,
+    ResearchFramework,
+    ResearchPrinciple,
+)
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -35,10 +37,12 @@ class FrameworkOrchestrator:
     MAX_ACTIVE_FRAMEWORKS = 5
     MIN_ACTIVE_FRAMEWORKS = 1
 
-    def __init__(self,
-                 cluster_detector: PrincipleClusterDetector | None = None,
-                 evaluator: FrameworkEvaluator | None = None,
-                 store: FrameworkStore | None = None) -> None:
+    def __init__(
+        self,
+        cluster_detector: PrincipleClusterDetector | None = None,
+        evaluator: FrameworkEvaluator | None = None,
+        store: FrameworkStore | None = None,
+    ) -> None:
         self._cluster_detector = cluster_detector or PrincipleClusterDetector()
         self._evaluator = evaluator or FrameworkEvaluator()
         self._store = store or FrameworkStore()
@@ -46,19 +50,24 @@ class FrameworkOrchestrator:
 
     # ── Formation ─────────────────────────────────────────────────────────
 
-    def form_candidate(self,
-                       principle_ids: list[str],
-                       principles: dict[str, ResearchPrinciple],
-                       name: str = "",
-                       thesis: str = "",
-                       cycle: int = 0) -> ResearchFramework | None:
+    def form_candidate(
+        self,
+        principle_ids: list[str],
+        principles: dict[str, ResearchPrinciple],
+        name: str = "",
+        thesis: str = "",
+        cycle: int = 0,
+    ) -> ResearchFramework | None:
         """Attempt to form a candidate framework from a principle cluster.
 
         Requires >=5 principles with validated+ strength.
         """
         if len(principle_ids) < PrincipleClusterDetector.MIN_CLUSTER_SIZE:
-            logger.info("Not enough principles for framework: %d < %d",
-                        len(principle_ids), PrincipleClusterDetector.MIN_CLUSTER_SIZE)
+            logger.info(
+                "Not enough principles for framework: %d < %d",
+                len(principle_ids),
+                PrincipleClusterDetector.MIN_CLUSTER_SIZE,
+            )
             return None
 
         # Verify principle quality
@@ -88,8 +97,10 @@ class FrameworkOrchestrator:
                 thesis_parts.append(p.statement)
             thesis = ". ".join(thesis_parts) + "."
             if len(thesis) < 100:
-                thesis = (f"Framework synthesizing {len(cluster_principles)} principles "
-                          f"across {len(domains)} domains. " + thesis)
+                thesis = (
+                    f"Framework synthesizing {len(cluster_principles)} principles "
+                    f"across {len(domains)} domains. " + thesis
+                )
 
         framework = ResearchFramework(
             name=name,
@@ -101,7 +112,8 @@ class FrameworkOrchestrator:
             created_at_cycle=cycle,
             created_from="principle_cluster",
             domain_coverage={
-                d: len([p for p in cluster_principles.values() if p.domain == d]) / len(cluster_principles)
+                d: len([p for p in cluster_principles.values() if p.domain == d])
+                / len(cluster_principles)
                 for d in domains
             },
         )
@@ -111,9 +123,9 @@ class FrameworkOrchestrator:
         logger.info("Formed candidate framework: %s (%d principles)", name, len(cluster_principles))
         return framework
 
-    def attempt_formation(self,
-                          principles: dict[str, ResearchPrinciple],
-                          cycle: int = 0) -> list[ResearchFramework]:
+    def attempt_formation(
+        self, principles: dict[str, ResearchPrinciple], cycle: int = 0
+    ) -> list[ResearchFramework]:
         """Detect clusters and form candidate frameworks."""
         clusters = self._cluster_detector.detect_clusters(principles)
         candidates = []
@@ -137,7 +149,8 @@ class FrameworkOrchestrator:
                 if not self._framework_set.is_at_capacity:
                     self._store.activate(fw.framework_id)
                     self._framework_set.add_framework(
-                        fw.framework_id, initial_weight=1.0 / max(self._framework_set.active_count, 1)
+                        fw.framework_id,
+                        initial_weight=1.0 / max(self._framework_set.active_count, 1),
                     )
                     promoted.append(fw.framework_id)
                 else:
@@ -184,14 +197,19 @@ class FrameworkOrchestrator:
             self._retire_framework(self._store.get(weakest_id))
             self._store.activate(new_fw.framework_id)
             self._framework_set.replace_weakest(
-                new_fw.framework_id, 1.0 / self._framework_set.active_count,
+                new_fw.framework_id,
+                1.0 / self._framework_set.active_count,
                 weakest_id,
             )
-            logger.info("Replaced framework %s (score=%.3f) with %s (score=%.3f)",
-                        weakest_id, weakest_score, new_fw.framework_id, new_score)
+            logger.info(
+                "Replaced framework %s (score=%.3f) with %s (score=%.3f)",
+                weakest_id,
+                weakest_score,
+                new_fw.framework_id,
+                new_score,
+            )
 
-    def _retire_framework(self, framework: ResearchFramework | None,
-                          reason: str = "") -> None:
+    def _retire_framework(self, framework: ResearchFramework | None, reason: str = "") -> None:
         if not framework:
             return
         self._store.retire(framework.framework_id, reason)
@@ -210,9 +228,9 @@ class FrameworkOrchestrator:
     def get_framework_set(self) -> FrameworkSet:
         return self._framework_set
 
-    def compute_framework_set_weights(self,
-                                       frameworks: dict[str, ResearchFramework],
-                                       principles: dict[str, ResearchPrinciple]) -> None:
+    def compute_framework_set_weights(
+        self, frameworks: dict[str, ResearchFramework], principles: dict[str, ResearchPrinciple]
+    ) -> None:
         """Recalculate framework weights based on confidence + recency + coverage."""
         if not self._framework_set.active_frameworks:
             return
@@ -232,9 +250,9 @@ class FrameworkOrchestrator:
             for fid in scores:
                 self._framework_set.framework_weights[fid] = scores[fid] / total
 
-    def get_synthesized_view(self,
-                              frameworks: dict[str, ResearchFramework],
-                              principles: dict[str, ResearchPrinciple]) -> str:
+    def get_synthesized_view(
+        self, frameworks: dict[str, ResearchFramework], principles: dict[str, ResearchPrinciple]
+    ) -> str:
         """Get a synthesized view across all active frameworks."""
         if not self._framework_set.active_frameworks:
             return "No active frameworks."
@@ -254,17 +272,18 @@ class FrameworkOrchestrator:
             )
 
         synthesis = self._framework_set.synthesis_strategy.value
-        return f"Synthesized view ({synthesis}, {len(self._framework_set.active_frameworks)} frameworks):\n" + "\n".join(parts)
+        return (
+            f"Synthesized view ({synthesis}, {len(self._framework_set.active_frameworks)} frameworks):\n"
+            + "\n".join(parts)
+        )
 
     # ── Recording ─────────────────────────────────────────────────────────
 
-    def record_principle_activation(self, principle_ids: list[str],
-                                    cycle: int = 0) -> None:
+    def record_principle_activation(self, principle_ids: list[str], cycle: int = 0) -> None:
         """Feed principle activation data to the cluster detector."""
         self._cluster_detector.record_activation(principle_ids, cycle)
 
-    def record_accuracy(self, framework_id: str, accuracy: float,
-                        cycle: int = 0) -> None:
+    def record_accuracy(self, framework_id: str, accuracy: float, cycle: int = 0) -> None:
         """Record accuracy and update store."""
         self._evaluator.record_accuracy(framework_id, accuracy, cycle)
         self._store.update_accuracy(framework_id, accuracy)

@@ -12,11 +12,10 @@ Cannot skip: observations without evidence are just anecdotes.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from src.research.reasoning_pipeline.schemas import (
-    ObservationOutput,
     EvidenceOutput,
+    ObservationOutput,
     StageStatus,
 )
 
@@ -25,18 +24,37 @@ class EvidenceStage:
     """Stage 2: Systematic evidence clustering and evaluation."""
 
     EVIDENCE_THEMES = [
-        "growth", "inflation", "labor_market", "monetary_policy",
-        "fiscal_policy", "financial_conditions", "global_trade",
-        "corporate_health", "consumer_health", "housing",
-        "credit_markets", "currency_markets", "commodity_markets",
-        "geopolitical_risk", "sentiment",
+        "growth",
+        "inflation",
+        "labor_market",
+        "monetary_policy",
+        "fiscal_policy",
+        "financial_conditions",
+        "global_trade",
+        "corporate_health",
+        "consumer_health",
+        "housing",
+        "credit_markets",
+        "currency_markets",
+        "commodity_markets",
+        "geopolitical_risk",
+        "sentiment",
     ]
 
     THEME_KEYWORDS: dict[str, list[str]] = {
         "growth": ["gdp", "growth", "recession", "expansion", "slowdown", "output"],
         "inflation": ["cpi", "pce", "inflation", "deflation", "price", "ppi"],
         "labor_market": ["employment", "unemployment", "payroll", "wage", "jolts", "job"],
-        "monetary_policy": ["fed", "rate", "hawkish", "dovish", "taper", "qe", "tightening", "easing"],
+        "monetary_policy": [
+            "fed",
+            "rate",
+            "hawkish",
+            "dovish",
+            "taper",
+            "qe",
+            "tightening",
+            "easing",
+        ],
         "fiscal_policy": ["fiscal", "deficit", "spending", "tax", "stimulus", "budget"],
         "financial_conditions": ["credit", "spread", "liquidity", "financing", "lending"],
         "global_trade": ["trade", "export", "import", "tariff", "supply chain"],
@@ -50,7 +68,7 @@ class EvidenceStage:
         "sentiment": ["sentiment", "positioning", "flows", "survey", "aaII"],
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def execute(
@@ -76,10 +94,10 @@ class EvidenceStage:
 
         # Collect all raw evidence
         all_evidence = (
-            observation.observations +
-            observation.data_surprises +
-            observation.market_moves +
-            observation.significant_news
+            observation.observations
+            + observation.data_surprises
+            + observation.market_moves
+            + observation.significant_news
         )
 
         # Add fusion data if available
@@ -90,9 +108,9 @@ class EvidenceStage:
         output.evidence_clusters = self._cluster_by_theme(all_evidence)
 
         # 2. Evaluate each evidence piece
-        output.supporting_evidence, \
-        output.contradicting_evidence, \
-        output.neutral_evidence = self._evaluate_evidence(all_evidence, belief_data)
+        output.supporting_evidence, output.contradicting_evidence, output.neutral_evidence = (
+            self._evaluate_evidence(all_evidence, belief_data)
+        )
 
         # 3. Compute net weight
         output.net_weight = self._compute_net_weight(output)
@@ -139,16 +157,42 @@ class EvidenceStage:
 
         # Bullish / hawkish keywords
         bullish = [
-            "strong", "beat", "above", "surge", "rally", "upgrade",
-            "expansion", "growth", "improve", "positive", "hawkish",
-            "tightening", "hike", "increase", "rise", "higher",
+            "strong",
+            "beat",
+            "above",
+            "surge",
+            "rally",
+            "upgrade",
+            "expansion",
+            "growth",
+            "improve",
+            "positive",
+            "hawkish",
+            "tightening",
+            "hike",
+            "increase",
+            "rise",
+            "higher",
         ]
 
         # Bearish / dovish keywords
         bearish = [
-            "weak", "miss", "below", "plunge", "selloff", "downgrade",
-            "contraction", "recession", "decline", "negative", "dovish",
-            "easing", "cut", "decrease", "fall", "lower",
+            "weak",
+            "miss",
+            "below",
+            "plunge",
+            "selloff",
+            "downgrade",
+            "contraction",
+            "recession",
+            "decline",
+            "negative",
+            "dovish",
+            "easing",
+            "cut",
+            "decrease",
+            "fall",
+            "lower",
         ]
 
         for item in evidence:
@@ -168,9 +212,9 @@ class EvidenceStage:
     def _compute_net_weight(self, output: EvidenceOutput) -> float:
         """Compute net evidence weight (-1 to +1)."""
         total = (
-            len(output.supporting_evidence) +
-            len(output.contradicting_evidence) +
-            len(output.neutral_evidence)
+            len(output.supporting_evidence)
+            + len(output.contradicting_evidence)
+            + len(output.neutral_evidence)
         )
         if total == 0:
             return 0.0

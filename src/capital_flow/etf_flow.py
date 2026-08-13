@@ -13,11 +13,9 @@ Generates FlowSignal objects used by CrossAssetFlow and CapitalRotation.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
-from src.capital_flow.schemas import FlowSignal, ETFDay, ETFSummary
-
+from src.capital_flow.schemas import ETFDay, ETFSummary, FlowSignal
 
 # ETF universe organized by category
 ETF_UNIVERSE = {
@@ -47,9 +45,9 @@ class ETFFlow:
 
     def analyze_flows(
         self,
-        flow_data: Optional[dict[str, list[dict]]] = None,
-        market_data: Optional[dict] = None,
-        date: Optional[str] = None,
+        flow_data: dict[str, list[dict]] | None = None,
+        market_data: dict | None = None,
+        date: str | None = None,
     ) -> list[ETFSummary]:
         """Analyze ETF flows by category.
 
@@ -63,16 +61,14 @@ class ETFFlow:
             List of ETFSummary by category.
         """
         if date is None:
-            date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            date = datetime.now(UTC).strftime("%Y-%m-%d")
 
         summaries = []
         for cat_key, cat_info in ETF_UNIVERSE.items():
             cat_tickers = cat_info["tickers"]
 
             if flow_data:
-                summary = self._analyze_from_data(
-                    cat_key, cat_tickers, flow_data, date
-                )
+                summary = self._analyze_from_data(cat_key, cat_tickers, flow_data, date)
             else:
                 summary = self._generate_synthetic(cat_key, cat_tickers, date)
 
@@ -130,9 +126,7 @@ class ETFFlow:
             description=self._describe(cat_key, weekly_total),
         )
 
-    def _generate_synthetic(
-        self, cat_key: str, tickers: list[str], date: str
-    ) -> ETFSummary:
+    def _generate_synthetic(self, cat_key: str, tickers: list[str], date: str) -> ETFSummary:
         """Generate synthetic flow signals for development/testing."""
         # Deterministic by category + date
         seed = sum(ord(c) for c in f"{cat_key}{date}")
@@ -146,8 +140,12 @@ class ETFFlow:
 
         days = [
             ETFDay(
-                date=date, ticker=tickers[0], name=cat_key,
-                category=cat_key, flow_mm=w * 1000, flow_pct=w * 0.3,
+                date=date,
+                ticker=tickers[0],
+                name=cat_key,
+                category=cat_key,
+                flow_mm=w * 1000,
+                flow_pct=w * 0.3,
             )
         ]
 
@@ -182,27 +180,29 @@ class ETFFlow:
         signals = []
         for s in summaries:
             direction = (
-                "inflow" if s.weekly_flow_bn > 0.3
-                else "outflow" if s.weekly_flow_bn < -0.3
-                else "neutral"
+                "inflow"
+                if s.weekly_flow_bn > 0.3
+                else "outflow" if s.weekly_flow_bn < -0.3 else "neutral"
             )
             magnitude = max(-1.0, min(1.0, s.weekly_flow_bn / 20.0))
 
             # Map category to asset_class and region
             asset_class, region = self._map_category(s.category)
 
-            signals.append(FlowSignal(
-                asset_class=asset_class,
-                region=region,
-                direction=direction,
-                magnitude=round(magnitude, 3),
-                weekly_flow_bn=s.weekly_flow_bn,
-                monthly_flow_bn=s.monthly_flow_bn,
-                ytd_flow_bn=s.ytd_flow_bn,
-                percentile=50 + magnitude * 40,
-                description=s.description,
-                source="ETF",
-            ))
+            signals.append(
+                FlowSignal(
+                    asset_class=asset_class,
+                    region=region,
+                    direction=direction,
+                    magnitude=round(magnitude, 3),
+                    weekly_flow_bn=s.weekly_flow_bn,
+                    monthly_flow_bn=s.monthly_flow_bn,
+                    ytd_flow_bn=s.ytd_flow_bn,
+                    percentile=50 + magnitude * 40,
+                    description=s.description,
+                    source="ETF",
+                )
+            )
         return signals
 
     def _map_category(self, cat: str) -> tuple:
@@ -237,16 +237,10 @@ class ETFFlow:
             "total_outflow_bn": round(total_outflow, 2),
             "net_flow_bn": round(net, 2),
             "top_inflow": (
-                sorted(inflows, key=lambda s: s.weekly_flow_bn, reverse=True)[:3]
-                if inflows else []
+                sorted(inflows, key=lambda s: s.weekly_flow_bn, reverse=True)[:3] if inflows else []
             ),
             "top_outflow": (
-                sorted(outflows, key=lambda s: s.weekly_flow_bn)[:3]
-                if outflows else []
+                sorted(outflows, key=lambda s: s.weekly_flow_bn)[:3] if outflows else []
             ),
-            "regime": (
-                "risk_on" if net > 5
-                else "risk_off" if net < -5
-                else "neutral"
-            ),
+            "regime": ("risk_on" if net > 5 else "risk_off" if net < -5 else "neutral"),
         }

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """SignalRepositoryInterface — Abstract contract for signal persistence.
 
 Separate from RepositoryInterface (macro data) because:
@@ -11,6 +9,8 @@ Implementations:
     - SqlSignalRepository (Sprint 2)
     - RedisSignalCache (future)
 """
+
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -52,9 +52,7 @@ class SignalRepositoryInterface(ABC):
         ...
 
     @abstractmethod
-    async def get_snapshot(
-        self, since: datetime | None = None
-    ) -> list[MacroSignalSchema]:
+    async def get_snapshot(self, since: datetime | None = None) -> list[MacroSignalSchema]:
         """Retrieve the latest signal per indicator (macro snapshot).
 
         Args:

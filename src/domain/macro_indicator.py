@@ -5,7 +5,6 @@ For observation data, see schemas/macro_data.py → MacroDataSchema.
 """
 
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -17,15 +16,15 @@ class HypothesisDimension(str, Enum):
     Every indicator belongs to exactly one dimension.
     """
 
-    LIQUIDITY = "Liquidity"          # Monetary conditions: DXY, Fed Funds, US10Y
-    CREDIT = "Credit"                 # Credit markets: HYG, IG Spread, CDX
-    GROWTH = "Growth"                 # Real economy: GDP, PMI, Industrial Production
-    RISK_APPETITE = "Risk_Appetite"   # Market sentiment: VIX, Copper/Gold ratio, EM Flows
-    INFLATION = "Inflation"           # Price levels: CPI, PPI, Breakevens
-    AI_CAPEX = "AI_Capex"             # AI investment cycle: NVDA, TSMC, ASML, SMH
-    DOLLAR = "Dollar"                 # USD strength: DXY, rate differentials
-    EMPLOYMENT = "Employment"         # Labor market: Claims, Payrolls, Participation
-    POLICY = "Policy"                 # Monetary policy: Fed stance, rate expectations
+    LIQUIDITY = "Liquidity"  # Monetary conditions: DXY, Fed Funds, US10Y
+    CREDIT = "Credit"  # Credit markets: HYG, IG Spread, CDX
+    GROWTH = "Growth"  # Real economy: GDP, PMI, Industrial Production
+    RISK_APPETITE = "Risk_Appetite"  # Market sentiment: VIX, Copper/Gold ratio, EM Flows
+    INFLATION = "Inflation"  # Price levels: CPI, PPI, Breakevens
+    AI_CAPEX = "AI_Capex"  # AI investment cycle: NVDA, TSMC, ASML, SMH
+    DOLLAR = "Dollar"  # USD strength: DXY, rate differentials
+    EMPLOYMENT = "Employment"  # Labor market: Claims, Payrolls, Participation
+    POLICY = "Policy"  # Monetary policy: Fed stance, rate expectations
 
 
 class Frequency(str, Enum):
@@ -57,9 +56,13 @@ class MacroIndicator(BaseModel):
         ... )
     """
 
-    symbol: str = Field(..., min_length=1, max_length=20, description="Unique ticker/series identifier")
+    symbol: str = Field(
+        ..., min_length=1, max_length=20, description="Unique ticker/series identifier"
+    )
     name: str = Field(..., min_length=1, description="Human-readable name")
-    category: str = Field(..., description="Asset class category, e.g. 'Currency', 'Rates', 'Commodities'")
+    category: str = Field(
+        ..., description="Asset class category, e.g. 'Currency', 'Rates', 'Commodities'"
+    )
     frequency: Frequency = Field(..., description="Observation frequency")
     unit: str = Field(default="Index", description="Unit of measurement")
     source: str = Field(default="Yahoo", description="Primary data source")
@@ -68,7 +71,7 @@ class MacroIndicator(BaseModel):
         description="Macro hypothesis dimension — prevents hardcoded mappings in Analyzer",
     )
     currency: str = Field(default="USD", description="Currency denomination")
-    description: Optional[str] = Field(default=None, description="Free-text description")
+    description: str | None = Field(default=None, description="Free-text description")
     enabled: bool = Field(default=True, description="Whether this indicator is actively collected")
 
     model_config = {"frozen": True}  # Immutable — indicators don't change at runtime

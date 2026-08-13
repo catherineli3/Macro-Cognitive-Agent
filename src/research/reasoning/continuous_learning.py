@@ -1,7 +1,7 @@
 """V10 Sprint 4 — Continuous Learning Loop.
 
 After every benchmark cycle, the agent must evolve:
-    Prediction → Outcome → Root Cause → Belief Update → Prompt Update 
+    Prediction → Outcome → Root Cause → Belief Update → Prompt Update
     → Reasoning Update → Memory Update → Next Benchmark
 
 Key principle: Never simply decrease confidence. Always diagnose WHY.
@@ -18,11 +18,9 @@ Output:
 from __future__ import annotations
 
 import hashlib
-import json
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
 from src.shared.logging import get_logger
 
@@ -37,6 +35,7 @@ logger = get_logger(__name__)
 @dataclass
 class PredictionRecord:
     """A prediction made by the agent, to be evaluated later."""
+
     prediction_id: str = ""
     timestamp: str = ""
     regime_label: str = ""
@@ -52,6 +51,7 @@ class PredictionRecord:
 @dataclass
 class OutcomeRecord:
     """The actual outcome for a prediction."""
+
     prediction_id: str = ""
     outcome_timestamp: str = ""
     actual_direction: str = ""  # bullish/bearish/neutral
@@ -69,6 +69,7 @@ class OutcomeRecord:
 @dataclass
 class RootCauseDiagnosis:
     """Automated root cause analysis of prediction errors."""
+
     prediction_id: str = ""
     primary_cause: str = ""  # One of the 10 categories
     secondary_causes: list[str] = field(default_factory=list)
@@ -111,9 +112,9 @@ class RootCauseDiagnostician:
         self,
         prediction: PredictionRecord,
         outcome: OutcomeRecord,
-        regime_at_prediction: Optional[dict] = None,
-        regime_at_outcome: Optional[dict] = None,
-        evidence_used: Optional[list] = None,
+        regime_at_prediction: dict | None = None,
+        regime_at_outcome: dict | None = None,
+        evidence_used: list | None = None,
     ) -> RootCauseDiagnosis:
         """Diagnose why a prediction was wrong.
 
@@ -143,17 +144,13 @@ class RootCauseDiagnostician:
             causes.append(("Wrong Timing", timing_wrong))
 
         # 2. Check Regime — did regime change between prediction and outcome?
-        regime_wrong = self._check_regime_change(
-            regime_at_prediction, regime_at_outcome
-        )
+        regime_wrong = self._check_regime_change(regime_at_prediction, regime_at_outcome)
         if regime_wrong:
             causes.append(("Wrong Regime", regime_wrong))
 
         # 3. Check for Black Swan
         if abs(outcome.actual_change_pct) > 5.0:
-            causes.append(
-                ("Black Swan", "Outcome magnitude >5% suggests external shock")
-            )
+            causes.append(("Black Swan", "Outcome magnitude >5% suggests external shock"))
 
         # 4. Check Confidence calibration
         conf_diag = self._check_confidence(prediction, outcome)
@@ -163,26 +160,32 @@ class RootCauseDiagnostician:
         # 5. Check Causality
         if prediction.predicted_direction != outcome.actual_direction:
             causes.append(
-                ("Wrong Causality",
-                 f"Predicted {prediction.predicted_direction} but "
-                 f"outcome was {outcome.actual_direction} — "
-                 f"causal mechanism was incorrectly identified")
+                (
+                    "Wrong Causality",
+                    f"Predicted {prediction.predicted_direction} but "
+                    f"outcome was {outcome.actual_direction} — "
+                    f"causal mechanism was incorrectly identified",
+                )
             )
 
         # 6. Check if missing key evidence
         if evidence_used and len(evidence_used) < 3:
             causes.append(
-                ("Missing Evidence",
-                 f"Only {len(evidence_used)} evidence items used — "
-                 f"likely insufficient for reliable prediction")
+                (
+                    "Missing Evidence",
+                    f"Only {len(evidence_used)} evidence items used — "
+                    f"likely insufficient for reliable prediction",
+                )
             )
 
         # 7. Check Narrative
         if not causes:
             causes.append(
-                ("Wrong Narrative",
-                 "No specific technical failure detected — "
-                 "likely the overall narrative lens was wrong")
+                (
+                    "Wrong Narrative",
+                    "No specific technical failure detected — "
+                    "likely the overall narrative lens was wrong",
+                )
             )
 
         # Sort causes: most impactful first
@@ -208,9 +211,7 @@ class RootCauseDiagnostician:
             correction_strategy=strategy,
         )
 
-    def _check_timing(
-        self, prediction: PredictionRecord, outcome: OutcomeRecord
-    ) -> Optional[str]:
+    def _check_timing(self, prediction: PredictionRecord, outcome: OutcomeRecord) -> str | None:
         """Check if timing was the issue (right direction, wrong time)."""
         if prediction.predicted_direction == outcome.actual_direction:
             return (
@@ -221,9 +222,9 @@ class RootCauseDiagnostician:
 
     def _check_regime_change(
         self,
-        regime_before: Optional[dict],
-        regime_after: Optional[dict],
-    ) -> Optional[str]:
+        regime_before: dict | None,
+        regime_after: dict | None,
+    ) -> str | None:
         """Check if regime shifted between prediction and outcome."""
         if not regime_before or not regime_after:
             return None
@@ -240,7 +241,7 @@ class RootCauseDiagnostician:
 
     def _check_confidence(
         self, prediction: PredictionRecord, outcome: OutcomeRecord
-    ) -> Optional[tuple]:
+    ) -> tuple | None:
         """Check if confidence was miscalibrated."""
         if outcome.was_correct:
             return None
@@ -249,14 +250,14 @@ class RootCauseDiagnostician:
             return (
                 "Overconfidence",
                 f"Confidence was {prediction.confidence:.0%} but prediction "
-                f"was wrong. Evidence did not justify this high confidence."
+                f"was wrong. Evidence did not justify this high confidence.",
             )
         elif prediction.confidence < 0.3:
             return (
                 "Underconfidence",
                 f"Confidence was only {prediction.confidence:.0%} but "
                 f"outcome was {outcome.actual_change_pct:+.1%}. "
-                f"Should have been more confident in the correct signal."
+                f"Should have been more confident in the correct signal.",
             )
         return None
 
@@ -303,10 +304,8 @@ class RootCauseDiagnostician:
                 "for extreme scenarios. Accept this as irreducible uncertainty."
             ),
             "Overconfidence": (
-                "Reduce confidence by {:.0f}% on similar predictions. ".format(
-                    100 * max(0, prediction.confidence - 0.7)
-                ) +
-                "Implement forced calibration: if confidence >70%, must list "
+                f"Reduce confidence by {100 * max(0, prediction.confidence - 0.7):.0f}% on similar predictions. "
+                + "Implement forced calibration: if confidence >70%, must list "
                 "3 specific reasons why you could be wrong."
             ),
             "Underconfidence": (
@@ -356,6 +355,7 @@ class RootCauseDiagnostician:
 @dataclass
 class BeliefUpdate:
     """Result of a belief update operation."""
+
     belief_id: str = ""
     belief_name: str = ""
     old_confidence: float = 0.0
@@ -367,6 +367,7 @@ class BeliefUpdate:
 @dataclass
 class BeliefDiff:
     """Aggregate belief changes across all updated beliefs."""
+
     updates: list[BeliefUpdate] = field(default_factory=list)
     total_confidence_shift: float = 0.0
     beliefs_updated: int = 0
@@ -424,21 +425,23 @@ class BeliefUpdater:
                 new_conf = max(0.1, min(0.95, old_conf + adjustment))
 
                 if abs(new_conf - old_conf) > 0.01:
-                    updates.append(BeliefUpdate(
-                        belief_id=str(belief.get("id", belief.get("name", ""))),
-                        belief_name=str(belief.get("name", "unknown")),
-                        old_confidence=old_conf,
-                        new_confidence=new_conf,
-                        reason=f"{diagnosis.primary_cause}: {diagnosis.reasoning_flaw}",
-                        was_updated=True,
-                    ))
+                    updates.append(
+                        BeliefUpdate(
+                            belief_id=str(belief.get("id", belief.get("name", ""))),
+                            belief_name=str(belief.get("name", "unknown")),
+                            old_confidence=old_conf,
+                            new_confidence=new_conf,
+                            reason=f"{diagnosis.primary_cause}: {diagnosis.reasoning_flaw}",
+                            was_updated=True,
+                        )
+                    )
                     # Update in-place
                     belief["confidence"] = new_conf
                     belief["confidence"] = new_conf
 
                     # Store diagnosis info
                     belief["last_diagnosis"] = diagnosis.primary_cause
-                    belief["last_updated"] = datetime.now(timezone.utc).isoformat()
+                    belief["last_updated"] = datetime.now(UTC).isoformat()
 
         unchanged = len(beliefs) - len(updates)
         total_shift = sum(u.new_confidence - u.old_confidence for u in updates)
@@ -454,13 +457,9 @@ class BeliefUpdater:
     @staticmethod
     def _belief_relevance(belief: dict, prediction: PredictionRecord) -> float:
         """How relevant is this belief to this prediction? 0-1."""
-        belief_text = (
-            str(belief.get("name", "")) + " " + str(belief.get("title", ""))
-        ).lower()
+        belief_text = (str(belief.get("name", "")) + " " + str(belief.get("title", ""))).lower()
 
-        pred_text = (
-            prediction.prediction_statement + " " + prediction.catalyst
-        ).lower()
+        pred_text = (prediction.prediction_statement + " " + prediction.catalyst).lower()
 
         score = 0.0
 
@@ -505,6 +504,7 @@ class BeliefUpdater:
 @dataclass
 class PromptUpdate:
     """Record of a prompt modification."""
+
     domain: str = ""
     change_type: str = ""  # "addition", "modification", "weight_change"
     before: str = ""
@@ -515,6 +515,7 @@ class PromptUpdate:
 @dataclass
 class PromptDiff:
     """Aggregate changes to the prompt system."""
+
     updates: list[PromptUpdate] = field(default_factory=list)
     domains_affected: list[str] = field(default_factory=list)
     summary: str = ""
@@ -534,7 +535,7 @@ class PromptUpdater:
         self,
         diagnoses: list[RootCauseDiagnosis],
         used_domains: list[str],
-        current_prompts: Optional[dict[str, str]] = None,
+        current_prompts: dict[str, str] | None = None,
     ) -> PromptDiff:
         """Generate prompt improvements based on diagnosis patterns.
 
@@ -573,66 +574,64 @@ class PromptUpdater:
 
     def _cause_to_prompt_update(
         self, cause: str, domain: str, frequency: int
-    ) -> Optional[PromptUpdate]:
+    ) -> PromptUpdate | None:
         """Map a root cause to a specific prompt improvement."""
         mappings = {
             "Wrong Narrative": PromptUpdate(
                 domain=domain,
                 change_type="addition",
                 before="",
-                after=f"ADD: Before finalizing, generate 2 alternative narratives "
-                      f"that contradict your thesis. Evaluate each seriously.",
+                after="ADD: Before finalizing, generate 2 alternative narratives "
+                "that contradict your thesis. Evaluate each seriously.",
                 reason=f"Wrong Narrative detected ({frequency}x) — "
-                       f"prompt needs counter-narrative requirement",
+                f"prompt needs counter-narrative requirement",
             ),
             "Wrong Causality": PromptUpdate(
                 domain=domain,
                 change_type="addition",
                 before="",
-                after=f"ADD: For each key claim, explicitly state: "
-                      f"'IF [mechanism] THEN [outcome] BECAUSE [causal chain]'. "
-                      f"List the invalidation condition for each causal claim.",
+                after="ADD: For each key claim, explicitly state: "
+                "'IF [mechanism] THEN [outcome] BECAUSE [causal chain]'. "
+                "List the invalidation condition for each causal claim.",
                 reason=f"Wrong Causality detected ({frequency}x) — "
-                       f"prompt needs explicit causal chain requirement",
+                f"prompt needs explicit causal chain requirement",
             ),
             "Overconfidence": PromptUpdate(
                 domain=domain,
                 change_type="addition",
                 before="",
-                after=f"ADD: If confidence in any prediction exceeds 70%, "
-                      f"you MUST list 3 specific reasons why you could be wrong. "
-                      f"Each reason must reference concrete evidence.",
+                after="ADD: If confidence in any prediction exceeds 70%, "
+                "you MUST list 3 specific reasons why you could be wrong. "
+                "Each reason must reference concrete evidence.",
                 reason=f"Overconfidence detected ({frequency}x) — "
-                       f"prompt needs calibration requirement",
+                f"prompt needs calibration requirement",
             ),
             "Missing Evidence": PromptUpdate(
                 domain=domain,
                 change_type="addition",
                 before="",
-                after=f"ADD: MINIMUM EVIDENCE REQUIREMENT: Before making any claim, "
-                      f"verify you have at least 3 specific pieces of evidence "
-                      f"from the structured input supporting it.",
+                after="ADD: MINIMUM EVIDENCE REQUIREMENT: Before making any claim, "
+                "verify you have at least 3 specific pieces of evidence "
+                "from the structured input supporting it.",
                 reason=f"Missing Evidence ({frequency}x) — "
-                       f"prompt needs evidence sufficiency check",
+                f"prompt needs evidence sufficiency check",
             ),
             "Wrong Regime": PromptUpdate(
                 domain=domain,
                 change_type="addition",
                 before="",
                 after=f"ADD: Begin analysis with explicit regime confirmation: "
-                      f"'Current regime is [X] with {frequency} confidence. "
-                      f"If the regime were instead [Y], the analysis would change as follows...'",
+                f"'Current regime is [X] with {frequency} confidence. "
+                f"If the regime were instead [Y], the analysis would change as follows...'",
                 reason=f"Wrong Regime detected ({frequency}x) — "
-                       f"prompt needs regime-awareness requirement",
+                f"prompt needs regime-awareness requirement",
             ),
         }
 
         return mappings.get(cause)
 
     @staticmethod
-    def _summarize_diff(
-        updates: list[PromptUpdate], diagnoses: list[RootCauseDiagnosis]
-    ) -> str:
+    def _summarize_diff(updates: list[PromptUpdate], diagnoses: list[RootCauseDiagnosis]) -> str:
         if not updates:
             return "No prompt updates needed — predictions well-calibrated."
 
@@ -654,6 +653,7 @@ class PromptUpdater:
 @dataclass
 class ReasoningUpdate:
     """Record of a reasoning process change."""
+
     step: str = ""
     change_type: str = ""
     description: str = ""
@@ -662,6 +662,7 @@ class ReasoningUpdate:
 @dataclass
 class ReasoningDiff:
     """Aggregate reasoning process changes."""
+
     updates: list[ReasoningUpdate] = field(default_factory=list)
     summary: str = ""
 
@@ -695,18 +696,24 @@ class ReasoningUpdater:
             step = self._STEP_MAP.get(cause, "Synthesis")
             rec = self._get_recommendation(cause, count)
             if rec:
-                updates.append(ReasoningUpdate(
-                    step=step,
-                    change_type="enhancement",
-                    description=rec,
-                ))
+                updates.append(
+                    ReasoningUpdate(
+                        step=step,
+                        change_type="enhancement",
+                        description=rec,
+                    )
+                )
 
         return ReasoningDiff(
             updates=updates,
             summary=(
-                f"{len(updates)} reasoning step(s) enhanced based on "
-                f"{len(diagnoses)} diagnosis results."
-            ) if updates else "No reasoning changes needed.",
+                (
+                    f"{len(updates)} reasoning step(s) enhanced based on "
+                    f"{len(diagnoses)} diagnosis results."
+                )
+                if updates
+                else "No reasoning changes needed."
+            ),
         )
 
     @staticmethod
@@ -714,32 +721,34 @@ class ReasoningUpdater:
         """Get specific reasoning improvement recommendation."""
         recs = {
             "Wrong Data": (
-                f"Evidence step: Add data freshness validation. "
-                f"All data points must include timestamp. "
-                f"Stale data (>7 days) must be flagged."
+                "Evidence step: Add data freshness validation. "
+                "All data points must include timestamp. "
+                "Stale data (>7 days) must be flagged."
             ),
             "Wrong Narrative": (
-                f"Hypothesis step: Increase minimum hypothesis count to 5. "
-                f"Require at least 2 alternative hypotheses per observation. "
-                f"Score hypotheses by falsifiability."
+                "Hypothesis step: Increase minimum hypothesis count to 5. "
+                "Require at least 2 alternative hypotheses per observation. "
+                "Score hypotheses by falsifiability."
             ),
             "Wrong Regime": (
-                f"Reflexivity step: Expand regime transition probability analysis. "
-                f"Add adjacent-regime scenario to every prediction. "
-                f"Increase regime confidence threshold."
+                "Reflexivity step: Expand regime transition probability analysis. "
+                "Add adjacent-regime scenario to every prediction. "
+                "Increase regime confidence threshold."
             ),
             "Missing Evidence": (
-                f"Evidence step: Enforce minimum 5 evidence items per analysis. "
-                f"Track evidence coverage ratio as quality metric. "
-                f"Flag under-evidenced claims for review."
+                "Evidence step: Enforce minimum 5 evidence items per analysis. "
+                "Track evidence coverage ratio as quality metric. "
+                "Flag under-evidenced claims for review."
             ),
             "Overconfidence": (
-                f"Quality step: Add calibration checker. "
-                f"When confidence > 70%, require explicit invalidation conditions. "
-                f"Compare claim confidence against historical accuracy baseline."
+                "Quality step: Add calibration checker. "
+                "When confidence > 70%, require explicit invalidation conditions. "
+                "Compare claim confidence against historical accuracy baseline."
             ),
         }
-        return recs.get(cause, f"Review {cause.lower()} pattern ({frequency}x) — adjust step accordingly.")
+        return recs.get(
+            cause, f"Review {cause.lower()} pattern ({frequency}x) — adjust step accordingly."
+        )
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -750,15 +759,16 @@ class ReasoningUpdater:
 @dataclass
 class LearningReport:
     """Complete learning report after a benchmark cycle."""
+
     cycle_id: str = ""
     timestamp: str = ""
     total_predictions: int = 0
     correct_predictions: int = 0
     accuracy: float = 0.0
     diagnoses: list[RootCauseDiagnosis] = field(default_factory=list)
-    belief_diff: Optional[BeliefDiff] = None
-    prompt_diff: Optional[PromptDiff] = None
-    reasoning_diff: Optional[ReasoningDiff] = None
+    belief_diff: BeliefDiff | None = None
+    prompt_diff: PromptDiff | None = None
+    reasoning_diff: ReasoningDiff | None = None
     performance_change: float = 0.0  # Delta from previous cycle
     key_improvements: list[str] = field(default_factory=list)
     cause_distribution: dict[str, int] = field(default_factory=dict)
@@ -794,7 +804,7 @@ class ContinuousLearningLoop:
     """V10 Sprint 4: Continuous Learning Loop.
 
     After every benchmark cycle:
-        Predictions + Outcomes → Diagnose → Update Beliefs → Update Prompts 
+        Predictions + Outcomes → Diagnose → Update Beliefs → Update Prompts
         → Update Reasoning → Generate Report → Next Benchmark
     """
 
@@ -812,8 +822,8 @@ class ContinuousLearningLoop:
         outcomes: list[OutcomeRecord],
         beliefs: list[dict],
         used_domains: list[str],
-        regime_records: Optional[dict] = None,
-        previous_metrics: Optional[dict] = None,
+        regime_records: dict | None = None,
+        previous_metrics: dict | None = None,
     ) -> LearningReport:
         """Execute a full learning cycle.
 
@@ -829,16 +839,12 @@ class ContinuousLearningLoop:
             LearningReport summarizing all changes.
         """
         t0 = time.time()
-        cycle_id = hashlib.md5(
-            str(time.time()).encode()
-        ).hexdigest()[:12]
+        cycle_id = hashlib.md5(str(time.time()).encode()).hexdigest()[:12]
 
         # ── Step 1: Diagnose every prediction ──
         diagnoses = []
         for pred in predictions:
-            outcome = next(
-                (o for o in outcomes if o.prediction_id == pred.prediction_id), None
-            )
+            outcome = next((o for o in outcomes if o.prediction_id == pred.prediction_id), None)
             if not outcome:
                 continue
 
@@ -904,13 +910,17 @@ class ContinuousLearningLoop:
         logger.info(
             "Learning cycle %s complete: acc=%.1f%%, ECE=%.3f, "
             "%d diagnoses, %d beliefs updated, %.0fms",
-            cycle_id, accuracy * 100, ece,
-            len(error_diagnoses), belief_diff.beliefs_updated, elapsed,
+            cycle_id,
+            accuracy * 100,
+            ece,
+            len(error_diagnoses),
+            belief_diff.beliefs_updated,
+            elapsed,
         )
 
         report = LearningReport(
             cycle_id=cycle_id,
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
             total_predictions=total,
             correct_predictions=correct,
             accuracy=accuracy,
@@ -928,9 +938,7 @@ class ContinuousLearningLoop:
         return report
 
     @staticmethod
-    def _compute_ece(
-        predictions: list[PredictionRecord], outcomes: list[OutcomeRecord]
-    ) -> float:
+    def _compute_ece(predictions: list[PredictionRecord], outcomes: list[OutcomeRecord]) -> float:
         """Compute Expected Calibration Error."""
         outcome_lookup = {o.prediction_id: o for o in outcomes}
 
@@ -943,7 +951,8 @@ class ContinuousLearningLoop:
                 continue
 
             bin_correct = sum(
-                1 for p in bin_preds
+                1
+                for p in bin_preds
                 if outcome_lookup.get(p.prediction_id)
                 and outcome_lookup[p.prediction_id].was_correct
             )
@@ -957,9 +966,9 @@ class ContinuousLearningLoop:
     @staticmethod
     def _identify_key_improvements(
         diagnoses: list[RootCauseDiagnosis],
-        belief_diff: Optional[BeliefDiff],
-        prompt_diff: Optional[PromptDiff],
-        reasoning_diff: Optional[ReasoningDiff],
+        belief_diff: BeliefDiff | None,
+        prompt_diff: PromptDiff | None,
+        reasoning_diff: ReasoningDiff | None,
     ) -> list[str]:
         """Identify the most important improvements from this cycle."""
         improvements = []
@@ -988,9 +997,7 @@ class ContinuousLearningLoop:
 
         if cause_dist:
             top_cause = max(cause_dist, key=cause_dist.get)
-            improvements.append(
-                f"Primary failure mode: {top_cause} ({cause_dist[top_cause]}x)"
-            )
+            improvements.append(f"Primary failure mode: {top_cause} ({cause_dist[top_cause]}x)")
 
         return improvements
 
@@ -998,7 +1005,7 @@ class ContinuousLearningLoop:
         """Get all cycle reports."""
         return list(self._cycle_history)
 
-    def get_latest_report(self) -> Optional[LearningReport]:
+    def get_latest_report(self) -> LearningReport | None:
         """Get the most recent learning report."""
         return self._cycle_history[-1] if self._cycle_history else None
 

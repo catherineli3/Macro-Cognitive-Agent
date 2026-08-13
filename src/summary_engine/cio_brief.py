@@ -15,13 +15,12 @@ Reuses: EvidenceSynthesizer (theme clustering) + MarketChallenge (risk assessmen
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
-from src.summary_engine.macro_state_layer import MacroState
-from src.summary_engine.change_detector import ChangeSignals, DivergenceSignal
-from src.summary_engine.narrative_generator import MacroNarrative
 from src.shared.logging import get_logger
+from src.summary_engine.change_detector import ChangeSignals, DivergenceSignal
+from src.summary_engine.macro_state_layer import MacroState
+from src.summary_engine.narrative_generator import MacroNarrative
 
 logger = get_logger(__name__)
 
@@ -35,7 +34,7 @@ logger = get_logger(__name__)
 class CIOBrief:
     """7-section CIO-level macro brief."""
 
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     date_str: str = ""
 
     # Section 1: Current Regime
@@ -304,7 +303,9 @@ class CIOBriefGenerator:
         # Section 7: Risks To Monitor
         self._build_risks_section(brief, narrative, change_signals, macro_state, indicators)
 
-        logger.info("cio_brief_done | regime=%s theme=%s", brief.current_regime, brief.narrative_theme)
+        logger.info(
+            "cio_brief_done | regime=%s theme=%s", brief.current_regime, brief.narrative_theme
+        )
         return brief
 
     # ── Section Builders ─────────────────────────────────────────────────────
@@ -318,9 +319,7 @@ class CIOBriefGenerator:
         """Section 1: Current Regime."""
         regime = macro_state.overall_risk_regime
         brief.current_regime = regime
-        brief.regime_description = REGIME_DESCRIPTIONS.get(
-            regime, "Balanced macro environment."
-        )
+        brief.regime_description = REGIME_DESCRIPTIONS.get(regime, "Balanced macro environment.")
 
         # Build regime indicator summary
         indicators = []
@@ -339,9 +338,7 @@ class CIOBriefGenerator:
         # Add significant divergences
         for d in change_signals.divergence_signals:
             if d.is_diverging and d.significance > 0.3:
-                indicators.append(
-                    f"⚠ Divergence: {d.asset_a} vs {d.asset_b}"
-                )
+                indicators.append(f"⚠ Divergence: {d.asset_a} vs {d.asset_b}")
 
         brief.regime_indicators = indicators
 
@@ -401,9 +398,7 @@ class CIOBriefGenerator:
             theme, INVESTMENT_SUMMARIES["mixed_signals"]
         )
 
-        brief.asset_views = ASSET_VIEW_TEMPLATES.get(
-            theme, ASSET_VIEW_TEMPLATES["mixed_signals"]
-        )
+        brief.asset_views = ASSET_VIEW_TEMPLATES.get(theme, ASSET_VIEW_TEMPLATES["mixed_signals"])
 
         # Add risk-based overlay
         if macro_state.overall_risk_regime == "risk_off":

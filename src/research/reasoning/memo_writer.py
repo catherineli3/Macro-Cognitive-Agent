@@ -14,12 +14,14 @@ Target: 1000-3000 words, professional language, evidence-backed, no bullet dumpi
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
 from src.research.reasoning.schemas import (
-    ResearchMemo, MemoSection, Hypothesis, CounterArgument,
-    EvidenceAssessment, EvidenceCluster,
+    CounterArgument,
+    EvidenceAssessment,
+    Hypothesis,
+    MemoSection,
+    ResearchMemo,
 )
 
 
@@ -30,7 +32,7 @@ class MemoWriter:
     Output: A ResearchMemo that reads like institutional research.
     """
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def write_memo(
@@ -38,11 +40,11 @@ class MemoWriter:
         evidence_assessment: EvidenceAssessment,
         hypotheses: list[Hypothesis],
         counter_arguments: list[CounterArgument],
-        regime_result: Optional[dict] = None,
+        regime_result: dict | None = None,
         beliefs: list = None,
-        capital_flow_result: Optional[dict] = None,
-        narrative: Optional[str] = None,
-        date_str: Optional[str] = None,
+        capital_flow_result: dict | None = None,
+        narrative: str | None = None,
+        date_str: str | None = None,
     ) -> ResearchMemo:
         """Write the complete research memo from all inputs.
 
@@ -50,104 +52,118 @@ class MemoWriter:
         Everything else exists to feed this function.
         """
         beliefs = beliefs or []
-        date_str = date_str or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        date_str = date_str or datetime.now(UTC).strftime("%Y-%m-%d")
         memo_id = f"MEMO_{date_str}_{str(uuid.uuid4())[:6]}"
 
         # Collect all sections
         sections = []
-        word_count = 0
+        _word_count = 0
 
         # Section 1: Executive Summary
         exec_content = self._write_executive_summary(
             evidence_assessment, hypotheses, regime_result, narrative
         )
-        bracket_count = exec_content.count('[')
-        sections.append(MemoSection(
-            heading="Executive Summary",
-            content=exec_content,
-            word_count=len(exec_content.split()),
-            has_citations=True,
-            citation_count=exec_content.count('Source:') + bracket_count
-        ))
+        bracket_count = exec_content.count("[")
+        sections.append(
+            MemoSection(
+                heading="Executive Summary",
+                content=exec_content,
+                word_count=len(exec_content.split()),
+                has_citations=True,
+                citation_count=exec_content.count("Source:") + bracket_count,
+            )
+        )
 
         # Section 2: Current Regime
         regime_content = self._write_regime_section(regime_result)
-        sections.append(MemoSection(
-            heading="Current Macro Regime",
-            content=regime_content,
-            word_count=len(regime_content.split()),
-            has_citations=True,
-            citation_count=0
-        ))
+        sections.append(
+            MemoSection(
+                heading="Current Macro Regime",
+                content=regime_content,
+                word_count=len(regime_content.split()),
+                has_citations=True,
+                citation_count=0,
+            )
+        )
 
         # Section 3: Evidence Summary
         evidence_content = self._write_evidence_section(evidence_assessment)
-        sections.append(MemoSection(
-            heading="Evidence Review",
-            content=evidence_content,
-            word_count=len(evidence_content.split()),
-            has_citations=True,
-            citation_count=len(evidence_assessment.clusters)
-        ))
+        sections.append(
+            MemoSection(
+                heading="Evidence Review",
+                content=evidence_content,
+                word_count=len(evidence_content.split()),
+                has_citations=True,
+                citation_count=len(evidence_assessment.clusters),
+            )
+        )
 
         # Section 4: Market Consensus vs Our View
         consensus_content = self._write_consensus_section(
             evidence_assessment, hypotheses, narrative
         )
-        sections.append(MemoSection(
-            heading="Market Consensus & Our Differentiated View",
-            content=consensus_content,
-            word_count=len(consensus_content.split()),
-            has_citations=False,
-            citation_count=0
-        ))
+        sections.append(
+            MemoSection(
+                heading="Market Consensus & Our Differentiated View",
+                content=consensus_content,
+                word_count=len(consensus_content.split()),
+                has_citations=False,
+                citation_count=0,
+            )
+        )
 
         # Section 5: Key Hypotheses
         hyp_content = self._write_hypothesis_section(hypotheses)
-        sections.append(MemoSection(
-            heading="Research Hypotheses",
-            content=hyp_content,
-            word_count=len(hyp_content.split()),
-            has_citations=True,
-            citation_count=len(hypotheses)
-        ))
+        sections.append(
+            MemoSection(
+                heading="Research Hypotheses",
+                content=hyp_content,
+                word_count=len(hyp_content.split()),
+                has_citations=True,
+                citation_count=len(hypotheses),
+            )
+        )
 
         # Section 6: Counter Arguments
         counter_content = self._write_counter_section(counter_arguments)
-        sections.append(MemoSection(
-            heading="Counter Evidence & Risks",
-            content=counter_content,
-            word_count=len(counter_content.split()),
-            has_citations=True,
-            citation_count=len(counter_arguments)
-        ))
+        sections.append(
+            MemoSection(
+                heading="Counter Evidence & Risks",
+                content=counter_content,
+                word_count=len(counter_content.split()),
+                has_citations=True,
+                citation_count=len(counter_arguments),
+            )
+        )
 
         # Section 7: Investment Implications
         invest_content = self._write_investment_section(
             hypotheses, evidence_assessment, capital_flow_result
         )
-        sections.append(MemoSection(
-            heading="Investment Implications",
-            content=invest_content,
-            word_count=len(invest_content.split()),
-            has_citations=False,
-            citation_count=0
-        ))
+        sections.append(
+            MemoSection(
+                heading="Investment Implications",
+                content=invest_content,
+                word_count=len(invest_content.split()),
+                has_citations=False,
+                citation_count=0,
+            )
+        )
 
         # Section 8: Invalidation & Research Questions
         final_content = self._write_final_section(hypotheses, counter_arguments)
-        sections.append(MemoSection(
-            heading="Invalidation Conditions & Research Agenda",
-            content=final_content,
-            word_count=len(final_content.split()),
-            has_citations=False,
-            citation_count=0
-        ))
+        sections.append(
+            MemoSection(
+                heading="Invalidation Conditions & Research Agenda",
+                content=final_content,
+                word_count=len(final_content.split()),
+                has_citations=False,
+                citation_count=0,
+            )
+        )
 
         # Assemble full memo text
-        full_text = "\n\n".join([
-            s.content for s in sections if s.content
-        ])
+        full_text = "\n\n".join([s.content for s in sections if s.content])
 
         # Build predictions from hypotheses
         predictions = self._extract_predictions(hypotheses)
@@ -182,9 +198,17 @@ class MemoWriter:
             date=date_str,
             executive_summary=exec_content,
             one_sentence_view=self._one_sentence(hypotheses, evidence_assessment),
-            current_regime=regime_result.get("regime_label", regime_result.get("regime_type", "Unclassified")) if regime_result else "Unclassified",
+            current_regime=(
+                regime_result.get("regime_label", regime_result.get("regime_type", "Unclassified"))
+                if regime_result
+                else "Unclassified"
+            ),
             regime_confidence=regime_result.get("confidence", 0.5) if regime_result else 0.5,
-            regime_transition_risk=regime_result.get("transition", {}).get("probability", 0.3) if regime_result else 0.3,
+            regime_transition_risk=(
+                regime_result.get("transition", {}).get("probability", 0.3)
+                if regime_result
+                else 0.3
+            ),
             regime_detail=regime_content,
             market_consensus="See: Market Consensus & Our Differentiated View section",
             our_view_vs_consensus=consensus_content,
@@ -208,7 +232,11 @@ class MemoWriter:
             counter_argument_coverage=round(counter_coverage, 2),
             source_hypotheses=[h.hypothesis_id for h in hypotheses],
             source_clusters=[c.cluster_id for c in evidence_assessment.clusters],
-            source_models=["evidence_synthesizer", "hypothesis_builder", "counter_argument_generator"],
+            source_models=[
+                "evidence_synthesizer",
+                "hypothesis_builder",
+                "counter_argument_generator",
+            ],
             full_memo_text=full_text,
             sections=sections,
         )
@@ -220,36 +248,48 @@ class MemoWriter:
     def _write_executive_summary(self, evidence, hypotheses, regime, narrative):
         """Write 200-300 word executive summary — must stand alone."""
         parts = []
-        date = datetime.now(timezone.utc).strftime("%B %d, %Y")
+        date = datetime.now(UTC).strftime("%B %d, %Y")
         parts.append(f"DAILY MACRO RESEARCH MEMO — {date}")
         parts.append("")
 
         # Regime one-liner
-        rl = regime.get("regime_label", regime.get("regime_type", "Unclassified")) if regime else "Unclassified"
+        rl = (
+            regime.get("regime_label", regime.get("regime_type", "Unclassified"))
+            if regime
+            else "Unclassified"
+        )
         parts.append(f"MACRO REGIME: {rl}")
 
         # Net evidence direction
-        parts.append(f"EVIDENCE BIAS: {evidence.net_direction.upper()} "
-                     f"(Bullish weight: {evidence.net_weight_bullish:.2f}, "
-                     f"Bearish weight: {evidence.net_weight_bearish:.2f})")
+        parts.append(
+            f"EVIDENCE BIAS: {evidence.net_direction.upper()} "
+            f"(Bullish weight: {evidence.net_weight_bullish:.2f}, "
+            f"Bearish weight: {evidence.net_weight_bearish:.2f})"
+        )
 
         parts.append("")
 
         # Top 3 hypotheses
         parts.append("KEY RESEARCH THEMES:")
         for i, hyp in enumerate(hypotheses[:3]):
-            parts.append(f"  {i + 1}. {hyp.title} [Confidence: {hyp.confidence:.0%}, Evidence: {hyp.evidence_weight:+.2f}]")
+            parts.append(
+                f"  {i + 1}. {hyp.title} [Confidence: {hyp.confidence:.0%}, Evidence: {hyp.evidence_weight:+.2f}]"
+            )
 
         parts.append("")
 
         # Evidence quality
-        parts.append(f"EVIDENCE QUALITY: {evidence.evidence_quality.upper()} "
-                     f"({evidence.total_evidence_points} evidence points across {len(evidence.clusters)} clusters)")
+        parts.append(
+            f"EVIDENCE QUALITY: {evidence.evidence_quality.upper()} "
+            f"({evidence.total_evidence_points} evidence points across {len(evidence.clusters)} clusters)"
+        )
 
         # Risks
         parts.append("KEY RISK: ")
         if evidence.contradictory_signals:
-            parts.append(f"  Conflicting signals in: {', '.join(evidence.contradictory_signals[:2])}")
+            parts.append(
+                f"  Conflicting signals in: {', '.join(evidence.contradictory_signals[:2])}"
+            )
 
         # One sentence takeaway
         parts.append("")
@@ -265,7 +305,9 @@ class MemoWriter:
         rl = regime.get("regime_label", regime.get("regime_type", "Unclassified"))
         conf = regime.get("confidence", 0.5)
         trans = regime.get("transition", {})
-        tr_prob = trans.get("probability", trans.get("risk", 0.3)) if isinstance(trans, dict) else 0.3
+        tr_prob = (
+            trans.get("probability", trans.get("risk", 0.3)) if isinstance(trans, dict) else 0.3
+        )
 
         lines = [f"The current macro regime is classified as **{rl}** with {conf:.0%} confidence."]
         lines.append(f"Regime transition risk is estimated at **{tr_prob:.0%}**.")
@@ -280,33 +322,43 @@ class MemoWriter:
         analog = regime.get("historical_analog", regime.get("analog", {}))
         if analog and isinstance(analog, dict) and analog.get("period"):
             lines.append("")
-            lines.append(f"Historical analog: **{analog.get('period')}** "
-                         f"— {analog.get('label', '')} "
-                         f"(similarity: {analog.get('similarity_score', 'N/A')})")
+            lines.append(
+                f"Historical analog: **{analog.get('period')}** "
+                f"— {analog.get('label', '')} "
+                f"(similarity: {analog.get('similarity_score', 'N/A')})"
+            )
 
         if tr_prob > 0.5:
             lines.append("")
-            lines.append("** TRANSITION WARNING: Regime transition probability is elevated. "
-                         "Position sizing should reflect heightened uncertainty. "
-                         "Monitor regime indicators daily for confirmation of shift.")
+            lines.append(
+                "** TRANSITION WARNING: Regime transition probability is elevated. "
+                "Position sizing should reflect heightened uncertainty. "
+                "Monitor regime indicators daily for confirmation of shift."
+            )
 
         return "\n".join(lines)
 
     def _write_evidence_section(self, evidence):
         """Write the evidence review section."""
-        lines = [f"Today's analysis incorporates **{evidence.total_evidence_points}** "
-                 f"evidence points across **{len(evidence.clusters)}** thematic clusters."]
+        lines = [
+            f"Today's analysis incorporates **{evidence.total_evidence_points}** "
+            f"evidence points across **{len(evidence.clusters)}** thematic clusters."
+        ]
         lines.append("")
-        lines.append(f"**Net Assessment: {evidence.net_direction.upper()}** "
-                     f"(Evidence quality: {evidence.evidence_quality})")
+        lines.append(
+            f"**Net Assessment: {evidence.net_direction.upper()}** "
+            f"(Evidence quality: {evidence.evidence_quality})"
+        )
         lines.append("")
 
         # Detail each cluster
         for i, cluster in enumerate(evidence.clusters):
             if cluster.weight_score < 0.3:
                 continue
-            lines.append(f"**{i + 1}. {cluster.theme.replace('_', ' ').title()}**  "
-                         f"[Weight: {cluster.weight_score:.2f}, Quality: {cluster.quality_score:.2f}]")
+            lines.append(
+                f"**{i + 1}. {cluster.theme.replace('_', ' ').title()}**  "
+                f"[Weight: {cluster.weight_score:.2f}, Quality: {cluster.quality_score:.2f}]"
+            )
             lines.append(f"   Direction: {cluster.net_direction}")
             lines.append(f"   {cluster.description}")
             lines.append("")
@@ -342,7 +394,9 @@ class MemoWriter:
         if "bullish" in net_dir:
             lines.append("- Consensus appears tilted bullish, consistent with risk-on positioning")
         elif "bearish" in net_dir:
-            lines.append("- Consensus appears tilted bearish, consistent with defensive positioning")
+            lines.append(
+                "- Consensus appears tilted bearish, consistent with defensive positioning"
+            )
         else:
             lines.append("- Evidence is mixed — consensus may be fragmented or uncertain")
 
@@ -362,7 +416,9 @@ class MemoWriter:
             ev_weight = evidence.net_weight_bullish - evidence.net_weight_bearish
             if abs(ev_weight) > 0.5:
                 direction = "bullish" if ev_weight > 0 else "bearish"
-                lines.append(f"  - Evidence net weight supports {direction} view ({ev_weight:+.2f})")
+                lines.append(
+                    f"  - Evidence net weight supports {direction} view ({ev_weight:+.2f})"
+                )
         else:
             lines.append("No differentiated view established — further research warranted.")
 
@@ -378,7 +434,9 @@ class MemoWriter:
 
         for i, hyp in enumerate(hypotheses[:5]):
             lines.append(f"### Hypothesis {i + 1}: {hyp.title}")
-            lines.append(f"**Confidence: {hyp.confidence:.0%}** | Evidence Weight: {hyp.evidence_weight:+.2f}")
+            lines.append(
+                f"**Confidence: {hyp.confidence:.0%}** | Evidence Weight: {hyp.evidence_weight:+.2f}"
+            )
             lines.append("")
             lines.append(hyp.statement)
             lines.append("")
@@ -412,7 +470,9 @@ class MemoWriter:
         lines.append("")
 
         for i, ca in enumerate(counters[:4]):
-            severity_marker = {"fatal": "[FATAL]", "major": "[MAJOR]", "minor": "[MINOR]"}.get(ca.severity, "")
+            severity_marker = {"fatal": "[FATAL]", "major": "[MAJOR]", "minor": "[MINOR]"}.get(
+                ca.severity, ""
+            )
             lines.append(f"### Counter {i + 1}: {ca.title} [{severity_marker}]")
             lines.append(f"**Probability: {ca.probability:.0%}** | Severity: {ca.severity}")
             lines.append("")
@@ -461,7 +521,9 @@ class MemoWriter:
                     direction = ai.get("direction", "").upper()
                     asset = ai.get("asset", "")
                     conviction = ai.get("conviction", "medium")
-                    lines.append(f"- **{direction} {asset}** [{conviction} conviction] — {hyp.title[:80]}")
+                    lines.append(
+                        f"- **{direction} {asset}** [{conviction} conviction] — {hyp.title[:80]}"
+                    )
 
         lines.append("")
 
@@ -469,7 +531,9 @@ class MemoWriter:
         if cf_result:
             cf_dir = cf_result.get("direction", cf_result.get("flow_direction", ""))
             lines.append(f"**Capital Flow Signal:** {cf_dir}")
-            lines.append("Align portfolio with institutional flow direction unless contrarian thesis is well-supported.")
+            lines.append(
+                "Align portfolio with institutional flow direction unless contrarian thesis is well-supported."
+            )
 
         lines.append("")
         lines.append("## Trade Recommendations")
@@ -479,7 +543,9 @@ class MemoWriter:
         lines.append(f"  {hc}")
 
         lines.append("")
-        lines.append("**Hedging considerations:** Counter-arguments suggest tail risk protection via appropriate hedges.")
+        lines.append(
+            "**Hedging considerations:** Counter-arguments suggest tail risk protection via appropriate hedges."
+        )
 
         return "\n".join(lines)
 
@@ -505,7 +571,7 @@ class MemoWriter:
                     lines.append(f"  - {tc}")
             for hyp in hypotheses[:2]:
                 lines.append(f"  - Monitor: {hyp.domain} data releases")
-            lines.append(f"  - Review historical analog relevance to current regime")
+            lines.append("  - Review historical analog relevance to current regime")
 
         return "\n".join(lines)
 
@@ -520,7 +586,9 @@ class MemoWriter:
                 "direction": "bullish" if hyp.evidence_weight > 0 else "bearish",
                 "confidence": hyp.confidence,
                 "evidence_weight": hyp.evidence_weight,
-                "invalidation": [fc.get("condition", "") for fc in hyp.falsification_conditions[:2]],
+                "invalidation": [
+                    fc.get("condition", "") for fc in hyp.falsification_conditions[:2]
+                ],
             }
             predictions.append(pred)
         return predictions
@@ -529,12 +597,14 @@ class MemoWriter:
         conditions = []
         for hyp in hypotheses[:3]:
             for fc in hyp.falsification_conditions[:1]:
-                conditions.append({
-                    "condition": fc.get("condition", ""),
-                    "severity": "major",
-                    "timeline": fc.get("timeline", "unknown"),
-                    "if_triggered": fc.get("if_triggered", "Reassess hypothesis")
-                })
+                conditions.append(
+                    {
+                        "condition": fc.get("condition", ""),
+                        "severity": "major",
+                        "timeline": fc.get("timeline", "unknown"),
+                        "if_triggered": fc.get("if_triggered", "Reassess hypothesis"),
+                    }
+                )
         return conditions[:5]
 
     def _extract_questions(self, hypotheses, evidence):
@@ -545,7 +615,9 @@ class MemoWriter:
         for gap in evidence.key_missing_data:
             questions.append(f"When will data on {gap.split('on ')[-1]} be available?")
         if hypotheses:
-            questions.append(f"Has the confidence on '{hypotheses[0].title}' changed since last assessment?")
+            questions.append(
+                f"Has the confidence on '{hypotheses[0].title}' changed since last assessment?"
+            )
         return questions
 
     def _extract_trading(self, hypotheses, evidence):

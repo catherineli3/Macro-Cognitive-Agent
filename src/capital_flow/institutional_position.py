@@ -14,11 +14,9 @@ Key signals:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
 from src.capital_flow.schemas import FlowSignal, PositionSnapshot
-
 
 # Asset universe for positioning tracking
 POSITION_UNIVERSE = {
@@ -47,8 +45,8 @@ class InstitutionalPosition:
 
     def analyze_positions(
         self,
-        position_data: Optional[dict] = None,
-        date: Optional[str] = None,
+        position_data: dict | None = None,
+        date: str | None = None,
     ) -> list[PositionSnapshot]:
         """Analyze positioning across the universe.
 
@@ -61,14 +59,12 @@ class InstitutionalPosition:
             List of PositionSnapshot objects.
         """
         if date is None:
-            date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            date = datetime.now(UTC).strftime("%Y-%m-%d")
 
         snapshots = []
         for asset_key, info in POSITION_UNIVERSE.items():
             if position_data and asset_key in position_data:
-                snap = self._analyze_from_data(
-                    asset_key, info, position_data[asset_key], date
-                )
+                snap = self._analyze_from_data(asset_key, info, position_data[asset_key], date)
             else:
                 snap = self._generate_synthetic(asset_key, info, date)
             snapshots.append(snap)
@@ -109,9 +105,7 @@ class InstitutionalPosition:
             description=self._describe_snapshot(info["asset"], net, percentile),
         )
 
-    def _generate_synthetic(
-        self, key: str, info: dict, date: str
-    ) -> PositionSnapshot:
+    def _generate_synthetic(self, key: str, info: dict, date: str) -> PositionSnapshot:
         """Deterministic synthetic for development."""
         seed = sum(ord(c) for c in f"{key}{date}")
         r = (seed % 100) / 100.0
@@ -137,9 +131,7 @@ class InstitutionalPosition:
             description=self._describe_snapshot(info["asset"], net, percentile),
         )
 
-    def _describe_snapshot(
-        self, asset: str, net: float, percentile: float
-    ) -> str:
+    def _describe_snapshot(self, asset: str, net: float, percentile: float) -> str:
         direction = "long" if net > 0 else "short"
         if percentile > 90:
             severity = "extreme " + direction
@@ -155,63 +147,65 @@ class InstitutionalPosition:
             severity = "neutral"
         return f"{asset}: {severity} positioning ({percentile:.0f}th pct)"
 
-    def to_flow_signals(
-        self, snapshots: list[PositionSnapshot]
-    ) -> list[FlowSignal]:
+    def to_flow_signals(self, snapshots: list[PositionSnapshot]) -> list[FlowSignal]:
         """Convert positioning to flow signals."""
         signals = []
         for snap in snapshots:
             direction = (
-                "inflow" if snap.weekly_change > 0
-                else "outflow" if snap.weekly_change < 0
-                else "neutral"
+                "inflow"
+                if snap.weekly_change > 0
+                else "outflow" if snap.weekly_change < 0 else "neutral"
             )
             magnitude = max(-1.0, min(1.0, snap.net_pct_of_oi / 40.0))
 
-            signals.append(FlowSignal(
-                asset_class=snap.asset_class,
-                region=POSITION_UNIVERSE.get(snap.asset.lower().replace(" ", "_"), {}).get("region", "Global"),
-                direction=direction,
-                magnitude=round(magnitude, 3),
-                weekly_flow_bn=snap.net_position / 100,
-                percentile=snap.positioning_percentile,
-                description=snap.description,
-                source="CFTC",
-            ))
+            signals.append(
+                FlowSignal(
+                    asset_class=snap.asset_class,
+                    region=POSITION_UNIVERSE.get(snap.asset.lower().replace(" ", "_"), {}).get(
+                        "region", "Global"
+                    ),
+                    direction=direction,
+                    magnitude=round(magnitude, 3),
+                    weekly_flow_bn=snap.net_position / 100,
+                    percentile=snap.positioning_percentile,
+                    description=snap.description,
+                    source="CFTC",
+                )
+            )
         return signals
 
-    def detect_crowded_trades(
-        self, snapshots: list[PositionSnapshot]
-    ) -> list[dict]:
+    def detect_crowded_trades(self, snapshots: list[PositionSnapshot]) -> list[dict]:
         """Identify excessively crowded trades — contrarian signals."""
         crowded = []
         for snap in snapshots:
             if snap.is_crowded:
-                crowded.append({
-                    "asset": snap.asset,
-                    "direction": "long" if snap.net_position > 0 else "short",
-                    "percentile": snap.positioning_percentile,
-                    "signal": "contrarian",  # Extreme positioning = contrarian
-                    "risk": "unwinding" if snap.weekly_change < 0 else "continuing",
-                })
+                crowded.append(
+                    {
+                        "asset": snap.asset,
+                        "direction": "long" if snap.net_position > 0 else "short",
+                        "percentile": snap.positioning_percentile,
+                        "signal": "contrarian",  # Extreme positioning = contrarian
+                        "risk": "unwinding" if snap.weekly_change < 0 else "continuing",
+                    }
+                )
         return sorted(crowded, key=lambda x: x["percentile"], reverse=True)
 
-    def detect_extreme_positions(
-        self, snapshots: list[PositionSnapshot]
-    ) -> list[dict]:
+    def detect_extreme_positions(self, snapshots: list[PositionSnapshot]) -> list[dict]:
         """Identify extreme positioning — potential inflection points."""
         extreme = []
         for snap in snapshots:
             if snap.is_extreme:
                 direction = "long" if snap.net_position > 0 else "short"
-                extreme.append({
-                    "asset": snap.asset,
-                    "direction": direction,
-                    "percentile": snap.positioning_percentile,
-                    "if_mean_reverts": (
-                        "buy" if snap.positioning_percentile < 10
-                        else "sell" if snap.positioning_percentile > 90
-                        else "hold"
-                    ),
-                })
+                extreme.append(
+                    {
+                        "asset": snap.asset,
+                        "direction": direction,
+                        "percentile": snap.positioning_percentile,
+                        "if_mean_reverts": (
+                            "buy"
+                            if snap.positioning_percentile < 10
+                            else "sell" if snap.positioning_percentile > 90 else "hold"
+                        ),
+                    }
+                )
         return extreme

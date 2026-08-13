@@ -7,11 +7,9 @@ input for the autonomous research cycle.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import UTC, datetime
 
 from src.research.evolution.regime_gate import RegimeSnapshot  # noqa: F401 — re-export
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Market Snapshot → builds on top of RegimeSnapshot
@@ -26,7 +24,7 @@ class MarketSnapshot:
     These are reference values for the postmortem and memory.
     """
 
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     indicators: dict[str, float] = field(default_factory=dict)
     # Examples: {"spx": 5200.0, "vix": 15.3, "dxy": 104.2, "us10y": 4.25,
     #            "hyg": 77.5, "gold": 2350.0, "btc": 68000.0, ...}
@@ -66,9 +64,9 @@ class MacroSnapshot:
     cycle_id: str = ""
     regime: RegimeSnapshot | None = None
     market: MarketSnapshot = field(default_factory=MarketSnapshot)
-    signals: list = field(default_factory=list)     # list[MacroSignalSchema]
-    composite: object | None = None                  # CompositeSignalSnapshot | None
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    signals: list = field(default_factory=list)  # list[MacroSignalSchema]
+    composite: object | None = None  # CompositeSignalSnapshot | None
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def __post_init__(self):
         if not self.cycle_id:
@@ -119,10 +117,13 @@ class MacroSnapshot:
     # ── Factory ────────────────────────────────────────────────────────────
 
     @classmethod
-    def from_regime(cls, regime: RegimeSnapshot,
-                    market_data: dict[str, float] | None = None,
-                    signals: list | None = None,
-                    composite=None) -> MacroSnapshot:
+    def from_regime(
+        cls,
+        regime: RegimeSnapshot,
+        market_data: dict[str, float] | None = None,
+        signals: list | None = None,
+        composite=None,
+    ) -> MacroSnapshot:
         """Quick factory from regime + optional data."""
         return cls(
             regime=regime,

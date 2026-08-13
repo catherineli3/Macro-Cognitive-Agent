@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """SqlSignalRepository — Persists and queries generated macro signals.
 
 Implements SignalRepositoryInterface.
@@ -9,10 +7,12 @@ schema, lifecycle, and query patterns.
 Dependency: SQLAlchemy async engine (via src/storage/engine.py).
 """
 
-import json
-from datetime import datetime, timezone
+from __future__ import annotations
 
-from sqlalchemy import select, desc
+import json
+from datetime import UTC, datetime
+
+from sqlalchemy import desc, select
 
 from src.interfaces.signal_repository import SignalRepositoryInterface
 from src.schemas.signal import (
@@ -80,9 +80,7 @@ class SqlSignalRepository(SignalRepositoryInterface):
 
     # ── Read ────────────────────────────────────────────────────────
 
-    async def get_latest_by_indicator(
-        self, indicator: str
-    ) -> MacroSignalSchema | None:
+    async def get_latest_by_indicator(self, indicator: str) -> MacroSignalSchema | None:
         """Retrieve the most recent signal for a given indicator."""
         try:
             session_factory = get_session_factory()
@@ -102,9 +100,7 @@ class SqlSignalRepository(SignalRepositoryInterface):
                 details={"indicator": indicator},
             ) from exc
 
-    async def get_snapshot(
-        self, since: datetime | None = None
-    ) -> list[MacroSignalSchema]:
+    async def get_snapshot(self, since: datetime | None = None) -> list[MacroSignalSchema]:
         """Retrieve latest signal per indicator (macro snapshot).
 
         Uses DISTINCT ON (indicator) with timestamp ordering to get
@@ -117,27 +113,23 @@ class SqlSignalRepository(SignalRepositoryInterface):
             session_factory = get_session_factory()
             async with session_factory() as session:
                 # Subquery: max timestamp per indicator
-                subq = (
-                    select(
-                        SignalRecord.indicator,
-                        select(SignalRecord.timestamp)
-                        .where(SignalRecord.indicator == SignalRecord.indicator)
-                        .order_by(desc(SignalRecord.timestamp))
-                        .limit(1)
-                        .correlate(SignalRecord)
-                        .scalar_subquery()
-                        .label("max_ts"),
-                    )
-                    .group_by(SignalRecord.indicator)
-                )
+                subq = select(
+                    SignalRecord.indicator,
+                    select(SignalRecord.timestamp)
+                    .where(SignalRecord.indicator == SignalRecord.indicator)
+                    .order_by(desc(SignalRecord.timestamp))
+                    .limit(1)
+                    .correlate(SignalRecord)
+                    .scalar_subquery()
+                    .label("max_ts"),
+                ).group_by(SignalRecord.indicator)
 
                 if since is not None:
                     subq = subq.where(SignalRecord.timestamp >= since)
 
                 # Main query: join back to get full rows
-                stmt = (
-                    select(SignalRecord)
-                    .order_by(SignalRecord.indicator, desc(SignalRecord.timestamp))
+                stmt = select(SignalRecord).order_by(
+                    SignalRecord.indicator, desc(SignalRecord.timestamp)
                 )
 
                 result = await session.execute(stmt)
@@ -186,7 +178,7 @@ def _signal_to_model(signal: MacroSignalSchema) -> SignalRecord:
             default=str,
         ),
         interpretation_summary=" | ".join(interpretations) if interpretations else "",
-        ingested_at=datetime.now(timezone.utc),
+        ingested_at=datetime.now(UTC),
     )
 
 

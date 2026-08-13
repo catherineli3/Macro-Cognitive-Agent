@@ -17,14 +17,14 @@ Example:
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
+from src.research.narrative.narrative_reasoner import NarrativeReasoner
 from src.research.narrative.schemas import (
     Narrative,
-    NarrativeObject,
     NarrativeCompetitionResult,
+    NarrativeObject,
 )
-from src.research.narrative.narrative_reasoner import NarrativeReasoner
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -296,7 +296,7 @@ COMPETITION_TEMPLATES: dict[str, list[dict[str, Any]]] = {
 
 def _match_market_pattern(
     state_vector: dict[str, Any],
-) -> Optional[str]:
+) -> str | None:
     """Match current market state to a known competition template pattern.
 
     Returns the template key (e.g. "usd_yields_up") or None.
@@ -459,7 +459,10 @@ class NarrativeCompetition:
         # Ensure minimum count
         if len(narrative_objects) < min_narratives:
             extra = self._generate_extra_narratives(
-                state_vector, regime, narrative_objects, mental_model_outputs,
+                state_vector,
+                regime,
+                narrative_objects,
+                mental_model_outputs,
                 needed=min_narratives - len(narrative_objects),
             )
             narrative_objects.extend(extra)
@@ -479,9 +482,9 @@ class NarrativeCompetition:
         )
 
         logger.info(
-            "Narrative competition: %d narratives for pattern '%s' "
-            "(dominant: '%s', P=%.0f%%)",
-            len(result.narratives), pattern_key or "auto",
+            "Narrative competition: %d narratives for pattern '%s' " "(dominant: '%s', P=%.0f%%)",
+            len(result.narratives),
+            pattern_key or "auto",
             result.dominant.title if result.dominant else "none",
             result.dominant.probability * 100 if result.dominant else 0,
         )
@@ -544,7 +547,7 @@ class NarrativeCompetition:
     ) -> list[str]:
         """Extract relevant signals from state_vector for a template."""
         signals: list[str] = []
-        theme = template.get("theme", "")
+        _theme = template.get("theme", "")
 
         for dim, data in state_vector.items():
             if isinstance(data, dict):

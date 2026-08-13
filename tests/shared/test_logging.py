@@ -7,15 +7,11 @@ Covers:
     - configure_logging initializes without errors
 """
 
-import logging
-
 import pytest
 
 from src.shared.logging import (
     configure_logging,
     get_logger,
-    pipeline_step,
-    pipeline_step_sync,
     with_retry,
 )
 

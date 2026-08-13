@@ -1,6 +1,6 @@
 """Tests for Sprint 3 planning schemas and domain models."""
 
-from datetime import timezone
+from datetime import UTC
 
 import pytest
 from pydantic import ValidationError
@@ -142,7 +142,7 @@ class TestExecutionPlan:
 
     def test_created_at_is_utc(self) -> None:
         plan = ExecutionPlan(goal="Test")
-        assert plan.created_at.tzinfo == timezone.utc
+        assert plan.created_at.tzinfo == UTC
 
     def test_plan_repr(self) -> None:
         plan = ExecutionPlan(goal="Analyze risk")

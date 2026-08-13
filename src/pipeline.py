@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """MacroResearchPipeline — The single entry point for all macro research runs.
 
 v2.0 Upgrade:
@@ -11,12 +9,15 @@ CLI, API, and future Scheduler all call:
     result = await pipeline.run(goal="macro environment")
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from src.schemas.narrative import MacroNarrative
 
 from src.domain.execution import ExecutionStatus
-from src.executor.context import ExecutionContext
 from src.executor.executor import AgentExecutor
 from src.handlers import (
     HypothesisHandler,
@@ -50,26 +51,26 @@ class PipelineResult:
     """
 
     status: ExecutionStatus
-    narrative: Optional[str] = None
-    narrative_obj: Optional["MacroNarrative"] = None  # type: ignore[name-defined]
-    narrative_json: Optional[str] = None
+    narrative: str | None = None
+    narrative_obj: MacroNarrative | None = None
+    narrative_json: str | None = None
     artifacts: dict = field(default_factory=dict)
-    error: Optional[str] = None
+    error: str | None = None
 
     # ── v2.0 fields ──────────────────────────────────────────────────────
-    learning_summary: Optional[Any] = None        # LearningSummary
-    calibrated_confidence: Optional[Any] = None   # CalibratedConfidenceSet
-    composite_signals: Optional[Any] = None       # CompositeSignalSnapshot
-    outcome_summary: Optional[Any] = None         # OutcomeSummary
+    learning_summary: Any | None = None  # LearningSummary
+    calibrated_confidence: Any | None = None  # CalibratedConfidenceSet
+    composite_signals: Any | None = None  # CompositeSignalSnapshot
+    outcome_summary: Any | None = None  # OutcomeSummary
 
     # ── v3.0 fields ──────────────────────────────────────────────────────
-    prediction_batch: Optional[Any] = None        # PredictionBatch
-    evaluation_report: Optional[Any] = None       # EvaluationReport
-    diagnosis_report: Optional[Any] = None        # DiagnosisReport
-    kpi_report: Optional[Any] = None              # FourKPIReport
+    prediction_batch: Any | None = None  # PredictionBatch
+    evaluation_report: Any | None = None  # EvaluationReport
+    diagnosis_report: Any | None = None  # DiagnosisReport
+    kpi_report: Any | None = None  # FourKPIReport
 
     # ── v3.5 LLM fields ──────────────────────────────────────────────────
-    llm_narrative_result: Optional[Any] = None    # LLMNarrativeResult
+    llm_narrative_result: Any | None = None  # LLMNarrativeResult
 
 
 # ── Pipeline ───────────────────────────────────────────────────────────────
@@ -147,50 +148,61 @@ class MacroResearchPipeline:
         """Lazy initialization of v2.0 engines (reused across runs)."""
         if self._outcome_engine is None:
             from src.outcome.engine import OutcomeEngine
+
             self._outcome_engine = OutcomeEngine()
 
         if self._learning_engine is None:
             from src.learning.learning_engine import LearningEngine
+
             self._learning_engine = LearningEngine()
 
         if self._confidence_calibrator is None:
             from src.calibration.confidence_calibrator import ConfidenceCalibrator
+
             self._confidence_calibrator = ConfidenceCalibrator(
                 learning_engine=self._learning_engine,
             )
 
         if self._composite_generator is None:
             from src.signal.composite_signal_generator import CompositeSignalGenerator
+
             self._composite_generator = CompositeSignalGenerator()
 
     def _ensure_v3_engines(self) -> None:
         """Lazy initialization of v3.0 engines (reused across runs)."""
         if self._hypothesis_library is None:
             from src.hypothesis_library import HypothesisLibrary
+
             self._hypothesis_library = HypothesisLibrary()
 
         if self._belief_version_manager is None:
             from src.belief_versioning import BeliefVersionManager
+
             self._belief_version_manager = BeliefVersionManager()
 
         if self._prediction_engine is None:
             from src.prediction import MultiPredictionEngine
+
             self._prediction_engine = MultiPredictionEngine()
 
         if self._v3_evaluation_engine is None:
             from src.evaluation import OutcomeEvaluationEngine
+
             self._v3_evaluation_engine = OutcomeEvaluationEngine()
 
         if self._diagnosis_engine is None:
             from src.diagnosis import DiagnosisEngine
+
             self._diagnosis_engine = DiagnosisEngine()
 
         if self._learning_log is None:
             from src.learning_log import LearningLogRepository
+
             self._learning_log = LearningLogRepository()
 
         if self._kpi_metrics is None:
             from src.metrics import KPIMetricsEngine
+
             self._kpi_metrics = KPIMetricsEngine()
 
     async def run(
@@ -218,6 +230,7 @@ class MacroResearchPipeline:
         if not use_llm:
             try:
                 from src.shared.config import get_settings
+
                 settings = get_settings()
                 use_llm = bool(settings.get("llm", {}).get("enabled", False))
             except Exception:
@@ -268,25 +281,29 @@ class MacroResearchPipeline:
                     observed_map: dict[str, Any] = {}
                     for dim in ["liquidity", "credit", "growth", "risk_appetite", "inflation"]:
                         dim_beliefs = [
-                            b for b in beliefs
-                            if b.dimension.lower() == dim and b.confidence > 0.5
+                            b for b in beliefs if b.dimension.lower() == dim and b.confidence > 0.5
                         ]
                         if dim_beliefs:
                             latest = max(dim_beliefs, key=lambda b: b.timestamp)
                             from src.schemas.outcome import OutcomeDirection
+
                             map_dir = {
                                 "bullish": OutcomeDirection.UP,
                                 "bearish": OutcomeDirection.DOWN,
                             }
                             observed_map[dim] = map_dir.get(
-                                latest.direction.value, OutcomeDirection.FLAT,
+                                latest.direction.value,
+                                OutcomeDirection.FLAT,
                             )
                     self._outcome_engine.evaluate_pending(observed_map)
 
                 outcome_summary = self._outcome_engine.summary()
                 logger.info(
                     "outcome_tracking_complete",
-                    extra={"total": outcome_summary.total_predictions, "hit_rate": outcome_summary.hit_rate},
+                    extra={
+                        "total": outcome_summary.total_predictions,
+                        "hit_rate": outcome_summary.hit_rate,
+                    },
                 )
             except Exception as e:
                 logger.warning("outcome_tracking_skipped: %s", str(e))
@@ -323,7 +340,10 @@ class MacroResearchPipeline:
                     )
                     logger.info(
                         "calibration_complete",
-                        extra={"avg_raw": calibrated_set.average_raw, "avg_cal": calibrated_set.average_calibrated},
+                        extra={
+                            "avg_raw": calibrated_set.average_raw,
+                            "avg_cal": calibrated_set.average_calibrated,
+                        },
                     )
             except Exception as e:
                 logger.warning("calibration_skipped: %s", str(e))
@@ -332,7 +352,9 @@ class MacroResearchPipeline:
             composite_snapshot = None
             try:
                 if signal_snapshot:
-                    composite_snapshot = self._composite_generator.generate_snapshot(signal_snapshot)
+                    composite_snapshot = self._composite_generator.generate_snapshot(
+                        signal_snapshot
+                    )
                     logger.info(
                         "composite_signals_generated",
                         extra={
@@ -345,11 +367,11 @@ class MacroResearchPipeline:
                 logger.warning("composite_signals_skipped: %s", str(e))
 
             # 8. Render to Markdown / JSON
-            rendered: Optional[str] = None
-            rendered_json: Optional[str] = None
+            rendered: str | None = None
+            rendered_json: str | None = None
             if narrative_obj is not None:
-                from src.renderer.markdown import MarkdownRenderer
                 from src.renderer.json_renderer import JsonRenderer
+                from src.renderer.markdown import MarkdownRenderer
 
                 md_renderer = MarkdownRenderer()
                 json_renderer = JsonRenderer()
@@ -361,6 +383,7 @@ class MacroResearchPipeline:
             if use_llm:
                 try:
                     from src.llm.narrative import LLMNarrativeEngine
+
                     llm_engine = LLMNarrativeEngine()
                     llm_narrative = llm_engine.generate(narrative=narrative_obj)
                     logger.info(
@@ -454,8 +477,8 @@ class MacroResearchPipeline:
             # Extract V2 artifacts
             hypothesis_set = exec_result.artifacts.get("hypothesis_set")
             narrative_obj = exec_result.artifacts.get("narrative")
-            signal_snapshot = exec_result.artifacts.get("signal_snapshot")
-            reflection_set = exec_result.artifacts.get("reflection_set")
+            _signal_snapshot = exec_result.artifacts.get("signal_snapshot")
+            _reflection_set = exec_result.artifacts.get("reflection_set")
 
             # ═══════════════════════════════════════════════════════════════
             # V3 STEP 1: Register hypotheses in Library (if not already)
@@ -522,6 +545,7 @@ class MacroResearchPipeline:
                     # V3 STEP 6: Learning Log (record all chains)
                     # ═══════════════════════════════════════════════════════
                     from src.schemas.learning_log import LearningLogEntry
+
                     log_entries: list[LearningLogEntry] = []
                     for outcome, classification in zip(
                         evaluation_report.outcomes,
@@ -529,8 +553,11 @@ class MacroResearchPipeline:
                     ):
                         # Find the matching prediction
                         pred = next(
-                            (p for p in prediction_batch.predictions
-                             if p.prediction_id == outcome.prediction_id),
+                            (
+                                p
+                                for p in prediction_batch.predictions
+                                if p.prediction_id == outcome.prediction_id
+                            ),
                             None,
                         )
                         if pred:
@@ -547,7 +574,11 @@ class MacroResearchPipeline:
                                 was_correct=outcome.correct,
                                 actual_direction=outcome.actual_direction,
                                 error_magnitude=outcome.error_magnitude,
-                                error_category=classification.error_category.value if classification.error_category else None,
+                                error_category=(
+                                    classification.error_category.value
+                                    if classification.error_category
+                                    else None
+                                ),
                                 diagnosis_confidence=classification.diagnosis_confidence,
                                 diagnosis_rationale=classification.diagnosis_rationale,
                                 predicted_at=pred.created_at,
@@ -588,9 +619,13 @@ class MacroResearchPipeline:
                     )
 
                     from src.schemas.kpi import WindowPeriod
+
                     kpi_report = await self._kpi_metrics.compute_full_report(
                         window=WindowPeriod.D30,
-                        kpi1=kpi1, kpi2=kpi2, kpi3=kpi3, kpi4=kpi4,
+                        kpi1=kpi1,
+                        kpi2=kpi2,
+                        kpi3=kpi3,
+                        kpi4=kpi4,
                     )
 
                     # Set baseline on first KPI report
@@ -600,8 +635,10 @@ class MacroResearchPipeline:
                     logger.info(
                         "v3_kpi_computed overall=%.3f kpi1=%.3f kpi2=%.3f kpi3=%.3f kpi4=%.3f",
                         kpi_report.overall_score,
-                        kpi1.composite_score, kpi2.composite_score,
-                        kpi3.composite_score, kpi4.composite_score,
+                        kpi1.composite_score,
+                        kpi2.composite_score,
+                        kpi3.composite_score,
+                        kpi4.composite_score,
                     )
 
             # ═══════════════════════════════════════════════════════════════

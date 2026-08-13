@@ -16,10 +16,10 @@ Final output: a professional Daily Macro Brief readable by portfolio managers.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Callable
 
 
 class DeskPhase(str, Enum):
@@ -36,8 +36,9 @@ class DeskPhase(str, Enum):
 @dataclass
 class DeskState:
     """State tracking for the daily research desk workflow."""
+
     desk_id: str = field(default_factory=lambda: f"desk_{datetime.now().strftime('%Y%m%d')}")
-    date: str = field(default_factory=lambda: datetime.now().strftime('%Y-%m-%d'))
+    date: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
     started_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
     # Phase tracking
@@ -91,7 +92,7 @@ class DailyResearchDesk:
         print(brief)
     """
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
         # Lazy-loaded modules
@@ -100,7 +101,7 @@ class DailyResearchDesk:
         self._report_card = None
 
         # Callbacks
-        self._on_phase: Optional[Callable] = None
+        self._on_phase: Callable | None = None
 
     # ── Main Workflow ────────────────────────────────────────────────
 
@@ -162,7 +163,7 @@ class DailyResearchDesk:
         state.qa_scorecard, state.memo_passed_qa = self._run_qa(state)
         self._record_phase(
             state,
-            f"QA {'PASSED' if state.memo_passed_qa else 'FAILED' if state.qa_scorecard else 'SKIPPED'}"
+            f"QA {'PASSED' if state.memo_passed_qa else 'FAILED' if state.qa_scorecard else 'SKIPPED'}",
         )
 
         # ── 07:40 Phase 7: Trade Dashboard ──────────────────────────
@@ -237,7 +238,9 @@ class DailyResearchDesk:
             lines.append("")
             lines.append("  Changes from previous session:")
             # Compare with previous data
-            for key in set(list(state.macro_data.keys()) + list(previous.get("macro_data", {}).keys())):
+            for key in set(
+                list(state.macro_data.keys()) + list(previous.get("macro_data", {}).keys())
+            ):
                 curr = str(state.macro_data.get(key, "N/A"))
                 prev = str(previous.get("macro_data", {}).get(key, "N/A"))
                 if curr != prev:
@@ -365,9 +368,9 @@ class DailyResearchDesk:
                 for p in pat.patterns[:4]:
                     lines.append(f"  * {p}")
         if state.narrative_update:
-            narrative_lines = state.narrative_update.split('\n')
+            narrative_lines = state.narrative_update.split("\n")
             for nl in narrative_lines[2:6]:
-                if nl.strip() and not nl.startswith('Changes'):
+                if nl.strip() and not nl.startswith("Changes"):
                     lines.append(nl)
         lines.append("")
 
@@ -389,8 +392,9 @@ class DailyResearchDesk:
                 lines.append("EVIDENCE OVERVIEW")
                 lines.append("-" * 40)
                 for theme, items in list(evd.evidence_clusters.items())[:4]:
-                    lines.append(f"  {theme}: {len(items)} items, "
-                                 f"net weight {evd.net_weight:+.2f}")
+                    lines.append(
+                        f"  {theme}: {len(items)} items, " f"net weight {evd.net_weight:+.2f}"
+                    )
                 lines.append("")
 
         # Historical Analogies
@@ -401,7 +405,9 @@ class DailyResearchDesk:
                 lines.append("-" * 40)
                 for a in ana.analogies[:2]:
                     lines.append(f"  {a['period']}: {a['description'][:100]}")
-                lines.append(f"  Key difference: {ana.differences[0][:100] if ana.differences else 'N/A'}")
+                lines.append(
+                    f"  Key difference: {ana.differences[0][:100] if ana.differences else 'N/A'}"
+                )
                 lines.append("")
 
         # Predictions
@@ -413,8 +419,7 @@ class DailyResearchDesk:
                 for p in prd.predictions[:4]:
                     inval = p.get("invalidation", "")
                     lines.append(
-                        f"  [{p['probability']:.0%}] {p['claim'][:80]} "
-                        f"(by {p['horizon']})"
+                        f"  [{p['probability']:.0%}] {p['claim'][:80]} " f"(by {p['horizon']})"
                     )
                     if inval:
                         lines.append(f"    Invalidation: {inval[:80]}")
@@ -426,8 +431,7 @@ class DailyResearchDesk:
             lines.append("-" * 40)
             for r in state.trade_dashboard["risks"][:3]:
                 lines.append(
-                    f"  [{r['severity'].upper()}] (P={r['probability']:.0%}) "
-                    f"{r['risk'][:80]}"
+                    f"  [{r['severity'].upper()}] (P={r['probability']:.0%}) " f"{r['risk'][:80]}"
                 )
             lines.append("")
 
@@ -455,6 +459,7 @@ class DailyResearchDesk:
             lines.append("-" * 40)
             try:
                 from src.research.qa.report_card import ReportCard
+
                 if self._report_card is None:
                     self._report_card = ReportCard()
                 lines.append(f"  {self._report_card.format_badge(state.qa_scorecard)}")
@@ -490,7 +495,7 @@ class DailyResearchDesk:
 
     def _set_phase(self, state: DeskState, phase: DeskPhase):
         """Set current phase and log."""
-        phase_time = datetime.now().strftime('%H:%M')
+        phase_time = datetime.now().strftime("%H:%M")
         state.current_phase = phase
         phase_names = {
             DeskPhase.COLLECT: "06:00 Collect",
@@ -511,9 +516,7 @@ class DailyResearchDesk:
 
     def _record_phase(self, state: DeskState, note: str):
         """Record phase completion."""
-        state.phase_history.append(
-            (state.current_phase, note, time.time())
-        )
+        state.phase_history.append((state.current_phase, note, time.time()))
 
     def on_phase_change(self, callback: Callable):
         """Register callback for phase transitions."""
@@ -541,6 +544,7 @@ class DailyResearchDesk:
         # Try pipeline but in non-strict mode
         try:
             from src.research.reasoning_pipeline.pipeline import ReasoningPipeline
+
             pipeline = ReasoningPipeline(self.config)
             ps = pipeline.run(
                 macro_data=state.macro_data,

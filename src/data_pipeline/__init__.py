@@ -30,8 +30,6 @@ Design:
 """
 
 from src.data_pipeline.collector_manager import CollectorManager
-from src.data_pipeline.macro_pipeline import MacroPipeline
-from src.data_pipeline.normalizer import MacroObservation, Normalizer
 from src.data_pipeline.feature_engine import (
     FeatureDimension,
     FeatureEngine,
@@ -39,6 +37,8 @@ from src.data_pipeline.feature_engine import (
     FeatureSnapshot,
     IndicatorFeatures,
 )
+from src.data_pipeline.macro_pipeline import MacroPipeline
+from src.data_pipeline.normalizer import MacroObservation, Normalizer
 from src.data_pipeline.snapshot_builder import QualityReport, SnapshotBuilder, SourceReport
 from src.data_pipeline.state_vector import (
     DimensionScore,
@@ -46,7 +46,7 @@ from src.data_pipeline.state_vector import (
     StateVectorBuilder,
     StateVectorDimension,
 )
-from src.data_pipeline.validator import DataQualityValidator, ValidationResult, ValidatedDataPoint
+from src.data_pipeline.validator import DataQualityValidator, ValidatedDataPoint, ValidationResult
 
 __all__ = [
     # Pipeline

@@ -10,12 +10,15 @@ information into the agent's cognitive system.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
 from src.news.schemas import (
-    NewsArticle, ResearchEvent, NewsSourceType, EventCategory,
-    ImpactDirection, ImpactSeverity,
+    EventCategory,
+    ImpactDirection,
+    ImpactSeverity,
+    NewsArticle,
+    NewsSourceType,
+    ResearchEvent,
 )
 
 
@@ -38,7 +41,7 @@ class NewsCollector:
         "oecd": NewsSourceType.INTERNATIONAL_ORG,
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def collect_from_articles(
@@ -100,7 +103,7 @@ class NewsCollector:
 
     # ── Internal Conversion Methods ──
 
-    def _dict_to_article(self, d: dict, source_type_str: str) -> Optional[NewsArticle]:
+    def _dict_to_article(self, d: dict, source_type_str: str) -> NewsArticle | None:
         if not d.get("headline") and not d.get("title"):
             return None
 
@@ -138,7 +141,7 @@ class NewsCollector:
             market_impact=direction,
             impact_severity=ImpactSeverity.MEDIUM,
             impact_confidence=0.6,
-            timestamp=article.published_at or datetime.now(timezone.utc).isoformat(),
+            timestamp=article.published_at or datetime.now(UTC).isoformat(),
             is_breaking="breaking" in article.headline.lower(),
             is_important=category != EventCategory.OTHER,
         )
@@ -170,16 +173,20 @@ class NewsCollector:
             event_id=f"DATA_{str(uuid.uuid4())[:8]}",
             title=f"{indicator}: {actual}{' '+unit if unit else ''} (Consensus: {consensus}, Prior: {prior})",
             description=f"Economic data release: {indicator}. "
-                        f"Actual: {actual}, Consensus: {consensus}, Prior: {prior}.",
+            f"Actual: {actual}, Consensus: {consensus}, Prior: {prior}.",
             category=EventCategory.ECONOMIC_DATA,
             source_type=NewsSourceType.MARKET_DATA,
             sources=[{"provider": provider, "indicator": indicator}],
             entities=[indicator, provider],
             country=release.get("country", "US"),
             market_impact=direction,
-            impact_severity=ImpactSeverity.HIGH if surprise and abs(float(surprise)) > 1.5 else ImpactSeverity.MEDIUM,
+            impact_severity=(
+                ImpactSeverity.HIGH
+                if surprise and abs(float(surprise)) > 1.5
+                else ImpactSeverity.MEDIUM
+            ),
             impact_confidence=0.8,
-            timestamp=release.get("timestamp", datetime.now(timezone.utc).isoformat()),
+            timestamp=release.get("timestamp", datetime.now(UTC).isoformat()),
             key_numbers={"actual": actual, "consensus": consensus, "prior": prior},
             consensus_expectation=float(consensus) if consensus is not None else None,
             actual_value=float(actual) if actual is not None else None,
@@ -187,13 +194,22 @@ class NewsCollector:
         )
 
     def _cb_statement_to_event(self, stmt: dict, cb_name: str) -> ResearchEvent:
-        name_map = {"fed": "Federal Reserve", "ecb": "European Central Bank",
-                     "boj": "Bank of Japan", "pboc": "People's Bank of China", "boe": "Bank of England"}
+        name_map = {
+            "fed": "Federal Reserve",
+            "ecb": "European Central Bank",
+            "boj": "Bank of Japan",
+            "pboc": "People's Bank of China",
+            "boe": "Bank of England",
+        }
 
         title = stmt.get("title", f"{name_map.get(cb_name, cb_name)} Communication")
         content = stmt.get("text", stmt.get("content", stmt.get("summary", "")))
 
-        source_type = NewsSourceType.CENTRAL_BANK if "statement" in title.lower() or "minutes" in title.lower() else NewsSourceType.CENTRAL_BANK_SPEECH
+        source_type = (
+            NewsSourceType.CENTRAL_BANK
+            if "statement" in title.lower() or "minutes" in title.lower()
+            else NewsSourceType.CENTRAL_BANK_SPEECH
+        )
 
         return ResearchEvent(
             event_id=f"CB_{str(uuid.uuid4())[:8]}",
@@ -207,7 +223,7 @@ class NewsCollector:
             market_impact=ImpactDirection.NEUTRAL,  # Will be refined by PolicyExtractor
             impact_severity=ImpactSeverity.HIGH,
             impact_confidence=0.7,
-            timestamp=stmt.get("date", datetime.now(timezone.utc).isoformat()),
+            timestamp=stmt.get("date", datetime.now(UTC).isoformat()),
         )
 
     # ── Classification Helpers ──
@@ -215,20 +231,77 @@ class NewsCollector:
     def _classify_headline(self, headline: str) -> EventCategory:
         hl = headline.lower()
         rules = [
-            (["rate hike", "rate cut", "interest rate", "fomc", "ecb", "boj", "monetary policy",
-              "tightening", "easing", "quantitative"], EventCategory.MONETARY_POLICY),
-            (["fiscal", "budget", "deficit", "spending", "tax", "stimulus", "treasury",
-              "debt ceiling"], EventCategory.FISCAL_POLICY),
-            (["gdp", "cpi", "ppi", "nfp", "payroll", "unemployment", "pmi", "ism",
-              "retail sales", "industrial", "housing", "consumer confidence"], EventCategory.ECONOMIC_DATA),
-            (["war", "sanction", "conflict", "election", "trade war", "tariff",
-              "geopolit"], EventCategory.GEOPOLITICAL),
-            (["stock", "bond", "currency", "oil", "gold", "market rally", "market sell",
-              "volatility", "vix"], EventCategory.MARKET_EVENT),
-            (["speech", "remarks", "testimony", "press conference", "interview",
-              "comment"], EventCategory.SPEECH_COMMENTARY),
-            (["regulation", "sec", "cftc", "fdic", "basel", "capital requirement",
-              "compliance"], EventCategory.REGULATORY),
+            (
+                [
+                    "rate hike",
+                    "rate cut",
+                    "interest rate",
+                    "fomc",
+                    "ecb",
+                    "boj",
+                    "monetary policy",
+                    "tightening",
+                    "easing",
+                    "quantitative",
+                ],
+                EventCategory.MONETARY_POLICY,
+            ),
+            (
+                [
+                    "fiscal",
+                    "budget",
+                    "deficit",
+                    "spending",
+                    "tax",
+                    "stimulus",
+                    "treasury",
+                    "debt ceiling",
+                ],
+                EventCategory.FISCAL_POLICY,
+            ),
+            (
+                [
+                    "gdp",
+                    "cpi",
+                    "ppi",
+                    "nfp",
+                    "payroll",
+                    "unemployment",
+                    "pmi",
+                    "ism",
+                    "retail sales",
+                    "industrial",
+                    "housing",
+                    "consumer confidence",
+                ],
+                EventCategory.ECONOMIC_DATA,
+            ),
+            (
+                ["war", "sanction", "conflict", "election", "trade war", "tariff", "geopolit"],
+                EventCategory.GEOPOLITICAL,
+            ),
+            (
+                [
+                    "stock",
+                    "bond",
+                    "currency",
+                    "oil",
+                    "gold",
+                    "market rally",
+                    "market sell",
+                    "volatility",
+                    "vix",
+                ],
+                EventCategory.MARKET_EVENT,
+            ),
+            (
+                ["speech", "remarks", "testimony", "press conference", "interview", "comment"],
+                EventCategory.SPEECH_COMMENTARY,
+            ),
+            (
+                ["regulation", "sec", "cftc", "fdic", "basel", "capital requirement", "compliance"],
+                EventCategory.REGULATORY,
+            ),
         ]
         for keywords, cat in rules:
             if any(k in hl for k in keywords):
@@ -238,12 +311,39 @@ class NewsCollector:
     def _infer_direction(self, headline: str, content: str) -> ImpactDirection:
         text = (headline + " " + content[:200]).lower()
 
-        bullish_keywords = ["beat", "exceed", "strong", "surge", "rally", "growth",
-                            "expansion", "recovery", "upgrade", "optimistic", "dovish",
-                            "cut rate", "easing", "stimulus"]
-        bearish_keywords = ["miss", "below", "weak", "plunge", "selloff", "recession",
-                            "contraction", "downgrade", "pessimistic", "hawkish",
-                            "hike rate", "tightening", "crash", "crisis", "default"]
+        bullish_keywords = [
+            "beat",
+            "exceed",
+            "strong",
+            "surge",
+            "rally",
+            "growth",
+            "expansion",
+            "recovery",
+            "upgrade",
+            "optimistic",
+            "dovish",
+            "cut rate",
+            "easing",
+            "stimulus",
+        ]
+        bearish_keywords = [
+            "miss",
+            "below",
+            "weak",
+            "plunge",
+            "selloff",
+            "recession",
+            "contraction",
+            "downgrade",
+            "pessimistic",
+            "hawkish",
+            "hike rate",
+            "tightening",
+            "crash",
+            "crisis",
+            "default",
+        ]
 
         bull_count = sum(1 for k in bullish_keywords if k in text)
         bear_count = sum(1 for k in bearish_keywords if k in text)
@@ -281,4 +381,6 @@ class NewsCollector:
 
     @staticmethod
     def _cb_country(cb_name: str) -> str:
-        return {"fed": "US", "ecb": "EU", "boj": "JP", "pboc": "CN", "boe": "UK"}.get(cb_name.lower(), "US")
+        return {"fed": "US", "ecb": "EU", "boj": "JP", "pboc": "CN", "boe": "UK"}.get(
+            cb_name.lower(), "US"
+        )

@@ -1,6 +1,6 @@
 """Tests for Signal API routes — GET /signals/snapshot."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from fastapi.testclient import TestClient
@@ -12,8 +12,8 @@ from src.schemas.signal import (
     SignalEvidence,
     SignalStrength,
 )
-from src.storage.signal_repository import SqlSignalRepository
 from src.storage.engine import dispose_engine
+from src.storage.signal_repository import SqlSignalRepository
 
 _uid = 0
 
@@ -28,7 +28,7 @@ def _make_seeded_signal(indicator: str = "API_TEST") -> MacroSignalSchema:
         direction=SignalDirection.BEARISH,
         strength=SignalStrength.MODERATE,
         confidence=0.80,
-        timestamp=datetime(2026, 7, 13, 12, _uid, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 7, 13, 12, _uid, 0, tzinfo=UTC),
         evidence=[
             SignalEvidence(
                 rule_id="api_test_rule",

@@ -5,14 +5,13 @@ Strategy:
 - Weekly:  Compare against saved snapshot from 5+ days ago
 - On each run, save today's data to data/snapshots/ for future comparisons
 """
+
 from __future__ import annotations
 
 import json
-import os
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Tuple, Optional
 
 import requests
 
@@ -25,32 +24,41 @@ SNAPSHOT_DIR = Path(__file__).resolve().parents[3] / "data" / "snapshots"
 SNAPSHOT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Sina codes for real-time price + prev_close
-SINA_CODE_MAP: Dict[str, str] = {
-    "SPY":   "gb_spy",
-    "QQQ":   "gb_qqq",
-    "IWM":   "gb_iwm",
-    "GLD":   "gb_gld",
-    "USO":   "gb_uso",
-    "VIXY":  "gb_vixy",
-    "HYG":   "gb_hyg",
-    "LQD":   "gb_lqd",
-    "NVDA":  "gb_nvda",
-    "SMH":   "gb_smh",
-    "ASML":  "gb_asml",
-    "TSM":   "gb_tsm",
-    "TLT":   "gb_tlt",
+SINA_CODE_MAP: dict[str, str] = {
+    "SPY": "gb_spy",
+    "QQQ": "gb_qqq",
+    "IWM": "gb_iwm",
+    "GLD": "gb_gld",
+    "USO": "gb_uso",
+    "VIXY": "gb_vixy",
+    "HYG": "gb_hyg",
+    "LQD": "gb_lqd",
+    "NVDA": "gb_nvda",
+    "SMH": "gb_smh",
+    "ASML": "gb_asml",
+    "TSM": "gb_tsm",
+    "TLT": "gb_tlt",
 }
 
 # Display name mappings
-DISPLAY_NAMES: Dict[str, str] = {
-    "SPY": "标普500", "QQQ": "纳斯达克100", "IWM": "罗素2000",
-    "GLD": "黄金", "USO": "WTI原油", "VIXY": "VIX恐慌",
-    "HYG": "高收益债", "LQD": "投资级债", "TLT": "长期国债",
-    "NVDA": "英伟达", "SMH": "半导体", "ASML": "阿斯麦", "TSM": "台积电",
+DISPLAY_NAMES: dict[str, str] = {
+    "SPY": "标普500",
+    "QQQ": "纳斯达克100",
+    "IWM": "罗素2000",
+    "GLD": "黄金",
+    "USO": "WTI原油",
+    "VIXY": "VIX恐慌",
+    "HYG": "高收益债",
+    "LQD": "投资级债",
+    "TLT": "长期国债",
+    "NVDA": "英伟达",
+    "SMH": "半导体",
+    "ASML": "阿斯麦",
+    "TSM": "台积电",
 }
 
 
-def _fetch_one_sina(ticker: str, code: str) -> Optional[Tuple[float, float]]:
+def _fetch_one_sina(ticker: str, code: str) -> tuple[float, float] | None:
     """Fetch current price and prev_close from Sina. Returns (current, prev) or None."""
     try:
         r = requests.get(
@@ -70,9 +78,9 @@ def _fetch_one_sina(ticker: str, code: str) -> Optional[Tuple[float, float]]:
     return None
 
 
-def fetch_all_sina_prices() -> Dict[str, Tuple[float, float]]:
+def fetch_all_sina_prices() -> dict[str, tuple[float, float]]:
     """Fetch current + prev_close for all tracked tickers via Sina."""
-    results: Dict[str, Tuple[float, float]] = {}
+    results: dict[str, tuple[float, float]] = {}
     for i, (ticker, code) in enumerate(SINA_CODE_MAP.items()):
         if i > 0:
             time.sleep(0.25)
@@ -83,7 +91,7 @@ def fetch_all_sina_prices() -> Dict[str, Tuple[float, float]]:
     return results
 
 
-def load_historical_snapshot(lookback_days: int = 5) -> Optional[dict]:
+def load_historical_snapshot(lookback_days: int = 5) -> dict | None:
     """Load the most recent snapshot from at least `lookback_days` ago."""
     if not SNAPSHOT_DIR.exists():
         return None
@@ -103,14 +111,18 @@ def load_historical_snapshot(lookback_days: int = 5) -> Optional[dict]:
             continue
 
     if best:
-        with open(best[1], "r", encoding="utf-8") as f:
+        with open(best[1], encoding="utf-8") as f:
             data = json.load(f)
-        logger.info("historical_snapshot | loaded %s (%d days ago)", best[0], (datetime.now().date() - best[0]).days)
+        logger.info(
+            "historical_snapshot | loaded %s (%d days ago)",
+            best[0],
+            (datetime.now().date() - best[0]).days,
+        )
         return data
     return None
 
 
-def save_snapshot(prices: Dict[str, Tuple[float, float]], date_str: str):
+def save_snapshot(prices: dict[str, tuple[float, float]], date_str: str):
     """Save today's prices to a JSON snapshot file."""
     filepath = SNAPSHOT_DIR / f"{date_str}.json"
     payload = {
@@ -122,7 +134,7 @@ def save_snapshot(prices: Dict[str, Tuple[float, float]], date_str: str):
     logger.info("snapshot_saved | %s (%d tickers)", filepath, len(prices))
 
 
-def compute_changes(today_str: Optional[str] = None) -> Dict[str, dict]:
+def compute_changes(today_str: str | None = None) -> dict[str, dict]:
     """Compute 1-day and weekly changes for all tracked indicators.
 
     Returns:
@@ -141,7 +153,7 @@ def compute_changes(today_str: Optional[str] = None) -> Dict[str, dict]:
     hist = load_historical_snapshot(lookback_days=5)
 
     # 4) Build result
-    result: Dict[str, dict] = {}
+    result: dict[str, dict] = {}
     for ticker, (current, prev) in sina_prices.items():
         chg = current - prev
         chg_pct = (chg / prev) * 100 if prev > 0 else 0
@@ -162,7 +174,9 @@ def compute_changes(today_str: Optional[str] = None) -> Dict[str, dict]:
             hist_current = hist["prices"][ticker]["current"]
             delta_5d = current - hist_current
             delta_5d_pct = (delta_5d / hist_current) * 100 if hist_current > 0 else 0
-            days_ago = (datetime.now().date() - datetime.strptime(hist["date"], "%Y-%m-%d").date()).days
+            days_ago = (
+                datetime.now().date() - datetime.strptime(hist["date"], "%Y-%m-%d").date()
+            ).days
             entry["chg_5d"] = round(delta_5d, 2)
             entry["chg_5d_pct"] = round(delta_5d_pct, 2)
             entry["chg_5d_days"] = days_ago
@@ -172,26 +186,50 @@ def compute_changes(today_str: Optional[str] = None) -> Dict[str, dict]:
     return result
 
 
-def format_changes_table(changes: Dict[str, dict]) -> str:
+def format_changes_table(changes: dict[str, dict]) -> str:
     """Format changes as a human-readable table for the daily memo."""
     lines = []
-    header = f"{'指标':<10} {'现价':>10} {'日涨跌':>10} {'日涨跌%':>8} {'周涨跌':>10} {'周涨跌%':>8}"
+    header = (
+        f"{'指标':<10} {'现价':>10} {'日涨跌':>10} {'日涨跌%':>8} {'周涨跌':>10} {'周涨跌%':>8}"
+    )
     sep = "-" * 70
     lines.append(sep)
     lines.append(header)
     lines.append(sep)
 
-    for sym in ["SPY", "QQQ", "IWM", "GLD", "USO", "VIXY", "HYG", "LQD", "TLT", "NVDA", "SMH", "ASML", "TSM"]:
+    for sym in [
+        "SPY",
+        "QQQ",
+        "IWM",
+        "GLD",
+        "USO",
+        "VIXY",
+        "HYG",
+        "LQD",
+        "TLT",
+        "NVDA",
+        "SMH",
+        "ASML",
+        "TSM",
+    ]:
         info = changes.get(sym)
         if not info:
             continue
         name = DISPLAY_NAMES.get(sym, sym)
-        week_val = f"{info['chg_5d']:+.2f}" if info.get('chg_5d') is not None else "      --"
-        week_pct = f"{info['chg_5d_pct']:+.2f}%" if info.get('chg_5d_pct') is not None else "     --"
+        week_val = f"{info['chg_5d']:+.2f}" if info.get("chg_5d") is not None else "      --"
+        week_pct = (
+            f"{info['chg_5d_pct']:+.2f}%" if info.get("chg_5d_pct") is not None else "     --"
+        )
 
         # Color markers for significant changes
-        flag_1d = " ▼" if info['chg_1d_pct'] < -0.5 else (" ▲" if info['chg_1d_pct'] > 0.5 else "  ")
-        flag_5d = " ▼" if (info.get('chg_5d_pct') or 0) < -1 else (" ▲" if (info.get('chg_5d_pct') or 0) > 1 else "  ")
+        flag_1d = (
+            " ▼" if info["chg_1d_pct"] < -0.5 else (" ▲" if info["chg_1d_pct"] > 0.5 else "  ")
+        )
+        flag_5d = (
+            " ▼"
+            if (info.get("chg_5d_pct") or 0) < -1
+            else (" ▲" if (info.get("chg_5d_pct") or 0) > 1 else "  ")
+        )
 
         lines.append(
             f"{name:<10} {info['current']:>10.2f} {info['chg_1d']:>+10.2f} {info['chg_1d_pct']:>+7.2f}%{flag_1d}"

@@ -10,10 +10,7 @@ This is NOT an LLM debate. It is deterministic, rule-based competition:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
-
-from src.hypothesis.retriever import HistoricalRetriever, RetrievalContext, RetrievalReport
+from src.hypothesis.retriever import RetrievalContext, RetrievalReport
 from src.schemas.hypothesis_v3_1 import (
     CandidateHypothesis,
     CompetitionRound,
@@ -113,18 +110,23 @@ class CompetitionEngine:
         # ── Final: Low Confidence Filter ──────────────────────────────────
         for c in list(survivors):
             if c.competition_score < self._min_confidence:
-                eliminated.append(EliminatedHypothesis(
-                    candidate_id=c.candidate_id,
-                    eliminated_by="",
-                    reason=EliminationReason.LOW_CONFIDENCE,
-                    detail=f"Competition score {c.competition_score:.3f} below minimum {self._min_confidence}",
-                ))
+                eliminated.append(
+                    EliminatedHypothesis(
+                        candidate_id=c.candidate_id,
+                        eliminated_by="",
+                        reason=EliminationReason.LOW_CONFIDENCE,
+                        detail=f"Competition score {c.competition_score:.3f} below minimum {self._min_confidence}",
+                    )
+                )
                 survivors.remove(c)
 
         # Log
         logger.info(
             "competition_complete before=%d after=%d eliminated=%d contradictions=%d",
-            len(candidates), len(survivors), len(eliminated), len(contradictions),
+            len(candidates),
+            len(survivors),
+            len(eliminated),
+            len(contradictions),
         )
 
         return CompetitionRound(
@@ -138,7 +140,8 @@ class CompetitionEngine:
     # ── Round 1: Direction Contradictions ─────────────────────────────────
 
     def _detect_direction_contradictions(
-        self, candidates: list[CandidateHypothesis],
+        self,
+        candidates: list[CandidateHypothesis],
     ) -> dict:
         """Detect direct directional contradictions between hypotheses."""
         contradictions: list[Contradiction] = []
@@ -187,23 +190,25 @@ class CompetitionEngine:
                     else:
                         loser, winner = bull, bear
 
-                    eliminated.append(EliminatedHypothesis(
-                        candidate_id=loser.candidate_id,
-                        eliminated_by=winner.candidate_id,
-                        reason=EliminationReason.DIRECT_CONTRADICTION,
-                        contradiction=contra,
-                        detail=(
-                            f"Direct directional contradiction on {indicator}: "
-                            f"{loser.candidate_id} ({loser.direction}) vs "
-                            f"{winner.candidate_id} ({winner.direction}). "
-                            f"Eliminated due to weaker competition score "
-                            f"({loser.competition_score:.3f} < {winner.competition_score:.3f})."
-                        ),
-                        revival_condition=(
-                            f"If {indicator} moves in {loser.direction} direction, "
-                            f"this hypothesis should be reconsidered."
-                        ),
-                    ))
+                    eliminated.append(
+                        EliminatedHypothesis(
+                            candidate_id=loser.candidate_id,
+                            eliminated_by=winner.candidate_id,
+                            reason=EliminationReason.DIRECT_CONTRADICTION,
+                            contradiction=contra,
+                            detail=(
+                                f"Direct directional contradiction on {indicator}: "
+                                f"{loser.candidate_id} ({loser.direction}) vs "
+                                f"{winner.candidate_id} ({winner.direction}). "
+                                f"Eliminated due to weaker competition score "
+                                f"({loser.competition_score:.3f} < {winner.competition_score:.3f})."
+                            ),
+                            revival_condition=(
+                                f"If {indicator} moves in {loser.direction} direction, "
+                                f"this hypothesis should be reconsidered."
+                            ),
+                        )
+                    )
 
         return {"contradictions": contradictions, "eliminated": eliminated}
 
@@ -252,23 +257,26 @@ class CompetitionEngine:
                         key=lambda x: scores.get(x.candidate_id, 0),
                         default=None,
                     )
-                    eliminated.append(EliminatedHypothesis(
-                        candidate_id=h.candidate_id,
-                        eliminated_by=stronger.candidate_id if stronger else "",
-                        reason=EliminationReason.WEAKER_EVIDENCE,
-                        detail=(
-                            f"Weak evidence support (score={score:.3f}) vs peer max ({max_score:.3f}). "
-                            f"Evidence count: {h.evidence_count}, avg strength: {h.avg_evidence_strength:.3f}."
-                        ),
-                        revival_condition="If confirming evidence for this dimension emerges.",
-                    ))
+                    eliminated.append(
+                        EliminatedHypothesis(
+                            candidate_id=h.candidate_id,
+                            eliminated_by=stronger.candidate_id if stronger else "",
+                            reason=EliminationReason.WEAKER_EVIDENCE,
+                            detail=(
+                                f"Weak evidence support (score={score:.3f}) vs peer max ({max_score:.3f}). "
+                                f"Evidence count: {h.evidence_count}, avg strength: {h.avg_evidence_strength:.3f}."
+                            ),
+                            revival_condition="If confirming evidence for this dimension emerges.",
+                        )
+                    )
 
         return {"eliminated": eliminated}
 
     # ── Round 3: Transmission Comparison ─────────────────────────────────
 
     def _compare_transmission(
-        self, candidates: list[CandidateHypothesis],
+        self,
+        candidates: list[CandidateHypothesis],
     ) -> dict:
         """Compare transmission chains — eliminate hypotheses with unreliable chains."""
         eliminated: list[EliminatedHypothesis] = []
@@ -291,28 +299,33 @@ class CompetitionEngine:
                 # Very unreliable chain + better alternatives exist
                 if avg_rel < 0.35 and len(hyps) > 2:
                     alternatives = [o for o in hyps if o.candidate_id != h.candidate_id]
-                    better_alt = max(alternatives, key=lambda x: x.avg_chain_reliability, default=None)
-                    eliminated.append(EliminatedHypothesis(
-                        candidate_id=h.candidate_id,
-                        eliminated_by=better_alt.candidate_id if better_alt else "",
-                        reason=EliminationReason.BROKEN_TRANSMISSION,
-                        detail=(
-                            f"Transmission chain has low average reliability ({avg_rel:.3f}). "
-                            f"Chain length: {h.chain_length}, segments: "
-                            f"{', '.join(s.segment_id for s in h.transmission_chain)}."
-                        ),
-                        revival_condition=(
-                            "If transmission segments are validated by future data, "
-                            "reliability scores will increase and this hypothesis can be reconsidered."
-                        ),
-                    ))
+                    better_alt = max(
+                        alternatives, key=lambda x: x.avg_chain_reliability, default=None
+                    )
+                    eliminated.append(
+                        EliminatedHypothesis(
+                            candidate_id=h.candidate_id,
+                            eliminated_by=better_alt.candidate_id if better_alt else "",
+                            reason=EliminationReason.BROKEN_TRANSMISSION,
+                            detail=(
+                                f"Transmission chain has low average reliability ({avg_rel:.3f}). "
+                                f"Chain length: {h.chain_length}, segments: "
+                                f"{', '.join(s.segment_id for s in h.transmission_chain)}."
+                            ),
+                            revival_condition=(
+                                "If transmission segments are validated by future data, "
+                                "reliability scores will increase and this hypothesis can be reconsidered."
+                            ),
+                        )
+                    )
 
         return {"eliminated": eliminated}
 
     # ── Round 4: Dimension Overlap Deduplication ─────────────────────────
 
     def _deduplicate_dimensions(
-        self, candidates: list[CandidateHypothesis],
+        self,
+        candidates: list[CandidateHypothesis],
     ) -> list[EliminatedHypothesis]:
         """Ensure max N hypotheses per dimension+direction."""
         eliminated: list[EliminatedHypothesis] = []
@@ -328,23 +341,25 @@ class CompetitionEngine:
 
             # Sort by competition score, keep the top ones
             hyps.sort(key=lambda h: h.competition_score, reverse=True)
-            to_keep = hyps[:self._max_per_dim_direction]
-            to_elim = hyps[self._max_per_dim_direction:]
-            keeper_ids = {h.candidate_id for h in to_keep}
+            to_keep = hyps[: self._max_per_dim_direction]
+            to_elim = hyps[self._max_per_dim_direction :]
+            _keeper_ids = {h.candidate_id for h in to_keep}
 
             for h in to_elim:
                 best = to_keep[0]
-                eliminated.append(EliminatedHypothesis(
-                    candidate_id=h.candidate_id,
-                    eliminated_by=best.candidate_id,
-                    reason=EliminationReason.DIMENSION_OVERLAP,
-                    detail=(
-                        f"Too many {h.direction} hypotheses in {h.dimension} ({len(hyps)} > {self._max_per_dim_direction}). "
-                        f"Eliminated in favor of higher-scoring hypothesis {best.candidate_id} "
-                        f"(score {best.competition_score:.3f} vs {h.competition_score:.3f})."
-                    ),
-                    revival_condition=f"If {best.candidate_id} is disproven, this can be reconsidered.",
-                ))
+                eliminated.append(
+                    EliminatedHypothesis(
+                        candidate_id=h.candidate_id,
+                        eliminated_by=best.candidate_id,
+                        reason=EliminationReason.DIMENSION_OVERLAP,
+                        detail=(
+                            f"Too many {h.direction} hypotheses in {h.dimension} ({len(hyps)} > {self._max_per_dim_direction}). "
+                            f"Eliminated in favor of higher-scoring hypothesis {best.candidate_id} "
+                            f"(score {best.competition_score:.3f} vs {h.competition_score:.3f})."
+                        ),
+                        revival_condition=f"If {best.candidate_id} is disproven, this can be reconsidered.",
+                    )
+                )
 
         return eliminated
 

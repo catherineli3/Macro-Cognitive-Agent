@@ -7,11 +7,9 @@ Key design:
     - KPI-1 (Hypothesis Accuracy) derived from Library scores
 """
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
-
 
 # ── Hypothesis Score ─────────────────────────────────────────────────────────
 
@@ -30,7 +28,7 @@ class HypothesisScore(BaseModel):
 
     hypothesis_id: str = Field(..., min_length=1, max_length=64)
     computed_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     # ── Composite score (0 ~ 1) ──────────────────────────────────────────
@@ -38,7 +36,9 @@ class HypothesisScore(BaseModel):
 
     # ── Sub-score 1: Prediction Accuracy (weight: 0.30) ──────────────────
     prediction_accuracy: float = Field(
-        default=0.5, ge=0.0, le=1.0,
+        default=0.5,
+        ge=0.0,
+        le=1.0,
         description="Directional accuracy of this hypothesis's predictions",
     )
     accuracy_trend: str = Field(
@@ -49,25 +49,32 @@ class HypothesisScore(BaseModel):
 
     # ── Sub-score 2: Evidence Quality (weight: 0.25) ─────────────────────
     evidence_quality: float = Field(
-        default=0.5, ge=0.0, le=1.0,
+        default=0.5,
+        ge=0.0,
+        le=1.0,
         description="Average strength + recency of supporting evidence",
     )
     evidence_count: int = Field(default=0, ge=0)
     evidence_freshness_days: float = Field(
-        default=30.0, ge=0.0,
+        default=30.0,
+        ge=0.0,
         description="Average age of evidence in days",
     )
 
     # ── Sub-score 3: Calibration (weight: 0.20) ──────────────────────────
     calibration_score: float = Field(
-        default=0.5, ge=0.0, le=1.0,
+        default=0.5,
+        ge=0.0,
+        le=1.0,
         description="1.0 - ECE for this hypothesis",
     )
     ece: float = Field(default=0.25, ge=0.0, le=1.0)
 
     # ── Sub-score 4: Consistency (weight: 0.15) ──────────────────────────
     consistency_score: float = Field(
-        default=0.5, ge=0.0, le=1.0,
+        default=0.5,
+        ge=0.0,
+        le=1.0,
         description="1.0 - std_dev of accuracy across cycles",
     )
     accuracy_variance: float = Field(default=0.0, ge=0.0, le=1.0)
@@ -75,7 +82,9 @@ class HypothesisScore(BaseModel):
 
     # ── Sub-score 5: Learning History (weight: 0.10) ─────────────────────
     learning_history_score: float = Field(
-        default=0.5, ge=0.0, le=1.0,
+        default=0.5,
+        ge=0.0,
+        le=1.0,
         description="Has accuracy improved over time?",
     )
     accuracy_trajectory_slope: float = Field(
@@ -126,10 +135,10 @@ class HypothesisLibraryEntry(BaseModel):
 
     # ── Lifecycle ────────────────────────────────────────────────────────
     registered_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
     last_updated: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
     status: str = Field(default="active")  # 'active' | 'deprecated' | 'archived'
 

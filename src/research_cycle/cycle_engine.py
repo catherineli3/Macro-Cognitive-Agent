@@ -18,25 +18,22 @@ Full V3.2 cycle:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
-from src.schemas.macro_snapshot import MacroSnapshot
-from src.schemas.research_thesis import ResearchThesis, ThesisOutcome, ThesisStatus
-from src.research_cycle.framework_selector import FrameworkSelector, FrameworkSelection
-from src.research_cycle.thesis_generator import ThesisGenerator
-from src.research_cycle.research_memory import ResearchMemory, ResearchMemoryEntry
+from src.research.judgment.research_judgment import JudgmentOutput, ResearchJudgmentEngine
+from src.research.narrative.narrative_competition import NarrativeCompetition
+from src.research.narrative.narrative_reasoner import NarrativeReasoner
+from src.research.narrative.schemas import NarrativeCompetitionResult
+from src.research_cycle.framework_selector import FrameworkSelection, FrameworkSelector
 from src.research_cycle.outcome_tracker import OutcomeTracker
 from src.research_cycle.postmortem import Postmortem
-from src.transmission.transmission_graph import TransmissionGraph
-from src.research.narrative.schemas import Narrative, NarrativeObject, NarrativeCompetitionResult
-from src.research.narrative.narrative_reasoner import NarrativeReasoner
-from src.research.narrative.narrative_competition import NarrativeCompetition
-from src.research.beliefs.belief_engine import BeliefEngine
-from src.research.beliefs.belief_graph import BeliefGraph
-from src.research.judgment.research_judgment import ResearchJudgmentEngine, JudgmentOutput
-from src.research.narrative.narrative_detector import NarrativeDetector
+from src.research_cycle.research_memory import ResearchMemory, ResearchMemoryEntry
+from src.research_cycle.thesis_generator import ThesisGenerator
+from src.schemas.macro_snapshot import MacroSnapshot
+from src.schemas.research_thesis import ResearchThesis, ThesisOutcome
 from src.shared.logging import get_logger
+from src.transmission.transmission_graph import TransmissionGraph
 
 logger = get_logger(__name__)
 
@@ -56,19 +53,19 @@ class CycleResult:
     macro_snapshot: MacroSnapshot | None = None
     framework_selection: FrameworkSelection | None = None
     thesis: ResearchThesis | None = None
-    narratives: list = field(default_factory=list)       # Narrative[] — V3.1
-    narrative_objects: list = field(default_factory=list) # NarrativeObject[] — V3.2
-    narrative_competition: Any = None                     # NarrativeCompetitionResult — V3.2
-    beliefs: list = field(default_factory=list)           # ResearchBelief[] — V3.1
-    belief_graph_stats: dict | None = None                # BeliefGraph stats — V3.2
-    research_judgments: Any = None                        # JudgmentOutput — V3.2
-    hypothesis_set: Any = None              # HypothesisSet | None
-    findings_report: Any = None             # ResearchFindingsReport | None
-    prediction_batch: Any = None            # PredictionBatch | None
+    narratives: list = field(default_factory=list)  # Narrative[] — V3.1
+    narrative_objects: list = field(default_factory=list)  # NarrativeObject[] — V3.2
+    narrative_competition: Any = None  # NarrativeCompetitionResult — V3.2
+    beliefs: list = field(default_factory=list)  # ResearchBelief[] — V3.1
+    belief_graph_stats: dict | None = None  # BeliefGraph stats — V3.2
+    research_judgments: Any = None  # JudgmentOutput — V3.2
+    hypothesis_set: Any = None  # HypothesisSet | None
+    findings_report: Any = None  # ResearchFindingsReport | None
+    prediction_batch: Any = None  # PredictionBatch | None
     outcome_from_previous: ThesisOutcome | None = None  # Previous cycle's outcome
-    diagnosis_report: Any = None            # DiagnosisReport | None
-    postmortem: Any = None                  # PostmortemReport | None
-    evolution_result: dict | None = None    # From EvolutionPipeline.run()
+    diagnosis_report: Any = None  # DiagnosisReport | None
+    postmortem: Any = None  # PostmortemReport | None
+    evolution_result: dict | None = None  # From EvolutionPipeline.run()
     memory_entry_id: str | None = None
     artifacts: dict = field(default_factory=dict)
     error: str | None = None
@@ -185,6 +182,7 @@ class ResearchCycleEngine:
             return
         try:
             from src.research.evolution.evolution_pipeline import EvolutionPipeline
+
             self._evolution_pipeline = EvolutionPipeline()
             # Bind to dependents
             self.framework_selector.set_evolution_pipeline(self._evolution_pipeline)
@@ -200,6 +198,7 @@ class ResearchCycleEngine:
             return self._hypothesis_engine
         try:
             from src.hypothesis.engine import HypothesisEngine
+
             self._hypothesis_engine = HypothesisEngine()
             logger.info("HypothesisEngine initialized")
             return self._hypothesis_engine
@@ -214,6 +213,7 @@ class ResearchCycleEngine:
             return self._findings_engine
         try:
             from src.research.findings.engine import ResearchFindingsEngine
+
             self._findings_engine = ResearchFindingsEngine(graph=self._transmission_graph)
             return self._findings_engine
         except Exception as e:
@@ -227,6 +227,7 @@ class ResearchCycleEngine:
             return self._prediction_engine
         try:
             from src.prediction import MultiPredictionEngine
+
             self._prediction_engine = MultiPredictionEngine()
             return self._prediction_engine
         except Exception as e:
@@ -240,6 +241,7 @@ class ResearchCycleEngine:
             return self._diagnosis_engine
         try:
             from src.diagnosis import DiagnosisEngine
+
             self._diagnosis_engine = DiagnosisEngine()
             return self._diagnosis_engine
         except Exception as e:
@@ -253,6 +255,7 @@ class ResearchCycleEngine:
             return self._narrative_detector
         try:
             from src.research.narrative.narrative_detector import NarrativeDetector
+
             self._narrative_detector = NarrativeDetector()
             logger.info("NarrativeDetector initialized (V3.1)")
             return self._narrative_detector
@@ -267,6 +270,7 @@ class ResearchCycleEngine:
             return self._belief_engine
         try:
             from src.research.beliefs.belief_engine import BeliefEngine
+
             self._belief_engine = BeliefEngine()
             logger.info("BeliefEngine initialized (V3.1)")
             return self._belief_engine
@@ -279,7 +283,7 @@ class ResearchCycleEngine:
 
     def _ensure_narrative_reasoner(self) -> NarrativeReasoner | None:
         """Lazy-init NarrativeReasoner (V3.2)."""
-        if hasattr(self, '_narrative_reasoner') and self._narrative_reasoner is not None:
+        if hasattr(self, "_narrative_reasoner") and self._narrative_reasoner is not None:
             return self._narrative_reasoner
         try:
             self._narrative_reasoner = NarrativeReasoner()
@@ -292,7 +296,7 @@ class ResearchCycleEngine:
 
     def _ensure_narrative_competition(self) -> NarrativeCompetition | None:
         """Lazy-init NarrativeCompetition (V3.2)."""
-        if hasattr(self, '_narrative_competition') and self._narrative_competition is not None:
+        if hasattr(self, "_narrative_competition") and self._narrative_competition is not None:
             return self._narrative_competition
         try:
             reasoner = self._ensure_narrative_reasoner()
@@ -306,7 +310,7 @@ class ResearchCycleEngine:
 
     def _ensure_judgment_engine(self) -> ResearchJudgmentEngine | None:
         """Lazy-init ResearchJudgmentEngine (V3.2)."""
-        if hasattr(self, '_judgment_engine') and self._judgment_engine is not None:
+        if hasattr(self, "_judgment_engine") and self._judgment_engine is not None:
             return self._judgment_engine
         try:
             self._judgment_engine = ResearchJudgmentEngine()
@@ -352,8 +356,9 @@ class ResearchCycleEngine:
         )
 
         logger.info("=" * 60)
-        logger.info("Research Cycle #%d starting — Regime: %s [V3.2]",
-                     cycle, macro_snapshot.regime_label)
+        logger.info(
+            "Research Cycle #%d starting — Regime: %s [V3.2]", cycle, macro_snapshot.regime_label
+        )
         logger.info("=" * 60)
 
         try:
@@ -364,83 +369,76 @@ class ResearchCycleEngine:
             # ── Step 2: Framework Selection ────────────────────────
             self._ensure_evolution()
             result.framework_selection = self.framework_selector.select(macro_snapshot)
-            logger.info("Step 1/14: Framework selected — %s",
-                        result.framework_selection.top_framework_id or "none")
+            logger.info(
+                "Step 1/14: Framework selected — %s",
+                result.framework_selection.top_framework_id or "none",
+            )
 
             # ── Step 3: Narrative Detection (V3.1) ────────────────
             result.narratives = self._detect_narratives(macro_snapshot)
-            logger.info("Step 2/14: Narrative detection — %d narratives",
-                        len(result.narratives))
+            logger.info("Step 2/14: Narrative detection — %d narratives", len(result.narratives))
 
             # ── Step 4: Narrative Reasoning (V3.2 NEW) ─────────────
-            result.narrative_objects = self._reason_narratives(
-                result.narratives, macro_snapshot
+            result.narrative_objects = self._reason_narratives(result.narratives, macro_snapshot)
+            logger.info(
+                "Step 3/14: Narrative reasoning — %d narrative objects (depth=%s)",
+                len(result.narrative_objects),
+                [n.causal_depth for n in result.narrative_objects],
             )
-            logger.info("Step 3/14: Narrative reasoning — %d narrative objects (depth=%s)",
-                        len(result.narrative_objects),
-                        [n.causal_depth for n in result.narrative_objects])
 
             # ── Step 5: Narrative Competition (V3.2 NEW) ───────────
             result.narrative_competition = self._compete_narratives(
                 macro_snapshot, result.narrative_objects
             )
             n_comp = (
-                len(result.narrative_competition.narratives)
-                if result.narrative_competition else 0
+                len(result.narrative_competition.narratives) if result.narrative_competition else 0
             )
-            logger.info("Step 4/14: Narrative competition — %d competing narratives",
-                        n_comp)
+            logger.info("Step 4/14: Narrative competition — %d competing narratives", n_comp)
 
             # ── Step 6: Belief Generation (V3.2 enhanced) ──────────
             # Use V3.2 NarrativeObjects for richer belief generation
             narratives_for_beliefs = (
-                result.narrative_objects
-                if result.narrative_objects
-                else result.narratives
+                result.narrative_objects if result.narrative_objects else result.narratives
             )
-            result.beliefs = self._generate_beliefs(
-                narratives_for_beliefs, macro_snapshot
-            )
+            result.beliefs = self._generate_beliefs(narratives_for_beliefs, macro_snapshot)
             # V3.2: Capture belief graph stats
             belief_engine = self._ensure_belief_engine()
-            if belief_engine and hasattr(belief_engine, 'graph'):
+            if belief_engine and hasattr(belief_engine, "graph"):
                 result.belief_graph_stats = belief_engine.graph.get_graph_stats()
-            logger.info("Step 5/14: Belief generation — %d beliefs (graph stats: %s)",
-                        len(result.beliefs),
-                        result.belief_graph_stats)
+            logger.info(
+                "Step 5/14: Belief generation — %d beliefs (graph stats: %s)",
+                len(result.beliefs),
+                result.belief_graph_stats,
+            )
 
             # ── Step 7: Research Judgment (V3.2 NEW) ───────────────
             result.research_judgments = self._generate_judgments(
                 result.beliefs, result.narrative_objects
             )
-            j_count = (
-                result.research_judgments.count
-                if result.research_judgments else 0
+            j_count = result.research_judgments.count if result.research_judgments else 0
+            logger.info(
+                "Step 6/14: Research judgments — %d judgments (stance=%s)",
+                j_count,
+                result.research_judgments.macro_stance if result.research_judgments else "N/A",
             )
-            logger.info("Step 6/14: Research judgments — %d judgments (stance=%s)",
-                        j_count,
-                        result.research_judgments.macro_stance if result.research_judgments else "N/A")
 
             # ── Step 8: Thesis Generation ─────────────────────────
             result.thesis = self.thesis_generator.generate(
                 selection=result.framework_selection,
                 macro_snapshot=macro_snapshot,
                 hypotheses=None,  # Will be set after hypothesis step
-                narratives=result.narratives,        # V3.1
-                beliefs=result.beliefs,              # V3.1
+                narratives=result.narratives,  # V3.1
+                beliefs=result.beliefs,  # V3.1
                 judgments=result.research_judgments,  # V3.2
             )
-            logger.info("Step 7/14: Thesis generated — c=%.0f%%",
-                        result.thesis.confidence * 100)
+            logger.info("Step 7/14: Thesis generated — c=%.0f%%", result.thesis.confidence * 100)
 
             # ── Step 9: Hypothesis Competition (Milestone A) ──────
             if macro_snapshot.signals:
                 hypothesis_engine = self._ensure_hypothesis_engine()
                 if hypothesis_engine:
                     try:
-                        result.hypothesis_set = hypothesis_engine.reason(
-                            macro_snapshot.signals
-                        )
+                        result.hypothesis_set = hypothesis_engine.reason(macro_snapshot.signals)
                         # Regenerate thesis with hypothesis context
                         result.thesis = self.thesis_generator.generate(
                             selection=result.framework_selection,
@@ -449,8 +447,10 @@ class ResearchCycleEngine:
                             beliefs=result.beliefs,
                             judgments=result.research_judgments,
                         )
-                        logger.info("Step 8/14: Hypothesis competition — %d hypotheses",
-                                    len(result.hypothesis_set.hypotheses) if result.hypothesis_set else 0)
+                        logger.info(
+                            "Step 8/14: Hypothesis competition — %d hypotheses",
+                            len(result.hypothesis_set.hypotheses) if result.hypothesis_set else 0,
+                        )
                     except Exception as e:
                         result.warnings.append(f"Hypothesis step failed: {e}")
                         logger.warning("Hypothesis step failed: %s", e)
@@ -471,13 +471,20 @@ class ResearchCycleEngine:
                             cycle_number=cycle,
                         )
                         total_f = (
-                            len(result.findings_report.reliability_ranking) +
-                            len(result.findings_report.failure_warnings) +
-                            len(result.findings_report.failure_event_correlations) +
-                            len(result.findings_report.regime_similarities)
-                        ) if result.findings_report else 0
-                        logger.info("Step 9/14: Transmission findings — %d findings from %d diagnoses",
-                                    total_f, len(diagnoses))
+                            (
+                                len(result.findings_report.reliability_ranking)
+                                + len(result.findings_report.failure_warnings)
+                                + len(result.findings_report.failure_event_correlations)
+                                + len(result.findings_report.regime_similarities)
+                            )
+                            if result.findings_report
+                            else 0
+                        )
+                        logger.info(
+                            "Step 9/14: Transmission findings — %d findings from %d diagnoses",
+                            total_f,
+                            len(diagnoses),
+                        )
                     else:
                         logger.info("Step 9/14: No transmission diagnoses to analyze")
                 except Exception as e:
@@ -490,12 +497,14 @@ class ResearchCycleEngine:
             prediction_engine = self._ensure_prediction_engine()
             if prediction_engine and result.hypothesis_set:
                 try:
-                    result.prediction_batch = prediction_engine.predict(
-                        result.hypothesis_set
-                    )
+                    result.prediction_batch = prediction_engine.predict(result.hypothesis_set)
                     self.outcome_tracker.register_thesis(
                         result.thesis,
-                        predictions=result.prediction_batch if hasattr(result.prediction_batch, 'predictions') else None,
+                        predictions=(
+                            result.prediction_batch
+                            if hasattr(result.prediction_batch, "predictions")
+                            else None
+                        ),
                     )
                     logger.info("Step 10/14: Predictions generated")
                 except Exception as e:
@@ -509,7 +518,11 @@ class ResearchCycleEngine:
                 pm = self.postmortem.analyze(
                     self._previous_thesis,
                     result.outcome_from_previous,
-                    diagnosis_notes=getattr(result.diagnosis_report, 'summary', '') if result.diagnosis_report else '',
+                    diagnosis_notes=(
+                        getattr(result.diagnosis_report, "summary", "")
+                        if result.diagnosis_report
+                        else ""
+                    ),
                 )
                 result.postmortem = pm
                 logger.info("Step 11/14: Postmortem — %s", pm.root_cause[:60])
@@ -526,9 +539,15 @@ class ResearchCycleEngine:
                         diagnoses=diagnoses,
                         current_regime=regime_snapshot,
                     )
-                    logger.info("Step 12/14: Evolution — %s",
-                                {k: v for k, v in result.evolution_result.items()
-                                 if k in ('principles_created', 'frameworks_created', 'conflicts_resolved')})
+                    logger.info(
+                        "Step 12/14: Evolution — %s",
+                        {
+                            k: v
+                            for k, v in result.evolution_result.items()
+                            if k
+                            in ("principles_created", "frameworks_created", "conflicts_resolved")
+                        },
+                    )
                 except Exception as e:
                     result.warnings.append(f"Evolution step failed: {e}")
                     logger.warning("Evolution step failed: %s", e)
@@ -558,8 +577,7 @@ class ResearchCycleEngine:
                     logger.warning("Snapshot export failed for cycle #%d: %s", cycle, snap_err)
 
             logger.info("=" * 60)
-            logger.info("Research Cycle #%d completed — Memory: %s",
-                         cycle, result.memory_entry_id)
+            logger.info("Research Cycle #%d completed — Memory: %s", cycle, result.memory_entry_id)
             logger.info("=" * 60)
 
         except Exception as e:
@@ -589,7 +607,9 @@ class ResearchCycleEngine:
         if thesis_id in outcomes:
             actual_data, notes = outcomes[thesis_id]
             outcome = self.outcome_tracker.determine_outcome(
-                self._previous_thesis, actual_data, notes,
+                self._previous_thesis,
+                actual_data,
+                notes,
             )
             result.outcome_from_previous = outcome
 
@@ -601,9 +621,14 @@ class ResearchCycleEngine:
             diagnosis_engine = self._ensure_diagnosis_engine()
             if diagnosis_engine:
                 try:
-                    result.diagnosis_report = diagnosis_engine.diagnose(
-                        self._previous_thesis, outcome,
-                    ) if hasattr(diagnosis_engine, 'diagnose') else None
+                    result.diagnosis_report = (
+                        diagnosis_engine.diagnose(
+                            self._previous_thesis,
+                            outcome,
+                        )
+                        if hasattr(diagnosis_engine, "diagnose")
+                        else None
+                    )
                 except Exception:
                     pass
 
@@ -627,15 +652,25 @@ class ResearchCycleEngine:
             for chain in chains:
                 for i in range(len(chain) - 1):
                     src, tgt = chain[i], chain[i + 1]
-                    g.reinforce_edge(src, tgt, context_key=regime_label,
-                                     amount=0.03, reason=f"Thesis validated: {notes[:60]}")
+                    g.reinforce_edge(
+                        src,
+                        tgt,
+                        context_key=regime_label,
+                        amount=0.03,
+                        reason=f"Thesis validated: {notes[:60]}",
+                    )
         else:
             # Thesis invalidated — weaken the transmission edges
             for chain in chains:
                 for i in range(len(chain) - 1):
                     src, tgt = chain[i], chain[i + 1]
-                    g.weaken_edge(src, tgt, context_key=regime_label,
-                                  amount=-0.04, reason=f"Thesis contradicted: {notes[:60]}")
+                    g.weaken_edge(
+                        src,
+                        tgt,
+                        context_key=regime_label,
+                        amount=-0.04,
+                        reason=f"Thesis contradicted: {notes[:60]}",
+                    )
 
     @staticmethod
     def _get_transmission_chains(
@@ -691,7 +726,6 @@ class ResearchCycleEngine:
         then uses TransmissionGraph.find_breakpoint() to produce proper
         BreakpointDiagnosis objects with severity, root cause, etc.
         """
-        from src.schemas.transmission_v3_1 import BreakpointDiagnosis
 
         diagnoses: list = []
         g = self._transmission_graph
@@ -739,33 +773,38 @@ class ResearchCycleEngine:
             #  1. Actual MentalModel outputs if available (primary signal)
             #  2. state_vector inference as fallback
             from src.research.models.mental_model import ResearchConclusion
+
             conclusions: list = []
 
             # ── Primary: MentalModel outputs from MacroSnapshot ──────
-            if hasattr(macro_snapshot, 'snapshot_data') and macro_snapshot.snapshot_data:
-                mm_outputs = macro_snapshot.snapshot_data.get('mental_model_outputs', [])
+            if hasattr(macro_snapshot, "snapshot_data") and macro_snapshot.snapshot_data:
+                mm_outputs = macro_snapshot.snapshot_data.get("mental_model_outputs", [])
                 for mm in mm_outputs:
                     if isinstance(mm, dict):
-                        conclusions.append(ResearchConclusion(
-                            model_name=mm.get('model_name', 'MentalModel'),
-                            domain=mm.get('domain', mm.get('dimension', '')),
-                            conclusion=mm.get('conclusion', ''),
-                            confidence=mm.get('confidence', 0.5),
-                            direction=mm.get('direction', 'neutral'),
-                            raw_score=mm.get('raw_score', mm.get('score', 0.5)),
-                        ))
+                        conclusions.append(
+                            ResearchConclusion(
+                                model_name=mm.get("model_name", "MentalModel"),
+                                domain=mm.get("domain", mm.get("dimension", "")),
+                                conclusion=mm.get("conclusion", ""),
+                                confidence=mm.get("confidence", 0.5),
+                                direction=mm.get("direction", "neutral"),
+                                raw_score=mm.get("raw_score", mm.get("score", 0.5)),
+                            )
+                        )
 
             # ── Fallback: state_vector inference ─────────────────────
             if not conclusions and state_vector:
                 for dim, data in state_vector.items():
-                    if isinstance(data, dict) and data.get('score') is not None:
-                        conclusions.append(ResearchConclusion(
-                            model_name="RegimeInference",
-                            domain=dim,
-                            conclusion=f"{dim}: {data.get('direction', 'neutral')} "
-                                       f"(score={data.get('score', 0)})",
-                            confidence=abs(data.get('score', 0)),
-                        ))
+                    if isinstance(data, dict) and data.get("score") is not None:
+                        conclusions.append(
+                            ResearchConclusion(
+                                model_name="RegimeInference",
+                                domain=dim,
+                                conclusion=f"{dim}: {data.get('direction', 'neutral')} "
+                                f"(score={data.get('score', 0)})",
+                                confidence=abs(data.get("score", 0)),
+                            )
+                        )
 
             narratives = detector.detect(
                 state_vector=state_vector,
@@ -787,55 +826,63 @@ class ResearchCycleEngine:
         state_vector: dict[str, dict] = {}
 
         # ── Market indicators ─────────────────────────────────────
-        if hasattr(macro_snapshot, 'market') and macro_snapshot.market:
-            indicators = getattr(macro_snapshot.market, 'indicators', {}) or {}
+        if hasattr(macro_snapshot, "market") and macro_snapshot.market:
+            indicators = getattr(macro_snapshot.market, "indicators", {}) or {}
             for key, value in indicators.items():
-                dim_name = key.split('.')[0] if '.' in key else key
-                sv = state_vector.setdefault(dim_name, {
-                    'score': 0.0, 'direction': 'neutral', 'drivers': [],
-                })
+                dim_name = key.split(".")[0] if "." in key else key
+                sv = state_vector.setdefault(
+                    dim_name,
+                    {
+                        "score": 0.0,
+                        "direction": "neutral",
+                        "drivers": [],
+                    },
+                )
                 if isinstance(value, (int, float)):
-                    sv['drivers'].append(f"{key}={value:.2f}")
+                    sv["drivers"].append(f"{key}={value:.2f}")
 
         # ── Regime data ────────────────────────────────────────────
-        if hasattr(macro_snapshot, 'regime') and macro_snapshot.regime:
+        if hasattr(macro_snapshot, "regime") and macro_snapshot.regime:
             regime = macro_snapshot.regime
             regime_map = {
-                'monetary_policy': 'POLICY',
-                'inflation': 'INFLATION',
-                'growth': 'GROWTH',
+                "monetary_policy": "POLICY",
+                "inflation": "INFLATION",
+                "growth": "GROWTH",
             }
             for attr, dim in regime_map.items():
                 val = getattr(regime, attr, None)
                 if val is not None:
-                    sv = state_vector.setdefault(dim, {
-                        'score': 0.0, 'direction': 'neutral', 'drivers': [],
-                    })
-                    sv['drivers'].append(f"regime.{attr}={val}")
+                    sv = state_vector.setdefault(
+                        dim,
+                        {
+                            "score": 0.0,
+                            "direction": "neutral",
+                            "drivers": [],
+                        },
+                    )
+                    sv["drivers"].append(f"regime.{attr}={val}")
 
                     # Set direction based on regime value
                     val_str = str(val).lower()
-                    if any(w in val_str for w in ('tighten', 'hawk', 'easing')):
-                        if 'tighten' in val_str or 'hawk' in val_str:
-                            sv['direction'] = 'tightening'
-                            sv['score'] = 0.7
-                        elif 'easing' in val_str or 'dovish' in val_str:
-                            sv['direction'] = 'easing'
-                            sv['score'] = 0.7
-                    elif attr == 'inflation':
-                        sv['direction'] = val_str
-                        sv['score'] = 0.5
-                    elif attr == 'growth':
-                        sv['direction'] = val_str
-                        sv['score'] = 0.5
+                    if any(w in val_str for w in ("tighten", "hawk", "easing")):
+                        if "tighten" in val_str or "hawk" in val_str:
+                            sv["direction"] = "tightening"
+                            sv["score"] = 0.7
+                        elif "easing" in val_str or "dovish" in val_str:
+                            sv["direction"] = "easing"
+                            sv["score"] = 0.7
+                    elif attr == "inflation":
+                        sv["direction"] = val_str
+                        sv["score"] = 0.5
+                    elif attr == "growth":
+                        sv["direction"] = val_str
+                        sv["score"] = 0.5
 
         # ── Ensure at minimum some dimensions exist ─────────────────
         if not state_vector:
             state_vector = {
-                'LIQUIDITY': {'score': 0.5, 'direction': 'neutral',
-                               'drivers': ['placeholder']},
-                'GROWTH': {'score': 0.5, 'direction': 'stable',
-                            'drivers': ['placeholder']},
+                "LIQUIDITY": {"score": 0.5, "direction": "neutral", "drivers": ["placeholder"]},
+                "GROWTH": {"score": 0.5, "direction": "stable", "drivers": ["placeholder"]},
             }
 
         return state_vector
@@ -856,10 +903,10 @@ class ResearchCycleEngine:
         try:
             # Extract state vector for context
             state_vector = {}
-            if hasattr(macro_snapshot, 'indicators') and macro_snapshot.indicators:
+            if hasattr(macro_snapshot, "indicators") and macro_snapshot.indicators:
                 state_vector = macro_snapshot.indicators
-            elif hasattr(macro_snapshot, 'snapshot_data'):
-                state_vector = macro_snapshot.snapshot_data.get('state_vector', {})
+            elif hasattr(macro_snapshot, "snapshot_data"):
+                state_vector = macro_snapshot.snapshot_data.get("state_vector", {})
 
             beliefs = engine.generate_from_narratives(narratives, state_vector)
             return beliefs if isinstance(beliefs, list) else []
@@ -893,26 +940,27 @@ class ResearchCycleEngine:
         try:
             # Build state vector
             state_vector = {}
-            if hasattr(macro_snapshot, 'indicators') and macro_snapshot.indicators:
+            if hasattr(macro_snapshot, "indicators") and macro_snapshot.indicators:
                 state_vector = macro_snapshot.indicators
-            elif hasattr(macro_snapshot, 'snapshot_data'):
-                state_vector = macro_snapshot.snapshot_data.get('state_vector', {})
+            elif hasattr(macro_snapshot, "snapshot_data"):
+                state_vector = macro_snapshot.snapshot_data.get("state_vector", {})
 
-            regime = macro_snapshot.regime_label if hasattr(macro_snapshot, 'regime_label') else ""
+            regime = macro_snapshot.regime_label if hasattr(macro_snapshot, "regime_label") else ""
 
             # Get mental model outputs if available
             mental_model_outputs = []
-            if hasattr(macro_snapshot, 'snapshot_data'):
-                mental_model_outputs = macro_snapshot.snapshot_data.get('mental_model_outputs', [])
+            if hasattr(macro_snapshot, "snapshot_data"):
+                mental_model_outputs = macro_snapshot.snapshot_data.get("mental_model_outputs", [])
 
             # Filter to Narrative type only
             from src.research.narrative.schemas import Narrative
+
             v3_narratives = [n for n in narratives if isinstance(n, Narrative)]
 
             if not v3_narratives and narratives:
                 # If all are already NarrativeObjects, just return them
                 first = narratives[0]
-                if hasattr(first, 'causal_chain'):
+                if hasattr(first, "causal_chain"):
                     return narratives
 
             narrative_objects = reasoner.reason_batch(
@@ -940,7 +988,7 @@ class ResearchCycleEngine:
         """
         # Check if we already have a competition result
         for n_obj in narrative_objects:
-            if hasattr(n_obj, 'probability') and n_obj.probability > 0:
+            if hasattr(n_obj, "probability") and n_obj.probability > 0:
                 # Already competed
                 pass
 
@@ -951,23 +999,31 @@ class ResearchCycleEngine:
 
         try:
             state_vector = {}
-            if hasattr(macro_snapshot, 'indicators') and macro_snapshot.indicators:
+            if hasattr(macro_snapshot, "indicators") and macro_snapshot.indicators:
                 state_vector = macro_snapshot.indicators
-            elif hasattr(macro_snapshot, 'snapshot_data'):
-                state_vector = macro_snapshot.snapshot_data.get('state_vector', {})
+            elif hasattr(macro_snapshot, "snapshot_data"):
+                state_vector = macro_snapshot.snapshot_data.get("state_vector", {})
 
-            regime = macro_snapshot.regime_label if hasattr(macro_snapshot, 'regime_label') else ""
+            regime = macro_snapshot.regime_label if hasattr(macro_snapshot, "regime_label") else ""
 
             # Convert NarrativeObjects back to Narratives for the competition engine
             from src.research.narrative.schemas import Narrative
-            v3_narratives = [
-                Narrative(
-                    id=n.id, title=n.title, description=n.description,
-                    category=n.category, score=n.confidence,
-                    source_signals=n.supporting_evidence,
-                )
-                for n in narrative_objects
-            ] if narrative_objects else None
+
+            v3_narratives = (
+                [
+                    Narrative(
+                        id=n.id,
+                        title=n.title,
+                        description=n.description,
+                        category=n.category,
+                        score=n.confidence,
+                        source_signals=n.supporting_evidence,
+                    )
+                    for n in narrative_objects
+                ]
+                if narrative_objects
+                else None
+            )
 
             result = competition.compete(
                 state_vector=state_vector,
@@ -1006,7 +1062,7 @@ class ResearchCycleEngine:
             # Get belief graph from belief engine
             graph = None
             belief_engine = self._ensure_belief_engine()
-            if belief_engine and hasattr(belief_engine, 'graph'):
+            if belief_engine and hasattr(belief_engine, "graph"):
                 graph = belief_engine.graph
 
             output = judgment_engine.judge(
@@ -1045,19 +1101,25 @@ class ResearchCycleEngine:
         if result.postmortem and result.postmortem.learning:
             learning_note = result.postmortem.learning
         if judgment_summary:
-            learning_note = f"{judgment_summary}\n{narrative_competition_summary}\n{learning_note}".strip()
+            learning_note = (
+                f"{judgment_summary}\n{narrative_competition_summary}\n{learning_note}".strip()
+            )
 
         entry = ResearchMemoryEntry(
             entry_id=f"mem-cycle-{cycle:04d}",
             cycle_number=cycle,
-            date=datetime.now(timezone.utc),
+            date=datetime.now(UTC),
             market_regime=result.macro_snapshot.regime if result.macro_snapshot else None,
             regime_label=result.macro_snapshot.regime_label if result.macro_snapshot else "",
-            framework_used=result.framework_selection.ranked_ids[:3] if result.framework_selection else [],
+            framework_used=(
+                result.framework_selection.ranked_ids[:3] if result.framework_selection else []
+            ),
             thesis=result.thesis,
             hypothesis_count=len(result.hypothesis_set.hypotheses) if result.hypothesis_set else 0,
             outcome=result.outcome_from_previous,
-            diagnosis_notes=getattr(result.diagnosis_report, 'summary', '') if result.diagnosis_report else '',
+            diagnosis_notes=(
+                getattr(result.diagnosis_report, "summary", "") if result.diagnosis_report else ""
+            ),
             postmortem=result.postmortem,
             learning_note=learning_note,
         )
@@ -1066,12 +1128,10 @@ class ResearchCycleEngine:
         if self._evolution_pipeline:
             try:
                 entry.frameworks_after = [
-                    fw.framework_id
-                    for fw in self._evolution_pipeline.get_active_frameworks()
+                    fw.framework_id for fw in self._evolution_pipeline.get_active_frameworks()
                 ]
                 entry.principles_after = [
-                    p.principle_id
-                    for p in self._evolution_pipeline.get_active_principles()
+                    p.principle_id for p in self._evolution_pipeline.get_active_principles()
                 ]
             except Exception:
                 pass
@@ -1099,18 +1159,18 @@ class ResearchCycleEngine:
         """Comprehensive cycle engine summary."""
         lines = [
             f"=== ResearchCycleEngine (Cycle {self._cycle_count}) ===",
-            f"",
+            "",
             f"Memory entries: {self.memory.total_entries} "
             f"(success rate: {self.memory.success_rate:.0%})",
             f"Pending outcomes: {self.outcome_tracker.pending_count}",
             f"Postmortems: {self.postmortem.report_count} "
             f"(success rate: {self.postmortem.success_rate:.0%})",
-            f"",
+            "",
             f"Framework Selector: {'connected' if self._evolution_pipeline else 'not connected'}",
             f"Thesis Generator: {'connected' if self._evolution_pipeline else 'not connected'}",
             f"Evolution Pipeline: {'available' if self.has_evolution else 'unavailable'}",
         ]
         if self._previous_thesis:
-            lines.append(f"")
+            lines.append("")
             lines.append(f"Active Thesis: {self._previous_thesis.title[:80]}")
         return "\n".join(lines)

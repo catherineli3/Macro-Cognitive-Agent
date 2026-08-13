@@ -11,28 +11,28 @@ Core components:
     LLMClient             — Abstraction layer for multiple LLM providers
 """
 
-from src.research.llm_brain.schemas import (
-    ResearchMemo,
-    RegimeAnalysis,
-    NarrativeAnalysis,
-    CausalAnalysis,
-    EvidenceAssessment,
-    BeliefSynthesis,
-    FalsificationCheck,
-    AssetImplication,
-    TailRisk,
-    ConfidenceCalibration,
-)
-from src.research.llm_brain.prompts import (
-    PromptArchitecture,
-    RESEARCHER_SYSTEM_PROMPT,
-    MACRO_REASONING_PROMPT,
-    EXPERT_PERSONAS,
-)
 from src.research.llm_brain.llm_client import LLMClient, LLMResponse
+from src.research.llm_brain.prompts import (
+    EXPERT_PERSONAS,
+    MACRO_REASONING_PROMPT,
+    RESEARCHER_SYSTEM_PROMPT,
+    PromptArchitecture,
+)
 from src.research.llm_brain.research_reasoning_agent import (
-    ResearchReasoningAgent,
     ReasoningInput,
+    ResearchReasoningAgent,
+)
+from src.research.llm_brain.schemas import (
+    AssetImplication,
+    BeliefSynthesis,
+    CausalAnalysis,
+    ConfidenceCalibration,
+    EvidenceAssessment,
+    FalsificationCheck,
+    NarrativeAnalysis,
+    RegimeAnalysis,
+    ResearchMemo,
+    TailRisk,
 )
 
 __all__ = [

@@ -10,12 +10,10 @@ Not just P&L. Diagnose WHY the trade failed:
 
 from __future__ import annotations
 
-from typing import Optional
-
 from src.research.learning.schemas import (
-    LearningEvent,
     FailureDiagnosis,
     ImprovementAction,
+    LearningEvent,
     RootCauseCategory,
 )
 
@@ -28,27 +26,17 @@ class TradeFeedback:
             "Macro view was directionally correct but the trade expression "
             "(instrument choice, structure) was wrong."
         ),
-        "timing_error": (
-            "Entry was too early/late. The trade was right but timing caused loss."
-        ),
-        "stop_too_tight": (
-            "Stop loss was triggered by noise before the trade worked."
-        ),
-        "sizing_error": (
-            "Position size was inappropriate for the conviction level."
-        ),
+        "timing_error": ("Entry was too early/late. The trade was right but timing caused loss."),
+        "stop_too_tight": ("Stop loss was triggered by noise before the trade worked."),
+        "sizing_error": ("Position size was inappropriate for the conviction level."),
         "correlation_breakdown": (
             "Assumed correlation between instrument and macro driver broke down."
         ),
-        "liquidity_event": (
-            "Liquidity dried up, causing execution at unfavorable prices."
-        ),
-        "view_wrong": (
-            "The underlying macro view was wrong — no trade expression could fix this."
-        ),
+        "liquidity_event": ("Liquidity dried up, causing execution at unfavorable prices."),
+        "view_wrong": ("The underlying macro view was wrong — no trade expression could fix this."),
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def analyze(
@@ -88,9 +76,7 @@ class TradeFeedback:
                 f"Trade expression mismatch: {failure_desc}. "
                 "Consider simpler, more direct expressions of the macro view."
             )
-            action.expected_improvement = (
-                "Better instrument-idea alignment → fewer false negatives"
-            )
+            action.expected_improvement = "Better instrument-idea alignment → fewer false negatives"
 
         elif failure_type == "timing_error":
             action.action_type = "add_entry_rule"

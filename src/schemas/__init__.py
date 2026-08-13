@@ -15,8 +15,38 @@ V3 Schema Chain (DDR-V3 v2.2):
     → LearningLogEntry → FourKPIReport
 """
 
+from src.schemas.belief_version import AdaptiveBelief, BeliefVersion
+from src.schemas.diagnosis import (
+    CorrectCategory,
+    DiagnosisReport,
+    ErrorCategory,
+    ErrorClassification,
+    ErrorTrend,
+)
+from src.schemas.evaluation_v3 import EvaluationReport
 from src.schemas.hypothesis import HypothesisEvidence, HypothesisSchema, HypothesisSet
+from src.schemas.hypothesis_library import HypothesisLibraryEntry, HypothesisScore
+from src.schemas.kpi import (
+    FourKPIReport,
+    KPI1_HypothesisAccuracy,
+    KPI2_PredictionError,
+    KPI3_ConfidenceCalibration,
+    KPI4_LearningSpeed,
+    RegressionCheck,
+    WindowPeriod,
+)
+from src.schemas.learning_log import LearningLogEntry
+from src.schemas.learning_unit import (
+    EvidenceChange,
+    LearningAction,
+    LearningActionType,
+    LearningUnit,
+    PreconditionChange,
+)
 from src.schemas.macro_data import MacroDataSchema, QualityFactor, QualityScore
+
+# ── V3: Autonomous Research Cycle (Milestone D) ──────────────────────
+from src.schemas.macro_snapshot import MacroSnapshot, MarketSnapshot
 from src.schemas.memory import BeliefRecord
 from src.schemas.narrative import (
     BeliefChangeNote,
@@ -27,15 +57,6 @@ from src.schemas.narrative import (
     ScenarioProbability,
 )
 from src.schemas.planning import ExecutionPlan, Task
-from src.schemas.reflection import ReflectionFinding, ReflectionReport, ReflectionSet
-from src.schemas.signal import (
-    MacroSignalSchema,
-    SignalDirection,
-    SignalEvidence,
-    SignalSnapshot,
-    SignalStrength,
-)
-from src.schemas.tool import ToolResult
 
 # ── V3 schemas ──────────────────────────────────────────────────────────
 from src.schemas.prediction_v3 import (
@@ -46,33 +67,8 @@ from src.schemas.prediction_v3 import (
     TransmissionChannel,
     V3PredictionOutcome,
 )
-from src.schemas.evaluation_v3 import EvaluationReport
-from src.schemas.diagnosis import (
-    CorrectCategory,
-    DiagnosisReport,
-    ErrorCategory,
-    ErrorClassification,
-    ErrorTrend,
-)
-from src.schemas.learning_unit import (
-    EvidenceChange,
-    LearningAction,
-    LearningActionType,
-    LearningUnit,
-    PreconditionChange,
-)
-from src.schemas.belief_version import AdaptiveBelief, BeliefVersion
-from src.schemas.hypothesis_library import HypothesisLibraryEntry, HypothesisScore
-from src.schemas.learning_log import LearningLogEntry
-from src.schemas.kpi import (
-    FourKPIReport,
-    KPI1_HypothesisAccuracy,
-    KPI2_PredictionError,
-    KPI3_ConfidenceCalibration,
-    KPI4_LearningSpeed,
-    RegressionCheck,
-    WindowPeriod,
-)
+from src.schemas.reflection import ReflectionFinding, ReflectionReport, ReflectionSet
+
 # ── V3: Research Evolution (Milestone C) ─────────────────────────────
 from src.schemas.research import (
     CompetingPrinciple,
@@ -90,13 +86,19 @@ from src.schemas.research import (
     ResearchPrinciple,
     SynthesisStrategy,
 )
-# ── V3: Autonomous Research Cycle (Milestone D) ──────────────────────
-from src.schemas.macro_snapshot import MacroSnapshot, MarketSnapshot
 from src.schemas.research_thesis import (
     ResearchThesis,
     ThesisOutcome,
     ThesisStatus,
 )
+from src.schemas.signal import (
+    MacroSignalSchema,
+    SignalDirection,
+    SignalEvidence,
+    SignalSnapshot,
+    SignalStrength,
+)
+from src.schemas.tool import ToolResult
 
 __all__ = [
     # Data Pipeline

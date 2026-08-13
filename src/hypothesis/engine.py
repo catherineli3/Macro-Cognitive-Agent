@@ -98,9 +98,7 @@ class HypothesisEngine:
                 self._populate_confidence(hypothesis)
 
             # Assemble the result set
-            dimensions = sorted(
-                set(h.dimension for h in hypotheses)
-            )
+            dimensions = sorted(set(h.dimension for h in hypotheses))
             summary = self._summarize(hypotheses)
 
             result = HypothesisSet(

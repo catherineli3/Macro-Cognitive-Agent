@@ -17,17 +17,16 @@ Philosophy (Soros):
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
+from src.research.reflexivity.capital_flow_tracker import CapitalFlowTracker
+from src.research.reflexivity.market_belief_model import MarketBeliefModel
 from src.research.reflexivity.schemas import (
-    MarketBelief,
     CapitalFlowSnapshot,
+    MarketBelief,
     ReflexivityCycle,
     ReflexivityReport,
 )
-from src.research.reflexivity.market_belief_model import MarketBeliefModel
-from src.research.reflexivity.capital_flow_tracker import CapitalFlowTracker
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -46,7 +45,11 @@ CYCLE_PATTERNS: dict[str, dict] = {
             "cracking": "劳动力市场出现裂痕，市场开始定价'Fed pivot'",
             "reversing": "Fed转向鸽派，风险资产暴力反弹",
         },
-        "historical_analogs": ["2022 Fed tightening cycle", "2018 Q4 selloff", "1994 bond massacre"],
+        "historical_analogs": [
+            "2022 Fed tightening cycle",
+            "2018 Q4 selloff",
+            "1994 bond massacre",
+        ],
         "break_triggers": [
             {"trigger": "核心CPI连续三个月下降", "impact": "鹰派预期松动"},
             {"trigger": "失业率上升0.5%", "impact": "Fed pivot预期形成"},
@@ -80,7 +83,11 @@ CYCLE_PATTERNS: dict[str, dict] = {
             "cracking": "某个触发事件（加息意外/信用事件），波动率脉冲",
             "reversing": "波动率爆炸，杠杆强制平仓，相关性→1",
         },
-        "historical_analogs": ["2020-2021 post-COVID rally", "2017 low-vol melt-up", "1999-2000 dot-com"],
+        "historical_analogs": [
+            "2020-2021 post-COVID rally",
+            "2017 low-vol melt-up",
+            "1999-2000 dot-com",
+        ],
         "break_triggers": [
             {"trigger": "VIX突破25", "impact": "波动率regime改变"},
             {"trigger": "信用利差骤升100bp+", "impact": "credit作为预警信号"},
@@ -112,7 +119,7 @@ CYCLE_PATTERNS: dict[str, dict] = {
 def _score_reinforcement(
     cycle_key: str,
     beliefs: list[MarketBelief],
-    flows: Optional[CapitalFlowSnapshot],
+    flows: CapitalFlowSnapshot | None,
     market_data: dict,
 ) -> dict:
     """Score how strongly the Narrative-Capital-Price loop is reinforcing.
@@ -229,8 +236,8 @@ class ReflexivityCycleDetector:
     def detect(
         self,
         market_data: dict,
-        beliefs: Optional[list[MarketBelief]] = None,
-        flows: Optional[CapitalFlowSnapshot] = None,
+        beliefs: list[MarketBelief] | None = None,
+        flows: CapitalFlowSnapshot | None = None,
         dominant_narrative: str = "",
         narrative_objects: list = None,
     ) -> ReflexivityReport:
@@ -246,12 +253,14 @@ class ReflexivityCycleDetector:
         Returns:
             ReflexivityReport with detected cycles and warnings
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         report_id = f"reflex-{now.strftime('%Y%m%d-%H%M')}"
 
         # Auto-generate if not provided
         if beliefs is None:
-            beliefs = self.belief_model.identify_beliefs(market_data, dominant_narrative, narrative_objects)
+            beliefs = self.belief_model.identify_beliefs(
+                market_data, dominant_narrative, narrative_objects
+            )
         if flows is None:
             flows = self.flow_tracker.snapshot(market_data)
 
@@ -316,7 +325,9 @@ class ReflexivityCycleDetector:
 
         logger.info(
             "Reflexivity report: %d cycles, score=%.2f, warnings=%d",
-            len(cycles), overall, len(warnings),
+            len(cycles),
+            overall,
+            len(warnings),
         )
         return report
 
@@ -324,7 +335,7 @@ class ReflexivityCycleDetector:
         self,
         cycle_key: str,
         beliefs: list[MarketBelief],
-        flows: Optional[CapitalFlowSnapshot],
+        flows: CapitalFlowSnapshot | None,
         market_data: dict,
         timestamp: datetime,
     ) -> ReflexivityCycle:
@@ -426,7 +437,7 @@ class ReflexivityCycleDetector:
         cycles: list[ReflexivityCycle],
         market_data: dict,
         beliefs: list[MarketBelief],
-        flows: Optional[CapitalFlowSnapshot],
+        flows: CapitalFlowSnapshot | None,
     ) -> list[str]:
         """Generate key warning signals."""
         warnings = []
@@ -440,14 +451,9 @@ class ReflexivityCycleDetector:
                     f"脆弱性 {cycle.vulnerability_score:.2f}"
                 )
             if cycle.stage == "cracking":
-                warnings.append(
-                    f"[{cycle.title}] 出现裂痕 — 监控反转风险"
-                )
+                warnings.append(f"[{cycle.title}] 出现裂痕 — 监控反转风险")
             if cycle.vulnerability_score > 0.7 and cycle.stage == "extreme":
-                warnings.append(
-                    f"高脆弱性循环: [{cycle.title}] — "
-                    f"技术性反转风险显著"
-                )
+                warnings.append(f"高脆弱性循环: [{cycle.title}] — " f"技术性反转风险显著")
 
         # VIX warning
         if vix < 13:

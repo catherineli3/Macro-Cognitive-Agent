@@ -20,21 +20,19 @@ Architecture:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional, Union
-
-from src.research.beliefs.schemas import (
-    BeliefDomain,
-    EvidenceSource,
-    ResearchBelief,
-)
-from src.research.beliefs.belief_update_engine import BeliefUpdateEngine
 from src.research.beliefs.belief_graph import BeliefGraph
 from src.research.beliefs.belief_lifecycle import BeliefLifecycleManager
 from src.research.beliefs.belief_store import BeliefStore
+from src.research.beliefs.belief_update_engine import BeliefUpdateEngine
+from src.research.beliefs.schemas import (
+    BeliefDomain,
+    BeliefRelationType,
+    EvidenceSource,
+    ResearchBelief,
+)
 from src.research.beliefs.template_matcher import TemplateMatcher
-from src.research.narrative.schemas import Narrative, NarrativeObject
 from src.research.models.mental_model import ResearchConclusion
+from src.research.narrative.schemas import Narrative, NarrativeObject
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -68,9 +66,9 @@ class BeliefEngine:
 
     def generate_from_narratives(
         self,
-        narratives: list[Union[Narrative, NarrativeObject]],
+        narratives: list[Narrative | NarrativeObject],
         state_vector: dict,
-        conclusions: Optional[list[ResearchConclusion]] = None,
+        conclusions: list[ResearchConclusion] | None = None,
     ) -> list[ResearchBelief]:
         """Generate beliefs from detected narratives and macro state.
 
@@ -88,20 +86,24 @@ class BeliefEngine:
             List of initialized ResearchBelief objects.
         """
         # Separate V3.0 and V3.2 narratives
-        v3_narratives = [n for n in narratives if isinstance(n, Narrative) and not isinstance(n, NarrativeObject)]
+        v3_narratives = [
+            n for n in narratives if isinstance(n, Narrative) and not isinstance(n, NarrativeObject)
+        ]
         v32_narratives = [n for n in narratives if isinstance(n, NarrativeObject)]
 
         # Convert V3.2 objects to V3.0 for template matching
         all_v3 = list(v3_narratives)
         for n32 in v32_narratives:
-            all_v3.append(Narrative(
-                id=n32.id,
-                title=n32.title,
-                description=n32.description,
-                category=n32.category,
-                score=n32.confidence,
-                source_signals=n32.supporting_evidence,
-            ))
+            all_v3.append(
+                Narrative(
+                    id=n32.id,
+                    title=n32.title,
+                    description=n32.description,
+                    category=n32.category,
+                    score=n32.confidence,
+                    source_signals=n32.supporting_evidence,
+                )
+            )
 
         matches = self.template_matcher.match(all_v3)
         beliefs: list[ResearchBelief] = []
@@ -161,7 +163,10 @@ class BeliefEngine:
 
             # Add evidence from state vector
             for dim_name, dim_data in state_vector.items():
-                if dim_name.lower() == match["domain"].value.lower() or dim_name == match["domain"].value:
+                if (
+                    dim_name.lower() == match["domain"].value.lower()
+                    or dim_name == match["domain"].value
+                ):
                     score = dim_data.get("score", 0.5)
                     direction = dim_data.get("direction", "neutral")
 
@@ -220,14 +225,20 @@ class BeliefEngine:
             logger.info(
                 "belief_engine_generated | %d beliefs from %d narratives (%d matches) "
                 "| %d new graph relations | %d competition clusters",
-                len(beliefs), len(narratives), len(matches),
-                new_relations, len(clusters),
+                len(beliefs),
+                len(narratives),
+                len(matches),
+                new_relations,
+                len(clusters),
             )
         else:
             logger.info(
                 "belief_engine_generated | %d beliefs from %d narratives (%d matches) "
                 "| %d new graph relations",
-                len(beliefs), len(narratives), len(matches), new_relations,
+                len(beliefs),
+                len(narratives),
+                len(matches),
+                new_relations,
             )
         return beliefs
 
@@ -235,7 +246,7 @@ class BeliefEngine:
         self,
         competition_result,
         state_vector: dict,
-        conclusions: Optional[list[ResearchConclusion]] = None,
+        conclusions: list[ResearchConclusion] | None = None,
     ) -> tuple[list[ResearchBelief], dict]:
         """V3.2: Generate beliefs from a NarrativeCompetitionResult.
 
@@ -260,16 +271,17 @@ class BeliefEngine:
         )
 
         # Ensure competition relations exist between beliefs from competing narratives
-        belief_ids = [b.id for b in beliefs]
+        _belief_ids = [b.id for b in beliefs]
         for i, a in enumerate(beliefs):
-            for b in beliefs[i + 1:]:
+            for b in beliefs[i + 1 :]:
                 if a.domain == b.domain and a.id != b.id:
                     # Same domain from competing narratives → COMPETES
                     self.graph.add_relation(
-                        a.id, b.id,
+                        a.id,
+                        b.id,
                         BeliefRelationType.COMPETES,
                         strength=0.65,
-                        description=f"Competing beliefs from narrative competition",
+                        description="Competing beliefs from narrative competition",
                     )
 
         stats = self.graph.get_graph_stats()
@@ -286,7 +298,12 @@ class BeliefEngine:
     ) -> ResearchBelief:
         """Add evidence to an existing belief and update it."""
         self.update_engine.add_evidence(
-            belief, description, source, direction, confidence, value,
+            belief,
+            description,
+            source,
+            direction,
+            confidence,
+            value,
         )
         self.lifecycle.evaluate(belief)
         return belief
@@ -302,7 +319,7 @@ class BeliefEngine:
         for b in beliefs:
             self.update_engine.apply_decay(b, half_life_days)
 
-    def save(self, beliefs: list[ResearchBelief], date_str: Optional[str] = None) -> str:
+    def save(self, beliefs: list[ResearchBelief], date_str: str | None = None) -> str:
         return self.store.save(beliefs, date_str)
 
     def load_latest(self) -> list[ResearchBelief]:

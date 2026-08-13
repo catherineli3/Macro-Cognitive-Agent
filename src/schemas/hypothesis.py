@@ -11,15 +11,13 @@ Key design:
     - Direction reuses SignalDirection (semantic alignment across layers).
 """
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
 from src.domain.hypothesis import HypothesisStatus
 from src.schemas.signal import SignalDirection
-
 
 # ── Evidence ──────────────────────────────────────────────────────────────
 
@@ -132,7 +130,7 @@ class HypothesisSchema(BaseModel):
         description="Explicit assumptions the hypothesis rests on",
     )
     generated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="Hypothesis generation timestamp",
     )
     metadata: dict = Field(
@@ -163,10 +161,7 @@ class HypothesisSchema(BaseModel):
         c = self.confidence
         s_count = len(self.supporting_evidence)
         x_count = len(self.contradicting_evidence)
-        return (
-            f"<Hypothesis [{self.dimension}] {d} c={c:.2f} "
-            f"evidence=+{s_count}/-{x_count}>"
-        )
+        return f"<Hypothesis [{self.dimension}] {d} c={c:.2f} " f"evidence=+{s_count}/-{x_count}>"
 
 
 # ── Hypothesis Set ────────────────────────────────────────────────────────
@@ -188,7 +183,7 @@ class HypothesisSet(BaseModel):
     """
 
     generated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
     hypotheses: list[HypothesisSchema] = Field(default_factory=list)
     dimensions_covered: list[str] = Field(default_factory=list)
@@ -203,7 +198,7 @@ class HypothesisSet(BaseModel):
         """Retrieve all hypotheses for a specific dimension."""
         return [h for h in self.hypotheses if h.dimension == dimension]
 
-    def get_highest_confidence(self) -> Optional[HypothesisSchema]:
+    def get_highest_confidence(self) -> HypothesisSchema | None:
         """Return the hypothesis with the highest confidence."""
         if not self.hypotheses:
             return None
@@ -211,7 +206,4 @@ class HypothesisSet(BaseModel):
 
     def __repr__(self) -> str:
         dims = ", ".join(self.dimensions_covered) if self.dimensions_covered else "none"
-        return (
-            f"<HypothesisSet hypotheses={len(self.hypotheses)} "
-            f"dimensions=[{dims}]>"
-        )
+        return f"<HypothesisSet hypotheses={len(self.hypotheses)} " f"dimensions=[{dims}]>"

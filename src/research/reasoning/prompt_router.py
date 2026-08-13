@@ -17,8 +17,6 @@ Rules:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
-
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Domain → Regime Mapping
@@ -120,7 +118,7 @@ DOMAIN_RULES: dict[str, dict] = {
 
 _DOMAIN_SYSTEM_PROMPTS: dict[str, str] = {
     "Liquidity": """You are a senior LIQUIDITY macro strategist at a top-tier hedge fund.
-Your expertise: money markets, central bank balance sheets, repo markets, swap lines, 
+Your expertise: money markets, central bank balance sheets, repo markets, swap lines,
 TGA dynamics, reserve scarcity, cross-border funding stress, and shadow banking plumbing.
 
 FOCUS YOUR ANALYSIS ON:
@@ -135,9 +133,8 @@ CRITICAL RULES:
 - Write like Zoltan Pozsar's Global Money Notes
 - Be precise about plumbing mechanics, not vague about "liquidity being tight"
 - Output as structured JSON matching the ResearchMemo schema""",
-
     "Inflation": """You are a senior INFLATION macro strategist at a top-tier hedge fund.
-Your expertise: CPI decomposition, wage-price spirals, breakeven curves, 
+Your expertise: CPI decomposition, wage-price spirals, breakeven curves,
 inflation expectations anchoring, commodity pass-through, shelter inflation dynamics.
 
 FOCUS YOUR ANALYSIS ON:
@@ -152,7 +149,6 @@ CRITICAL RULES:
 - Distinguish between transitory and structural inflation drivers
 - Write like a Fed staff inflation memo — thorough, data-driven, probabilistic
 - Output as structured JSON matching the ResearchMemo schema""",
-
     "Growth": """You are a senior GROWTH macro strategist at a top-tier hedge fund.
 Your expertise: GDP decomposition, labor market dynamics, productivity trends,
 business cycle dating, leading indicator synthesis, and output gap estimation.
@@ -169,7 +165,6 @@ CRITICAL RULES:
 - Distinguish between cyclical and structural growth drivers
 - Write like ISM/PMI commentary — forward-looking, indicator-rich
 - Output as structured JSON matching the ResearchMemo schema""",
-
     "AI": """You are a senior AI/TECH macro strategist at a top-tier hedge fund.
 Your expertise: AI capex cycle, semiconductor supply chains, energy infrastructure
 for data centers, AI productivity impact on inflation/growth, and tech sector concentration risk.
@@ -186,7 +181,6 @@ CRITICAL RULES:
 - Distinguish between hype-driven narrative and genuine structural shift
 - Write like a cross-asset tech strategist — connect AI to macro
 - Output as structured JSON matching the ResearchMemo schema""",
-
     "Credit": """You are a senior CREDIT macro strategist at a top-tier hedge fund.
 Your expertise: corporate credit cycles, HY/IG spread dynamics, leveraged loan markets,
 CLO structures, private credit fragility, default cycle forecasting, and covenant analysis.
@@ -203,10 +197,9 @@ CRITICAL RULES:
 - Write like a credit strategist at a major bank — spread-focused, technical
 - Always address the refinancing wall and maturity schedule
 - Output as structured JSON matching the ResearchMemo schema""",
-
     "Currency": """You are a senior FX/CURRENCY macro strategist at a top-tier hedge fund.
 Your expertise: dollar cycles, carry trade dynamics, EM FX vulnerability,
-reserve diversification, real effective exchange rates, and capital flow-driven 
+reserve diversification, real effective exchange rates, and capital flow-driven
 currency regimes.
 
 FOCUS YOUR ANALYSIS ON:
@@ -221,7 +214,6 @@ CRITICAL RULES:
 - Write like a currency strategist — technically precise about levels and vols
 - Frame currency views in the context of capital flows and rate differentials
 - Output as structured JSON matching the ResearchMemo schema""",
-
     "Debt": """You are a senior SOVEREIGN DEBT macro strategist at a top-tier hedge fund.
 Your expertise: fiscal sustainability, debt/GDP trajectories, bond market vigilante dynamics,
 term premium decomposition, Treasury auction analysis, and fiscal dominance risks.
@@ -238,7 +230,6 @@ CRITICAL RULES:
 - Write like a sovereign credit analyst — sustainability-focused
 - Address the "bond vigilante" thesis explicitly
 - Output as structured JSON matching the ResearchMemo schema""",
-
     "Energy": """You are a senior ENERGY/COMMODITIES macro strategist at a top-tier hedge fund.
 Your expertise: crude oil supply/demand balances, OPEC+ dynamics, energy transition metal demand,
 natural gas market fragmentation, and commodity super-cycle thesis evaluation.
@@ -255,7 +246,6 @@ CRITICAL RULES:
 - Write like a commodity strategist — supply/demand focused
 - Address the energy transition demand vs traditional supply tension
 - Output as structured JSON matching the ResearchMemo schema""",
-
     "Geopolitics": """You are a senior GEOPOLITICAL macro strategist at a top-tier hedge fund.
 Your expertise: geopolitical risk premium analysis, sanctions regimes, trade war dynamics,
 military conflict scenarios, supply chain decoupling, and geopolitical regime change.
@@ -272,9 +262,8 @@ CRITICAL RULES:
 - Write like a political risk consultant — scenario-based, probabilistic
 - Distinguish between noise and genuine regime change signals
 - Output as structured JSON matching the ResearchMemo schema""",
-
     "Policy": """You are a senior MONETARY POLICY macro strategist at a top-tier hedge fund.
-Your expertise: central bank reaction functions, Taylor rule decomposition, 
+Your expertise: central bank reaction functions, Taylor rule decomposition,
 forward guidance credibility, QT mechanics, and policy divergence across DM/EM.
 
 FOCUS YOUR ANALYSIS ON:
@@ -289,7 +278,6 @@ CRITICAL RULES:
 - Write like a central bank watcher — reaction function focused
 - Always present a probability distribution, not a point forecast
 - Output as structured JSON matching the ResearchMemo schema""",
-
     "Technology": """You are a senior TECHNOLOGY macro strategist at a top-tier hedge fund.
 Your expertise: tech cycle dynamics, semiconductor supply chains, R&D spending cycles,
 productivity technology diffusion, and tech sector valuation frameworks.
@@ -306,7 +294,6 @@ CRITICAL RULES:
 - Write like a TMT strategist — cycle-aware, not just narrative-driven
 - Connect technology trends to broader macro regime implications
 - Output as structured JSON matching the ResearchMemo schema""",
-
     "Housing": """You are a senior HOUSING macro strategist at a top-tier hedge fund.
 Your expertise: housing cycle dynamics, mortgage market structure, construction cycles,
 housing affordability, shelter CPI dynamics, and housing wealth effects.
@@ -334,6 +321,7 @@ CRITICAL RULES:
 @dataclass
 class RoutedPrompt:
     """Result of the prompt routing decision."""
+
     selected_domains: list[str] = field(default_factory=list)
     rationale: str = ""
     regime_label: str = ""
@@ -379,7 +367,7 @@ class PromptRouter:
     def route(
         self,
         regime_result: dict,
-        step_outputs: Optional[dict] = None,
+        step_outputs: dict | None = None,
     ) -> RoutedPrompt:
         """Route to the appropriate domain prompt(s) based on regime.
 
@@ -403,9 +391,7 @@ class PromptRouter:
 
         # Select domains above threshold
         selected = {
-            domain: score
-            for domain, score in domain_scores.items()
-            if score >= self.min_weight
+            domain: score for domain, score in domain_scores.items() if score >= self.min_weight
         }
 
         if not selected:
@@ -417,9 +403,7 @@ class PromptRouter:
         selected = dict(sorted(selected.items(), key=lambda x: x[1], reverse=True))
 
         # Build the merged system prompt
-        prompt, sections, is_hybrid = self._build_merged_prompt(
-            list(selected.keys()), selected
-        )
+        prompt, sections, is_hybrid = self._build_merged_prompt(list(selected.keys()), selected)
 
         rationale_parts = []
         for domain, score in selected.items():
@@ -438,9 +422,7 @@ class PromptRouter:
             hybrid_sections=sections if is_hybrid else [],
         )
 
-    def _score_domains(
-        self, regime_result: dict, step_outputs: Optional[dict]
-    ) -> dict[str, float]:
+    def _score_domains(self, regime_result: dict, step_outputs: dict | None) -> dict[str, float]:
         """Score each domain against the current regime dimensions."""
         scores = {}
 
@@ -639,7 +621,7 @@ class PromptRouter:
     @staticmethod
     def _generic_prompt() -> str:
         """Legacy generic prompt — used only as absolute fallback."""
-        return """You are a senior macro strategist at a top-tier hedge fund. 
+        return """You are a senior macro strategist at a top-tier hedge fund.
 Your task is to synthesize structured reasoning outputs into a professional institutional research memo.
 
 CRITICAL RULES:
@@ -649,10 +631,10 @@ CRITICAL RULES:
 4. Be precise, probabilistic, and specifically counter your own thesis.
 5. Output as structured JSON matching the ResearchMemo schema.
 
-Output valid JSON with: executive_summary, one_sentence_view, regime_detail, 
-market_consensus, our_view_vs_consensus, evidence_summary, key_evidence_supporting, 
-key_evidence_contradicting, counter_arguments, key_risks, predictions, 
-trading_implication, favored_assets, unfavored_assets, highest_conviction_trade, 
+Output valid JSON with: executive_summary, one_sentence_view, regime_detail,
+market_consensus, our_view_vs_consensus, evidence_summary, key_evidence_supporting,
+key_evidence_contradicting, counter_arguments, key_risks, predictions,
+trading_implication, favored_assets, unfavored_assets, highest_conviction_trade,
 invalidation_conditions, open_questions, data_to_watch, full_memo_text.
 
 Think step by step, but output ONLY the JSON."""

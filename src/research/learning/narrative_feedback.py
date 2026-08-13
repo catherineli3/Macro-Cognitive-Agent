@@ -10,10 +10,7 @@ Narrative feedback diagnoses:
 
 from __future__ import annotations
 
-from typing import Optional
-
 from src.research.learning.schemas import (
-    LearningEvent,
     FailureDiagnosis,
     ImprovementAction,
     RootCauseCategory,
@@ -24,14 +21,14 @@ class NarrativeFeedback:
     """Analyze narrative failures and generate improvements."""
 
     NARRATIVE_HEALTH_CHECKS = [
-        "coherence",           # Internal logical consistency
-        "evidence_support",     # Backed by data
-        "adaptability",        # Can it handle new data?
-        "counter_coverage",    # Does it account for counter-narratives?
-        "timeliness",          # Is it still relevant?
+        "coherence",  # Internal logical consistency
+        "evidence_support",  # Backed by data
+        "adaptability",  # Can it handle new data?
+        "counter_coverage",  # Does it account for counter-narratives?
+        "timeliness",  # Is it still relevant?
     ]
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def analyze(
@@ -62,9 +59,7 @@ class NarrativeFeedback:
         )
 
         # What went wrong with the narrative?
-        issues = self._diagnose_narrative_issues(
-            original_narrative, actual_narrative
-        )
+        issues = self._diagnose_narrative_issues(original_narrative, actual_narrative)
 
         action.description = (
             f"Narrative adjustment: {issues['primary_issue']}. "
@@ -72,7 +67,7 @@ class NarrativeFeedback:
             f"→ Adjusted: '{issues['suggested_fix'][:80]}...'"
         )
         action.before_value = original_narrative[:200]
-        action.after_value = issues['suggested_fix'][:200]
+        action.after_value = issues["suggested_fix"][:200]
         action.expected_improvement = (
             f"Improve narrative accuracy by incorporating {issues['primary_issue']} check"
         )
@@ -166,15 +161,17 @@ class NarrativeFeedback:
     def _check_adaptability(self, narrative: str) -> float:
         """Check if narrative can adapt to new data."""
         adaptability_phrases = [
-            "depends on", "if...then", "conditional on",
-            "unless", "provided that", "as long as",
-            "could change if", "subject to",
+            "depends on",
+            "if...then",
+            "conditional on",
+            "unless",
+            "provided that",
+            "as long as",
+            "could change if",
+            "subject to",
         ]
 
-        count = sum(
-            1 for phrase in adaptability_phrases
-            if phrase in narrative.lower()
-        )
+        count = sum(1 for phrase in adaptability_phrases if phrase in narrative.lower())
 
         if count >= 3:
             return 0.9
@@ -185,15 +182,17 @@ class NarrativeFeedback:
     def _check_counter_coverage(self, narrative: str) -> float:
         """Check if narrative acknowledges counter-views."""
         counter_phrases = [
-            "however", "on the other hand", "alternatively",
-            "risk is that", "counter", "skeptics",
-            "could be wrong if", "the bear case",
+            "however",
+            "on the other hand",
+            "alternatively",
+            "risk is that",
+            "counter",
+            "skeptics",
+            "could be wrong if",
+            "the bear case",
         ]
 
-        count = sum(
-            1 for phrase in counter_phrases
-            if phrase in narrative.lower()
-        )
+        count = sum(1 for phrase in counter_phrases if phrase in narrative.lower())
 
         if count >= 4:
             return 0.9
@@ -206,7 +205,11 @@ class NarrativeFeedback:
     def _likely_anchoring(self, narrative: str) -> bool:
         """Check if narrative shows signs of anchoring bias."""
         anchoring_phrases = [
-            "everyone agrees", "consensus is", "widely expected",
-            "clearly", "obviously", "without doubt",
+            "everyone agrees",
+            "consensus is",
+            "widely expected",
+            "clearly",
+            "obviously",
+            "without doubt",
         ]
         return any(phrase in narrative.lower() for phrase in anchoring_phrases)

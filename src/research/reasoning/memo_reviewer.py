@@ -4,7 +4,7 @@ After MemoWriter produces a memo, this module applies a multi-stage
 review → critic → rewrite → score loop until quality >= 90 or max 3 revisions.
 
 Stages:
-    1. MemoReviewer — Structured evaluation (Logic, Evidence, Counter, Risk, 
+    1. MemoReviewer — Structured evaluation (Logic, Evidence, Counter, Risk,
        Trade, Writing, Clarity, Hallucination)
     2. MemoCritic — Challenge assumptions, find missing evidence, broken chains
     3. Rewrite — Request LLM improvement based on reviewer + critic feedback
@@ -20,11 +20,9 @@ Rules:
 from __future__ import annotations
 
 import json
-import os
 import re
 import time
 from dataclasses import dataclass, field
-from typing import Any, Optional
 
 from src.shared.logging import get_logger
 
@@ -39,6 +37,7 @@ logger = get_logger(__name__)
 @dataclass
 class ReviewDimensionScore:
     """Score for a single review dimension."""
+
     dimension: str = ""
     score: float = 0.0  # 0-100
     issues: list[str] = field(default_factory=list)
@@ -48,6 +47,7 @@ class ReviewDimensionScore:
 @dataclass
 class ReviewResult:
     """Complete review output."""
+
     overall_score: float = 0.0  # 0-100
     grade: str = ""  # A/B/C/D/F
     dimensions: dict[str, ReviewDimensionScore] = field(default_factory=dict)
@@ -59,6 +59,7 @@ class ReviewResult:
 @dataclass
 class RevisionRecord:
     """Record of one revision cycle."""
+
     revision_number: int = 0
     before_score: float = 0.0
     after_score: float = 0.0
@@ -70,6 +71,7 @@ class RevisionRecord:
 @dataclass
 class SelfReviewResult:
     """Final output of the self-review pipeline."""
+
     final_memo_text: str = ""
     final_score: float = 0.0
     revisions: list[RevisionRecord] = field(default_factory=list)
@@ -91,9 +93,7 @@ class HallucinationDetector:
     """Deterministic check: does the memo reference data/proof available in the
     structured reasoning inputs?"""
 
-    def check(
-        self, memo_text: str, step_outputs: dict
-    ) -> tuple[float, list[str]]:
+    def check(self, memo_text: str, step_outputs: dict) -> tuple[float, list[str]]:
         """Check hallucination likelihood.
 
         Returns (confidence_that_all_claims_are_grounded, list_of_suspicious_claims).
@@ -104,7 +104,8 @@ class HallucinationDetector:
         # Extract numeric claims from memo
         numeric_pattern = re.findall(
             r"(\d+(?:\.\d+)?)\s*(%|bps|bp|percent|basis.points|trillion|billion|million)",
-            memo_text, re.IGNORECASE,
+            memo_text,
+            re.IGNORECASE,
         )
         # Extract named entity references
         entity_pattern = re.findall(
@@ -207,7 +208,7 @@ class MemoReviewer:
         self._hallucination = HallucinationDetector()
 
     def review(
-        self, memo_text: str, step_outputs: dict, regime_result: Optional[dict] = None
+        self, memo_text: str, step_outputs: dict, regime_result: dict | None = None
     ) -> ReviewResult:
         """Perform a full structured review of the memo.
 
@@ -223,9 +224,7 @@ class MemoReviewer:
         dimensions["Evidence"] = self._score_evidence(memo_text, step_outputs)
 
         # 3. CounterArguments — check for counter-argument coverage
-        dimensions["CounterArguments"] = self._score_counter_arguments(
-            memo_text, step_outputs
-        )
+        dimensions["CounterArguments"] = self._score_counter_arguments(memo_text, step_outputs)
 
         # 4. Risk — check for risk discussion
         dimensions["Risk"] = self._score_risk(memo_text)
@@ -260,9 +259,7 @@ class MemoReviewer:
             "Hallucination": 0.05,
         }
 
-        overall = round(
-            sum(dimensions[d].score * weights[d] for d in self.DIMENSIONS), 1
-        )
+        overall = round(sum(dimensions[d].score * weights[d] for d in self.DIMENSIONS), 1)
 
         # Grade
         grade = self._score_to_grade(overall)
@@ -288,8 +285,16 @@ class MemoReviewer:
         lower = text.lower()
 
         # Check for causal language
-        causal_markers = ["because", "therefore", "as a result", "consequently",
-                          "leads to", "drives", "causes", "implies"]
+        causal_markers = [
+            "because",
+            "therefore",
+            "as a result",
+            "consequently",
+            "leads to",
+            "drives",
+            "causes",
+            "implies",
+        ]
         causal_count = sum(1 for m in causal_markers if m in lower)
         if causal_count >= 5:
             score += 15
@@ -301,8 +306,15 @@ class MemoReviewer:
             issues.append("Insufficient causal reasoning — add more 'because/therefore' chains")
 
         # Check for probability language
-        prob_markers = ["likely", "probability", "scenario", "tail risk",
-                        "base case", "expected", "confidence"]
+        prob_markers = [
+            "likely",
+            "probability",
+            "scenario",
+            "tail risk",
+            "base case",
+            "expected",
+            "confidence",
+        ]
         prob_count = sum(1 for m in prob_markers if m in lower)
         if prob_count >= 4:
             score += 10
@@ -345,8 +357,17 @@ class MemoReviewer:
             issues.append("Very few data references — needs more quantitative evidence")
 
         # Check if references evidence from source
-        evidence_refs = ["evidence", "data shows", "indicator", "metric", "reading",
-                         "print", "release", "survey", "index"]
+        evidence_refs = [
+            "evidence",
+            "data shows",
+            "indicator",
+            "metric",
+            "reading",
+            "print",
+            "release",
+            "survey",
+            "index",
+        ]
         ref_count = sum(1 for m in evidence_refs if m in lower)
         if ref_count >= 4:
             score += 10
@@ -376,13 +397,24 @@ class MemoReviewer:
 
         # Count available counter-arguments from step outputs
         counter_data = step_outputs.get("counter", {})
-        available_counters = len(counter_data.get("arguments", counter_data.get("counter_arguments", [])))
+        available_counters = len(
+            counter_data.get("arguments", counter_data.get("counter_arguments", []))
+        )
 
         # Check counter-argument language
         counter_markers = [
-            "however", "on the other hand", "alternative view", "bear case",
-            "conversely", "counter", "skeptics argue", "one risk is",
-            "could go wrong", "what if", "might not", "despite",
+            "however",
+            "on the other hand",
+            "alternative view",
+            "bear case",
+            "conversely",
+            "counter",
+            "skeptics argue",
+            "one risk is",
+            "could go wrong",
+            "what if",
+            "might not",
+            "despite",
         ]
         counter_count = sum(1 for m in counter_markers if m in lower)
 
@@ -416,9 +448,19 @@ class MemoReviewer:
         lower = text.lower()
 
         risk_markers = [
-            "risk", "tail", "worst-case", "black swan", "drawdown",
-            "vulnerability", "fragility", "exposure", "hedge", "invalidation",
-            "could fail", "what breaks", "trigger",
+            "risk",
+            "tail",
+            "worst-case",
+            "black swan",
+            "drawdown",
+            "vulnerability",
+            "fragility",
+            "exposure",
+            "hedge",
+            "invalidation",
+            "could fail",
+            "what breaks",
+            "trigger",
         ]
         risk_count = sum(1 for m in risk_markers if m in lower)
 
@@ -452,9 +494,22 @@ class MemoReviewer:
         lower = text.lower()
 
         trade_markers = [
-            "trade", "position", "long", "short", "overweight", "underweight",
-            "allocation", "portfolio", "asset", "exposure", "duration",
-            "hedge", "option", "spread", "carry", "volatility",
+            "trade",
+            "position",
+            "long",
+            "short",
+            "overweight",
+            "underweight",
+            "allocation",
+            "portfolio",
+            "asset",
+            "exposure",
+            "duration",
+            "hedge",
+            "option",
+            "spread",
+            "carry",
+            "volatility",
         ]
         trade_count = sum(1 for m in trade_markers if m in lower)
 
@@ -486,9 +541,7 @@ class MemoReviewer:
         strengths = []
 
         # Check for structured sections
-        section_markers = re.findall(
-            r"(?:^|\n)(?:#+|[A-Z][\w\s]+:)(?:\s)", text
-        )
+        section_markers = re.findall(r"(?:^|\n)(?:#+|[A-Z][\w\s]+:)(?:\s)", text)
         if len(section_markers) >= 4:
             score += 10
             strengths.append("Well-structured with clear sections")
@@ -508,9 +561,24 @@ class MemoReviewer:
             issues.append("Too many paragraphs — consider consolidation")
 
         # Check for jargon balance
-        jargon = ["alpha", "beta", "gamma", "delta", "vega", "theta",
-                  "carry", "roll", "steepen", "flatten", "duration",
-                  "convexity", "regime", "factor", "momentum", "value"]
+        jargon = [
+            "alpha",
+            "beta",
+            "gamma",
+            "delta",
+            "vega",
+            "theta",
+            "carry",
+            "roll",
+            "steepen",
+            "flatten",
+            "duration",
+            "convexity",
+            "regime",
+            "factor",
+            "momentum",
+            "value",
+        ]
         jargon_count = sum(1 for j in jargon if j in text.lower())
         if 3 <= jargon_count <= 10:
             score += 5
@@ -535,8 +603,18 @@ class MemoReviewer:
         strengths = []
 
         # Check for vague language
-        vague = ["somewhat", "kind of", "sort of", "maybe", "probably maybe",
-                 "could be", "might be", "various", "certain", "things"]
+        vague = [
+            "somewhat",
+            "kind of",
+            "sort of",
+            "maybe",
+            "probably maybe",
+            "could be",
+            "might be",
+            "various",
+            "certain",
+            "things",
+        ]
         vague_count = sum(1 for v in vague if v in text.lower())
         if vague_count <= 2:
             score += 10
@@ -556,7 +634,8 @@ class MemoReviewer:
         # Check one-sentence view
         one_sent = re.search(
             r"(?:one.sentence|one.sentence.view|in one sentence)[:\s]*(.+?)(?:\n|$)",
-            text, re.IGNORECASE,
+            text,
+            re.IGNORECASE,
         )
         if one_sent:
             score += 5
@@ -672,7 +751,10 @@ class MemoCritic:
             ("always", "Is this phenomenon truly invariant? When has it failed to hold?"),
             ("never", "History suggests few things 'never' happen. What's the counter-case?"),
             ("obviously", "If it's 'obvious', it's likely priced in. What's NOT priced?"),
-            ("everyone knows", "Consensus views are rarely profitable. What's the contrarian take?"),
+            (
+                "everyone knows",
+                "Consensus views are rarely profitable. What's the contrarian take?",
+            ),
         ]
 
         for trigger, challenge in assumption_triggers:
@@ -695,14 +777,20 @@ class MemoCritic:
 
         # Strong claims without numbers
         strong_claims = [
-            "significant", "substantial", "major", "dramatic", "massive",
-            "critical", "historic", "unprecedented",
+            "significant",
+            "substantial",
+            "major",
+            "dramatic",
+            "massive",
+            "critical",
+            "historic",
+            "unprecedented",
         ]
         for claim in strong_claims:
             # Check if claim is followed by specific data within 100 chars
             matches = [m.start() for m in re.finditer(re.escape(claim), lower)]
             for pos in matches:
-                nearby = text[pos:pos + 150]
+                nearby = text[pos : pos + 150]
                 if not re.search(r"\d+", nearby):
                     challenges.append(
                         f"[Missing Evidence] Claim '{claim}' near position {pos} "
@@ -728,7 +816,7 @@ class MemoCritic:
             matches = re.finditer(pattern, lower)
             for m in matches:
                 # Check if "because" appears within 200 chars after
-                after = text[m.start():m.start() + 200]
+                after = text[m.start() : m.start() + 200]
                 if "because" not in after.lower() and "due to" not in after.lower():
                     challenges.append(
                         "[Broken Causal Chain] Statement at position ~"
@@ -783,12 +871,18 @@ class MemoCritic:
         lower = text.lower()
 
         dalio_checks = [
-            ("debt cycle", "Where are we in the long-term debt cycle? This perspective is missing."),
+            (
+                "debt cycle",
+                "Where are we in the long-term debt cycle? This perspective is missing.",
+            ),
             ("productivity", "How does productivity growth inform this view? Dalio would ask."),
             ("long-term debt", "No discussion of long-term debt cycle dynamics."),
             ("credit creation", "How is credit being created? By whom? For what purpose?"),
             ("reserve currency", "How does reserve currency status affect this analysis?"),
-            ("social conflict", "Are there political/social dynamics that could override the economic view?"),
+            (
+                "social conflict",
+                "Are there political/social dynamics that could override the economic view?",
+            ),
             ("beautiful deleveraging", "Is this a 'beautiful deleveraging' or an 'ugly' one?"),
             ("economic machine", "How does this fit into the economic machine framework?"),
         ]
@@ -815,11 +909,20 @@ class MemoCritic:
         lower = text.lower()
 
         soros_checks = [
-            ("reflexiv", "No reflexivity analysis — how might market perception change the fundamentals?"),
+            (
+                "reflexiv",
+                "No reflexivity analysis — how might market perception change the fundamentals?",
+            ),
             ("boom.bust", "Is this a boom-bust sequence? Soros would analyze the phases."),
-            ("far.from.equilibrium", "Is the market near equilibrium or far from it? This distinction matters."),
+            (
+                "far.from.equilibrium",
+                "Is the market near equilibrium or far from it? This distinction matters.",
+            ),
             ("fallibil", "Soros emphasizes human fallibility. What cognitive biases are at play?"),
-            ("self.reinforcing", "Is there a self-reinforcing feedback loop? The reflexive dimension is missing."),
+            (
+                "self.reinforcing",
+                "Is there a self-reinforcing feedback loop? The reflexive dimension is missing.",
+            ),
             ("perception", "How does perception interact with reality here? Soros's key concern."),
             ("prevailing bias", "What is the prevailing bias — and when might it reverse?"),
         ]
@@ -861,7 +964,7 @@ class MemoSelfReviewPipeline:
         self,
         memo_text: str,
         step_outputs: dict,
-        regime_result: Optional[dict] = None,
+        regime_result: dict | None = None,
         date_str: str = "",
     ) -> SelfReviewResult:
         """Run the full self-review pipeline.
@@ -888,7 +991,8 @@ class MemoSelfReviewPipeline:
 
         logger.info(
             "Self-review started: initial score=%.0f/100, grade=%s",
-            initial_score, initial_review.grade,
+            initial_score,
+            initial_review.grade,
         )
 
         for rev_num in range(1, self.MAX_REVISIONS + 1):
@@ -897,9 +1001,7 @@ class MemoSelfReviewPipeline:
                 break
 
             # Critic challenges
-            critic_challenges = self._critic.challenge(
-                current_memo, step_outputs, initial_review
-            )
+            critic_challenges = self._critic.challenge(current_memo, step_outputs, initial_review)
 
             # Build rewrite prompt
             rewrite_prompt = self._build_rewrite_prompt(
@@ -921,30 +1023,36 @@ class MemoSelfReviewPipeline:
             new_score = new_review.overall_score
             improvement = new_score - current_score
 
-            revisions.append(RevisionRecord(
-                revision_number=rev_num,
-                before_score=current_score,
-                after_score=new_score,
-                critic_challenges=critic_challenges,
-                improvements_made=self._extract_improvements(
-                    initial_review.dimensions, new_review.dimensions
-                ),
-                improvement_delta=round(improvement, 1),
-            ))
+            revisions.append(
+                RevisionRecord(
+                    revision_number=rev_num,
+                    before_score=current_score,
+                    after_score=new_score,
+                    critic_challenges=critic_challenges,
+                    improvements_made=self._extract_improvements(
+                        initial_review.dimensions, new_review.dimensions
+                    ),
+                    improvement_delta=round(improvement, 1),
+                )
+            )
 
             current_score = new_score
             initial_review = new_review
 
             logger.info(
                 "Revision %d: %.0f -> %.0f (Δ%+.0f)",
-                rev_num, revisions[-1].before_score, new_score, improvement,
+                rev_num,
+                revisions[-1].before_score,
+                new_score,
+                improvement,
             )
 
             # Stop if improvement is minimal
             if improvement < self.MIN_IMPROVEMENT and current_score < self.QUALITY_THRESHOLD:
                 logger.info(
                     "Minimal improvement (Δ%+.1f < %.0f), stopping revisions",
-                    improvement, self.MIN_IMPROVEMENT,
+                    improvement,
+                    self.MIN_IMPROVEMENT,
                 )
                 break
 
@@ -1011,7 +1119,7 @@ class MemoSelfReviewPipeline:
 
         return "\n".join(parts)
 
-    def _attempt_rewrite(self, rewrite_prompt: str) -> Optional[str]:
+    def _attempt_rewrite(self, rewrite_prompt: str) -> str | None:
         """Attempt LLM-based rewrite. Returns None if LLM unavailable."""
         if not self._llm_client:
             return None
@@ -1057,7 +1165,7 @@ class MemoSelfReviewPipeline:
 def review_memo(
     memo_text: str,
     step_outputs: dict,
-    regime_result: Optional[dict] = None,
+    regime_result: dict | None = None,
 ) -> ReviewResult:
     """Quick deterministic review without the rewrite loop."""
     reviewer = MemoReviewer()

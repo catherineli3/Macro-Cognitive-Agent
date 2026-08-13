@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """RuleBasedPlanner — Deterministic, keyword-driven plan decomposition.
 
 Sprint 3 implements rule-based planning only (no LLM). The planner:
@@ -19,8 +17,12 @@ Future (Sprint 4+):
     - Same PlannerInterface, zero downstream changes
 """
 
+from __future__ import annotations
+
 import re
 from dataclasses import dataclass, field
+
+from pydantic import BaseModel
 
 from src.interfaces.planner import PlannerInterface
 from src.schemas.planning import ExecutionPlan, Task
@@ -30,12 +32,10 @@ from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
 
-# Pydantic model for type-safe plan loading
-from pydantic import BaseModel
-
 
 class _RuleTaskDef(BaseModel):
     """Internal: parsed task definition from YAML."""
+
     id: str
     name: str
     description: str = ""
@@ -47,6 +47,7 @@ class _RuleTaskDef(BaseModel):
 
 class _PlanningRule(BaseModel):
     """Internal: parsed planning rule from YAML."""
+
     rule_id: str
     description: str = ""
     trigger_keywords: list[str] = field(default_factory=list)
@@ -56,6 +57,7 @@ class _PlanningRule(BaseModel):
 @dataclass
 class _RuleMatch:
     """Internal: a rule that matched the user goal, with weighted score."""
+
     rule: _PlanningRule
     score: int  # Number of matched keywords
 
@@ -221,9 +223,7 @@ class RuleBasedPlanner(PlannerInterface):
             if "__default__" in keywords:
                 continue
 
-            matched_keywords = [
-                kw for kw in keywords if re.search(re.escape(kw), goal_lower)
-            ]
+            matched_keywords = [kw for kw in keywords if re.search(re.escape(kw), goal_lower)]
 
             if matched_keywords:
                 matches.append(_RuleMatch(rule=rule, score=len(matched_keywords)))
@@ -242,9 +242,7 @@ class RuleBasedPlanner(PlannerInterface):
             "Rule matching complete",
             extra={
                 "goal": goal_lower[:80],
-                "matches": [
-                    {"rule_id": m.rule.rule_id, "score": m.score} for m in matches
-                ],
+                "matches": [{"rule_id": m.rule.rule_id, "score": m.score} for m in matches],
             },
         )
         return matches

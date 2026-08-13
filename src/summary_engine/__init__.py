@@ -18,19 +18,19 @@ All phases reuse existing infrastructure:
 Design principle: deterministic rules-based with zero LLM dependency.
 """
 
-from src.summary_engine.macro_state_layer import MacroStateLayer, MacroState, StateAssessment
 from src.summary_engine.change_detector import (
     ChangeDetector,
     ChangeSignals,
-    MomentumSignal,
     DivergenceSignal,
+    MomentumSignal,
     RegimeChangeSignal,
 )
-from src.summary_engine.narrative_generator import (
-    NarrativeGenerator,
-    MacroNarrative,
-)
 from src.summary_engine.cio_brief import CIOBrief, CIOBriefGenerator
+from src.summary_engine.macro_state_layer import MacroState, MacroStateLayer, StateAssessment
+from src.summary_engine.narrative_generator import (
+    MacroNarrative,
+    NarrativeGenerator,
+)
 from src.summary_engine.summary_evaluator import SummaryEvaluator, SummaryQuality
 
 __all__ = [

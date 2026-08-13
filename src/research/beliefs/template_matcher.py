@@ -22,57 +22,142 @@ class BeliefTemplate:
 
 
 _DEFAULT_TEMPLATES: list[BeliefTemplate] = [
-    BeliefTemplate("Liquidity Tightening", "Liquidity Is Tightening",
-                    "Global liquidity contracting due to USD strength and rising real yields.",
-                    BeliefDomain.LIQUIDITY, 0.75, ["SP500", "Nasdaq", "EM", "Gold"]),
-    BeliefTemplate("Liquidity Easing", "Liquidity Is Easing",
-                    "Financial conditions loosening: USD weakening, liquidity expanding.",
-                    BeliefDomain.LIQUIDITY, 0.70, ["SP500", "Nasdaq", "EM", "HYG"]),
-    BeliefTemplate("Higher for Longer", "Rates Will Stay Higher for Longer",
-                    "Fed maintaining restrictive policy for extended period.",
-                    BeliefDomain.POLICY, 0.70, ["SP500", "Nasdaq", "Bonds", "DXY"]),
-    BeliefTemplate("Fed Pivot", "Fed Will Pivot to Easing",
-                    "Fed preparing rate cuts as inflation cools.",
-                    BeliefDomain.POLICY, 0.60, ["SP500", "Nasdaq", "Bonds", "Gold"]),
-    BeliefTemplate("Soft Landing", "Economy Will Achieve Soft Landing",
-                    "Gradual slowdown without recession, inflation normalizing.",
-                    BeliefDomain.GROWTH, 0.65, ["SP500", "Russell", "HYG", "Copper"]),
-    BeliefTemplate("Growth Scare", "Growth Is Deteriorating",
-                    "Growth indicators rolling over; recession risk rising.",
-                    BeliefDomain.GROWTH, 0.80, ["SP500", "Russell", "Copper", "Oil"]),
-    BeliefTemplate("Growth Resilience", "Growth Remains Resilient",
-                    "Despite headwinds, growth and consumer spending hold strong.",
-                    BeliefDomain.GROWTH, 0.65, ["SP500", "Russell", "Copper"]),
-    BeliefTemplate("Inflation", "Inflation Is Reaccelerating",
-                    "Inflation rising again: commodities, wages, shelter stay elevated.",
-                    BeliefDomain.INFLATION, 0.75, ["Gold", "Oil", "TIPS", "US10Y"]),
-    BeliefTemplate("Disinflation", "Disinflation Trend Continues",
-                    "Inflation cooling across categories toward target.",
-                    BeliefDomain.INFLATION, 0.70, ["Nasdaq", "Bonds", "SP500"]),
-    BeliefTemplate("Risk-On", "Risk Appetite Is Surging",
-                    "Broad bullish sentiment: VIX low, spreads tight.",
-                    BeliefDomain.RISK, 0.70, ["SP500", "Nasdaq", "Russell", "HYG"]),
-    BeliefTemplate("Risk-Off", "Risk Appetite Has Collapsed",
-                    "Flight to safety: VIX spiking, safe-haven demand surging.",
-                    BeliefDomain.RISK, 0.80, ["Gold", "US10Y", "VIX", "USD"]),
-    BeliefTemplate("Dollar Strength", "USD Is Strengthening",
-                    "Broad USD strength: rate differentials favor USD.",
-                    BeliefDomain.DOLLAR, 0.75, ["DXY", "EM", "Gold", "Commodities"]),
-    BeliefTemplate("Dollar Weakness", "USD Is Weakening",
-                    "USD weakening: rate differentials narrowing, capital to EM.",
-                    BeliefDomain.DOLLAR, 0.70, ["EM", "Gold", "Copper", "Oil"]),
-    BeliefTemplate("Credit", "Credit Conditions Are Shifting",
-                    "Credit markets signaling change in financial conditions.",
-                    BeliefDomain.CREDIT, 0.70, ["HYG", "LQD", "SP500"]),
-    BeliefTemplate("AI Capex", "AI Investment Cycle Remains Strong",
-                    "AI capex robust: semiconductor demand high, supply chain healthy.",
-                    BeliefDomain.AI_CAPEX, 0.70, ["NVDA", "SMH", "ASML", "Nasdaq"]),
-    BeliefTemplate("Stagflation", "Stagflation Risk Is Rising",
-                    "Inflation rising while growth slowing — policy dilemma.",
-                    BeliefDomain.GROWTH, 0.85, ["Gold", "Oil", "TIPS", "SP500"]),
-    BeliefTemplate("Goldilocks", "Goldilocks Environment",
-                    "Perfect macro: growth solid, inflation moderate, policy neutral.",
-                    BeliefDomain.GROWTH, 0.75, ["SP500", "Nasdaq", "Russell", "HYG"]),
+    BeliefTemplate(
+        "Liquidity Tightening",
+        "Liquidity Is Tightening",
+        "Global liquidity contracting due to USD strength and rising real yields.",
+        BeliefDomain.LIQUIDITY,
+        0.75,
+        ["SP500", "Nasdaq", "EM", "Gold"],
+    ),
+    BeliefTemplate(
+        "Liquidity Easing",
+        "Liquidity Is Easing",
+        "Financial conditions loosening: USD weakening, liquidity expanding.",
+        BeliefDomain.LIQUIDITY,
+        0.70,
+        ["SP500", "Nasdaq", "EM", "HYG"],
+    ),
+    BeliefTemplate(
+        "Higher for Longer",
+        "Rates Will Stay Higher for Longer",
+        "Fed maintaining restrictive policy for extended period.",
+        BeliefDomain.POLICY,
+        0.70,
+        ["SP500", "Nasdaq", "Bonds", "DXY"],
+    ),
+    BeliefTemplate(
+        "Fed Pivot",
+        "Fed Will Pivot to Easing",
+        "Fed preparing rate cuts as inflation cools.",
+        BeliefDomain.POLICY,
+        0.60,
+        ["SP500", "Nasdaq", "Bonds", "Gold"],
+    ),
+    BeliefTemplate(
+        "Soft Landing",
+        "Economy Will Achieve Soft Landing",
+        "Gradual slowdown without recession, inflation normalizing.",
+        BeliefDomain.GROWTH,
+        0.65,
+        ["SP500", "Russell", "HYG", "Copper"],
+    ),
+    BeliefTemplate(
+        "Growth Scare",
+        "Growth Is Deteriorating",
+        "Growth indicators rolling over; recession risk rising.",
+        BeliefDomain.GROWTH,
+        0.80,
+        ["SP500", "Russell", "Copper", "Oil"],
+    ),
+    BeliefTemplate(
+        "Growth Resilience",
+        "Growth Remains Resilient",
+        "Despite headwinds, growth and consumer spending hold strong.",
+        BeliefDomain.GROWTH,
+        0.65,
+        ["SP500", "Russell", "Copper"],
+    ),
+    BeliefTemplate(
+        "Inflation",
+        "Inflation Is Reaccelerating",
+        "Inflation rising again: commodities, wages, shelter stay elevated.",
+        BeliefDomain.INFLATION,
+        0.75,
+        ["Gold", "Oil", "TIPS", "US10Y"],
+    ),
+    BeliefTemplate(
+        "Disinflation",
+        "Disinflation Trend Continues",
+        "Inflation cooling across categories toward target.",
+        BeliefDomain.INFLATION,
+        0.70,
+        ["Nasdaq", "Bonds", "SP500"],
+    ),
+    BeliefTemplate(
+        "Risk-On",
+        "Risk Appetite Is Surging",
+        "Broad bullish sentiment: VIX low, spreads tight.",
+        BeliefDomain.RISK,
+        0.70,
+        ["SP500", "Nasdaq", "Russell", "HYG"],
+    ),
+    BeliefTemplate(
+        "Risk-Off",
+        "Risk Appetite Has Collapsed",
+        "Flight to safety: VIX spiking, safe-haven demand surging.",
+        BeliefDomain.RISK,
+        0.80,
+        ["Gold", "US10Y", "VIX", "USD"],
+    ),
+    BeliefTemplate(
+        "Dollar Strength",
+        "USD Is Strengthening",
+        "Broad USD strength: rate differentials favor USD.",
+        BeliefDomain.DOLLAR,
+        0.75,
+        ["DXY", "EM", "Gold", "Commodities"],
+    ),
+    BeliefTemplate(
+        "Dollar Weakness",
+        "USD Is Weakening",
+        "USD weakening: rate differentials narrowing, capital to EM.",
+        BeliefDomain.DOLLAR,
+        0.70,
+        ["EM", "Gold", "Copper", "Oil"],
+    ),
+    BeliefTemplate(
+        "Credit",
+        "Credit Conditions Are Shifting",
+        "Credit markets signaling change in financial conditions.",
+        BeliefDomain.CREDIT,
+        0.70,
+        ["HYG", "LQD", "SP500"],
+    ),
+    BeliefTemplate(
+        "AI Capex",
+        "AI Investment Cycle Remains Strong",
+        "AI capex robust: semiconductor demand high, supply chain healthy.",
+        BeliefDomain.AI_CAPEX,
+        0.70,
+        ["NVDA", "SMH", "ASML", "Nasdaq"],
+    ),
+    BeliefTemplate(
+        "Stagflation",
+        "Stagflation Risk Is Rising",
+        "Inflation rising while growth slowing — policy dilemma.",
+        BeliefDomain.GROWTH,
+        0.85,
+        ["Gold", "Oil", "TIPS", "SP500"],
+    ),
+    BeliefTemplate(
+        "Goldilocks",
+        "Goldilocks Environment",
+        "Perfect macro: growth solid, inflation moderate, policy neutral.",
+        BeliefDomain.GROWTH,
+        0.75,
+        ["SP500", "Nasdaq", "Russell", "HYG"],
+    ),
 ]
 
 
@@ -108,17 +193,19 @@ class TemplateMatcher:
                 if pattern_lower in title_lower or pattern_lower in desc_lower:
                     composite = max(narrative.composite_score, 0.15)
                     match_score = min(1.0, template.base_confidence * composite * 1.2)
-                    matches.append({
-                        "narrative_id": narrative.id,
-                        "narrative_title": narrative.title,
-                        "belief_title": template.belief_title,
-                        "belief_description": template.belief_description,
-                        "domain": template.domain,
-                        "base_confidence": template.base_confidence,
-                        "match_score": match_score,
-                        "affected_assets": template.affected_assets,
-                        "source_narrative": narrative.title,
-                    })
+                    matches.append(
+                        {
+                            "narrative_id": narrative.id,
+                            "narrative_title": narrative.title,
+                            "belief_title": template.belief_title,
+                            "belief_description": template.belief_description,
+                            "domain": template.domain,
+                            "base_confidence": template.base_confidence,
+                            "match_score": match_score,
+                            "affected_assets": template.affected_assets,
+                            "source_narrative": narrative.title,
+                        }
+                    )
                     matched = True
 
             # ── Phase 2: Keyword-based fallback ───────────────────────
@@ -134,8 +221,9 @@ class TemplateMatcher:
                 if generic:
                     matches.append(generic)
 
-        logger.info("template_matcher | %d matches from %d narratives",
-                     len(matches), len(narratives))
+        logger.info(
+            "template_matcher | %d matches from %d narratives", len(matches), len(narratives)
+        )
         return matches
 
     def _match_by_keywords(self, narrative: Narrative) -> dict | None:
@@ -193,8 +281,11 @@ class TemplateMatcher:
             "sectoral": BeliefDomain.AI_CAPEX,
             "technical": BeliefDomain.GROWTH,
         }
-        cat = (narrative.category.value if hasattr(narrative.category, 'value')
-               else str(narrative.category)).lower()
+        cat = (
+            narrative.category.value
+            if hasattr(narrative.category, "value")
+            else str(narrative.category)
+        ).lower()
         domain = category_to_domain.get(cat, BeliefDomain.GROWTH)
 
         composite = max(narrative.composite_score, 0.10)

@@ -12,15 +12,14 @@ Also integrates with reflexivity: detects Narrative → Capital → Price loops.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
+from src.capital_flow.cross_asset_flow import CrossAssetFlow
 from src.capital_flow.schemas import (
     CapitalFlowRegime,
     CapitalFlowReport,
     CrossAssetFlowReport,
 )
-from src.capital_flow.cross_asset_flow import CrossAssetFlow
 
 
 class CapitalRotation:
@@ -32,10 +31,10 @@ class CapitalRotation:
 
     def detect_regime(
         self,
-        flow_data: Optional[dict] = None,
-        position_data: Optional[dict] = None,
-        date: Optional[str] = None,
-        reflexivity_data: Optional[dict] = None,
+        flow_data: dict | None = None,
+        position_data: dict | None = None,
+        date: str | None = None,
+        reflexivity_data: dict | None = None,
     ) -> CapitalFlowReport:
         """Full capital flow regime detection.
 
@@ -43,7 +42,7 @@ class CapitalRotation:
             CapitalFlowReport with regime, cross-asset, rotation signals.
         """
         if date is None:
-            date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            date = datetime.now(UTC).strftime("%Y-%m-%d")
 
         cross = self.cross_asset.analyze(flow_data, position_data, date)
         regime = self._classify_regime(cross, date)
@@ -77,9 +76,7 @@ class CapitalRotation:
         self._regime_history.append(regime)
         return report
 
-    def _classify_regime(
-        self, cross: CrossAssetFlowReport, date: str
-    ) -> CapitalFlowRegime:
+    def _classify_regime(self, cross: CrossAssetFlowReport, date: str) -> CapitalFlowRegime:
         sentiment = cross.risk_sentiment
         signals = cross.signals
         rotations = cross.rotations
@@ -176,9 +173,7 @@ class CapitalRotation:
             details += f" {len(rotation_signals)} rotation signal(s) active."
         return base + ": " + details
 
-    def _actionable_insight(
-        self, regime: CapitalFlowRegime, cross: CrossAssetFlowReport
-    ) -> str:
+    def _actionable_insight(self, regime: CapitalFlowRegime, cross: CrossAssetFlowReport) -> str:
         if regime.regime_label == "risk_on_inflow":
             return "Risk appetite is broad — watch for overcrowding signals in momentum assets"
         elif regime.regime_label == "risk_off_outflow":

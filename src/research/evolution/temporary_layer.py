@@ -12,7 +12,7 @@ is enforced at the schema level.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 
 from src.schemas.transmission_v3_1 import ResearchFinding
@@ -23,13 +23,14 @@ logger = get_logger(__name__)
 
 class EventCategory(str, Enum):
     """Categories of temporary/singular events."""
-    PERSON_SPECIFIC = "person_specific"       # E.g., Powell speech, Trump tweet
-    GEOPOLITICAL = "geopolitical"             # E.g., Russia-Ukraine, trade war
-    POLICY_REGIME = "policy_regime"            # E.g., Fed regime change
-    MARKET_STRUCTURE = "market_structure"      # E.g., circuit breaker, liquidity crisis
-    ELECTION = "election"                      # Election-specific effects
+
+    PERSON_SPECIFIC = "person_specific"  # E.g., Powell speech, Trump tweet
+    GEOPOLITICAL = "geopolitical"  # E.g., Russia-Ukraine, trade war
+    POLICY_REGIME = "policy_regime"  # E.g., Fed regime change
+    MARKET_STRUCTURE = "market_structure"  # E.g., circuit breaker, liquidity crisis
+    ELECTION = "election"  # Election-specific effects
     SINGLE_OBSERVATION = "single_observation"  # Isolated, not yet pattern
-    EXOGENOUS_SHOCK = "exogenous_shock"        # Natural disaster, pandemic
+    EXOGENOUS_SHOCK = "exogenous_shock"  # Natural disaster, pandemic
 
 
 @dataclass
@@ -50,7 +51,7 @@ class TemporaryEvent:
     regime_snapshot: dict = field(default_factory=dict)
 
     # Metadata
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     expires_at: datetime | None = None  # Auto-expire after some time
     archived: bool = False
     archived_at: datetime | None = None
@@ -58,7 +59,7 @@ class TemporaryEvent:
     def is_active(self) -> bool:
         if self.archived:
             return False
-        if self.expires_at and datetime.now(timezone.utc) > self.expires_at:
+        if self.expires_at and datetime.now(UTC) > self.expires_at:
             return False
         return True
 
@@ -87,13 +88,15 @@ class TemporaryEventLayer:
         self._events: dict[str, TemporaryEvent] = {}
         self._archived: dict[str, TemporaryEvent] = {}
 
-    def register_event(self,
-                       name: str,
-                       description: str,
-                       category: EventCategory,
-                       finding_ids: list[str] | None = None,
-                       context_key: str = "",
-                       ttl_days: int | None = None) -> TemporaryEvent:
+    def register_event(
+        self,
+        name: str,
+        description: str,
+        category: EventCategory,
+        finding_ids: list[str] | None = None,
+        context_key: str = "",
+        ttl_days: int | None = None,
+    ) -> TemporaryEvent:
         """Register a new temporary event."""
         event_id = f"te-{len(self._events) + len(self._archived) + 1:04d}"
         ttl = ttl_days or self.DEFAULT_TTL_DAYS
@@ -105,14 +108,15 @@ class TemporaryEventLayer:
             description=description,
             context_key=context_key,
             finding_ids=finding_ids or [],
-            expires_at=datetime.now(timezone.utc) + timedelta(days=ttl),
+            expires_at=datetime.now(UTC) + timedelta(days=ttl),
         )
         self._events[event_id] = event
         logger.info("Registered temporary event: %s [%s]", name, category.value)
         return event
 
-    def register_from_finding(self, finding: ResearchFinding,
-                               category: EventCategory) -> TemporaryEvent | None:
+    def register_from_finding(
+        self, finding: ResearchFinding, category: EventCategory
+    ) -> TemporaryEvent | None:
         """Register a temporary event from a single research finding."""
         if self._is_potentially_permanent(finding):
             return None  # Let it flow to Principle admission
@@ -145,21 +149,23 @@ class TemporaryEventLayer:
 
     def get_active_events(self) -> list[TemporaryEvent]:
         """Get all active (non-expired, non-archived) events."""
-        now = datetime.now(timezone.utc)
-        return [e for e in self._events.values()
-                if not e.archived and (e.expires_at is None or now <= e.expires_at)]
+        now = datetime.now(UTC)
+        return [
+            e
+            for e in self._events.values()
+            if not e.archived and (e.expires_at is None or now <= e.expires_at)
+        ]
 
     def get_by_category(self, category: EventCategory) -> list[TemporaryEvent]:
         return [e for e in self._events.values() if e.category == category]
 
     def get_context(self, context_key: str) -> list[TemporaryEvent]:
         """Get all events relevant to a specific context."""
-        return [e for e in self.get_active_events()
-                if e.context_key == context_key]
+        return [e for e in self.get_active_events() if e.context_key == context_key]
 
     def archive_expired(self) -> int:
         """Archive all expired events. Returns count of archived events."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         to_archive = []
         for eid, event in self._events.items():
             if event.expires_at and now > event.expires_at:
@@ -177,8 +183,7 @@ class TemporaryEventLayer:
 
     def get_finding_context(self, finding_id: str) -> list[TemporaryEvent]:
         """Get temporary context for a specific finding."""
-        return [e for e in self._events.values()
-                if finding_id in (e.finding_ids or [])]
+        return [e for e in self._events.values() if finding_id in (e.finding_ids or [])]
 
     @property
     def active_count(self) -> int:
@@ -192,5 +197,7 @@ class TemporaryEventLayer:
         categories = {}
         for e in self._events.values():
             categories[e.category.value] = categories.get(e.category.value, 0) + 1
-        return (f"TemporaryEventLayer: {self.active_count} active events "
-                f"(categories: {categories}), {len(self._archived)} archived")
+        return (
+            f"TemporaryEventLayer: {self.active_count} active events "
+            f"(categories: {categories}), {len(self._archived)} archived"
+        )

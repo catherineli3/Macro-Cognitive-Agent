@@ -14,11 +14,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date as date_type
-from datetime import datetime, timezone
 from typing import Any
 
-from src.runtime.prediction_registry import PredictionRegistry, PredictionRecord
-from src.schemas.research_thesis import ThesisOutcome
+from src.runtime.prediction_registry import PredictionRecord, PredictionRegistry
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -94,8 +92,9 @@ class OutcomeScheduler:
 
     # ── Main Entry ──────────────────────────────────────────────────────
 
-    def run(self, date_str: str | None = None,
-            market_data: dict[str, float] | None = None) -> SchedulerReport:
+    def run(
+        self, date_str: str | None = None, market_data: dict[str, float] | None = None
+    ) -> SchedulerReport:
         """Run one evaluation cycle.
 
         Checks for due predictions, evaluates them, triggers diagnosis
@@ -156,8 +155,7 @@ class OutcomeScheduler:
                         report.errors.append(str(e))
             else:
                 # No market data: mark all as overdue but don't evaluate
-                logger.info("No market data available; %d predictions marked overdue",
-                           len(preds))
+                logger.info("No market data available; %d predictions marked overdue", len(preds))
                 for pred in preds:
                     self.registry.mark_outcome(
                         pred.prediction_id,
@@ -198,10 +196,14 @@ class OutcomeScheduler:
                 # For each invalidated thesis, run real diagnosis + evolution
                 for thesis_id in invalidated_theses:
                     thesis_preds = thesis_groups[thesis_id]
-                    failed_preds = [p for p in thesis_preds
-                                    if any(ed.prediction_id == p.prediction_id
-                                           and not ed.was_correct
-                                           for ed in report.evaluation_details)]
+                    failed_preds = [
+                        p
+                        for p in thesis_preds
+                        if any(
+                            ed.prediction_id == p.prediction_id and not ed.was_correct
+                            for ed in report.evaluation_details
+                        )
+                    ]
 
                     if not failed_preds:
                         continue
@@ -214,22 +216,24 @@ class OutcomeScheduler:
                     }
 
                     # ── Run diagnosis on failed predictions ─────
-                    if diagnosis_engine and hasattr(diagnosis_engine, 'diagnose'):
+                    if diagnosis_engine and hasattr(diagnosis_engine, "diagnose"):
                         try:
                             from src.schemas.research_thesis import ThesisOutcome
+
                             # Build a synthetic outcome from failed predictions
-                            outcome = ThesisOutcome(
+                            _outcome = ThesisOutcome(
                                 thesis_id=thesis_id,
                                 verified=False,
                                 invalidation_triggered=(
                                     f"Scheduler: {len(failed_preds)} predictions failed"
                                 ),
                                 notes=f"Scheduler evaluation: {len(failed_preds)} predictions "
-                                      f"failed on {today}",
+                                f"failed on {today}",
                                 actual_events=[
                                     f"{p.asset}: predicted {p.direction}, "
                                     f"actual {p.actual_value}"
-                                    for p in failed_preds if p.actual_value
+                                    for p in failed_preds
+                                    if p.actual_value
                                 ],
                             )
                             detail["diagnosis"] = "completed"
@@ -240,12 +244,13 @@ class OutcomeScheduler:
 
                     # ── Trigger real Evolution Pipeline ─────────
                     try:
-                        ev_pipeline = getattr(self._engine, '_evolution_pipeline', None)
+                        ev_pipeline = getattr(self._engine, "_evolution_pipeline", None)
                         if ev_pipeline:
                             # Build failure findings for evolution to process
                             from src.schemas.transmission_v3_1 import (
-                                ResearchFinding, ResearchFindingsReport,
                                 FindingConfidence,
+                                ResearchFinding,
+                                ResearchFindingsReport,
                             )
 
                             failure_findings: list = []
@@ -285,19 +290,25 @@ class OutcomeScheduler:
                                 current_regime=None,
                             )
                             detail["evolution"] = {
-                                k: v for k, v in ev_result.items()
-                                if k in ('principles_created', 'frameworks_created',
-                                         'beliefs_updated', 'conflicts_resolved')
+                                k: v
+                                for k, v in ev_result.items()
+                                if k
+                                in (
+                                    "principles_created",
+                                    "frameworks_created",
+                                    "beliefs_updated",
+                                    "conflicts_resolved",
+                                )
                             }
                             report.evolution_result["evolution_cycles"] += 1
-                            report.evolution_result["principles_created"] += (
-                                ev_result.get("principles_created", 0)
+                            report.evolution_result["principles_created"] += ev_result.get(
+                                "principles_created", 0
                             )
-                            report.evolution_result["frameworks_created"] += (
-                                ev_result.get("frameworks_created", 0)
+                            report.evolution_result["frameworks_created"] += ev_result.get(
+                                "frameworks_created", 0
                             )
-                            report.evolution_result["beliefs_updated"] += (
-                                ev_result.get("beliefs_updated", 0)
+                            report.evolution_result["beliefs_updated"] += ev_result.get(
+                                "beliefs_updated", 0
                             )
                         else:
                             detail["evolution"] = "no_pipeline"
@@ -341,14 +352,20 @@ class OutcomeScheduler:
 
         # Map asset name to market data keys
         asset_map = {
-            "spx": "spx", "sp500": "spx", "s&p500": "spx",
-            "us10y": "us10y", "10y": "us10y", "ten_year": "us10y",
+            "spx": "spx",
+            "sp500": "spx",
+            "s&p500": "spx",
+            "us10y": "us10y",
+            "10y": "us10y",
+            "ten_year": "us10y",
             "vix": "vix",
             "dxy": "dxy",
             "hyg": "hyg",
             "credit": "hyg",
-            "gold": "gold", "gc": "gold",
-            "copper": "copper", "hg": "copper",
+            "gold": "gold",
+            "gc": "gold",
+            "copper": "copper",
+            "hg": "copper",
             "cpi": "cpi_yoy",
             "fedfunds": "fed_rate",
         }
@@ -426,7 +443,7 @@ class OutcomeScheduler:
         """Human-readable scheduler status."""
         s = self.registry.stats()
         lines = [
-            f"Outcome Scheduler",
+            "Outcome Scheduler",
             f"  Pending evaluations: {s['pending']}",
             f"  Evaluated: {s['evaluated']}",
             f"  Hit rate: {s['hit_rate']:.1%}",

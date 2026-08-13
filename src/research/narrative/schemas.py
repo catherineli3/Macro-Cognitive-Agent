@@ -7,14 +7,15 @@ and asset impact analysis — moving from Signal Detection to Narrative Reasonin
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 from uuid import uuid4
 
 
 class NarrativeCategory(Enum):
     """Narrative category enum (V3.0, kept for backward compat)."""
+
     MONETARY = "monetary"
     INFLATION = "inflation"
     GROWTH = "growth"
@@ -28,17 +29,19 @@ class NarrativeCategory(Enum):
 
 class NarrativeTimeHorizon(Enum):
     """Time horizon for narrative signals."""
+
     SHORT_TERM = "short_term"  # 1-2 weeks
     MEDIUM_TERM = "medium_term"  # 1-3 months
     LONG_TERM = "long_term"  # 3+ months
-    SHORT = "short_term"       # Alias
-    MEDIUM = "medium_term"     # Alias
-    LONG = "long_term"         # Alias
+    SHORT = "short_term"  # Alias
+    MEDIUM = "medium_term"  # Alias
+    LONG = "long_term"  # Alias
 
 
 @dataclass
 class NarrativeSignal:
     """Individual signal supporting a narrative detection."""
+
     name: str = ""
     value: str = ""  # Signal reading
     direction: str = "neutral"  # bullish / bearish / neutral
@@ -50,6 +53,7 @@ class NarrativeSignal:
 @dataclass
 class NarrativeTemplate:
     """Pre-defined narrative pattern for template-based detection."""
+
     title_template: str
     category: NarrativeCategory
     description_template: str = ""
@@ -80,15 +84,16 @@ class NarrativeTemplate:
 
         for dim in self.required_dimensions:
             # Try multiple key formats
-            dim_data = state_vector.get(dim, state_vector.get(dim.lower(),
-                       state_vector.get(dim.replace('_', ' '), {})))
+            dim_data = state_vector.get(
+                dim, state_vector.get(dim.lower(), state_vector.get(dim.replace("_", " "), {}))
+            )
 
-            if isinstance(dim_data, dict) and dim_data.get('score') is not None:
+            if isinstance(dim_data, dict) and dim_data.get("score") is not None:
                 # Dimension exists: base dimension match
                 dim_score += 1.0 / n
 
                 # Direction alignment
-                actual_dir = str(dim_data.get('direction', '')).lower()
+                actual_dir = str(dim_data.get("direction", "")).lower()
                 for expected_dir in self.required_directions:
                     if expected_dir.lower() in actual_dir:
                         dir_score += 1.0 / n
@@ -114,13 +119,14 @@ class NarrativeTemplate:
 @dataclass
 class Narrative:
     """Detected market narrative (V3.2 extended — supports both flat and rich usage)."""
+
     id: str = field(default_factory=lambda: uuid4().hex[:8])
     title: str = ""
     description: str = ""
     category: str = ""  # e.g. "monetary", "growth", "inflation"
     score: float = 0.0  # 0-1 detection confidence
     source_signals: list[str] = field(default_factory=list)
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     # Backward compat
     is_active: bool = True
     composite_score: float = 0.0
@@ -152,8 +158,9 @@ class Narrative:
 @dataclass
 class NarrativeResult:
     """Output from NarrativeDetector.detect()."""
+
     narratives: list[Narrative] = field(default_factory=list)
-    dominant_narrative: Optional[Narrative] = None
+    dominant_narrative: Narrative | None = None
     regime_context: str = ""
     summary: str = ""
 
@@ -208,7 +215,7 @@ class NarrativeObject:
 
     # ── Classification ─────────────────────────────────────────────
     category: str = ""  # monetary, growth, inflation, risk, etc.
-    regime: str = ""    # Current regime this narrative operates in
+    regime: str = ""  # Current regime this narrative operates in
     regime_score: float = 0.0  # 0-1: how well narrative fits current regime
 
     # ── Confidence & Diversity ─────────────────────────────────────
@@ -222,7 +229,7 @@ class NarrativeObject:
     # ── Meta ───────────────────────────────────────────────────────
     derived_from: list[str] = field(default_factory=list)  # source Narrative IDs
     mental_models_used: list[str] = field(default_factory=list)
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def evidence_ratio(self) -> float:
@@ -295,7 +302,7 @@ class NarrativeCompetitionResult:
     """Ordered by probability descending."""
 
     @property
-    def dominant(self) -> Optional[NarrativeObject]:
+    def dominant(self) -> NarrativeObject | None:
         return self.narratives[0] if self.narratives else None
 
     @property

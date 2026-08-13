@@ -12,8 +12,8 @@ Design principle (Canonical Data Layer):
     NEVER depend on vendor-specific response formats.
 """
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -45,12 +45,12 @@ class ToolResult(BaseModel):
         description="Named canonical data artifacts",
     )
     latency_ms: float = Field(default=0.0, ge=0, description="Wall-clock execution time in ms")
-    error: Optional[str] = Field(
+    error: str | None = Field(
         default=None,
         description="Error message if status is FAILED",
     )
     completed_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="Completion timestamp",
     )
 

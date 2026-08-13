@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Optional
 
 from src.shared.logging import get_logger
 
@@ -37,6 +36,7 @@ logger = get_logger(__name__)
 @dataclass
 class ConsensusCheck:
     """Is this view already consensus? Consensus = limited alpha."""
+
     is_consensus: bool = False
     consensus_level: float = 0.0  # 0 = contrarian, 1 = full consensus
     consensus_signals: list[str] = field(default_factory=list)
@@ -49,6 +49,7 @@ class ConsensusCheck:
 @dataclass
 class CrowdedCheck:
     """Is the trade crowded? Crowded = positioning risk."""
+
     is_crowded: bool = False
     crowdedness: float = 0.0  # 0 = uncrowded, 1 = extremely crowded
     who_is_in: list[str] = field(default_factory=list)  # Who's already positioned
@@ -62,12 +63,15 @@ class CrowdedCheck:
 @dataclass
 class PositioningCheck:
     """Market positioning assessment.
-    
+
     Key question: Is the market already positioned FOR this trade?
     If yes, who is the marginal buyer/seller? Is there a positioning squeeze risk?
     """
+
     net_positioning: str = ""  # "long" / "short" / "flat" / "unknown"
-    speculative_positioning: str = ""  # "extreme_long" / "long" / "neutral" / "short" / "extreme_short"
+    speculative_positioning: str = (
+        ""  # "extreme_long" / "long" / "neutral" / "short" / "extreme_short"
+    )
     institutional_flows: str = ""  # "buying" / "selling" / "balanced"
     retail_sentiment: str = ""  # "bullish" / "bearish" / "neutral"
     cot_signal: str = ""  # Commitment of Traders implied signal
@@ -80,6 +84,7 @@ class PositioningCheck:
 @dataclass
 class CatalystCheck:
     """Is there a specific, dateable catalyst with asymmetric payoff?"""
+
     has_catalyst: bool = False
     catalysts: list[str] = field(default_factory=list)
     catalyst_type: str = ""  # "data" / "event" / "flow" / "technical" / "unknown"
@@ -94,6 +99,7 @@ class CatalystCheck:
 @dataclass
 class ReactionCheck:
     """How will the market react? What's the expected PnL path?"""
+
     expected_pnl_pct: float = 0.0  # Expected return if thesis correct
     stop_loss_pct: float = 0.0  # Where to stop out
     risk_reward_ratio: float = 0.0  # Reward/Risk
@@ -109,10 +115,10 @@ class ReactionCheck:
 @dataclass
 class MarketChallengeResult:
     """Complete market challenge assessment.
-    
+
     This is the core output: a trading-desk-quality viability assessment
     of the research memo's trade idea.
-    
+
     Score interpretation:
         90-100: Exceptional setup — asymmetric, contrarian, uncrowded, imminent catalyst
         75-89:  Good trade — most boxes checked
@@ -120,6 +126,7 @@ class MarketChallengeResult:
         40-59:  Marginal — significant issues
         <40:    Untradeable — consensus, crowded, no catalyst
     """
+
     consensus: ConsensusCheck = field(default_factory=ConsensusCheck)
     crowded: CrowdedCheck = field(default_factory=CrowdedCheck)
     positioning: PositioningCheck = field(default_factory=PositioningCheck)
@@ -245,24 +252,56 @@ _CATALYST_PATTERNS = [
 
 # Directional words — bullish
 _BULLISH_WORDS = [
-    "long", "buy", "bullish", "overweight", "upside",
-    "rally", "recovery", "acceleration", "expansion",
-    "rate cut", "easing", "stimulus",
+    "long",
+    "buy",
+    "bullish",
+    "overweight",
+    "upside",
+    "rally",
+    "recovery",
+    "acceleration",
+    "expansion",
+    "rate cut",
+    "easing",
+    "stimulus",
 ]
 
 # Directional words — bearish
 _BEARISH_WORDS = [
-    "short", "sell", "bearish", "underweight", "downside",
-    "selloff", "correction", "crash", "recession",
-    "tightening", "hawkish", "decelerating", "contraction",
+    "short",
+    "sell",
+    "bearish",
+    "underweight",
+    "downside",
+    "selloff",
+    "correction",
+    "crash",
+    "recession",
+    "tightening",
+    "hawkish",
+    "decelerating",
+    "contraction",
 ]
 
 # Hedge fund / institution names for "who is in"
 _INSTITUTION_NAMES = [
-    "hedge fund", "cta", "risk parity", "pension", "retail",
-    "mutual fund", "etf", "systematic", "discretionary",
-    "macro fund", "quant", "real money", "fast money",
-    "dealer", "bank", "asset manager", "insurance",
+    "hedge fund",
+    "cta",
+    "risk parity",
+    "pension",
+    "retail",
+    "mutual fund",
+    "etf",
+    "systematic",
+    "discretionary",
+    "macro fund",
+    "quant",
+    "real money",
+    "fast money",
+    "dealer",
+    "bank",
+    "asset manager",
+    "insurance",
 ]
 
 
@@ -284,19 +323,19 @@ class MarketChallenge:
 
     # Score weights (sums to 1.0)
     _WEIGHTS = {
-        "consensus": 0.25,    # Is it contrarian?
-        "crowded": 0.20,      # Is positioning clean?
+        "consensus": 0.25,  # Is it contrarian?
+        "crowded": 0.20,  # Is positioning clean?
         "positioning": 0.20,  # Is positioning aligned?
-        "catalyst": 0.20,     # Is there an edge catalyst?
-        "reaction": 0.15,     # Is PnL asymmetric?
+        "catalyst": 0.20,  # Is there an edge catalyst?
+        "reaction": 0.15,  # Is PnL asymmetric?
     }
 
     def challenge(
         self,
         memo_text: str,
-        memo_json: Optional[dict] = None,
-        step_outputs: Optional[dict] = None,
-        market_context: Optional[dict] = None,
+        memo_json: dict | None = None,
+        step_outputs: dict | None = None,
+        market_context: dict | None = None,
     ) -> MarketChallengeResult:
         """Run the full market challenge assessment.
 
@@ -374,12 +413,10 @@ class MarketChallenge:
 
     # ── Individual Checks ──────────────────────────────────────────────
 
-    def _check_consensus(
-        self, text: str, memo_json: Optional[dict]
-    ) -> ConsensusCheck:
+    def _check_consensus(self, text: str, memo_json: dict | None) -> ConsensusCheck:
         """Check if the memo's view is consensus or contrarian."""
         # Split into sentences for negation-aware matching
-        sentences = re.split(r'(?<=[.;!?])\s+', text)
+        sentences = re.split(r"(?<=[.;!?])\s+", text)
 
         consensus_hits = []
         for sentence in sentences:
@@ -396,7 +433,9 @@ class MarketChallenge:
         for pattern in _CONTRARIAN_PATTERNS:
             matches = re.findall(pattern, text)
             if matches:
-                contrarian_hits.append(str(matches[0]) if isinstance(matches[0], str) else str(matches))
+                contrarian_hits.append(
+                    str(matches[0]) if isinstance(matches[0], str) else str(matches)
+                )
 
         # Calculate consensus level
         total_hits = len(consensus_hits) + len(contrarian_hits)
@@ -411,7 +450,8 @@ class MarketChallenge:
             belief_data = memo_json.get("belief_state", memo_json.get("beliefs", []))
             if isinstance(belief_data, list):
                 consensus_beliefs = sum(
-                    1 for b in belief_data
+                    1
+                    for b in belief_data
                     if isinstance(b, dict) and b.get("consensus_level", 0) > 0.6
                 )
                 if belief_data:
@@ -458,14 +498,16 @@ class MarketChallenge:
         )
 
     def _check_crowded(
-        self, text: str, memo_json: Optional[dict], market_context: Optional[dict]
+        self, text: str, memo_json: dict | None, market_context: dict | None
     ) -> CrowdedCheck:
         """Check if the trade is crowded."""
         crowded_hits = []
         for pattern in _CROWDED_PATTERNS:
             matches = re.findall(pattern, text)
             if matches:
-                crowded_hits.append(str(matches[0]) if isinstance(matches[0], str) else str(matches))
+                crowded_hits.append(
+                    str(matches[0]) if isinstance(matches[0], str) else str(matches)
+                )
 
         # Check for directional concentration language
         bullish_count = sum(1 for w in _BULLISH_WORDS if w in text)
@@ -477,8 +519,11 @@ class MarketChallenge:
             if inst in text:
                 # Check if mentioned in context of already positioned
                 idx = text.find(inst)
-                context = text[max(0, idx - 50):idx + 50]
-                if any(w in context for w in ["positioned", "already", "long", "short", "holding", "owns"]):
+                context = text[max(0, idx - 50) : idx + 50]
+                if any(
+                    w in context
+                    for w in ["positioned", "already", "long", "short", "holding", "owns"]
+                ):
                     who_is_in.append(inst)
 
         # Who is NOT in yet (potential marginal buyer)
@@ -543,7 +588,7 @@ class MarketChallenge:
         )
 
     def _check_positioning(
-        self, text: str, memo_json: Optional[dict], step_outputs: Optional[dict]
+        self, text: str, memo_json: dict | None, step_outputs: dict | None
     ) -> PositioningCheck:
         """Assess market positioning relative to the trade idea."""
         bullish_count = sum(1 for w in _BULLISH_WORDS if w in text)
@@ -565,7 +610,9 @@ class MarketChallenge:
                     net_pos = "short"
 
         if memo_json:
-            trade = memo_json.get("trade_recommendation", memo_json.get("portfolio_implication", ""))
+            trade = memo_json.get(
+                "trade_recommendation", memo_json.get("portfolio_implication", "")
+            )
             trade_str = str(trade).lower() if trade else ""
             if any(w in trade_str for w in ["long", "buy", "overweight", "bullish"]):
                 net_pos = "long"
@@ -627,7 +674,7 @@ class MarketChallenge:
         )
 
     def _check_catalyst(
-        self, text: str, memo_json: Optional[dict], step_outputs: Optional[dict]
+        self, text: str, memo_json: dict | None, step_outputs: dict | None
     ) -> CatalystCheck:
         """Check for specific, dateable catalysts."""
         catalysts = []
@@ -687,8 +734,15 @@ class MarketChallenge:
 
         # Asymmetric payoff check
         asymmetric_payoff = any(
-            w in text for w in ["asymmetric", "tails", "convex", "optionality",
-                                 "low risk high reward", "heads i win"]
+            w in text
+            for w in [
+                "asymmetric",
+                "tails",
+                "convex",
+                "optionality",
+                "low risk high reward",
+                "heads i win",
+            ]
         )
 
         # Score computation
@@ -721,12 +775,12 @@ class MarketChallenge:
             summary=(
                 f"{'Has' if has_catalyst else 'No'} catalyst ({catalyst_type}, {catalyst_timeline}). "
                 + ("ASYMMETRIC PAYOFF. " if asymmetric_payoff else "")
-                + (f"Pre-positioned — already priced. " if is_pre_positioned else "")
+                + ("Pre-positioned — already priced. " if is_pre_positioned else "")
             ),
         )
 
     def _check_reaction(
-        self, text: str, memo_json: Optional[dict], market_context: Optional[dict]
+        self, text: str, memo_json: dict | None, market_context: dict | None
     ) -> ReactionCheck:
         """Assess expected market reaction and PnL path."""
         # Extract PnL expectations from text
@@ -735,7 +789,7 @@ class MarketChallenge:
         rr_ratio = 0.0
 
         # Look for percentage targets
-        pct_matches = re.findall(r'(\d+(?:\.\d+)?)\s*%', text)
+        pct_matches = re.findall(r"(\d+(?:\.\d+)?)\s*%", text)
         percentages = [float(p) for p in pct_matches]
 
         if len(percentages) >= 2:
@@ -747,7 +801,9 @@ class MarketChallenge:
             pnl_pct = percentages[0]
 
         # Risk/reward from text or JSON
-        rr_matches = re.findall(r'(\d+(?:\.\d+)?)\s*:?\s*(\d+(?:\.\d+)?)\s*(?:risk.?reward|r/?r)', text)
+        rr_matches = re.findall(
+            r"(\d+(?:\.\d+)?)\s*:?\s*(\d+(?:\.\d+)?)\s*(?:risk.?reward|r/?r)", text
+        )
         if rr_matches:
             try:
                 reward_part = float(rr_matches[0][0])
@@ -767,8 +823,16 @@ class MarketChallenge:
 
         # Liquidity concern
         liquidity_concern = any(
-            w in text for w in ["illiquid", "liquidity risk", "thin", "wide spread",
-                                "small cap", "frontier", "capacity"]
+            w in text
+            for w in [
+                "illiquid",
+                "liquidity risk",
+                "thin",
+                "wide spread",
+                "small cap",
+                "frontier",
+                "capacity",
+            ]
         )
 
         # Correlation risk
@@ -776,7 +840,9 @@ class MarketChallenge:
         if "correlated" in text or "correlation" in text:
             correlation_risk = "Correlation risk explicitly noted in memo"
         elif any(w in text for w in ["risk-on", "risk-off", "beta"]):
-            correlation_risk = "Beta/correlation risk implied — trade may be market-direction dependent"
+            correlation_risk = (
+                "Beta/correlation risk implied — trade may be market-direction dependent"
+            )
 
         # Time decay
         if any(w in text for w in ["carry", "contango", "backwardation", "theta", "option"]):
@@ -826,7 +892,7 @@ class MarketChallenge:
             score=score,
             summary=(
                 f"Expected PnL: {pnl_pct:.1f}% | R/R: {rr_ratio:.1f}:1. "
-                + (f"LIQUIDITY CONCERN. " if liquidity_concern else "")
+                + ("LIQUIDITY CONCERN. " if liquidity_concern else "")
             ),
         )
 
@@ -839,11 +905,23 @@ class MarketChallenge:
         Checks negation markers both BEFORE and AFTER the pattern match.
         """
         negators = [
-            r'\bnot\b', r'\bwrong\b', r'\bno\b', r"\bwon['']t\b",
-            r"\bcan['']t\b", r"\bshouldn['']t\b", r"\bunlikely\b",
-            r'\bfalse\b', r'\bmis(pricing|reading|taken|guided)\b',
-            r'\bagainst\b', r'\breject\b', r'\bdisagree\b', r"\bisn['']t\b",
-            r'\bfail\b', r'\bdoubt\b', r'\bmistake', r'\bover(blown|hyped|stated)\b',
+            r"\bnot\b",
+            r"\bwrong\b",
+            r"\bno\b",
+            r"\bwon['']t\b",
+            r"\bcan['']t\b",
+            r"\bshouldn['']t\b",
+            r"\bunlikely\b",
+            r"\bfalse\b",
+            r"\bmis(pricing|reading|taken|guided)\b",
+            r"\bagainst\b",
+            r"\breject\b",
+            r"\bdisagree\b",
+            r"\bisn['']t\b",
+            r"\bfail\b",
+            r"\bdoubt\b",
+            r"\bmistake",
+            r"\bover(blown|hyped|stated)\b",
         ]
 
         # Find the pattern match position
@@ -852,17 +930,17 @@ class MarketChallenge:
             return False
 
         # Check text BEFORE the match (within 5 words)
-        prefix = sentence[:match.start()].lower()
+        prefix = sentence[: match.start()].lower()
         prefix_words = prefix.split()[-5:]
         for negator in negators:
-            if re.search(negator, ' '.join(prefix_words)):
+            if re.search(negator, " ".join(prefix_words)):
                 return True
 
         # Check text AFTER the match (within 5 words after the match)
-        suffix = sentence[match.end():].lower()
+        suffix = sentence[match.end() :].lower()
         suffix_words = suffix.split()[:5]
         for negator in negators:
-            if re.search(negator, ' '.join(suffix_words)):
+            if re.search(negator, " ".join(suffix_words)):
                 return True
 
         return False
@@ -923,9 +1001,9 @@ class MarketChallenge:
 
 def market_challenge(
     memo_text: str,
-    memo_json: Optional[dict] = None,
-    step_outputs: Optional[dict] = None,
-    market_context: Optional[dict] = None,
+    memo_json: dict | None = None,
+    step_outputs: dict | None = None,
+    market_context: dict | None = None,
 ) -> MarketChallengeResult:
     """Convenience function: run market challenge assessment."""
     mc = MarketChallenge()

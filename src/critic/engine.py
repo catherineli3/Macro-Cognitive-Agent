@@ -8,11 +8,11 @@ Pipeline:
     3. Assembly → ReflectionSet with overall summary
 """
 
-from src.schemas.hypothesis import HypothesisSchema, HypothesisSet
-from src.schemas.reflection import ReflectionReport, ReflectionSet
 from src.critic.reviewer import HypothesisReviewer
 from src.critic.scorer import BeliefScorer
 from src.domain.reflection import ReflectionVerdict
+from src.schemas.hypothesis import HypothesisSchema, HypothesisSet
+from src.schemas.reflection import ReflectionReport, ReflectionSet
 
 
 class ReflectionEngine:
@@ -70,20 +70,14 @@ class ReflectionEngine:
 
         return report
 
-    def _build_overall_summary(
-        self, reports: list[ReflectionReport]
-    ) -> str:
+    def _build_overall_summary(self, reports: list[ReflectionReport]) -> str:
         """Build a one-sentence overall summary."""
         total = len(reports)
         if total == 0:
             return "No hypotheses to review."
 
-        confirmed = sum(
-            1 for r in reports if r.verdict == ReflectionVerdict.CONFIRMED
-        )
-        refuted = sum(
-            1 for r in reports if r.verdict == ReflectionVerdict.REFUTED
-        )
+        confirmed = sum(1 for r in reports if r.verdict == ReflectionVerdict.CONFIRMED)
+        refuted = sum(1 for r in reports if r.verdict == ReflectionVerdict.REFUTED)
         uncertain = total - confirmed - refuted
 
         parts: list[str] = []

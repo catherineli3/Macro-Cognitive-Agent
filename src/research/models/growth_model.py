@@ -100,31 +100,45 @@ class GrowthModel(MentalModel):
     def _interpret_growth(name: str, value: float, features: list[dict]) -> dict:
         if name == "COPPER":
             if value > 4.5:
-                return {"text": f"Copper strong (${value:.2f}) — industrial demand robust", "contradicts": False, "weight": 1.5}
+                return {
+                    "text": f"Copper strong (${value:.2f}) — industrial demand robust",
+                    "contradicts": False,
+                    "weight": 1.5,
+                }
             elif value < 3.5:
-                return {"text": f"Copper weak (${value:.2f}) — industrial slowdown signal", "contradicts": True, "weight": 1.5}
+                return {
+                    "text": f"Copper weak (${value:.2f}) — industrial slowdown signal",
+                    "contradicts": True,
+                    "weight": 1.5,
+                }
             else:
-                return {"text": f"Copper moderate (${value:.2f})", "contradicts": False, "weight": 1.2}
+                return {
+                    "text": f"Copper moderate (${value:.2f})",
+                    "contradicts": False,
+                    "weight": 1.2,
+                }
         if name == "SP500":
             if value < 3800:
-                return {"text": f"SP500 low — growth fear priced in", "contradicts": True}
+                return {"text": "SP500 low — growth fear priced in", "contradicts": True}
             elif value > 4500:
-                return {"text": f"SP500 elevated — growth optimism", "contradicts": False}
+                return {"text": "SP500 elevated — growth optimism", "contradicts": False}
             else:
                 return {"text": f"SP500 range (${value:.0f})", "contradicts": False}
         if name == "RUSSELL":
             if value < 180:
-                return {"text": f"Russell weak — domestic growth concern (small cap leading)", "contradicts": True, "weight": 1.3}
+                return {
+                    "text": "Russell weak — domestic growth concern (small cap leading)",
+                    "contradicts": True,
+                    "weight": 1.3,
+                }
             elif value > 220:
-                return {"text": f"Russell strong — domestic expansion", "contradicts": False}
+                return {"text": "Russell strong — domestic expansion", "contradicts": False}
             else:
                 return {"text": f"Russell range (${value:.0f})", "contradicts": False}
         return {"text": f"{name}: {value:.2f}", "contradicts": False}
 
     @staticmethod
-    def _check_large_small_divergence(
-        sp500: dict | None, russell: dict | None
-    ) -> str | None:
+    def _check_large_small_divergence(sp500: dict | None, russell: dict | None) -> str | None:
         """Check for large-cap vs small-cap divergence."""
         if not sp500 or not russell:
             return None
@@ -147,9 +161,7 @@ class GrowthModel(MentalModel):
         return None
 
     @staticmethod
-    def _generate_narratives(
-        direction: str, supporting: list[EvidenceItem]
-    ) -> list[str]:
+    def _generate_narratives(direction: str, supporting: list[EvidenceItem]) -> list[str]:
         if direction == "expansion":
             return [
                 "Growth acceleration → cyclical/value sector leadership",

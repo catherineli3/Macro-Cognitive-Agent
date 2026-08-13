@@ -7,11 +7,9 @@ narrative distortion in the Evidence Graph.
 
 from __future__ import annotations
 
-import uuid
 from difflib import SequenceMatcher
-from typing import Any, Optional
 
-from src.news.schemas import ResearchEvent, NewsArticle
+from src.news.schemas import ResearchEvent
 
 
 class NewsDeduplicator:
@@ -92,15 +90,14 @@ class NewsDeduplicator:
             shared_keys = set(e1.key_numbers.keys()) & set(e2.key_numbers.keys())
             if shared_keys:
                 values_match = all(
-                    e1.key_numbers.get(k) == e2.key_numbers.get(k)
-                    for k in shared_keys
+                    e1.key_numbers.get(k) == e2.key_numbers.get(k) for k in shared_keys
                 )
                 if values_match:
                     return max(headline_sim, 0.7)
 
         # Same topic + same country = moderate similarity
-        topic_match = (e1.category == e2.category)
-        country_match = (e1.country == e2.country)
+        topic_match = e1.category == e2.category
+        country_match = e1.country == e2.country
         if topic_match and country_match:
             return max(headline_sim, 0.5)
 
@@ -122,14 +119,10 @@ class NewsDeduplicator:
             all_articles.extend(e.news_articles)
 
         # Merge entities
-        all_entities = list(set(
-            entity for e in events for entity in e.entities
-        ))
+        all_entities = list(set(entity for e in events for entity in e.entities))
 
         # Merge countries
-        all_countries = list(set(
-            e.country for e in events if e.country
-        ))
+        all_countries = list(set(e.country for e in events if e.country))
 
         # Merge belief impacts
         merged_belief_impact = {}
@@ -147,9 +140,13 @@ class NewsDeduplicator:
         max_severity = max(
             events,
             key=lambda e: severity_order.get(
-                e.impact_severity.value if hasattr(e.impact_severity, "value") else str(e.impact_severity),
-                3
-            )
+                (
+                    e.impact_severity.value
+                    if hasattr(e.impact_severity, "value")
+                    else str(e.impact_severity)
+                ),
+                3,
+            ),
         )
 
         # Use key_numbers from the event with most data
@@ -186,6 +183,7 @@ class NewsDeduplicator:
         # Lower, strip punctuation, normalize whitespace
         text = text.lower().strip()
         import re
-        text = re.sub(r'[^\w\s]', '', text)
-        text = re.sub(r'\s+', ' ', text)
+
+        text = re.sub(r"[^\w\s]", "", text)
+        text = re.sub(r"\s+", " ", text)
         return text

@@ -8,12 +8,13 @@ Covers:
     - Full Executor + HypothesisHandler integration
 """
 
-import pytest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
+import pytest
+
+from src.domain.planning import TaskType
 from src.executor.context import ExecutionContext
 from src.executor.executor import AgentExecutor
-from src.domain.planning import TaskType
 from src.handlers.hypothesis_handler import HypothesisHandler
 from src.hypothesis.engine import HypothesisEngine
 from src.interfaces.task_handler import TaskHandlerInterface
@@ -23,19 +24,20 @@ from src.schemas.planning import Task
 from src.schemas.signal import (
     MacroSignalSchema,
     SignalDirection,
-    SignalStrength,
     SignalEvidence,
+    SignalStrength,
 )
-
 
 # ── Helpers ───────────────────────────────────────────────────────────────
 
 
 def make_signal(
-    signal_id: str, indicator: str, direction: SignalDirection,
+    signal_id: str,
+    indicator: str,
+    direction: SignalDirection,
     dimension: str = "Liquidity",
 ) -> MacroSignalSchema:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return MacroSignalSchema(
         signal_id=signal_id,
         indicator=indicator,
@@ -110,18 +112,14 @@ class TestHypothesisHandlerExecution:
         )
 
     @pytest.mark.asyncio
-    async def test_execute_produces_hypothesis_artifact(
-        self, handler, context_with_signals, task
-    ):
+    async def test_execute_produces_hypothesis_artifact(self, handler, context_with_signals, task):
         result = await handler.execute(task, context_with_signals)
         assert result.is_success
         assert "hypotheses" in result.artifacts
         assert isinstance(result.artifacts["hypotheses"], HypothesisSet)
 
     @pytest.mark.asyncio
-    async def test_execute_produces_non_empty_set(
-        self, handler, context_with_signals, task
-    ):
+    async def test_execute_produces_non_empty_set(self, handler, context_with_signals, task):
         result = await handler.execute(task, context_with_signals)
         hypothesis_set = result.artifacts["hypotheses"]
         assert hypothesis_set.count >= 1
@@ -139,7 +137,7 @@ class TestHypothesisHandlerExecution:
     async def test_execute_with_dict_signals(self, handler, task):
         """Handler should parse dict-format signals (JSON-deserialized)."""
         ctx = ExecutionContext("plan_dict")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         signals_dict = [
             {
                 "signal_id": "s1",

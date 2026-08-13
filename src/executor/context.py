@@ -2,22 +2,22 @@
 
 Design (Sprint 4):
     ExecutionContext is the ONLY data-sharing mechanism during plan execution.
-    
+
     Artifacts are the primary data carrier:
       - Each Handler produces named artifacts in TaskResult.artifacts.
       - The Executor merges them into context.artifacts.
       - Future components (Memory, Reflection, Report) consume context.artifacts directly.
-    
+
     Task results are tracked separately for execution observability (status, timing, errors).
-    
+
     The Executor OWNS the context. Handlers can only READ (they receive it as a parameter).
     Artifact mutation happens EXCLUSIVELY through executor-controlled methods.
 
     This is NOT long-term Memory — it lives for one plan execution.
 """
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from src.domain.execution import ExecutionStatus
 from src.schemas.execution import ExecutionResult, TaskResult
@@ -38,7 +38,7 @@ class ExecutionContext:
 
     def __init__(self, plan_id: str) -> None:
         self._plan_id: str = plan_id
-        self._started_at: datetime = datetime.now(timezone.utc)
+        self._started_at: datetime = datetime.now(UTC)
 
         # Execution tracking (for observability)
         self._task_results: dict[str, TaskResult] = {}
@@ -87,7 +87,7 @@ class ExecutionContext:
         """
         self._task_results[task_result.task_id] = task_result
 
-    def get_result(self, task_id: str) -> Optional[TaskResult]:
+    def get_result(self, task_id: str) -> TaskResult | None:
         """Get the execution result for a specific task."""
         return self._task_results.get(task_id)
 
@@ -134,7 +134,7 @@ class ExecutionContext:
         Returns:
             Immutable ExecutionResult suitable for return or storage.
         """
-        completed_at = datetime.now(timezone.utc)
+        completed_at = datetime.now(UTC)
         total_ms = round((completed_at - self._started_at).total_seconds() * 1000, 2)
 
         # Build execution order from results (preserve first-seen order)
@@ -143,8 +143,10 @@ class ExecutionContext:
         # Determine overall status
         total = len(plan.tasks)
         succeeded = sum(1 for r in self._task_results.values() if r.is_success)
-        failed = total - succeeded if total > 0 else sum(
-            1 for r in self._task_results.values() if not r.is_success
+        _failed = (
+            total - succeeded
+            if total > 0
+            else sum(1 for r in self._task_results.values() if not r.is_success)
         )
 
         if succeeded == total:

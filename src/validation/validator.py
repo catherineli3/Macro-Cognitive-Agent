@@ -16,7 +16,7 @@ Design:
 """
 
 import math
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from src.domain.macro_indicator import HypothesisDimension
 from src.interfaces.validator import ValidationError, ValidatorInterface
@@ -112,7 +112,7 @@ class DataValidator(ValidatorInterface):
     @staticmethod
     def _check_timestamp(data: MacroDataSchema) -> None:
         """Reject timestamps that are unreasonably in the future."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         future_limit = now.timestamp() + _MAX_FUTURE_HOURS * 3600
         if data.timestamp.timestamp() > future_limit:
             raise ValidationError(
@@ -150,7 +150,7 @@ class DataValidator(ValidatorInterface):
         factors[QualityFactor.COMPLETENESS] = present / len(required)
 
         # Timeliness: within 24h → 1.0, degrades to 0 over 7 days
-        age_hours = (datetime.now(timezone.utc) - data.timestamp).total_seconds() / 3600
+        age_hours = (datetime.now(UTC) - data.timestamp).total_seconds() / 3600
         if age_hours <= 24:
             factors[QualityFactor.TIMELINESS] = 1.0
         elif age_hours >= 168:  # 7 days

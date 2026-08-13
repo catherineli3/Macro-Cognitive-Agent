@@ -56,53 +56,61 @@ class MarkdownRenderer:
 
     @staticmethod
     def _add_header(lines: list[str], n: MacroNarrative) -> None:
-        level_icon = {"HIGH": "🟢", "MEDIUM": "🟡", "LOW": "🔴"}.get(
-            n.confidence_level.value, "⚪"
+        level_icon = {"HIGH": "🟢", "MEDIUM": "🟡", "LOW": "🔴"}.get(n.confidence_level.value, "⚪")
+        lines.extend(
+            [
+                "# Macro Research Report",
+                "",
+                f"**Generated**: {n.generated_at.strftime('%Y-%m-%d %H:%M UTC')}",
+                f"**Overall Confidence**: {level_icon} {n.confidence_level.value} ({n.confidence_score:.0%})",
+                f"**Risk Count**: {len(n.risks)} | **Scenarios**: {len(n.scenario_analysis)}",
+                "",
+                "---",
+                "",
+            ]
         )
-        lines.extend([
-            f"# Macro Research Report",
-            f"",
-            f"**Generated**: {n.generated_at.strftime('%Y-%m-%d %H:%M UTC')}",
-            f"**Overall Confidence**: {level_icon} {n.confidence_level.value} ({n.confidence_score:.0%})",
-            f"**Risk Count**: {len(n.risks)} | **Scenarios**: {len(n.scenario_analysis)}",
-            f"",
-            f"---",
-            f"",
-        ])
 
     @staticmethod
     def _add_executive_summary(lines: list[str], n: MacroNarrative) -> None:
-        lines.extend([
-            f"## 1. Executive Summary",
-            f"",
-            n.summary if n.summary else "_No summary available._",
-            f"",
-        ])
+        lines.extend(
+            [
+                "## 1. Executive Summary",
+                "",
+                n.summary if n.summary else "_No summary available._",
+                "",
+            ]
+        )
 
     @staticmethod
     def _add_today_changes(lines: list[str], n: MacroNarrative) -> None:
-        lines.extend([
-            f"## 2. Today's Key Changes",
-            f"",
-            n.today_key_changes if n.today_key_changes else "_No significant changes today._",
-            f"",
-        ])
+        lines.extend(
+            [
+                "## 2. Today's Key Changes",
+                "",
+                n.today_key_changes if n.today_key_changes else "_No significant changes today._",
+                "",
+            ]
+        )
 
     @staticmethod
     def _add_macro_story(lines: list[str], n: MacroNarrative) -> None:
-        lines.extend([
-            f"## 3. Current Macro Story",
-            f"",
-            n.macro_story if n.macro_story else "_Insufficient data for macro narrative._",
-            f"",
-        ])
+        lines.extend(
+            [
+                "## 3. Current Macro Story",
+                "",
+                n.macro_story if n.macro_story else "_Insufficient data for macro narrative._",
+                "",
+            ]
+        )
 
     @staticmethod
     def _add_dimension_analysis(lines: list[str], n: MacroNarrative) -> None:
-        lines.extend([
-            f"## 4. Dimension Analysis",
-            f"",
-        ])
+        lines.extend(
+            [
+                "## 4. Dimension Analysis",
+                "",
+            ]
+        )
 
         for dim_name, dim_obj, dim_text in [
             ("Liquidity", n.liquidity, n.liquidity_analysis),
@@ -111,14 +119,20 @@ class MarkdownRenderer:
             ("Inflation", n.inflation, n.inflation_analysis),
         ]:
             conf_bar = _confidence_bar(dim_obj.confidence)
-            lines.extend([
-                f"### 4.{['Liquidity','Credit','Growth','Inflation'].index(dim_name)+1} {dim_name} {conf_bar}",
-                f"",
-                f"**Assessment**: {dim_obj.summary}",
-                f"",
-                f"**Analysis**: {dim_text}" if dim_text else f"_No detailed analysis available._",
-                f"",
-            ])
+            lines.extend(
+                [
+                    f"### 4.{['Liquidity','Credit','Growth','Inflation'].index(dim_name)+1} {dim_name} {conf_bar}",
+                    "",
+                    f"**Assessment**: {dim_obj.summary}",
+                    "",
+                    (
+                        f"**Analysis**: {dim_text}"
+                        if dim_text
+                        else "_No detailed analysis available._"
+                    ),
+                    "",
+                ]
+            )
             if dim_obj.key_signals:
                 lines.append("**Key Signals**:")
                 for s in dim_obj.key_signals:
@@ -130,19 +144,27 @@ class MarkdownRenderer:
 
     @staticmethod
     def _add_risk_appetite(lines: list[str], n: MacroNarrative) -> None:
-        lines.extend([
-            f"## 5. Risk Appetite",
-            f"",
-            n.risk_appetite_analysis if n.risk_appetite_analysis else "_No risk appetite data available._",
-            f"",
-        ])
+        lines.extend(
+            [
+                "## 5. Risk Appetite",
+                "",
+                (
+                    n.risk_appetite_analysis
+                    if n.risk_appetite_analysis
+                    else "_No risk appetite data available._"
+                ),
+                "",
+            ]
+        )
 
     @staticmethod
     def _add_scenario_analysis(lines: list[str], n: MacroNarrative) -> None:
-        lines.extend([
-            f"## 6. Scenario Analysis",
-            f"",
-        ])
+        lines.extend(
+            [
+                "## 6. Scenario Analysis",
+                "",
+            ]
+        )
 
         if not n.scenario_analysis:
             lines.append("_No scenario analysis generated._")
@@ -151,12 +173,14 @@ class MarkdownRenderer:
 
         for i, scenario in enumerate(n.scenario_analysis, 1):
             prob_bar = _probability_bar(scenario.probability)
-            lines.extend([
-                f"### Scenario {i}: {scenario.name} — {scenario.probability:.0%} probability {prob_bar}",
-                f"",
-                f"**Rationale**: {scenario.rationale}",
-                f"",
-            ])
+            lines.extend(
+                [
+                    f"### Scenario {i}: {scenario.name} — {scenario.probability:.0%} probability {prob_bar}",
+                    "",
+                    f"**Rationale**: {scenario.rationale}",
+                    "",
+                ]
+            )
             if scenario.supporting_signals:
                 lines.append("**Supporting Signals**:")
                 for s in scenario.supporting_signals:
@@ -175,16 +199,24 @@ class MarkdownRenderer:
 
     @staticmethod
     def _add_belief_changes(lines: list[str], n: MacroNarrative) -> None:
-        lines.extend([
-            f"## 7. Belief Changes",
-            f"",
-        ])
+        lines.extend(
+            [
+                "## 7. Belief Changes",
+                "",
+            ]
+        )
 
         if n.belief_changes_text:
             lines.append(n.belief_changes_text)
         elif n.belief_changes:
             for bc in n.belief_changes:
-                arrow = {"increased": "↑", "decreased": "↓", "unchanged": "→", "reversed": "⇄", "new": "🆕"}.get(bc.direction, "→")
+                arrow = {
+                    "increased": "↑",
+                    "decreased": "↓",
+                    "unchanged": "→",
+                    "reversed": "⇄",
+                    "new": "🆕",
+                }.get(bc.direction, "→")
                 dim_label = f"**[{bc.dimension}]** " if bc.dimension else ""
                 lines.append(
                     f"- {arrow} {dim_label}{_smart_truncate(bc.hypothesis_statement, 120)} "
@@ -200,19 +232,21 @@ class MarkdownRenderer:
 
     @staticmethod
     def _add_key_risks(lines: list[str], n: MacroNarrative) -> None:
-        lines.extend([
-            f"## 8. Key Risks",
-            f"",
-        ])
+        lines.extend(
+            [
+                "## 8. Key Risks",
+                "",
+            ]
+        )
 
         if n.key_risks:
             for i, risk in enumerate(n.key_risks, 1):
                 lines.append(f"{i}. {risk}")
         elif n.risks:
             for risk in n.risks:
-                severity_marker = {
-                    "critical": "🔴", "high": "🟠", "medium": "🟡", "low": "🟢"
-                }.get(risk.severity, "⚪")
+                severity_marker = {"critical": "🔴", "high": "🟠", "medium": "🟡", "low": "🟢"}.get(
+                    risk.severity, "⚪"
+                )
                 lines.append(f"- {severity_marker} **[{risk.category}]** {risk.description}")
         else:
             lines.append("_No risks identified in this analysis cycle._")
@@ -221,10 +255,12 @@ class MarkdownRenderer:
 
     @staticmethod
     def _add_action_items(lines: list[str], n: MacroNarrative) -> None:
-        lines.extend([
-            f"## 9. Action Items",
-            f"",
-        ])
+        lines.extend(
+            [
+                "## 9. Action Items",
+                "",
+            ]
+        )
 
         if n.action_items:
             for i, item in enumerate(n.action_items, 1):
@@ -236,72 +272,82 @@ class MarkdownRenderer:
 
     @staticmethod
     def _add_confidence_explanation(lines: list[str], n: MacroNarrative) -> None:
-        lines.extend([
-            f"## 10. Confidence Assessment",
-            f"",
-        ])
-
-        level_icon = {"HIGH": "🟢", "MEDIUM": "🟡", "LOW": "🔴"}.get(
-            n.confidence_level.value, "⚪"
+        lines.extend(
+            [
+                "## 10. Confidence Assessment",
+                "",
+            ]
         )
-        lines.extend([
-            f"**Overall Confidence**: {level_icon} **{n.confidence_level.value}**",
-            f"",
-            f"**Score**: {n.confidence_score:.2f} / 1.00",
-            f"",
-        ])
+
+        level_icon = {"HIGH": "🟢", "MEDIUM": "🟡", "LOW": "🔴"}.get(n.confidence_level.value, "⚪")
+        lines.extend(
+            [
+                f"**Overall Confidence**: {level_icon} **{n.confidence_level.value}**",
+                "",
+                f"**Score**: {n.confidence_score:.2f} / 1.00",
+                "",
+            ]
+        )
 
         if n.confidence_explanation:
             ce = n.confidence_explanation
             if ce.why_low:
-                lines.extend([
-                    f"### Why Confidence is {n.confidence_level.value}",
-                    f"",
-                    ce.why_low,
-                    f"",
-                ])
-            lines.extend([
-                f"### Supporting Evidence",
-                f"",
-                ce.supporting_evidence_summary,
-                f"",
-                f"### Contradicting Evidence",
-                f"",
-                ce.contradicting_evidence_summary,
-                f"",
-                f"### Reflection Findings",
-                f"",
-                ce.reflection_findings_summary,
-                f"",
-            ])
+                lines.extend(
+                    [
+                        f"### Why Confidence is {n.confidence_level.value}",
+                        "",
+                        ce.why_low,
+                        "",
+                    ]
+                )
+            lines.extend(
+                [
+                    "### Supporting Evidence",
+                    "",
+                    ce.supporting_evidence_summary,
+                    "",
+                    "### Contradicting Evidence",
+                    "",
+                    ce.contradicting_evidence_summary,
+                    "",
+                    "### Reflection Findings",
+                    "",
+                    ce.reflection_findings_summary,
+                    "",
+                ]
+            )
             if ce.hypothesis_verdict_breakdown:
                 vb = ce.hypothesis_verdict_breakdown
-                lines.extend([
-                    f"### Verdict Breakdown",
-                    f"",
-                    f"| Verdict    | Count |",
-                    f"|------------|-------|",
-                    f"| Confirmed  | {vb.get('confirmed', 0)} |",
-                    f"| Refuted    | {vb.get('refuted', 0)} |",
-                    f"| Uncertain  | {vb.get('uncertain', 0)} |",
-                    f"| **Total**  | **{vb.get('total', 0)}** |",
-                    f"",
-                ])
+                lines.extend(
+                    [
+                        "### Verdict Breakdown",
+                        "",
+                        "| Verdict    | Count |",
+                        "|------------|-------|",
+                        f"| Confirmed  | {vb.get('confirmed', 0)} |",
+                        f"| Refuted    | {vb.get('refuted', 0)} |",
+                        f"| Uncertain  | {vb.get('uncertain', 0)} |",
+                        f"| **Total**  | **{vb.get('total', 0)}** |",
+                        "",
+                    ]
+                )
         else:
             lines.append("_No detailed confidence breakdown available._")
             lines.append("")
 
     @staticmethod
     def _add_footer(lines: list[str], n: MacroNarrative) -> None:
-        lines.extend([
-            f"---",
-            f"",
-            f"*Report generated by Macro Research Agent (Beta) on "
-            f"{n.generated_at.strftime('%Y-%m-%d %H:%M UTC')}*",
-            f"",
-            f"*Disclaimer: This is an automated research product. "
-            f"All content is rule-based and does not constitute investment advice.*",
-        ])
+        lines.extend(
+            [
+                "---",
+                "",
+                f"*Report generated by Macro Research Agent (Beta) on "
+                f"{n.generated_at.strftime('%Y-%m-%d %H:%M UTC')}*",
+                "",
+                "*Disclaimer: This is an automated research product. "
+                "All content is rule-based and does not constitute investment advice.*",
+            ]
+        )
 
 
 # ── Visual Helpers ──────────────────────────────────────────────────────────

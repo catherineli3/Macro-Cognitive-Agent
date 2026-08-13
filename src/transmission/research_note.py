@@ -10,10 +10,12 @@ the agent produces:
 from __future__ import annotations
 
 from src.schemas.transmission_v3_1 import (
-    BreakpointDiagnosis, FindingConfidence, ResearchNote,
+    BreakpointDiagnosis,
+    FindingConfidence,
+    ResearchNote,
 )
-from src.transmission.transmission_graph import TransmissionGraph
 from src.shared.logging import get_logger
+from src.transmission.transmission_graph import TransmissionGraph
 
 logger = get_logger(__name__)
 
@@ -28,8 +30,9 @@ def _action_to_recommendation(action, seg_desc: str, ctx: str) -> str:
         "demote_mechanism": f"Downgrade this mechanism for {seg_desc}{ctx_str}.",
         "add_condition": f"Add validity condition for {seg_desc}{ctx_str}.",
     }
-    return mapping.get(action.value if hasattr(action, 'value') else str(action),
-                        f"Monitor {seg_desc}{ctx_str}.")
+    return mapping.get(
+        action.value if hasattr(action, "value") else str(action), f"Monitor {seg_desc}{ctx_str}."
+    )
 
 
 class ResearchNoteGenerator:
@@ -38,8 +41,7 @@ class ResearchNoteGenerator:
     def __init__(self, graph: TransmissionGraph) -> None:
         self._graph = graph
 
-    def generate(self, diagnosis: BreakpointDiagnosis,
-                 context_key: str = "") -> ResearchNote:
+    def generate(self, diagnosis: BreakpointDiagnosis, context_key: str = "") -> ResearchNote:
         if diagnosis.all_segments_healthy:
             return self._healthy_note(diagnosis, context_key)
         elif diagnosis.breakpoint_found:
@@ -47,16 +49,16 @@ class ResearchNoteGenerator:
         else:
             return self._unknown_note(diagnosis, context_key)
 
-    def generate_batch(self, diagnoses: list[BreakpointDiagnosis],
-                       context_key: str = "") -> list[ResearchNote]:
+    def generate_batch(
+        self, diagnoses: list[BreakpointDiagnosis], context_key: str = ""
+    ) -> list[ResearchNote]:
         return [self.generate(d, context_key) for d in diagnoses]
 
     # ── Internal ─────────────────────────────────────────────────────────
 
     def _healthy_note(self, d: BreakpointDiagnosis, ctx: str) -> ResearchNote:
         segs = d.segment_diagnoses
-        avg_rel = (sum(sd.evidence.get("reliability", 0.5) for sd in segs) /
-                   max(len(segs), 1))
+        avg_rel = sum(sd.evidence.get("reliability", 0.5) for sd in segs) / max(len(segs), 1)
         seg_desc = " → ".join(sd.segment_id for sd in segs)
         total_obs = sum(sd.evidence.get("observations", 0) for sd in segs)
 
@@ -68,8 +70,10 @@ class ResearchNoteGenerator:
                 f"This reinforces confidence under current conditions."
             ),
             key_numbers={"avg_reliability": round(avg_rel, 3), "segment_count": len(segs)},
-            source_diagnosis_id=d.diagnosis_id, context_key=ctx,
-            segment_id=seg_desc, evidence_count=total_obs,
+            source_diagnosis_id=d.diagnosis_id,
+            context_key=ctx,
+            segment_id=seg_desc,
+            evidence_count=total_obs,
             confidence=self._confidence(total_obs),
             recommendation="REINFORCE all segments.",
         )
@@ -82,7 +86,7 @@ class ResearchNoteGenerator:
 
         edge = self._graph.get_edge(bp_sd.source, bp_sd.target, bp_sd.mechanism)
         baseline = edge.reliability_default if edge else 0.50
-        ctx_rel = (edge.reliability_by_context.get(ctx, baseline) if edge and ctx else baseline)
+        ctx_rel = edge.reliability_by_context.get(ctx, baseline) if edge and ctx else baseline
         obs = edge.observation_count if edge else 0
         strength = edge.edge_strength if edge else 0.0
         failures = edge.named_failure_modes if edge else []
@@ -102,14 +106,18 @@ class ResearchNoteGenerator:
             parts.append(f"Known failure triggers: {', '.join(failures[:3])}.")
 
         if edge and obs > 0:
-            parts.append(f"Evidence: {obs} observations, {edge.break_count} breaks "
-                         f"({edge.break_rate:.0%} break rate).")
+            parts.append(
+                f"Evidence: {obs} observations, {edge.break_count} breaks "
+                f"({edge.break_rate:.0%} break rate)."
+            )
 
         rec = _action_to_recommendation(d.suggested_action, seg_desc, ctx)
 
         return ResearchNote(
-            headline=(f"Break: {seg_desc} — {baseline:.0%} baseline "
-                      f"→ {ctx_rel:.0%} in {ctx or 'current'}"),
+            headline=(
+                f"Break: {seg_desc} — {baseline:.0%} baseline "
+                f"→ {ctx_rel:.0%} in {ctx or 'current'}"
+            ),
             narrative=" ".join(parts),
             key_numbers={
                 "baseline_reliability": round(baseline, 3),
@@ -121,10 +129,15 @@ class ResearchNoteGenerator:
                 "latency_days": edge.latency_days if edge else 0,
                 "failure_modes": failures[:5],
             },
-            source_diagnosis_id=d.diagnosis_id, context_key=ctx,
-            segment_id=seg_desc, source=bp_sd.source, target=bp_sd.target,
-            mechanism=bp_sd.mechanism, evidence_count=obs,
-            confidence=self._confidence(obs), recommendation=rec,
+            source_diagnosis_id=d.diagnosis_id,
+            context_key=ctx,
+            segment_id=seg_desc,
+            source=bp_sd.source,
+            target=bp_sd.target,
+            mechanism=bp_sd.mechanism,
+            evidence_count=obs,
+            confidence=self._confidence(obs),
+            recommendation=rec,
         )
 
     def _unknown_note(self, d: BreakpointDiagnosis, ctx: str) -> ResearchNote:
@@ -132,14 +145,18 @@ class ResearchNoteGenerator:
             headline=f"Inconclusive: {d.transmission_channel}",
             narrative=(f"Cannot determine breakpoint. {d.root_cause_description or ''}"),
             key_numbers={},
-            source_diagnosis_id=d.diagnosis_id, context_key=ctx,
+            source_diagnosis_id=d.diagnosis_id,
+            context_key=ctx,
             confidence=FindingConfidence.PRELIMINARY,
             recommendation="Gather more data before concluding.",
         )
 
     @staticmethod
     def _confidence(obs: int) -> FindingConfidence:
-        if obs >= 100: return FindingConfidence.ROBUST
-        if obs >= 50: return FindingConfidence.ESTABLISHED
-        if obs >= 20: return FindingConfidence.OBSERVED
+        if obs >= 100:
+            return FindingConfidence.ROBUST
+        if obs >= 50:
+            return FindingConfidence.ESTABLISHED
+        if obs >= 20:
+            return FindingConfidence.OBSERVED
         return FindingConfidence.PRELIMINARY

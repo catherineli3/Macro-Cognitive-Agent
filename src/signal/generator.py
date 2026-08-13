@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """Signal Generator — Converts macro data into structured signals.
 
 Implements SignalGeneratorInterface.
@@ -18,7 +16,9 @@ Non-responsibilities:
     - Does NOT handle multi-indicator rules (that's RuleEngine's job)
 """
 
-from datetime import datetime, timezone
+from __future__ import annotations
+
+from datetime import UTC, datetime
 
 from src.domain.macro_indicator import MacroIndicator
 from src.interfaces.signal_generator import SignalGeneratorInterface
@@ -99,7 +99,7 @@ class ThresholdSignalGenerator(SignalGeneratorInterface):
                     input_value=current.value,
                     condition=ev.condition_str,
                     interpretation=ev.rule.interpretation,
-                    evaluated_at=datetime.now(timezone.utc),
+                    evaluated_at=datetime.now(UTC),
                 )
                 for ev in triggered
             ]
@@ -115,7 +115,7 @@ class ThresholdSignalGenerator(SignalGeneratorInterface):
                 direction=direction,
                 strength=strength,
                 confidence=confidence,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 evidence=evidence_items,
                 data_timestamp=current.timestamp,
             )
@@ -182,9 +182,7 @@ class ThresholdSignalGenerator(SignalGeneratorInterface):
             "moderate": 2,
             "weak": 1,
         }
-        max_s = max(
-            strength_order.get(e.rule.signal_strength, 1) for e in triggered
-        )
+        max_s = max(strength_order.get(e.rule.signal_strength, 1) for e in triggered)
 
         for name, val in strength_order.items():
             if val == max_s:

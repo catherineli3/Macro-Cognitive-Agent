@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """HypothesisHandler — Executor adapter for the Reasoning Engine.
 
 Capability: "macro.hypothesis"
@@ -13,7 +11,9 @@ Design:
       by Reflection (Sprint 7), Report (future), and Memory (Sprint 8).
 """
 
-from datetime import datetime, timezone
+from __future__ import annotations
+
+from datetime import UTC, datetime
 
 from src.domain.execution import TaskResultStatus
 from src.hypothesis.engine import HypothesisEngine
@@ -64,7 +64,7 @@ class HypothesisHandler(TaskHandlerInterface):
             TaskResult with HypothesisSet in artifacts["hypotheses"].
             Returns FAILED if signals are missing or reasoning fails.
         """
-        started = datetime.now(timezone.utc)
+        started = datetime.now(UTC)
 
         try:
             # Read signals from context (produced by a prior Signal Engine task)
@@ -80,7 +80,7 @@ class HypothesisHandler(TaskHandlerInterface):
                 signals = self._parse_signals(signals_raw)
                 result_set = self._engine.reason(signals)
 
-            completed = datetime.now(timezone.utc)
+            completed = datetime.now(UTC)
 
             return TaskResult(
                 task_id=task.id,
@@ -92,7 +92,7 @@ class HypothesisHandler(TaskHandlerInterface):
             )
 
         except Exception as exc:
-            completed = datetime.now(timezone.utc)
+            completed = datetime.now(UTC)
             logger.error(
                 "hypothesis_handler_failed task=%s error=%s",
                 task.name,

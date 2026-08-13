@@ -35,7 +35,9 @@ class LLMClient:
         api_key: str | None = None,
         model: str | None = None,
     ) -> None:
-        self.base_url = (base_url or os.getenv("KIMI_BASE_URL", "https://api.moonshot.cn/v1")).rstrip("/")
+        self.base_url = (
+            base_url or os.getenv("KIMI_BASE_URL", "https://api.moonshot.cn/v1")
+        ).rstrip("/")
         self.api_key = api_key or os.getenv("KIMI_API_KEY", "")
         self.model = model or os.getenv("KIMI_MODEL", "moonshot-v1-8k")
         self._timeout = 10.0
@@ -85,13 +87,13 @@ class LLMClient:
         extract_key: str | None = None,
     ) -> str:
         """Execute HTTP request with retry logic."""
-        last_error: Exception | None = None
+        _last_error: Exception | None = None
 
         for attempt in range(self._max_retries + 1):
             try:
                 return self._do_request(method, url, json, extract_key)
             except LLMRetryableError as exc:
-                last_error = exc
+                _last_error = exc
                 if attempt < self._max_retries:
                     time.sleep(0.5 * (attempt + 1))
                     continue

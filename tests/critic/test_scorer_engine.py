@@ -1,16 +1,13 @@
 """Tests for BeliefScorer — confidence adjustment."""
 
-from typing import Optional
-
 import pytest
 
+from src.critic.engine import ReflectionEngine
+from src.critic.scorer import BeliefScorer
 from src.domain.reflection import FindingSeverity, ReflectionVerdict
 from src.domain.signal import SignalDirection
 from src.schemas.hypothesis import HypothesisEvidence, HypothesisSchema, HypothesisSet
 from src.schemas.reflection import ReflectionFinding, ReflectionReport
-from src.critic.scorer import BeliefScorer
-from src.critic.engine import ReflectionEngine
-
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -31,8 +28,8 @@ def _make_evidence(
 def _make_hypothesis(
     hypothesis_id: str = "h1",
     statement: str = "Test",
-    supporting: Optional[list] = None,
-    contradicting: Optional[list] = None,
+    supporting: list | None = None,
+    contradicting: list | None = None,
     confidence: float = 0.8,
 ) -> HypothesisSchema:
     return HypothesisSchema(

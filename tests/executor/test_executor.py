@@ -1,5 +1,4 @@
 """Tests for ExecutionContext and AgentExecutor."""
-from typing import Optional
 
 import pytest
 
@@ -18,7 +17,6 @@ from src.schemas.execution import TaskResult
 from src.schemas.planning import ExecutionPlan, Task
 from src.shared.exceptions import ExecutionError
 
-
 # ── Helpers ────────────────────────────────────────────────────────────────
 
 
@@ -26,7 +24,7 @@ def _make_task(
     task_id: str,
     name: str = "",
     task_type: TaskType = TaskType.RETRIEVE,
-    deps: Optional[list] = None,
+    deps: list | None = None,
     capability: str = "simple.retrieve",
 ) -> Task:
     return Task(
@@ -185,6 +183,7 @@ class TestAgentExecutor:
         executor = AgentExecutor()
         plan = _make_plan()
         from src.shared.exceptions import PlanValidationError
+
         with pytest.raises(PlanValidationError):
             await executor.execute(plan)
 
@@ -209,9 +208,23 @@ class TestAgentExecutor:
             .register(SimpleGenerateHandler())
         )
         t1 = _make_task("retrieve", "Get Data", TaskType.RETRIEVE, capability="simple.retrieve")
-        t2 = _make_task("process", "Clean Data", TaskType.PROCESS, deps=["retrieve"], capability="simple.process")
-        t3 = _make_task("analyze", "Analyze", TaskType.ANALYZE, deps=["process"], capability="simple.analyze")
-        t4 = _make_task("generate", "Generate", TaskType.GENERATE, deps=["analyze"], capability="simple.generate")
+        t2 = _make_task(
+            "process",
+            "Clean Data",
+            TaskType.PROCESS,
+            deps=["retrieve"],
+            capability="simple.process",
+        )
+        t3 = _make_task(
+            "analyze", "Analyze", TaskType.ANALYZE, deps=["process"], capability="simple.analyze"
+        )
+        t4 = _make_task(
+            "generate",
+            "Generate",
+            TaskType.GENERATE,
+            deps=["analyze"],
+            capability="simple.generate",
+        )
         plan = _make_plan(t1, t2, t3, t4)
 
         result = await executor.execute(plan)
@@ -225,9 +238,7 @@ class TestAgentExecutor:
     @pytest.mark.asyncio
     async def test_execution_order_respects_deps(self):
         executor = (
-            AgentExecutor()
-            .register(SimpleRetrieveHandler())
-            .register(SimpleProcessHandler())
+            AgentExecutor().register(SimpleRetrieveHandler()).register(SimpleProcessHandler())
         )
         t1 = _make_task("t1", capability="simple.retrieve")
         t2 = _make_task("t2", deps=["t1"], capability="simple.process")

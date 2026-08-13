@@ -7,14 +7,12 @@ Key design:
     - This is the Agent's accumulated experience
 """
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
 
 from src.schemas.diagnosis import ErrorCategory
 from src.schemas.learning_unit import LearningActionType
-
 
 # ── Learning Log Entry ───────────────────────────────────────────────────────
 
@@ -46,7 +44,7 @@ class LearningLogEntry(BaseModel):
     error_magnitude: float = Field(default=0.0, ge=0.0)
 
     # ── Diagnosis ────────────────────────────────────────────────────────
-    error_category: Optional[str] = Field(
+    error_category: str | None = Field(
         default=None,
         description=f"One of: {[e.value for e in ErrorCategory]}",
     )
@@ -54,7 +52,7 @@ class LearningLogEntry(BaseModel):
     diagnosis_rationale: str = Field(default="", max_length=1024)
 
     # ── Learning Action ──────────────────────────────────────────────────
-    learning_action: Optional[str] = Field(
+    learning_action: str | None = Field(
         default=None,
         description=f"One of: {[a.value for a in LearningActionType]}",
     )
@@ -62,18 +60,18 @@ class LearningLogEntry(BaseModel):
         default_factory=list,
         description="Which of the 5 LU attributes were modified",
     )
-    belief_id: Optional[str] = Field(default=None, max_length=64)
-    belief_version_created: Optional[int] = Field(default=None, ge=1)
+    belief_id: str | None = Field(default=None, max_length=64)
+    belief_version_created: int | None = Field(default=None, ge=1)
 
     # ── Metadata ─────────────────────────────────────────────────────────
     predicted_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
     evaluated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
     logged_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     @property

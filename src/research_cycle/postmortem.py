@@ -11,8 +11,8 @@ This is the retrospective step that closes the research loop.
 
 from __future__ import annotations
 
-from src.schemas.research_thesis import ResearchThesis, ThesisOutcome
 from src.research_cycle.research_memory import PostmortemReport
+from src.schemas.research_thesis import ResearchThesis, ThesisOutcome
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -68,8 +68,11 @@ class Postmortem:
             report = self._analyze_success(thesis, outcome, diagnosis_notes, report_id)
         else:
             report = self._analyze_failure(
-                thesis, outcome, diagnosis_notes,
-                transmission_findings or [], report_id,
+                thesis,
+                outcome,
+                diagnosis_notes,
+                transmission_findings or [],
+                report_id,
             )
 
         self._reports.append(report)
@@ -117,8 +120,11 @@ class Postmortem:
             learning = "Framework partially correct; review links that did not verify."
 
         suggested = [
-            "Increase confidence in framework used" if transmission_ok
-            else "Review specific transmission links",
+            (
+                "Increase confidence in framework used"
+                if transmission_ok
+                else "Review specific transmission links"
+            ),
             "Record this regime as a successful framework application",
         ]
 
@@ -193,7 +199,7 @@ class Postmortem:
         """Classify the type of thesis failure."""
         notes = (diagnosis_notes or "").lower()
         triggered = (outcome.invalidation_triggered or "").lower()
-        belief = thesis.core_belief.lower()
+        _belief = thesis.core_belief.lower()
 
         # Check diagnosis notes for known patterns
         # NOTE: "credit" must be checked BEFORE "transmission" because
@@ -290,7 +296,7 @@ class Postmortem:
             ],
         }
         actions = common_actions.get(failure_category, ["Review thesis construction"])
-        actions.append(f"Record in research memory for future cycle comparison")
+        actions.append("Record in research memory for future cycle comparison")
         return actions
 
     @staticmethod

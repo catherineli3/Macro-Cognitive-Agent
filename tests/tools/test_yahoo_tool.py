@@ -5,10 +5,9 @@ Tests the full path: yfinance raw data → MacroDataSchema (canonical).
 Unit tests mock the yfinance call. Integration tests (marked 'network')
 test against live Yahoo Finance — skipped by default in offline environments.
 """
-import asyncio
+
 import socket
-from datetime import datetime, timezone
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
@@ -16,7 +15,6 @@ import pytest
 from src.domain.tool import ToolResultStatus
 from src.schemas.macro_data import MacroDataSchema
 from src.tools.yahoo_tool import YahooMacroTool
-
 
 # ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -67,6 +65,7 @@ class TestYahooMacroToolInterface:
 
     def test_is_base_tool(self):
         from src.tools.base import BaseTool
+
         tool = YahooMacroTool()
         assert isinstance(tool, BaseTool)
 

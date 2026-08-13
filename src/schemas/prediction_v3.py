@@ -7,20 +7,17 @@ Key design:
     - PredictionBatch groups predictions by hypothesis and channel
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
-
-from src.schemas.signal import SignalDirection
-
 
 # ── Prediction Tier ──────────────────────────────────────────────────────────
 
 
 class PredictionTier(str, Enum):
     """Priority tier of a prediction within a hypothesis's prediction set."""
+
     PRIMARY = "primary"
     SECONDARY = "secondary"
     TERTIARY = "tertiary"
@@ -28,6 +25,7 @@ class PredictionTier(str, Enum):
 
 class PredictionStatus(str, Enum):
     """Lifecycle status of a prediction."""
+
     PENDING = "pending"
     EVALUATED = "evaluated"
     EXPIRED = "expired"
@@ -43,6 +41,7 @@ class TransmissionChannel(BaseModel):
     Example:
         dimension="liquidity", asset="equity" → channel_id="liquidity→equity"
     """
+
     dimension: str = Field(..., min_length=1, max_length=40)
     asset_class: str = Field(..., min_length=1, max_length=40)
     channel_id: str = ""  # Auto-computed: "{dimension}→{asset_class}"
@@ -65,7 +64,7 @@ class Prediction(BaseModel):
     prediction_id: str = Field(default="", description="Unique prediction identifier")
     run_id: str = Field(..., min_length=1, max_length=64)
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     # ── WHAT we predict ──────────────────────────────────────────────────
@@ -76,14 +75,16 @@ class Prediction(BaseModel):
     # Multi-Prediction (DDR-V3-009)
     prediction_tier: PredictionTier = Field(default=PredictionTier.PRIMARY)
     transmission_channel: str = Field(
-        ..., min_length=1, max_length=80,
+        ...,
+        min_length=1,
+        max_length=80,
         description="e.g. 'liquidity→equity', 'liquidity→fx'",
     )
 
-    target_range: Optional[tuple[float, float]] = Field(default=None)
+    target_range: tuple[float, float] | None = Field(default=None)
     horizon: str = Field(default="5d", description="e.g. 1d, 3d, 5d, 10d, 21d")
     evaluate_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     # ── WHY — all non-nullable (DDR-V3-001) ──────────────────────────────
@@ -137,7 +138,7 @@ class PredictionBatch(BaseModel):
     run_id: str = Field(..., min_length=1, max_length=64)
     predictions: list[Prediction] = Field(default_factory=list)
     generated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     # ── Grouped views (DDR-V3-009) ───────────────────────────────────────
@@ -201,7 +202,7 @@ class V3PredictionOutcome(BaseModel):
     error_magnitude: float
     actual_value: float
     evaluated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
     transmission_channel: str = ""
 

@@ -30,12 +30,11 @@ Key components:
 
 from __future__ import annotations
 
-import json
 import hashlib
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional, Any
+from datetime import UTC, datetime
+from typing import Any
 
 from src.shared.logging import get_logger
 
@@ -54,8 +53,9 @@ class ReasoningCase:
     This is the atomic unit of the Reasoning Library.
     Each case captures what went wrong and how to fix it.
     """
+
     case_id: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     # Context
     date: str = ""  # When the original reasoning was done
     regime_label: str = ""
@@ -70,7 +70,9 @@ class ReasoningCase:
     old_evidence_used: list[str] = field(default_factory=list)
 
     # What happened (the mistake)
-    mistake_type: str = ""  # wrong_direction / wrong_magnitude / wrong_timing / missed_risk / false_analogy
+    mistake_type: str = (
+        ""  # wrong_direction / wrong_magnitude / wrong_timing / missed_risk / false_analogy
+    )
     mistake_description: str = ""
     actual_outcome: str = ""
     actual_direction: str = ""
@@ -113,6 +115,7 @@ class ReasoningCase:
 @dataclass
 class RetrievalResult:
     """Result of retrieving relevant past cases."""
+
     query_context: str = ""  # What we're trying to reason about now
     matched_cases: list[ReasoningCase] = field(default_factory=list)
     similarity_scores: list[float] = field(default_factory=list)
@@ -128,6 +131,7 @@ class ReasoningTemplate:
     This is the output of reasoning evolution — a template that incorporates
     past mistakes into structured guidance for future reasoning.
     """
+
     template_id: str = ""
     template_name: str = ""
     version: int = 1
@@ -162,6 +166,7 @@ class ReasoningTemplate:
 @dataclass
 class EvolutionReport:
     """Report produced by reasoning evolution cycle."""
+
     cases_created: int = 0
     templates_updated: int = 0
     library_size: int = 0
@@ -186,53 +191,129 @@ class EvolutionReport:
 
 _MISTAKE_PATTERNS = {
     "wrong_direction": {
-        "keywords": ["direction", "bullish", "bearish", "went up", "fell", "rallied",
-                     "sold off", "opposite", "reversed", "wrong way"],
+        "keywords": [
+            "direction",
+            "bullish",
+            "bearish",
+            "went up",
+            "fell",
+            "rallied",
+            "sold off",
+            "opposite",
+            "reversed",
+            "wrong way",
+        ],
         "severity": "major",
     },
     "wrong_magnitude": {
-        "keywords": ["magnitude", "underestimated", "overestimated", "much more",
-                     "much less", "smaller than", "larger than", "size", "scale"],
+        "keywords": [
+            "magnitude",
+            "underestimated",
+            "overestimated",
+            "much more",
+            "much less",
+            "smaller than",
+            "larger than",
+            "size",
+            "scale",
+        ],
         "severity": "moderate",
     },
     "wrong_timing": {
-        "keywords": ["too early", "too late", "timing", "already moved",
-                     "before", "after", "patience", "premature"],
+        "keywords": [
+            "too early",
+            "too late",
+            "timing",
+            "already moved",
+            "before",
+            "after",
+            "patience",
+            "premature",
+        ],
         "severity": "moderate",
     },
     "missed_risk": {
-        "keywords": ["didn't consider", "overlooked", "missed", "black swan",
-                     "tail event", "unexpected", "shock", "surprise", "did not foresee"],
+        "keywords": [
+            "didn't consider",
+            "overlooked",
+            "missed",
+            "black swan",
+            "tail event",
+            "unexpected",
+            "shock",
+            "surprise",
+            "did not foresee",
+        ],
         "severity": "major",
     },
     "false_analogy": {
-        "keywords": ["similar to", "like last time", "history repeats", "analog",
-                     "just like", "same as", "historical pattern", "this time is different"],
+        "keywords": [
+            "similar to",
+            "like last time",
+            "history repeats",
+            "analog",
+            "just like",
+            "same as",
+            "historical pattern",
+            "this time is different",
+        ],
         "severity": "major",
     },
     "overconfidence": {
-        "keywords": ["too confident", "overconfident", "high conviction wrong",
-                     "too certain", "dismissive of", "ignored"],
+        "keywords": [
+            "too confident",
+            "overconfident",
+            "high conviction wrong",
+            "too certain",
+            "dismissive of",
+            "ignored",
+        ],
         "severity": "major",
     },
     "missing_evidence": {
-        "keywords": ["didn't have", "missing data", "incomplete information",
-                     "unaware of", "new data", "revised", "data was wrong"],
+        "keywords": [
+            "didn't have",
+            "missing data",
+            "incomplete information",
+            "unaware of",
+            "new data",
+            "revised",
+            "data was wrong",
+        ],
         "severity": "moderate",
     },
     "recency_bias": {
-        "keywords": ["extrapolate", "recent trend", "momentum", "trend following",
-                     "assumed continuation", "extrapolating"],
+        "keywords": [
+            "extrapolate",
+            "recent trend",
+            "momentum",
+            "trend following",
+            "assumed continuation",
+            "extrapolating",
+        ],
         "severity": "minor",
     },
     "narrative_capture": {
-        "keywords": ["believed the story", "narrative", "convinced by", "sold on",
-                     "bought into", "consensus narrative", "popular view"],
+        "keywords": [
+            "believed the story",
+            "narrative",
+            "convinced by",
+            "sold on",
+            "bought into",
+            "consensus narrative",
+            "popular view",
+        ],
         "severity": "moderate",
     },
     "correlation_breakdown": {
-        "keywords": ["correlation broke", "decoupled", "diverged", "no longer correlated",
-                     "relationship changed", "regime change"],
+        "keywords": [
+            "correlation broke",
+            "decoupled",
+            "diverged",
+            "no longer correlated",
+            "relationship changed",
+            "regime change",
+        ],
         "severity": "major",
     },
 }
@@ -313,9 +394,7 @@ class CaseRetriever:
             retrieval_context=retrieval_context,
         )
 
-    def _extract_keywords(
-        self, query: str, domains: list[str], regime: str
-    ) -> list[str]:
+    def _extract_keywords(self, query: str, domains: list[str], regime: str) -> list[str]:
         """Extract meaningful keywords from query context."""
         keywords = []
 
@@ -328,22 +407,46 @@ class CaseRetriever:
 
         # Extract meaningful words (4+ chars, skip stopwords)
         stopwords = {
-            "this", "that", "the", "and", "for", "with", "from", "have",
-            "been", "what", "when", "where", "which", "would", "could",
-            "should", "about", "their", "there", "being", "also", "will",
-            "into", "over", "more", "some", "such", "than", "then", "they",
+            "this",
+            "that",
+            "the",
+            "and",
+            "for",
+            "with",
+            "from",
+            "have",
+            "been",
+            "what",
+            "when",
+            "where",
+            "which",
+            "would",
+            "could",
+            "should",
+            "about",
+            "their",
+            "there",
+            "being",
+            "also",
+            "will",
+            "into",
+            "over",
+            "more",
+            "some",
+            "such",
+            "than",
+            "then",
+            "they",
         }
 
-        words = re.findall(r'\b[a-z]{4,}\b', query.lower())
+        words = re.findall(r"\b[a-z]{4,}\b", query.lower())
         for w in words:
             if w not in stopwords and w not in keywords:
                 keywords.append(w)
 
         return keywords[:30]  # Cap at 30 keywords
 
-    def _calculate_similarity(
-        self, query_keywords: list[str], case: ReasoningCase
-    ) -> float:
+    def _calculate_similarity(self, query_keywords: list[str], case: ReasoningCase) -> float:
         """Calculate similarity between query and a reasoning case."""
         if not query_keywords:
             return 0.0
@@ -358,7 +461,7 @@ class CaseRetriever:
             case_keywords.add(case.pattern_label.lower())
 
         # Tokenize old reasoning for additional keywords
-        extra_keywords = re.findall(r'\b[a-z]{4,}\b', case.old_reasoning.lower()[:500])
+        extra_keywords = re.findall(r"\b[a-z]{4,}\b", case.old_reasoning.lower()[:500])
         case_keywords.update(extra_keywords[:15])
 
         # Intersection / Union (Jaccard-like)
@@ -404,8 +507,12 @@ class CaseRetriever:
             parts.append(f"  Lessons: {'; '.join(case.lessons_learned[:3])}")
             parts.append("")
 
-        parts.append("CRITICAL: Do NOT repeat these mistakes. Check your reasoning against these patterns.")
-        parts.append("For each claim you make, ask: 'Am I making the same mistake as Case X above?'")
+        parts.append(
+            "CRITICAL: Do NOT repeat these mistakes. Check your reasoning against these patterns."
+        )
+        parts.append(
+            "For each claim you make, ask: 'Am I making the same mistake as Case X above?'"
+        )
 
         return "\n".join(parts)
 
@@ -442,11 +549,14 @@ class ReasoningLibrary:
         # Evict oldest if over capacity
         if len(self.cases) > self.max_cases:
             self.cases.sort(key=lambda c: (c.reuse_count, c.timestamp))
-            self.cases = self.cases[-self.max_cases:]
+            self.cases = self.cases[-self.max_cases :]
 
         logger.info(
             "ReasoningLibrary: added case %s [%s/%s], library size=%d",
-            case.case_id, case.mistake_type, case.pattern_label, len(self.cases),
+            case.case_id,
+            case.mistake_type,
+            case.pattern_label,
+            len(self.cases),
         )
 
     def retrieve_relevant(
@@ -458,7 +568,11 @@ class ReasoningLibrary:
     ) -> RetrievalResult:
         """Retrieve cases relevant to current reasoning context."""
         result = self._retriever.retrieve(
-            self, query_context, domains, regime, max_cases,
+            self,
+            query_context,
+            domains,
+            regime,
+            max_cases,
         )
 
         # Increment reuse count
@@ -467,7 +581,9 @@ class ReasoningLibrary:
 
         logger.info(
             "Retrieval: %d relevant cases found (query domains=%s, regime=%s)",
-            result.total_matches, domains, regime,
+            result.total_matches,
+            domains,
+            regime,
         )
 
         return result
@@ -513,7 +629,9 @@ class ReasoningLibrary:
             "mistake_types": mistake_counts,
             "domains": domain_counts,
             "avg_severity": avg_sev,
-            "most_common_mistake": max(mistake_counts, key=mistake_counts.get) if mistake_counts else "N/A",
+            "most_common_mistake": (
+                max(mistake_counts, key=mistake_counts.get) if mistake_counts else "N/A"
+            ),
         }
 
     def to_dict(self) -> dict:
@@ -526,8 +644,7 @@ class ReasoningLibrary:
     def _generate_case_id(self, case: ReasoningCase) -> str:
         """Generate a unique case ID."""
         content = (
-            f"{case.date}_{case.mistake_type}_{case.regime_label}_"
-            f"{'|'.join(case.domains)}"
+            f"{case.date}_{case.mistake_type}_{case.regime_label}_" f"{'|'.join(case.domains)}"
         )
         hash_id = hashlib.md5(content.encode()).hexdigest()[:8]
         return f"RC-{case.date}-{hash_id}"
@@ -550,7 +667,7 @@ class ReasoningEvolution:
     — that get injected into future reasoning contexts.
     """
 
-    def __init__(self, library: Optional[ReasoningLibrary] = None):
+    def __init__(self, library: ReasoningLibrary | None = None):
         self.library = library or ReasoningLibrary()
         self._case_counter: dict[str, int] = {}
 
@@ -559,10 +676,10 @@ class ReasoningEvolution:
         prediction: dict,
         outcome: dict,
         old_memo_text: str = "",
-        old_hypotheses: Optional[list] = None,
-        old_evidence: Optional[dict] = None,
+        old_hypotheses: list | None = None,
+        old_evidence: dict | None = None,
         regime_label: str = "",
-        domains: Optional[list[str]] = None,
+        domains: list[str] | None = None,
     ) -> ReasoningCase:
         """Create a reasoning case from a prediction-outcome pair.
 
@@ -582,7 +699,9 @@ class ReasoningEvolution:
             ReasoningCase ready to add to the Reasoning Library.
         """
         date = prediction.get("timestamp", prediction.get("date", ""))[:10]
-        pred_direction = prediction.get("predicted_direction", prediction.get("direction", "unknown"))
+        pred_direction = prediction.get(
+            "predicted_direction", prediction.get("direction", "unknown")
+        )
         pred_confidence = float(prediction.get("confidence", 0.5))
         pred_statement = prediction.get("prediction_statement", prediction.get("statement", ""))
         was_correct = outcome.get("was_correct", False)
@@ -607,8 +726,11 @@ class ReasoningEvolution:
 
         # 1. Classify the mistake
         mistake_type, severity = self._classify_mistake(
-            pred_direction, actual_direction, pred_confidence,
-            old_memo_text, outcome,
+            pred_direction,
+            actual_direction,
+            pred_confidence,
+            old_memo_text,
+            outcome,
         )
 
         # 2. Extract old reasoning components
@@ -618,22 +740,34 @@ class ReasoningEvolution:
 
         # 3. Analyze what went wrong
         mistake_description = self._describe_mistake(
-            mistake_type, pred_statement, pred_direction, actual_direction, actual_pct,
+            mistake_type,
+            pred_statement,
+            pred_direction,
+            actual_direction,
+            actual_pct,
         )
 
         # 4. Determine root cause
         root_cause = self._determine_root_cause(
-            mistake_type, old_assumptions, old_evidence_used, old_memo_text,
+            mistake_type,
+            old_assumptions,
+            old_evidence_used,
+            old_memo_text,
         )
 
         # 5. Generate new/corrected reasoning
         new_reasoning = self._generate_corrected_reasoning(
-            mistake_type, pred_statement, old_memo_text, actual_direction, actual_pct,
+            mistake_type,
+            pred_statement,
+            old_memo_text,
+            actual_direction,
+            actual_pct,
         )
 
         # 6. What should have been done
         what_should_have_done = self._generate_should_have_done(
-            mistake_type, old_memo_text,
+            mistake_type,
+            old_memo_text,
         )
 
         # 7. Missing elements
@@ -643,17 +777,27 @@ class ReasoningEvolution:
 
         # 8. Generate lessons
         lessons = self._generate_lessons(
-            mistake_type, pred_direction, actual_direction,
-            root_cause, old_assumptions,
+            mistake_type,
+            pred_direction,
+            actual_direction,
+            root_cause,
+            old_assumptions,
         )
 
         # 9. Pattern label and embedding keywords
         pattern_label = self._generate_pattern_label(
-            mistake_type, regime_label, pred_direction, actual_direction,
+            mistake_type,
+            regime_label,
+            pred_direction,
+            actual_direction,
         )
         embedding_keywords = self._generate_embedding_keywords(
-            mistake_type, regime_label, domains or [],
-            old_memo_text, pred_statement, root_cause,
+            mistake_type,
+            regime_label,
+            domains or [],
+            old_memo_text,
+            pred_statement,
+            root_cause,
         )
 
         # 10. Surprise factor
@@ -691,10 +835,12 @@ class ReasoningEvolution:
         self.library.add_case(case)
 
         logger.info(
-            "ReasoningEvolution: created case %s [%s] — "
-            "pred was %s, actual %s, root cause: %s",
-            case.case_id, case.pattern_label,
-            pred_direction, actual_direction, root_cause[:60],
+            "ReasoningEvolution: created case %s [%s] — " "pred was %s, actual %s, root cause: %s",
+            case.case_id,
+            case.pattern_label,
+            pred_direction,
+            actual_direction,
+            root_cause[:60],
         )
 
         return case
@@ -726,8 +872,9 @@ class ReasoningEvolution:
         if pipeline_result:
             memo = getattr(pipeline_result, "memo_text", "")
             regime = (
-                pipeline_result.step_llm_synthesis.structured_json.get("_prompt_routing", {})
-                .get("regime_label", "")
+                pipeline_result.step_llm_synthesis.structured_json.get("_prompt_routing", {}).get(
+                    "regime_label", ""
+                )
                 if hasattr(pipeline_result, "step_llm_synthesis")
                 else ""
             )
@@ -790,24 +937,38 @@ class ReasoningEvolution:
 
         # Check for narrative capture
         narrative_capture_signals = [
-            "consensus", "everyone", "widely expected",
-            "obvious", "no-brainer", "sure thing",
+            "consensus",
+            "everyone",
+            "widely expected",
+            "obvious",
+            "no-brainer",
+            "sure thing",
         ]
         if any(s in text_lower for s in narrative_capture_signals):
             return "narrative_capture", "moderate"
 
         # Check for false analogy
         analogy_signals = [
-            "similar to", "like the", "just like", "parallels",
-            "reminds me of", "history shows", "last time",
+            "similar to",
+            "like the",
+            "just like",
+            "parallels",
+            "reminds me of",
+            "history shows",
+            "last time",
         ]
         if any(s in text_lower for s in analogy_signals):
             return "false_analogy", "major"
 
         # Check for recency bias
         recency_signals = [
-            "momentum", "trend", "continuing", "extrapolating",
-            "will keep", "maintain", "sustained",
+            "momentum",
+            "trend",
+            "continuing",
+            "extrapolating",
+            "will keep",
+            "maintain",
+            "sustained",
         ]
         if any(s in text_lower for s in recency_signals) and confidence > 0.6:
             return "recency_bias", "minor"
@@ -817,16 +978,14 @@ class ReasoningEvolution:
 
     # ── Evidence & Assumption Extraction ───────────────────────────────
 
-    def _extract_assumptions(
-        self, memo_text: str, hypotheses: Optional[list]
-    ) -> list[str]:
+    def _extract_assumptions(self, memo_text: str, hypotheses: list | None) -> list[str]:
         """Extract assumptions from memo and hypotheses."""
         assumptions = []
 
         # From memo text
         assumption_markers = [
-            r'(?:assuming|assume[sd]?\s+that|if\s+we\s+assume|based\s+on\s+the\s+assumption)\s+(.{10,120}?)(?:[.;]|$)',
-            r'(?:premise\s+(?:is|that)|our\s+base\s+case\s+(?:is|assumes))\s+(.{10,120}?)(?:[.;]|$)',
+            r"(?:assuming|assume[sd]?\s+that|if\s+we\s+assume|based\s+on\s+the\s+assumption)\s+(.{10,120}?)(?:[.;]|$)",
+            r"(?:premise\s+(?:is|that)|our\s+base\s+case\s+(?:is|assumes))\s+(.{10,120}?)(?:[.;]|$)",
         ]
         for pattern in assumption_markers:
             matches = re.findall(pattern, memo_text[:3000])
@@ -843,7 +1002,7 @@ class ReasoningEvolution:
 
         return assumptions
 
-    def _extract_evidence(self, evidence: Optional[dict]) -> list[str]:
+    def _extract_evidence(self, evidence: dict | None) -> list[str]:
         """Extract evidence items from structured evidence."""
         items = []
         if not evidence:
@@ -865,12 +1024,13 @@ class ReasoningEvolution:
         risks = []
 
         risk_section = re.search(
-            r'(?:key\s+risks?|risk\s+factors?|risks?\s+and\s+challenges?)(?:[\s:]*)(.{10,800}?)(?:\n\n|\n#|$)',
-            memo_text[:4000], re.IGNORECASE | re.DOTALL,
+            r"(?:key\s+risks?|risk\s+factors?|risks?\s+and\s+challenges?)(?:[\s:]*)(.{10,800}?)(?:\n\n|\n#|$)",
+            memo_text[:4000],
+            re.IGNORECASE | re.DOTALL,
         )
 
         if risk_section:
-            risk_items = re.findall(r'[\d.]+[\s)]*([^.\n]{20,150})', risk_section.group(1))
+            risk_items = re.findall(r"[\d.]+[\s)]*([^.\n]{20,150})", risk_section.group(1))
             risks.extend(r.strip() for r in risk_items)
 
         return risks
@@ -900,32 +1060,32 @@ class ReasoningEvolution:
                 f"Market moved {actual_pct:+.1f}%, far beyond expected range."
             ),
             "wrong_timing": (
-                f"Direction was eventually correct but timing was off. "
-                f"The trade thesis was premature — entered too early."
+                "Direction was eventually correct but timing was off. "
+                "The trade thesis was premature — entered too early."
             ),
             "missed_risk": (
-                f"Did not foresee a key risk that materialized. "
-                f"The reasoning framework was incomplete — missing critical tail events."
+                "Did not foresee a key risk that materialized. "
+                "The reasoning framework was incomplete — missing critical tail events."
             ),
             "false_analogy": (
-                f"Drew an inappropriate historical parallel. "
-                f"The analogy didn't capture structural differences in this regime."
+                "Drew an inappropriate historical parallel. "
+                "The analogy didn't capture structural differences in this regime."
             ),
             "narrative_capture": (
-                f"Captured by consensus narrative. "
-                f"Reasoning was influenced by the dominant macro story rather than evidence."
+                "Captured by consensus narrative. "
+                "Reasoning was influenced by the dominant macro story rather than evidence."
             ),
             "recency_bias": (
-                f"Over-extrapolated recent trends. "
-                f"Assumed momentum would continue without considering mean reversion."
+                "Over-extrapolated recent trends. "
+                "Assumed momentum would continue without considering mean reversion."
             ),
             "missing_evidence": (
-                f"Key evidence was missing from the analysis. "
-                f"Would have changed the conclusion if considered."
+                "Key evidence was missing from the analysis. "
+                "Would have changed the conclusion if considered."
             ),
             "correlation_breakdown": (
-                f"Relied on a correlation that broke. "
-                f"The assumed relationship between assets decoupled in this regime."
+                "Relied on a correlation that broke. "
+                "The assumed relationship between assets decoupled in this regime."
             ),
         }
         return descriptions.get(mistake_type, f"Reasoning error: {mistake_type}")
@@ -991,7 +1151,9 @@ class ReasoningEvolution:
                 "Check: is this correlation stable in the current regime?"
             ),
         }
-        return root_causes.get(mistake_type, f"Undiagnosed root cause for {mistake_type}. Further analysis needed.")
+        return root_causes.get(
+            mistake_type, f"Undiagnosed root cause for {mistake_type}. Further analysis needed."
+        )
 
     # ── Corrected Reasoning Generation ─────────────────────────────────
 
@@ -1025,45 +1187,42 @@ class ReasoningEvolution:
                 f"positioning effects, and reflexivity that can amplify moves."
             ),
             "wrong_timing": (
-                f"Direction call was directionally correct but poorly timed. "
-                f"Revised reasoning must separate 'what will happen' from 'when it will happen.' "
-                f"Add catalyst analysis and timeline sensitivity."
+                "Direction call was directionally correct but poorly timed. "
+                "Revised reasoning must separate 'what will happen' from 'when it will happen.' "
+                "Add catalyst analysis and timeline sensitivity."
             ),
             "missed_risk": (
-                f"A critical risk went unidentified. Revised reasoning must include "
-                f"a structured risk framework with second-order and tail-risk analysis. "
-                f"Ask: 'What haven't I considered? What's the most dangerous assumption here?'"
+                "A critical risk went unidentified. Revised reasoning must include "
+                "a structured risk framework with second-order and tail-risk analysis. "
+                "Ask: 'What haven't I considered? What's the most dangerous assumption here?'"
             ),
             "false_analogy": (
-                f"Historical analogy was misleading. Revised reasoning must verify: "
-                f"(1) Are the structural conditions truly comparable? "
-                f"(2) What's different this time? "
-                f"(3) Is the causal mechanism the same or just the surface pattern?"
+                "Historical analogy was misleading. Revised reasoning must verify: "
+                "(1) Are the structural conditions truly comparable? "
+                "(2) What's different this time? "
+                "(3) Is the causal mechanism the same or just the surface pattern?"
             ),
             "narrative_capture": (
-                f"Consensus narrative was wrong. Revised reasoning must independently "
-                f"verify claims against evidence rather than against other narratives. "
-                f"Deliberately seek disconfirming evidence for every claim."
+                "Consensus narrative was wrong. Revised reasoning must independently "
+                "verify claims against evidence rather than against other narratives. "
+                "Deliberately seek disconfirming evidence for every claim."
             ),
             "recency_bias": (
-                f"Extrapolation of recent trends was incorrect. Revised reasoning must "
-                f"incorporate mean-reversion analysis: is this trend sustainable or "
-                f"is it borrowing from future returns? Consider counter-cyclical forces."
+                "Extrapolation of recent trends was incorrect. Revised reasoning must "
+                "incorporate mean-reversion analysis: is this trend sustainable or "
+                "is it borrowing from future returns? Consider counter-cyclical forces."
             ),
             "correlation_breakdown": (
-                f"Assumed correlation broke in this regime. Revised reasoning must "
-                f"regime-condition all relationships: 'Is this correlation stable in "
-                f"the current regime? What would break it?'"
+                "Assumed correlation broke in this regime. Revised reasoning must "
+                "regime-condition all relationships: 'Is this correlation stable in "
+                "the current regime? What would break it?'"
             ),
         }
         return corrections.get(
-            mistake_type,
-            f"Revised reasoning: original thesis was flawed. Requires re-analysis."
+            mistake_type, "Revised reasoning: original thesis was flawed. Requires re-analysis."
         )
 
-    def _generate_should_have_done(
-        self, mistake_type: str, memo_text: str
-    ) -> str:
+    def _generate_should_have_done(self, mistake_type: str, memo_text: str) -> str:
         """Generate 'what the reasoning should have been' based on mistake type."""
         should_have = {
             "wrong_direction": (
@@ -1114,15 +1273,12 @@ class ReasoningEvolution:
             ),
         }
         return should_have.get(
-            mistake_type,
-            "Should have: Taken a more rigorous approach to the reasoning process."
+            mistake_type, "Should have: Taken a more rigorous approach to the reasoning process."
         )
 
     # ── Missing Elements ───────────────────────────────────────────────
 
-    def _find_missing_evidence(
-        self, evidence: Optional[dict], mistake_type: str
-    ) -> list[str]:
+    def _find_missing_evidence(self, evidence: dict | None, mistake_type: str) -> list[str]:
         """Identify evidence that was missing from the analysis."""
         missing = []
 
@@ -1154,23 +1310,17 @@ class ReasoningEvolution:
 
         return missing
 
-    def _generate_counterarguments(
-        self, memo_text: str, mistake_type: str
-    ) -> list[str]:
+    def _generate_counterarguments(self, memo_text: str, mistake_type: str) -> list[str]:
         """Generate counterarguments that should have been considered."""
         counterarguments = []
 
         if mistake_type == "wrong_direction":
-            counterarguments.append(
-                "The causal relationship could be inverted in this regime"
-            )
+            counterarguments.append("The causal relationship could be inverted in this regime")
             counterarguments.append(
                 "A stronger countervailing force may dominate the identified driver"
             )
         elif mistake_type == "overconfidence":
-            counterarguments.append(
-                "Historical accuracy of similar high-conviction calls is low"
-            )
+            counterarguments.append("Historical accuracy of similar high-conviction calls is low")
         elif mistake_type == "narrative_capture":
             counterarguments.append(
                 "The narrative is consensus — if everyone believes it, it's likely "
@@ -1300,24 +1450,48 @@ class ReasoningEvolution:
             keywords.update(regime.replace("_", " ").split())
 
         # Extract key terms from memo text
-        memo_words = re.findall(r'\b[a-z]{4,}\b', memo_text[:2000].lower())
+        memo_words = re.findall(r"\b[a-z]{4,}\b", memo_text[:2000].lower())
         # Filter stopwords
         stopwords = {
-            "this", "that", "the", "and", "for", "with", "from", "have",
-            "been", "what", "when", "where", "which", "would", "could",
-            "should", "about", "their", "there", "being", "also", "will",
-            "into", "over", "more", "some", "such", "than", "then", "they",
+            "this",
+            "that",
+            "the",
+            "and",
+            "for",
+            "with",
+            "from",
+            "have",
+            "been",
+            "what",
+            "when",
+            "where",
+            "which",
+            "would",
+            "could",
+            "should",
+            "about",
+            "their",
+            "there",
+            "being",
+            "also",
+            "will",
+            "into",
+            "over",
+            "more",
+            "some",
+            "such",
+            "than",
+            "then",
+            "they",
         }
         keywords.update(w for w in memo_words if w not in stopwords)
 
         # Root cause keywords
-        keywords.update(re.findall(r'\b[a-z]{4,}\b', root_cause.lower()))
+        keywords.update(re.findall(r"\b[a-z]{4,}\b", root_cause.lower()))
 
         return list(keywords)[:30]
 
-    def _calculate_surprise(
-        self, confidence: float, was_correct: bool, actual_pct: float
-    ) -> float:
+    def _calculate_surprise(self, confidence: float, was_correct: bool, actual_pct: float) -> float:
         """Calculate how surprising the outcome was."""
         # High confidence + wrong = very surprising
         if not was_correct:
@@ -1372,9 +1546,7 @@ class ReasoningTemplateEvolver:
         by_domain = self._group_by_domain(library.cases)
         for domain, cases in by_domain.items():
             if len(cases) >= 3:
-                template = self._build_template_from_cases(
-                    domain, cases, f"Domain: {domain}"
-                )
+                template = self._build_template_from_cases(domain, cases, f"Domain: {domain}")
                 templates.append(template)
 
         return templates
@@ -1400,7 +1572,9 @@ class ReasoningTemplateEvolver:
         # Collect common mistakes
         common_mistakes = []
         for c in cases:
-            mistake_summary = f"[{c.mistake_type}] In {c.regime_label}: {c.mistake_description[:150]}"
+            mistake_summary = (
+                f"[{c.mistake_type}] In {c.regime_label}: {c.mistake_description[:150]}"
+            )
             if mistake_summary not in common_mistakes:
                 common_mistakes.append(mistake_summary)
 
@@ -1437,7 +1611,7 @@ class ReasoningTemplateEvolver:
             template_id=f"TPL-{hashlib.md5(key.encode()).hexdigest()[:8]}",
             template_name=template_name,
             version=len(cases),
-            last_updated=datetime.now(timezone.utc).isoformat(),
+            last_updated=datetime.now(UTC).isoformat(),
             based_on_cases=len(cases),
             domain=key,
             regime_patterns=list(set(c.regime_label for c in cases if c.regime_label)),
@@ -1446,15 +1620,14 @@ class ReasoningTemplateEvolver:
             must_consider_counterarguments=list(counterarguments)[:5],
             critical_assumptions_to_test=[
                 f"From Case [{c.case_id}]: {a[:100]}"
-                for c in cases for a in c.old_key_assumptions[:2]
+                for c in cases
+                for a in c.old_key_assumptions[:2]
             ][:5],
             red_flags=list(red_flags)[:8],
             reasoning_guidance=guidance,
         )
 
-    def _build_guidance(
-        self, key: str, cases: list[ReasoningCase], lessons: list[str]
-    ) -> str:
+    def _build_guidance(self, key: str, cases: list[ReasoningCase], lessons: list[str]) -> str:
         """Build reasoning guidance from cases and lessons."""
         unique_lessons = list(dict.fromkeys(lessons))[:5]
 
@@ -1512,14 +1685,16 @@ class ReasoningEvolutionEngine:
         prediction: dict,
         outcome: dict,
         memo_text: str = "",
-        pipeline_result: Optional[Any] = None,
+        pipeline_result: Any | None = None,
         regime_label: str = "",
-        domains: Optional[list[str]] = None,
+        domains: list[str] | None = None,
     ) -> ReasoningCase:
         """Process a single prediction outcome into a reasoning case."""
         if pipeline_result:
             return self.evolution.evolve_from_pipeline(
-                pipeline_result, outcome, prediction,
+                pipeline_result,
+                outcome,
+                prediction,
             )
         return self.evolution.evolve(
             prediction=prediction,
@@ -1533,7 +1708,7 @@ class ReasoningEvolutionEngine:
         self,
         predictions: list[dict],
         outcomes: list[dict],
-        pipeline_results: Optional[list] = None,
+        pipeline_results: list | None = None,
     ) -> EvolutionReport:
         """Process a batch of outcomes into reasoning cases and templates."""
         cases_created = 0
@@ -1548,7 +1723,9 @@ class ReasoningEvolutionEngine:
             if not outcome:
                 continue
 
-            pipeline_result = pipeline_results[i] if pipeline_results and i < len(pipeline_results) else None
+            pipeline_result = (
+                pipeline_results[i] if pipeline_results and i < len(pipeline_results) else None
+            )
             case = self.process_outcome(
                 prediction=pred,
                 outcome=outcome,
@@ -1565,11 +1742,7 @@ class ReasoningEvolutionEngine:
         patterns = self._discover_patterns(new_cases)
 
         # Top lessons
-        top_lessons = list(dict.fromkeys(
-            lesson
-            for c in new_cases
-            for lesson in c.lessons_learned
-        ))
+        top_lessons = list(dict.fromkeys(lesson for c in new_cases for lesson in c.lessons_learned))
 
         return EvolutionReport(
             cases_created=cases_created,
@@ -1612,19 +1785,14 @@ class ReasoningEvolutionEngine:
                 # Check for regime concentration
                 regimes = [c.regime_label for c in mt_cases if c.regime_label]
                 if len(set(regimes)) <= 2 and len(regimes) >= 2:
-                    patterns.append(
-                        f"Pattern '{mt}' clusters in regimes: {list(set(regimes))}"
-                    )
+                    patterns.append(f"Pattern '{mt}' clusters in regimes: {list(set(regimes))}")
 
                 # Check for domain concentration
                 all_domains = [d for c in mt_cases for d in c.domains]
                 domain_counts = {}
                 for d in all_domains:
                     domain_counts[d] = domain_counts.get(d, 0) + 1
-                concentrated_domains = [
-                    d for d, count in domain_counts.items()
-                    if count >= 2
-                ]
+                concentrated_domains = [d for d, count in domain_counts.items() if count >= 2]
                 if concentrated_domains:
                     patterns.append(
                         f"Pattern '{mt}' is concentrated in domains: {concentrated_domains}"

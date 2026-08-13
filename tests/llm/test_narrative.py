@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
-from src.llm.client import LLMClient, LLMError
+from src.llm.client import LLMError
 from src.llm.narrative import LLMNarrativeData, LLMNarrativeEngine
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -171,12 +170,14 @@ class TestDegradationPaths:
     def test_success_path(self) -> None:
         """Normal LLM response -> degraded=False, raw response captured."""
         engine = LLMNarrativeEngine()
-        payload = json.dumps({
-            "executive_summary": "sum",
-            "scenario_analysis": "sca",
-            "action_recommendations": ["x"],
-            "belief_revision": "blf",
-        })
+        payload = json.dumps(
+            {
+                "executive_summary": "sum",
+                "scenario_analysis": "sca",
+                "action_recommendations": ["x"],
+                "belief_revision": "blf",
+            }
+        )
         engine._call_llm = MagicMock(return_value=payload)
 
         result = engine.generate(_mock_narrative())

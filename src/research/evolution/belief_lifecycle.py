@@ -12,10 +12,9 @@ Architecture: Belief weight is DERIVED from Principles, not independent.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Optional
 
-from src.schemas.research import ResearchPrinciple, PrincipleStrength, PrincipleStatus
-from src.schemas.belief_version import AdaptiveBelief, BeliefVersion
+from src.schemas.belief_version import AdaptiveBelief
+from src.schemas.research import PrincipleStatus, ResearchPrinciple
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -23,12 +22,13 @@ logger = get_logger(__name__)
 
 class BeliefLifecycleStage(str, Enum):
     """Six-stage belief lifecycle (Architecture Q3)."""
-    CREATED = "created"          # New belief, low data
-    VALIDATED = "validated"      # Entry threshold met
-    MATURE = "mature"            # Stable, high accuracy
-    WEAKENING = "weakening"      # Accuracy declining
-    RETIRED = "retired"          # Failure threshold met
-    ARCHIVED = "archived"        # Historical artifact
+
+    CREATED = "created"  # New belief, low data
+    VALIDATED = "validated"  # Entry threshold met
+    MATURE = "mature"  # Stable, high accuracy
+    WEAKENING = "weakening"  # Accuracy declining
+    RETIRED = "retired"  # Failure threshold met
+    ARCHIVED = "archived"  # Historical artifact
 
 
 class BeliefLifecycleManager:
@@ -84,31 +84,35 @@ class BeliefLifecycleManager:
 
         # Transition logic
         if current == BeliefLifecycleStage.CREATED:
-            if (belief.correct_count >= self.VALIDATION_MIN_CORRECT
-                    and belief.cycle_count >= self.VALIDATION_MIN_OBS):
+            if (
+                belief.correct_count >= self.VALIDATION_MIN_CORRECT
+                and belief.cycle_count >= self.VALIDATION_MIN_OBS
+            ):
                 current = BeliefLifecycleStage.VALIDATED
                 logger.debug("Belief %s: CREATED → VALIDATED", belief_id)
 
         if current == BeliefLifecycleStage.VALIDATED:
-            if (belief.correct_count >= self.MATURITY_MIN_CORRECT
-                    and belief.historical_accuracy >= self.MATURITY_MIN_ACCURACY):
+            if (
+                belief.correct_count >= self.MATURITY_MIN_CORRECT
+                and belief.historical_accuracy >= self.MATURITY_MIN_ACCURACY
+            ):
                 current = BeliefLifecycleStage.MATURE
                 logger.debug("Belief %s: VALIDATED → MATURE", belief_id)
 
-            if (belief.streak < -self.WEAKENING_MAX_FAILURES_IN_WINDOW
-                    and belief.cycle_count >= 10):
+            if belief.streak < -self.WEAKENING_MAX_FAILURES_IN_WINDOW and belief.cycle_count >= 10:
                 current = BeliefLifecycleStage.WEAKENING
                 logger.debug("Belief %s: VALIDATED → WEAKENING", belief_id)
 
         if current == BeliefLifecycleStage.MATURE:
-            if (belief.streak < -self.WEAKENING_MAX_FAILURES_IN_WINDOW
-                    and belief.cycle_count >= 20):
+            if belief.streak < -self.WEAKENING_MAX_FAILURES_IN_WINDOW and belief.cycle_count >= 20:
                 current = BeliefLifecycleStage.WEAKENING
                 logger.debug("Belief %s: MATURE → WEAKENING", belief_id)
 
         if current == BeliefLifecycleStage.WEAKENING:
-            if (belief.streak < -self.RETIREMENT_MAX_FAILURES
-                    and belief.cycle_count >= self.RETIREMENT_MAX_CYCLES_WITHOUT_RECOVERY):
+            if (
+                belief.streak < -self.RETIREMENT_MAX_FAILURES
+                and belief.cycle_count >= self.RETIREMENT_MAX_CYCLES_WITHOUT_RECOVERY
+            ):
                 current = BeliefLifecycleStage.RETIRED
                 belief.status = "deprecated"
                 logger.info("Belief %s: WEAKENING → RETIRED", belief_id)
@@ -117,9 +121,12 @@ class BeliefLifecycleManager:
         self._update_belief_status(belief, current)
         return current
 
-    def derive_weight(self, belief_id: str,
-                       principles: dict[str, ResearchPrinciple],
-                       competition_penalty: float = 1.0) -> float:
+    def derive_weight(
+        self,
+        belief_id: str,
+        principles: dict[str, ResearchPrinciple],
+        competition_penalty: float = 1.0,
+    ) -> float:
         """Derive belief weight from founding principles + recent performance.
 
         Invariant 1: Belief.weight is NOT an independent parameter.
@@ -156,15 +163,20 @@ class BeliefLifecycleManager:
             recent_acc = 0.5
 
         # Combined weight
-        weight = 0.5 * avg_principle_strength + 0.3 * recent_acc + 0.2 * min(1.0, belief.cycle_count / 50)
+        weight = (
+            0.5 * avg_principle_strength
+            + 0.3 * recent_acc
+            + 0.2 * min(1.0, belief.cycle_count / 50)
+        )
 
         # Apply competition penalty
         weight *= competition_penalty
 
         return round(min(1.0, max(0.0, weight)), 4)
 
-    def cascade_principle_retirement(self, principle_id: str,
-                                       principles: dict[str, ResearchPrinciple]) -> list[str]:
+    def cascade_principle_retirement(
+        self, principle_id: str, principles: dict[str, ResearchPrinciple]
+    ) -> list[str]:
         """When a Principle is retired, re-derive all dependent beliefs.
 
         Returns list of affected belief IDs.
@@ -176,9 +188,7 @@ class BeliefLifecycleManager:
             logger.info("Principle %s retired → %d beliefs re-derived", principle_id, len(affected))
         return affected
 
-    def record_prediction_outcome(self, belief_id: str,
-                                    correct: bool,
-                                    cycle: int = 0) -> None:
+    def record_prediction_outcome(self, belief_id: str, correct: bool, cycle: int = 0) -> None:
         """Record a prediction outcome for lifecycle tracking."""
         belief = self._beliefs.get(belief_id)
         if not belief:
@@ -208,8 +218,7 @@ class BeliefLifecycleManager:
         return BeliefLifecycleStage.VALIDATED
 
     @staticmethod
-    def _update_belief_status(belief: AdaptiveBelief,
-                               stage: BeliefLifecycleStage) -> None:
+    def _update_belief_status(belief: AdaptiveBelief, stage: BeliefLifecycleStage) -> None:
         """Update belief weight based on lifecycle stage."""
         stage_weights = {
             BeliefLifecycleStage.CREATED: 0.3,
@@ -227,17 +236,14 @@ class BeliefLifecycleManager:
     def get_mature_beliefs(self) -> list[AdaptiveBelief]:
         """Get all mature (ready for hypothesis generation) beliefs."""
         return [
-            b for b in self._beliefs.values()
-            if self._determine_stage(b) == BeliefLifecycleStage.MATURE
-            and b.status != "deprecated"
+            b
+            for b in self._beliefs.values()
+            if self._determine_stage(b) == BeliefLifecycleStage.MATURE and b.status != "deprecated"
         ]
 
     def get_active_beliefs(self) -> list[AdaptiveBelief]:
         """Get all active beliefs (not retired/archived)."""
-        return [
-            b for b in self._beliefs.values()
-            if b.status != "deprecated"
-        ]
+        return [b for b in self._beliefs.values() if b.status != "deprecated"]
 
     @property
     def total_beliefs(self) -> int:

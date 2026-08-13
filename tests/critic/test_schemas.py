@@ -1,11 +1,11 @@
 """Tests for Sprint 7 — Reflection domain enums and schemas."""
 
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, timezone
 
-from src.domain.reflection import ReflectionVerdict, FindingSeverity
+from src.domain.reflection import FindingSeverity, ReflectionVerdict
 from src.schemas.reflection import ReflectionFinding, ReflectionReport, ReflectionSet
-
 
 # ── Domain Enums ────────────────────────────────────────────────────────────
 
@@ -112,7 +112,7 @@ class TestReflectionReport:
         assert r.evidence_consistency == "consistent"
 
     def test_full_construction(self):
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         r = ReflectionReport(
             hypothesis_id="h1",
             statement="Liquidity is tightening.",

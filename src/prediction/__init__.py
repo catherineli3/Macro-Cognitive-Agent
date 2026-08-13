@@ -33,9 +33,19 @@ logger = get_logger(__name__)
 # Each hypothesis dimension maps to 1-3 asset-level predictions
 PREDICTION_MAPPING: dict[str, list[dict]] = {
     "liquidity": [
-        {"indicator": "NASDAQ", "direction": None, "tier": "primary", "channel": "liquidity→equity"},
+        {
+            "indicator": "NASDAQ",
+            "direction": None,
+            "tier": "primary",
+            "channel": "liquidity→equity",
+        },
         {"indicator": "USD", "direction": None, "tier": "secondary", "channel": "liquidity→fx"},
-        {"indicator": "Gold", "direction": None, "tier": "tertiary", "channel": "liquidity→commodity"},
+        {
+            "indicator": "Gold",
+            "direction": None,
+            "tier": "tertiary",
+            "channel": "liquidity→commodity",
+        },
     ],
     "credit": [
         {"indicator": "HYG", "direction": None, "tier": "primary", "channel": "credit→credit"},
@@ -47,13 +57,33 @@ PREDICTION_MAPPING: dict[str, list[dict]] = {
         {"indicator": "DXY", "direction": None, "tier": "tertiary", "channel": "growth→fx"},
     ],
     "risk_appetite": [
-        {"indicator": "SPX", "direction": None, "tier": "primary", "channel": "risk_appetite→equity"},
-        {"indicator": "VIX", "direction": None, "tier": "secondary", "channel": "risk_appetite→volatility"},
-        {"indicator": "HYG", "direction": None, "tier": "tertiary", "channel": "risk_appetite→credit"},
+        {
+            "indicator": "SPX",
+            "direction": None,
+            "tier": "primary",
+            "channel": "risk_appetite→equity",
+        },
+        {
+            "indicator": "VIX",
+            "direction": None,
+            "tier": "secondary",
+            "channel": "risk_appetite→volatility",
+        },
+        {
+            "indicator": "HYG",
+            "direction": None,
+            "tier": "tertiary",
+            "channel": "risk_appetite→credit",
+        },
     ],
     "inflation": [
         {"indicator": "TIPS", "direction": None, "tier": "primary", "channel": "inflation→bonds"},
-        {"indicator": "Gold", "direction": None, "tier": "secondary", "channel": "inflation→commodity"},
+        {
+            "indicator": "Gold",
+            "direction": None,
+            "tier": "secondary",
+            "channel": "inflation→commodity",
+        },
         {"indicator": "US10Y", "direction": None, "tier": "tertiary", "channel": "inflation→rates"},
     ],
 }
@@ -93,13 +123,19 @@ class PredictionMapper:
     def get_mappings(self, dimension: str) -> list[dict]:
         """Get prediction mappings for a dimension."""
         dim_key = dimension.lower().replace(" ", "_")
-        return PREDICTION_MAPPING.get(dim_key, [
-            {"indicator": dimension, "direction": None, "tier": "primary", "channel": f"{dim_key}→general"},
-        ])
+        return PREDICTION_MAPPING.get(
+            dim_key,
+            [
+                {
+                    "indicator": dimension,
+                    "direction": None,
+                    "tier": "primary",
+                    "channel": f"{dim_key}→general",
+                },
+            ],
+        )
 
-    def get_direction(
-        self, dimension: str, hypothesis_direction: str, indicator: str
-    ) -> str:
+    def get_direction(self, dimension: str, hypothesis_direction: str, indicator: str) -> str:
         """Get the predicted direction for a specific indicator."""
         dim_key = dimension.lower().replace(" ", "_")
         h_dir = hypothesis_direction.lower()
@@ -130,7 +166,7 @@ class MultiPredictionEngine:
         self,
         hypothesis_set: HypothesisSet,
         run_id: str,
-        hypothesis_library_entries: Optional[list[HypothesisLibraryEntry]] = None,
+        hypothesis_library_entries: list[HypothesisLibraryEntry] | None = None,
     ) -> PredictionBatch:
         """Generate multi-asset predictions for all hypotheses.
 
@@ -164,7 +200,9 @@ class MultiPredictionEngine:
 
                 # Determine direction
                 direction = self._mapper.get_direction(
-                    dim, hypothesis.direction.value, indicator,
+                    dim,
+                    hypothesis.direction.value,
+                    indicator,
                 )
 
                 # Determine horizon
@@ -187,9 +225,7 @@ class MultiPredictionEngine:
                     transmission_channel=channel,
                     horizon=horizon,
                     source_hypothesis_id=hypothesis.hypothesis_id,
-                    source_evidence_ids=[
-                        e.signal_id for e in hypothesis.supporting_evidence
-                    ],
+                    source_evidence_ids=[e.signal_id for e in hypothesis.supporting_evidence],
                     confidence=round(tier_confidence, 4),
                     rationale=f"Derived from: {hypothesis.statement[:200]}",
                     status=PredictionStatus.PENDING,
@@ -205,7 +241,10 @@ class MultiPredictionEngine:
 
         logger.info(
             "predictions_generated batch=%s total=%d hypotheses=%d channels=%d",
-            batch_id, required_predictions, batch.hypothesis_count, batch.channel_count,
+            batch_id,
+            required_predictions,
+            batch.hypothesis_count,
+            batch.channel_count,
         )
         return batch
 
@@ -228,11 +267,13 @@ class MultiPredictionEngine:
 
         async def _generate():
             return await self.generate_predictions(
-                hypothesis_set, run_id, hypothesis_library_entries,
+                hypothesis_set,
+                run_id,
+                hypothesis_library_entries,
             )
 
         # Windows: monkey-patch signal.set_wakeup_fd to avoid crash
-        if not hasattr(_signal_mod, 'set_wakeup_fd'):
+        if not hasattr(_signal_mod, "set_wakeup_fd"):
             _signal_mod.set_wakeup_fd = lambda fd: None  # type: ignore
 
         loop = asyncio.new_event_loop()
@@ -256,9 +297,7 @@ class MultiPredictionEngine:
         """Get all predictions for a specific transmission channel."""
         return batch.by_channel.get(channel, [])
 
-    def get_channel_accuracy(
-        self, predictions: list[Prediction]
-    ) -> dict[str, float]:
+    def get_channel_accuracy(self, predictions: list[Prediction]) -> dict[str, float]:
         """Compute accuracy per transmission channel from a set of evaluated predictions."""
         channel_correct: dict[str, int] = {}
         channel_total: dict[str, int] = {}

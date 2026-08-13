@@ -15,10 +15,8 @@ For each hypothesis, generates:
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Optional
 
-from src.research.reasoning.schemas import Hypothesis, CounterArgument
+from src.research.reasoning.schemas import CounterArgument, Hypothesis
 
 
 class CounterArgumentGenerator:
@@ -71,14 +69,14 @@ class CounterArgumentGenerator:
         ],
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def generate(
         self,
         hypotheses: list[Hypothesis],
         evidence_clusters: list = None,
-        regime_result: Optional[dict] = None,
+        regime_result: dict | None = None,
     ) -> tuple[list[CounterArgument], list[str], dict[str, str]]:
         """Generate counter-arguments for ALL hypotheses AND eliminate weak ones.
 
@@ -116,8 +114,9 @@ class CounterArgumentGenerator:
             # Compute a composite weakness score (lower = weaker)
             weakest_hyp = min(
                 hypotheses,
-                key=lambda h: (h.confidence * max(h.evidence_weight, 0.01) * 0.5
-                               + (1 - h.confidence) * 0.5),
+                key=lambda h: (
+                    h.confidence * max(h.evidence_weight, 0.01) * 0.5 + (1 - h.confidence) * 0.5
+                ),
             )
             eliminated_ids.append(weakest_hyp.hypothesis_id)
             elimination_reasons[weakest_hyp.hypothesis_id] = (
@@ -129,16 +128,14 @@ class CounterArgumentGenerator:
         return counters, eliminated_ids, elimination_reasons
 
     def generate_for_hypothesis(
-        self, hypothesis: Hypothesis, regime_result: Optional[dict] = None
+        self, hypothesis: Hypothesis, regime_result: dict | None = None
     ) -> CounterArgument:
         """Generate a counter-argument for a single hypothesis."""
         return self._counter_for_hypothesis(hypothesis, regime_result)
 
     # ── Internal ──
 
-    def _counter_for_hypothesis(
-        self, hyp: Hypothesis, regime: Optional[dict]
-    ) -> CounterArgument:
+    def _counter_for_hypothesis(self, hyp: Hypothesis, regime: dict | None) -> CounterArgument:
         c_id = f"COUNTER_{str(uuid.uuid4())[:8]}"
 
         # Get domain-specific counter questions
@@ -162,20 +159,24 @@ class CounterArgumentGenerator:
         # Build the counter argument
         counter_evidence = []
         for item in hyp.contradicting_evidence[:3]:
-            counter_evidence.append({
-                "description": item.get("description", "Contradicting signal"),
-                "source": item.get("source", "evidence_cluster"),
-                "strength": item.get("strength", 0.5),
-            })
+            counter_evidence.append(
+                {
+                    "description": item.get("description", "Contradicting signal"),
+                    "source": item.get("source", "evidence_cluster"),
+                    "strength": item.get("strength", 0.5),
+                }
+            )
 
         # If no contradicting evidence in hypothesis, generate from framework
         if not counter_evidence:
             for q in questions[:2]:
-                counter_evidence.append({
-                    "description": q,
-                    "source": "counter_framework",
-                    "strength": 0.3,
-                })
+                counter_evidence.append(
+                    {
+                        "description": q,
+                        "source": "counter_framework",
+                        "strength": 0.3,
+                    }
+                )
 
         # Build the argument text
         argument = self._build_argument(hyp, counter_questions, severity)
@@ -215,11 +216,17 @@ class CounterArgumentGenerator:
         for i, q in enumerate(questions[:2]):
             parts.append(f"{i + 1}. {q}")
         if severity == "fatal":
-            parts.append("This counter-argument, if realized, would fundamentally invalidate the hypothesis.")
+            parts.append(
+                "This counter-argument, if realized, would fundamentally invalidate the hypothesis."
+            )
         elif severity == "major":
-            parts.append("These questions represent material risks to the hypothesis, though not fatal ones.")
+            parts.append(
+                "These questions represent material risks to the hypothesis, though not fatal ones."
+            )
         else:
-            parts.append("These are minor concerns that should be monitored but do not threaten the core thesis.")
+            parts.append(
+                "These are minor concerns that should be monitored but do not threaten the core thesis."
+            )
         return "\n\n".join(parts)
 
     def _why_wrong(self, hyp, questions):
@@ -245,7 +252,10 @@ class CounterArgumentGenerator:
             "capital_flows": "Flow-following is the most consensus strategy — consensus has a poor track record at turning points.",
             "macro_regime": "Historical analogs are imperfect guides — structural differences always exist.",
         }
-        return misses.get(hyp.domain, f"The consensus view on {hyp.domain} may overlook structural changes that invalidate the base case.")
+        return misses.get(
+            hyp.domain,
+            f"The consensus view on {hyp.domain} may overlook structural changes that invalidate the base case.",
+        )
 
     def _extract_triggers(self, hyp, questions):
         """Extract or generate trigger conditions."""
@@ -255,7 +265,9 @@ class CounterArgumentGenerator:
             triggers.append(fc.get("condition", ""))
         # If not enough, add generic ones
         while len(triggers) < 2:
-            triggers.append(f"If data on {hyp.domain} reverses, the counter-case becomes the base case")
+            triggers.append(
+                f"If data on {hyp.domain} reverses, the counter-case becomes the base case"
+            )
         return triggers[:3]
 
     def _find_precedent(self, hyp):
@@ -269,4 +281,6 @@ class CounterArgumentGenerator:
             "credit_conditions": "2007: Credit markets showed no stress in Q1 2007, three months before the Bear Stearns hedge fund blowup.",
             "macro_regime": "2018 Q4: Powell pivot from 'a long way from neutral' to 'just below neutral' in 6 weeks — regime shifts can be abrupt.",
         }
-        return precedents.get(hyp.domain, "Historical precedent exists for abrupt reversals in consensus macro views.")
+        return precedents.get(
+            hyp.domain, "Historical precedent exists for abrupt reversals in consensus macro views."
+        )

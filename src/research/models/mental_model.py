@@ -16,9 +16,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
-
+from datetime import UTC, datetime
+from typing import Any
 
 # ── Shared Types ────────────────────────────────────────────────────────────
 
@@ -32,7 +31,7 @@ class EvidenceItem:
     interpretation: str
     weight: float = 1.0  # Relative importance
     source: str = "MacroPipeline"
-    timestamp: Optional[datetime] = None
+    timestamp: datetime | None = None
 
 
 @dataclass
@@ -46,12 +45,12 @@ class ModelInput:
     date: str = ""
     metadata: dict[str, Any] = field(default_factory=dict)
 
-    def get_state_dimension(self, dimension_name: str) -> Optional[dict]:
+    def get_state_dimension(self, dimension_name: str) -> dict | None:
         """Extract a specific dimension from the state vector."""
         sv = self.snapshot.get("state_vector", {})
         return sv.get(dimension_name)
 
-    def get_indicator(self, name: str) -> Optional[dict]:
+    def get_indicator(self, name: str) -> dict | None:
         """Get a specific indicator's features from the snapshot."""
         fs = self.snapshot.get("feature_summary", {})
         indicators = fs.get("indicators", {})
@@ -88,7 +87,7 @@ class ResearchConclusion:
     narrative_seeds: list[str] = field(default_factory=list)
     raw_score: float = 0.5
     direction: str = "neutral"
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def is_confident(self) -> bool:

@@ -14,19 +14,19 @@ what they DON'T know that could change their thesis.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
 
 @dataclass
 class UncertaintyNode:
     """A knowledge gap — something the agent doesn't understand well enough."""
+
     topic: str = ""
     domain: str = ""
     current_confidence: float = 0.5
-    importance: float = 0.0       # How important is knowing this? (0-1)
-    uncertainty: float = 0.0       # How uncertain are we? (0-1)
-    curiosity_score: float = 0.0   # importance * uncertainty — what to research
+    importance: float = 0.0  # How important is knowing this? (0-1)
+    uncertainty: float = 0.0  # How uncertain are we? (0-1)
+    curiosity_score: float = 0.0  # importance * uncertainty — what to research
     related_beliefs: list[str] = field(default_factory=list)
     existing_knowledge: str = ""
     unknown_aspects: list[str] = field(default_factory=list)
@@ -45,14 +45,15 @@ class UncertaintyNode:
 @dataclass
 class ResearchQuestion:
     """A specific, actionable research question generated from uncertainty."""
+
     question_id: str = ""
     question: str = ""
     domain: str = ""
-    priority: float = 0.0          # 0-1, how urgently should this be researched?
-    hypothesis: str = ""            # What do we currently think?
+    priority: float = 0.0  # 0-1, how urgently should this be researched?
+    hypothesis: str = ""  # What do we currently think?
     what_would_change_mind: str = ""  # What evidence would flip our hypothesis?
     data_needed: list[str] = field(default_factory=list)
-    status: str = "open"            # "open", "researching", "answered"
+    status: str = "open"  # "open", "researching", "answered"
     generated_at: str = ""
 
     def to_dict(self) -> dict:
@@ -71,9 +72,10 @@ class ResearchQuestion:
 @dataclass
 class CuriosityReport:
     """Complete curiosity engine output."""
+
     report_id: str = ""
     date: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     # Uncertainty map
     uncertainty_nodes: list[UncertaintyNode] = field(default_factory=list)

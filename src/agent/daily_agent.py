@@ -8,10 +8,12 @@ instead of the old single-pass LLM call.
 """
 
 from __future__ import annotations
+
 import hashlib
 import time
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
+
 from src.agent.schemas import DailyRunReport
 
 
@@ -32,56 +34,69 @@ class DailyMacroAgent:
         if name not in self._engines:
             if name == "regime_classifier":
                 from src.regime import RegimeClassifier
+
                 self._engines[name] = RegimeClassifier()
             elif name == "regime_transition":
                 from src.regime import RegimeTransitionDetector
+
                 self._engines[name] = RegimeTransitionDetector()
             elif name == "historical_similarity":
                 from src.regime import HistoricalSimilarity
+
                 self._engines[name] = HistoricalSimilarity()
             elif name == "capital_rotation":
                 from src.capital_flow import CapitalRotation
+
                 self._engines[name] = CapitalRotation()
             elif name == "reflexivity":
                 from src.research.reflexivity import ReflexivityCycleDetector
+
                 self._engines[name] = ReflexivityCycleDetector()
             elif name == "outcome_collector":
                 from src.learning import OutcomeCollector
+
                 self._engines[name] = OutcomeCollector()
             elif name == "prediction_scorer":
                 from src.learning import PredictionScorer
+
                 self._engines[name] = PredictionScorer()
             elif name == "belief_calibration":
                 from src.learning import BeliefCalibration
+
                 self._engines[name] = BeliefCalibration()
             elif name == "weight_optimizer":
                 from src.learning import ModelWeightOptimizer
+
                 self._engines[name] = ModelWeightOptimizer()
             elif name == "curiosity":
                 from src.curiosity import CuriosityEngine
+
                 self._engines[name] = CuriosityEngine()
             elif name == "reasoning":
                 from src.research.llm_brain import ResearchReasoningAgent
+
                 self._engines[name] = ResearchReasoningAgent(reasoning_mode="rule")
             elif name == "reasoning_pipeline":
                 from src.research.reasoning.reasoning_pipeline import ReasoningPipeline
+
                 self._engines[name] = ReasoningPipeline()
             elif name == "expert_debate":
                 from src.research.expert_debate import ExpertDebate
+
                 self._engines[name] = ExpertDebate(debate_mode="rule")
         return self._engines[name]
 
     def run_daily(
         self,
-        date: Optional[str] = None,
-        market_data: Optional[dict] = None,
-        mental_models: Optional[dict] = None,
-        beliefs: Optional[list[Any]] = None,
-        narratives: Optional[list[Any]] = None,
+        date: str | None = None,
+        market_data: dict | None = None,
+        mental_models: dict | None = None,
+        beliefs: list[Any] | None = None,
+        narratives: list[Any] | None = None,
     ) -> DailyRunReport:
         """Execute the complete 10-step daily research pipeline."""
         if date is None:
-            date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            date = datetime.now(UTC).strftime("%Y-%m-%d")
 
         run_id = hashlib.md5(f"daily_{date}".encode()).hexdigest()[:12]
         t0 = time.time()
@@ -101,16 +116,21 @@ class DailyMacroAgent:
         try:
             rc = self._get_engine("regime_classifier")
             regime = rc.classify(mental_models=mental, market_data=market)
-            trans = self._get_engine("regime_transition").estimate_transition(regime, market_data=market)
+            trans = self._get_engine("regime_transition").estimate_transition(
+                regime, market_data=market
+            )
             analogs = self._get_engine("historical_similarity").find_analogs(regime, top_n=3)
             report.regime_classification = regime
             report.regime_transition = trans
             report.historical_analogs = analogs
             executed.append("regime")
             top_a = analogs[0].period_name if analogs else "none"
-            log(f"  Regime: {regime.regime_label} (conf={regime.confidence:.0%}), top analog: {top_a}")
+            log(
+                f"  Regime: {regime.regime_label} (conf={regime.confidence:.0%}), top analog: {top_a}"
+            )
         except Exception as e:
-            failed.append("regime"); errors.append(f"Regime: {e}")
+            failed.append("regime")
+            errors.append(f"Regime: {e}")
 
         # Step 2: Reflexivity Detection
         log("Step 2/9: Detecting reflexivity...")
@@ -128,23 +148,35 @@ class DailyMacroAgent:
             cycles_n = len(getattr(refl, "active_cycles", [])) if refl else 0
             log(f"  Reflexivity: {cycles_n} active cycle(s)")
         except Exception as e:
-            failed.append("reflexivity"); errors.append(f"Reflexivity: {e}")
+            failed.append("reflexivity")
+            errors.append(f"Reflexivity: {e}")
 
         # Step 3: Capital Flow
         log("Step 3/9: Analyzing capital flows...")
         try:
-            refl_data = {"active_cycles": getattr(report.reflexivity_report, "active_cycles", [])} if report.reflexivity_report else {}
-            flow = self._get_engine("capital_rotation").detect_regime(date=date, reflexivity_data=refl_data)
+            refl_data = (
+                {"active_cycles": getattr(report.reflexivity_report, "active_cycles", [])}
+                if report.reflexivity_report
+                else {}
+            )
+            flow = self._get_engine("capital_rotation").detect_regime(
+                date=date, reflexivity_data=refl_data
+            )
             report.capital_flow_report = flow
             executed.append("capital_flow")
             log(f"  Capital Flow: {flow.regime.regime_label}, net {flow.regime.net_flow_bn:+.1f}B")
         except Exception as e:
-            failed.append("capital_flow"); errors.append(f"CapitalFlow: {e}")
+            failed.append("capital_flow")
+            errors.append(f"CapitalFlow: {e}")
 
         # Step 4: Expert Debate
         log("Step 4/9: Running expert debate...")
         try:
-            regime_label = getattr(report.regime_classification, "regime_label", "") if report.regime_classification else ""
+            regime_label = (
+                getattr(report.regime_classification, "regime_label", "")
+                if report.regime_classification
+                else ""
+            )
             dom_narrative = ""
             if narratives:
                 for n in (narratives if isinstance(narratives, list) else []):
@@ -161,21 +193,28 @@ class DailyMacroAgent:
             cs = getattr(debate, "consensus_score", 0)
             log(f"  Expert Debate: consensus={cs:.2f}")
         except Exception as e:
-            failed.append("expert_debate"); errors.append(f"ExpertDebate: {e}")
+            failed.append("expert_debate")
+            errors.append(f"ExpertDebate: {e}")
 
         # Step 5: Learning Loop
         log("Step 5/9: Learning — resolving predictions...")
         try:
-            outcomes = self._get_engine("outcome_collector").collect_outcomes(beliefs=belief_list, market_data=market)
+            outcomes = self._get_engine("outcome_collector").collect_outcomes(
+                beliefs=belief_list, market_data=market
+            )
             scored = self._get_engine("prediction_scorer").score_batch(outcomes)
             metrics = self._get_engine("prediction_scorer").compute_batch_metrics(scored)
             calibrations = self._get_engine("belief_calibration").calibrate_all(belief_list, scored)
             cal_sum = self._get_engine("belief_calibration").get_calibration_summary(calibrations)
             from src.learning import LearningReport
+
             learning = LearningReport(
-                report_id=f"lr_{date}", date=date,
+                report_id=f"lr_{date}",
+                date=date,
                 predictions_resolved=len(outcomes),
-                predictions_pending=self._get_engine("outcome_collector").get_pending_count(belief_list),
+                predictions_pending=self._get_engine("outcome_collector").get_pending_count(
+                    belief_list
+                ),
                 overall_accuracy=metrics.get("accuracy", 0),
                 overall_brier_score=metrics.get("avg_brier", 0),
                 beliefs_calibrated=cal_sum.get("calibratable_beliefs", 0),
@@ -186,24 +225,41 @@ class DailyMacroAgent:
             executed.append("learning")
             log(f"  Learning: {len(outcomes)} resolved, accuracy {metrics.get('accuracy', 0):.0%}")
         except Exception as e:
-            failed.append("learning"); errors.append(f"Learning: {e}")
+            failed.append("learning")
+            errors.append(f"Learning: {e}")
 
         # Step 6: Curiosity
         log("Step 6/9: Generating research questions...")
         try:
-            cur = self._get_engine("curiosity").generate_questions(beliefs=belief_list, mental_models=mental, learning_report=report.learning_report, date=date)
+            cur = self._get_engine("curiosity").generate_questions(
+                beliefs=belief_list,
+                mental_models=mental,
+                learning_report=report.learning_report,
+                date=date,
+            )
             report.curiosity_report = cur
             executed.append("curiosity")
             log(f"  Curiosity: {len(cur.priority_questions)} priority questions")
         except Exception as e:
-            failed.append("curiosity"); errors.append(f"Curiosity: {e}")
+            failed.append("curiosity")
+            errors.append(f"Curiosity: {e}")
 
         # Step 7: Research Memo via V10 ReasoningPipeline
         #     Observation → [6 deterministic steps] → LLM Synthesis → Quality Review
-        log("Step 7/9: Running V10 ReasoningPipeline (8-step: evidence→hypo→counter→reflexivity→history→portfolio→LLM→quality)...")
+        log(
+            "Step 7/9: Running V10 ReasoningPipeline (8-step: evidence→hypo→counter→reflexivity→history→portfolio→LLM→quality)..."
+        )
         try:
-            regime_label = getattr(report.regime_classification, "regime_label", "unknown") if report.regime_classification else "unknown"
-            regime_conf = getattr(report.regime_classification, "confidence", 0.5) if report.regime_classification else 0.5
+            regime_label = (
+                getattr(report.regime_classification, "regime_label", "unknown")
+                if report.regime_classification
+                else "unknown"
+            )
+            regime_conf = (
+                getattr(report.regime_classification, "confidence", 0.5)
+                if report.regime_classification
+                else 0.5
+            )
             dims = {}
             if report.regime_classification:
                 for d in ("growth_phase", "inflation_regime", "monetary_stance"):
@@ -220,15 +276,21 @@ class DailyMacroAgent:
             # Build narrative list
             narrative_list = []
             if narratives:
-                narrative_list = list(narratives) if isinstance(narratives, (list, tuple)) else [narratives]
+                narrative_list = (
+                    list(narratives) if isinstance(narratives, (list, tuple)) else [narratives]
+                )
 
             # Capital flow result
             capital_flow_result = {}
             if report.capital_flow_report:
                 cf = report.capital_flow_report
                 capital_flow_result = {
-                    "regime_label": getattr(cf.regime, "regime_label", "") if hasattr(cf, "regime") else "",
-                    "net_flow_bn": getattr(cf.regime, "net_flow_bn", 0) if hasattr(cf, "regime") else 0,
+                    "regime_label": (
+                        getattr(cf.regime, "regime_label", "") if hasattr(cf, "regime") else ""
+                    ),
+                    "net_flow_bn": (
+                        getattr(cf.regime, "net_flow_bn", 0) if hasattr(cf, "regime") else 0
+                    ),
                     "reflexivity_warning": getattr(cf, "reflexivity_warning", False),
                 }
 
@@ -249,17 +311,28 @@ class DailyMacroAgent:
             report._pipeline_result = pipe_result
 
             executed.append("research_memo")
-            log(f"  V10 Pipeline: {pipe_result.total_elapsed_ms:.0f}ms, "
+            log(
+                f"  V10 Pipeline: {pipe_result.total_elapsed_ms:.0f}ms, "
                 f"quality={pipe_result.memo_quality_score:.0f}, "
                 f"llm_calls={pipe_result.llm_call_count}, "
-                f"errs={len(pipe_result.errors)}")
+                f"errs={len(pipe_result.errors)}"
+            )
         except Exception as e:
-            failed.append("research_memo"); errors.append(f"ResearchMemo: {e}")
+            failed.append("research_memo")
+            errors.append(f"ResearchMemo: {e}")
             log(f"  Research Memo FAILED: {e}, falling back to legacy reasoner")
             # Fallback to old ResearchReasoningAgent
             try:
-                regime_label = getattr(report.regime_classification, "regime_label", "unknown") if report.regime_classification else "unknown"
-                regime_conf = getattr(report.regime_classification, "confidence", 0.5) if report.regime_classification else 0.5
+                regime_label = (
+                    getattr(report.regime_classification, "regime_label", "unknown")
+                    if report.regime_classification
+                    else "unknown"
+                )
+                regime_conf = (
+                    getattr(report.regime_classification, "confidence", 0.5)
+                    if report.regime_classification
+                    else 0.5
+                )
                 dims = {}
                 if report.regime_classification:
                     for d in ("growth_phase", "inflation_regime", "monetary_stance"):
@@ -267,6 +340,7 @@ class DailyMacroAgent:
                 b_titles = [getattr(b, "title", "") for b in belief_list] if belief_list else []
 
                 from src.research.llm_brain.research_reasoning_agent import ReasoningInput
+
                 ri = ReasoningInput(
                     regime_label=regime_label,
                     regime_confidence=regime_conf,
@@ -300,7 +374,7 @@ class DailyMacroAgent:
         """Synthesize cross-module insights into summary."""
         regime = report.regime_classification
         flow = report.capital_flow_report
-        refl = report.reflexivity_report
+        _refl = report.reflexivity_report
 
         # Sentiment from multiple sources
         risk_signals = 0
@@ -350,7 +424,7 @@ class DailyMacroAgent:
     def get_run_history(self) -> list[dict]:
         return [r.to_dict() for r in self._run_history]
 
-    def get_last_run(self) -> Optional[DailyRunReport]:
+    def get_last_run(self) -> DailyRunReport | None:
         return self._run_history[-1] if self._run_history else None
 
     # ═══════════════════════════════════════════════════════════════════
@@ -361,7 +435,7 @@ class DailyMacroAgent:
         self,
         predictions: list,
         outcomes: list,
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """After a benchmark cycle, run the continuous learning loop.
 
         Thread: Prediction → Outcome → Root Cause → Belief/Prompt/Reasoning Update.
@@ -382,7 +456,7 @@ class DailyMacroAgent:
 
         # Use the pipeline's learning cycle
         if pipeline_result and hasattr(pipeline_result, "_pipeline_result"):
-            from src.research.reasoning.reasoning_pipeline import ReasoningPipeline
+
             # If the agent has the pipeline engine, use it
             pass
 

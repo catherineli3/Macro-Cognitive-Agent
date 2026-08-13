@@ -14,10 +14,8 @@ This module:
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Optional
 
-from src.news.schemas import ResearchEvent, MarketExpectation, ImpactDirection
+from src.news.schemas import ImpactDirection, MarketExpectation, ResearchEvent
 
 
 class MarketExpectationExtractor:
@@ -28,32 +26,72 @@ class MarketExpectationExtractor:
 
     # Common indicators and their typical behavior
     INDICATOR_PROFILES = {
-        "cpi_yoy": {"name": "CPI YoY", "typical_range": (-0.5, 0.5), "std_dev": 0.15,
-                    "bullish_surprise": "negative"},
-        "core_cpi_yoy": {"name": "Core CPI YoY", "typical_range": (-0.3, 0.3), "std_dev": 0.12,
-                         "bullish_surprise": "negative"},
-        "cpi_mom": {"name": "CPI MoM", "typical_range": (-0.2, 0.2), "std_dev": 0.10,
-                    "bullish_surprise": "negative"},
-        "ppi_yoy": {"name": "PPI YoY", "typical_range": (-0.5, 0.5), "std_dev": 0.30,
-                    "bullish_surprise": "negative"},
-        "nfp": {"name": "Non-Farm Payrolls", "typical_range": (-100e3, 100e3), "std_dev": 80e3,
-                "bullish_surprise": "positive"},
-        "unemployment_rate": {"name": "Unemployment Rate", "typical_range": (-0.2, 0.2),
-                               "std_dev": 0.1, "bullish_surprise": "negative"},
-        "gdp_qoq": {"name": "GDP QoQ", "typical_range": (-1.0, 1.0), "std_dev": 0.5,
-                    "bullish_surprise": "positive"},
-        "retail_sales_mom": {"name": "Retail Sales MoM", "typical_range": (-1.0, 1.0),
-                              "std_dev": 0.5, "bullish_surprise": "positive"},
-        "ism_manufacturing": {"name": "ISM Manufacturing PMI", "typical_range": (-3.0, 3.0),
-                               "std_dev": 1.5, "bullish_surprise": "positive"},
-        "ism_services": {"name": "ISM Services PMI", "typical_range": (-2.0, 2.0),
-                          "std_dev": 1.2, "bullish_surprise": "positive"},
+        "cpi_yoy": {
+            "name": "CPI YoY",
+            "typical_range": (-0.5, 0.5),
+            "std_dev": 0.15,
+            "bullish_surprise": "negative",
+        },
+        "core_cpi_yoy": {
+            "name": "Core CPI YoY",
+            "typical_range": (-0.3, 0.3),
+            "std_dev": 0.12,
+            "bullish_surprise": "negative",
+        },
+        "cpi_mom": {
+            "name": "CPI MoM",
+            "typical_range": (-0.2, 0.2),
+            "std_dev": 0.10,
+            "bullish_surprise": "negative",
+        },
+        "ppi_yoy": {
+            "name": "PPI YoY",
+            "typical_range": (-0.5, 0.5),
+            "std_dev": 0.30,
+            "bullish_surprise": "negative",
+        },
+        "nfp": {
+            "name": "Non-Farm Payrolls",
+            "typical_range": (-100e3, 100e3),
+            "std_dev": 80e3,
+            "bullish_surprise": "positive",
+        },
+        "unemployment_rate": {
+            "name": "Unemployment Rate",
+            "typical_range": (-0.2, 0.2),
+            "std_dev": 0.1,
+            "bullish_surprise": "negative",
+        },
+        "gdp_qoq": {
+            "name": "GDP QoQ",
+            "typical_range": (-1.0, 1.0),
+            "std_dev": 0.5,
+            "bullish_surprise": "positive",
+        },
+        "retail_sales_mom": {
+            "name": "Retail Sales MoM",
+            "typical_range": (-1.0, 1.0),
+            "std_dev": 0.5,
+            "bullish_surprise": "positive",
+        },
+        "ism_manufacturing": {
+            "name": "ISM Manufacturing PMI",
+            "typical_range": (-3.0, 3.0),
+            "std_dev": 1.5,
+            "bullish_surprise": "positive",
+        },
+        "ism_services": {
+            "name": "ISM Services PMI",
+            "typical_range": (-2.0, 2.0),
+            "std_dev": 1.2,
+            "bullish_surprise": "positive",
+        },
     }
 
     def __init__(self):
         pass
 
-    def extract(self, event: ResearchEvent) -> Optional[MarketExpectation]:
+    def extract(self, event: ResearchEvent) -> MarketExpectation | None:
         """Extract market expectation analysis from a data release event.
 
         Returns None if the event doesn't have enough data for comparison.
@@ -78,14 +116,18 @@ class MarketExpectationExtractor:
         # Direction
         bullish_dir = profile.get("bullish_surprise", "positive")
         if surprise > 0:
-            direction = ImpactDirection.BULLISH if bullish_dir == "positive" else ImpactDirection.BEARISH
+            direction = (
+                ImpactDirection.BULLISH if bullish_dir == "positive" else ImpactDirection.BEARISH
+            )
         elif surprise < 0:
-            direction = ImpactDirection.BEARISH if bullish_dir == "positive" else ImpactDirection.BULLISH
+            direction = (
+                ImpactDirection.BEARISH if bullish_dir == "positive" else ImpactDirection.BULLISH
+            )
         else:
             direction = ImpactDirection.NEUTRAL
 
         # Implication
-        implication = self._build_implication(indicator, surprise, is_significant, direction)
+        implication = self._build_implication(indicator, surprise, is_significant, direction, event)
 
         # Market reaction context
         market_reaction = self._infer_reaction(indicator, surprise, is_significant)
@@ -183,17 +225,23 @@ class MarketExpectationExtractor:
         return "unknown"
 
     def _build_implication(
-        self, indicator: str, surprise: float, is_significant: bool,
-        direction: ImpactDirection
+        self,
+        indicator: str,
+        surprise: float,
+        is_significant: bool,
+        direction: ImpactDirection,
+        event: ResearchEvent,
     ) -> str:
         """Build a 1-2 sentence implication statement."""
         profile = self.INDICATOR_PROFILES.get(indicator, {})
         indicator_name = profile.get("name", indicator)
 
         if not is_significant:
-            return (f"{indicator_name} came in roughly in line with expectations "
-                    f"(surprise: {surprise:.2f}). No material information content "
-                    f"for this release.")
+            return (
+                f"{indicator_name} came in roughly in line with expectations "
+                f"(surprise: {surprise:.2f}). No material information content "
+                f"for this release."
+            )
 
         severity = ""
         if abs(surprise) > 0:
@@ -228,4 +276,6 @@ class MarketExpectationExtractor:
             "ism_manufacturing": "Above 50 beat → cyclical rotation positive",
         }
 
-        return typical_reactions.get(indicator, "Typical risk-on/risk-off reaction based on surprise direction")
+        return typical_reactions.get(
+            indicator, "Typical risk-on/risk-off reaction based on surprise direction"
+        )

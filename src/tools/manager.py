@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """ToolManager — Single entry point for all Tool access.
 
 Sprint 5 design:
@@ -32,10 +30,12 @@ Sprint 5 design:
     No scheduling. No planning. No business logic.
 """
 
+from __future__ import annotations
+
 import time
 
-from src.schemas.tool import ToolResult
 from src.domain.tool import ToolResultStatus
+from src.schemas.tool import ToolResult
 from src.shared.logging import get_logger
 from src.tools.base import BaseTool
 from src.tools.registry import ToolRegistry
@@ -151,13 +151,10 @@ class ToolManager:
             tool_name="unknown",
             artifact={},
             latency_ms=round(latency, 2),
-            error=(f"No tool registered for capability '{capability}'. "
-                   f"Available: {available}"),
+            error=(f"No tool registered for capability '{capability}'. " f"Available: {available}"),
         )
 
-    def _exception_result(
-        self, tool: BaseTool, exc: Exception, start: float
-    ) -> ToolResult:
+    def _exception_result(self, tool: BaseTool, exc: Exception, start: float) -> ToolResult:
         """Build a FAILED ToolResult from a tool exception."""
         latency = (time.perf_counter() - start) * 1000
         logger.error(

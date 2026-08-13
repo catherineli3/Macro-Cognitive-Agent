@@ -12,19 +12,23 @@ Historical database covers major macro regimes since 1970s.
 """
 
 from __future__ import annotations
-from typing import Optional
-from src.regime.schemas import HistoricalAnalog, MacroRegime
 
+from src.regime.schemas import HistoricalAnalog, MacroRegime
 
 # Database of historical macro regime periods
 HISTORICAL_PERIODS = [
     {
-        "period": "1973-1975", "name": "Oil Shock / Stagflation",
-        "growth": "decelerating", "inflation": "stagflation",
-        "monetary": "tightening", "credit": "contraction",
-        "dollar": "weak", "volatility": "high_vol",
+        "period": "1973-1975",
+        "name": "Oil Shock / Stagflation",
+        "growth": "decelerating",
+        "inflation": "stagflation",
+        "monetary": "tightening",
+        "credit": "contraction",
+        "dollar": "weak",
+        "volatility": "high_vol",
         "resolution": "Deep recession, then recovery. Fed ultimately cut rates.",
-        "duration": 24, "drawdown": 48,
+        "duration": 24,
+        "drawdown": 48,
         "lessons": [
             "Supply shocks + tight policy = worst case for risk assets",
             "Gold and commodities outperform in stagflation",
@@ -32,12 +36,17 @@ HISTORICAL_PERIODS = [
         ],
     },
     {
-        "period": "1998-2000", "name": "Tech Bubble / Late Cycle",
-        "growth": "accelerating", "inflation": "disinflation",
-        "monetary": "tightening", "credit": "expansion",
-        "dollar": "strong", "volatility": "low_vol",
+        "period": "1998-2000",
+        "name": "Tech Bubble / Late Cycle",
+        "growth": "accelerating",
+        "inflation": "disinflation",
+        "monetary": "tightening",
+        "credit": "expansion",
+        "dollar": "strong",
+        "volatility": "low_vol",
         "resolution": "Bubble burst, recession, aggressive easing cycle",
-        "duration": 30, "drawdown": 49,
+        "duration": 30,
+        "drawdown": 49,
         "lessons": [
             "Low inflation + strong dollar mask late-cycle risks",
             "Productivity boom can extend cycles longer than expected",
@@ -45,12 +54,17 @@ HISTORICAL_PERIODS = [
         ],
     },
     {
-        "period": "2006-2007", "name": "Housing Bubble Peak / Pre-GFC",
-        "growth": "decelerating", "inflation": "reflation",
-        "monetary": "tightening", "credit": "peak",
-        "dollar": "weak", "volatility": "low_vol",
+        "period": "2006-2007",
+        "name": "Housing Bubble Peak / Pre-GFC",
+        "growth": "decelerating",
+        "inflation": "reflation",
+        "monetary": "tightening",
+        "credit": "peak",
+        "dollar": "weak",
+        "volatility": "low_vol",
         "resolution": "Global financial crisis, systemic credit collapse",
-        "duration": 18, "drawdown": 57,
+        "duration": 18,
+        "drawdown": 57,
         "lessons": [
             "Credit cycle is the cycle — when credit peaks, everything changes",
             "Low VIX does not mean low risk — it means unrecognized risk",
@@ -58,12 +72,17 @@ HISTORICAL_PERIODS = [
         ],
     },
     {
-        "period": "2008-2009", "name": "GFC / Credit Event",
-        "growth": "decelerating", "inflation": "deflation",
-        "monetary": "easing", "credit": "contraction",
-        "dollar": "strong", "volatility": "crisis",
+        "period": "2008-2009",
+        "name": "GFC / Credit Event",
+        "growth": "decelerating",
+        "inflation": "deflation",
+        "monetary": "easing",
+        "credit": "contraction",
+        "dollar": "strong",
+        "volatility": "crisis",
         "resolution": "Unprecedented policy response, slow recovery",
-        "duration": 18, "drawdown": 57,
+        "duration": 18,
+        "drawdown": 57,
         "lessons": [
             "In credit events, correlations go to 1 — everything sells off",
             "Dollar funding stress is the real crisis transmission mechanism",
@@ -71,12 +90,17 @@ HISTORICAL_PERIODS = [
         ],
     },
     {
-        "period": "2010-2015", "name": "QE Era / Recovery",
-        "growth": "stable", "inflation": "disinflation",
-        "monetary": "easing", "credit": "expansion",
-        "dollar": "weak", "volatility": "normal",
+        "period": "2010-2015",
+        "name": "QE Era / Recovery",
+        "growth": "stable",
+        "inflation": "disinflation",
+        "monetary": "easing",
+        "credit": "expansion",
+        "dollar": "weak",
+        "volatility": "normal",
         "resolution": "Gradual normalization, then tightening cycle began",
-        "duration": 60, "drawdown": 20,
+        "duration": 60,
+        "drawdown": 20,
         "lessons": [
             "QE can support assets without generating inflation (for a long time)",
             "Zero rates create reach-for-yield behavior across all assets",
@@ -84,12 +108,17 @@ HISTORICAL_PERIODS = [
         ],
     },
     {
-        "period": "2018 Q4", "name": "Tightening Tantrum",
-        "growth": "decelerating", "inflation": "reflation",
-        "monetary": "tightening", "credit": "peak",
-        "dollar": "strong", "volatility": "high_vol",
+        "period": "2018 Q4",
+        "name": "Tightening Tantrum",
+        "growth": "decelerating",
+        "inflation": "reflation",
+        "monetary": "tightening",
+        "credit": "peak",
+        "dollar": "strong",
+        "volatility": "high_vol",
         "resolution": "Fed pivot, rapid recovery into 2019",
-        "duration": 4, "drawdown": 20,
+        "duration": 4,
+        "drawdown": 20,
         "lessons": [
             "Markets force Fed pivots faster than expected",
             "Strong dollar + tight policy = EM crisis risk",
@@ -97,12 +126,17 @@ HISTORICAL_PERIODS = [
         ],
     },
     {
-        "period": "2020", "name": "COVID Crisis",
-        "growth": "decelerating", "inflation": "deflation",
-        "monetary": "easing", "credit": "contraction",
-        "dollar": "strong", "volatility": "crisis",
+        "period": "2020",
+        "name": "COVID Crisis",
+        "growth": "decelerating",
+        "inflation": "deflation",
+        "monetary": "easing",
+        "credit": "contraction",
+        "dollar": "strong",
+        "volatility": "crisis",
         "resolution": "Massive fiscal + monetary response, V-shaped recovery",
-        "duration": 3, "drawdown": 34,
+        "duration": 3,
+        "drawdown": 34,
         "lessons": [
             "When fiscal and monetary policy coordinate, recovery can be V-shaped",
             "Exogenous shocks resolve differently than endogenous financial crises",
@@ -110,12 +144,17 @@ HISTORICAL_PERIODS = [
         ],
     },
     {
-        "period": "2021-2022", "name": "Inflation Shock / Tightening",
-        "growth": "decelerating", "inflation": "stagflation",
-        "monetary": "tightening", "credit": "contraction",
-        "dollar": "strong", "volatility": "high_vol",
+        "period": "2021-2022",
+        "name": "Inflation Shock / Tightening",
+        "growth": "decelerating",
+        "inflation": "stagflation",
+        "monetary": "tightening",
+        "credit": "contraction",
+        "dollar": "strong",
+        "volatility": "high_vol",
         "resolution": "Ongoing — bond/equity correlation turned positive",
-        "duration": 18, "drawdown": 25,
+        "duration": 18,
+        "drawdown": 25,
         "lessons": [
             "When inflation is the problem, bonds and equities sell off together",
             "60/40 portfolio diversification fails in inflation regimes",
@@ -123,12 +162,17 @@ HISTORICAL_PERIODS = [
         ],
     },
     {
-        "period": "2023-2024", "name": "AI Boom / Disinflation",
-        "growth": "accelerating", "inflation": "disinflation",
-        "monetary": "neutral", "credit": "expansion",
-        "dollar": "stable", "volatility": "low_vol",
+        "period": "2023-2024",
+        "name": "AI Boom / Disinflation",
+        "growth": "accelerating",
+        "inflation": "disinflation",
+        "monetary": "neutral",
+        "credit": "expansion",
+        "dollar": "stable",
+        "volatility": "low_vol",
         "resolution": "Ongoing — AI capex cycle + soft landing narrative",
-        "duration": 18, "drawdown": 10,
+        "duration": 18,
+        "drawdown": 10,
         "lessons": [
             "Technology-driven productivity gains can coexist with disinflation",
             "Concentrated market leadership creates hidden fragility",
@@ -162,16 +206,12 @@ class HistoricalSimilarity:
         analogs.sort(key=lambda a: a.similarity_score, reverse=True)
         return analogs[:top_n]
 
-    def find_best_analog(
-        self, current_regime: MacroRegime
-    ) -> HistoricalAnalog:
+    def find_best_analog(self, current_regime: MacroRegime) -> HistoricalAnalog:
         """Return the single best historical analog."""
         analogs = self.find_analogs(current_regime, top_n=1)
         return analogs[0] if analogs else HistoricalAnalog()
 
-    def _similarity_score(
-        self, regime: MacroRegime, period: dict
-    ) -> float:
+    def _similarity_score(self, regime: MacroRegime, period: dict) -> float:
         """Compute multi-dimensional similarity score (0-1)."""
         scores = []
 
@@ -181,8 +221,12 @@ class HistoricalSimilarity:
         else:
             # Partial match
             g1, g2 = regime.growth_phase, period["growth"]
-            if (g1, g2) in [("accelerating", "stable"), ("decelerating", "stable"),
-                             ("stable", "accelerating"), ("stable", "decelerating")]:
+            if (g1, g2) in [
+                ("accelerating", "stable"),
+                ("decelerating", "stable"),
+                ("stable", "accelerating"),
+                ("stable", "decelerating"),
+            ]:
                 scores.append(0.5)
             else:
                 scores.append(0.1)
@@ -191,7 +235,8 @@ class HistoricalSimilarity:
         if regime.inflation_regime == period["inflation"]:
             scores.append(1.0)
         elif (regime.inflation_regime, period["inflation"]) in [
-            ("reflation", "stagflation"), ("disinflation", "deflation")
+            ("reflation", "stagflation"),
+            ("disinflation", "deflation"),
         ]:
             scores.append(0.6)
         else:
@@ -201,7 +246,8 @@ class HistoricalSimilarity:
         if regime.monetary_stance == period["monetary"]:
             scores.append(1.0)
         elif (regime.monetary_stance, period["monetary"]) in [
-            ("neutral", "easing"), ("neutral", "tightening")
+            ("neutral", "easing"),
+            ("neutral", "tightening"),
         ]:
             scores.append(0.6)
         else:
@@ -211,7 +257,8 @@ class HistoricalSimilarity:
         if regime.credit_cycle == period["credit"]:
             scores.append(1.0)
         elif (regime.credit_cycle, period["credit"]) in [
-            ("peak", "contraction"), ("expansion", "peak")
+            ("peak", "contraction"),
+            ("expansion", "peak"),
         ]:
             scores.append(0.5)
         else:
@@ -220,9 +267,7 @@ class HistoricalSimilarity:
         # Dollar (weight: 0.10)
         if regime.dollar_regime == period["dollar"]:
             scores.append(1.0)
-        elif (regime.dollar_regime, period["dollar"]) in [
-            ("strong", "stable"), ("weak", "stable")
-        ]:
+        elif (regime.dollar_regime, period["dollar"]) in [("strong", "stable"), ("weak", "stable")]:
             scores.append(0.6)
         else:
             scores.append(0.2)
@@ -231,7 +276,9 @@ class HistoricalSimilarity:
         if regime.volatility_regime == period["volatility"]:
             scores.append(1.0)
         elif (regime.volatility_regime, period["volatility"]) in [
-            ("high_vol", "crisis"), ("normal", "low_vol"), ("normal", "high_vol")
+            ("high_vol", "crisis"),
+            ("normal", "low_vol"),
+            ("normal", "high_vol"),
         ]:
             scores.append(0.5)
         else:
@@ -257,9 +304,7 @@ class HistoricalSimilarity:
             key_lessons=period["lessons"],
         )
 
-    def generate_cycle_narrative(
-        self, regime: MacroRegime, top_analog: HistoricalAnalog
-    ) -> str:
+    def generate_cycle_narrative(self, regime: MacroRegime, top_analog: HistoricalAnalog) -> str:
         """Generate a Dalio-style 'where are we in the cycle' narrative."""
         if top_analog.similarity_score > 0.7:
             confidence = "strongly resembles"

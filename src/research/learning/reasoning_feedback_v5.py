@@ -13,12 +13,9 @@ Diagnoses:
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Optional
-
 from src.research.learning.schemas import (
-    LearningEvent,
     FailureDiagnosis,
+    LearningEvent,
     RootCauseCategory,
 )
 
@@ -58,7 +55,7 @@ class ReasoningFeedbackV5:
         ],
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def analyze(
@@ -83,9 +80,7 @@ class ReasoningFeedbackV5:
         # Skip if prediction was correct
         if event.was_correct:
             diagnosis.primary_cause = RootCauseCategory.UNKNOWN
-            diagnosis.diagnosis_narrative = (
-                "Prediction was correct. No failure to diagnose."
-            )
+            diagnosis.diagnosis_narrative = "Prediction was correct. No failure to diagnose."
             diagnosis.confidence_in_diagnosis = 1.0
             return diagnosis
 
@@ -143,10 +138,7 @@ class ReasoningFeedbackV5:
             diagnosis.confidence_in_diagnosis = cause_scores[diagnosis.primary_cause]
 
         # Collect all significant causes (>0.4)
-        diagnosis.root_causes = [
-            cause for cause, score in cause_scores.items()
-            if score > 0.4
-        ]
+        diagnosis.root_causes = [cause for cause, score in cause_scores.items() if score > 0.4]
 
         # Missed signals
         diagnosis.missed_signals = self._identify_missed_signals(event, context)
@@ -303,6 +295,5 @@ class ReasoningFeedbackV5:
         }
 
         return cause_narratives.get(
-            diagnosis.primary_cause,
-            "Root cause could not be definitively determined."
+            diagnosis.primary_cause, "Root cause could not be definitively determined."
         )

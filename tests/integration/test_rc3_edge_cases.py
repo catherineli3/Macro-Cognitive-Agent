@@ -9,48 +9,48 @@ Covers:
     - Large datasets (100+ records)
 """
 
-import json
 import os
 import tempfile
-from datetime import datetime, timezone
-from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 
-from src.domain.execution import TaskResultStatus
 from src.executor.context import ExecutionContext
 from src.executor.executor import AgentExecutor
 from src.memory.store import BeliefMemoryStore
 from src.narrative.engine import NarrativeEngine
-from src.schemas.hypothesis import HypothesisEvidence, HypothesisSchema, HypothesisSet
+from src.schemas.hypothesis import HypothesisSchema, HypothesisSet
 from src.schemas.memory import BeliefRecord
 from src.schemas.narrative import MacroNarrative
 from src.schemas.reflection import ReflectionReport, ReflectionSet
 from src.schemas.signal import MacroSignalSchema, SignalDirection, SignalEvidence, SignalSnapshot
-
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
 
 def make_signal(indicator: str, direction: str, dimension: str, confidence: float = 0.7):
     from src.schemas.signal import SignalStrength
+
     return MacroSignalSchema(
         indicator=indicator,
         dimension=dimension,
         direction=SignalDirection(direction),
         strength=SignalStrength("strong") if confidence > 0.7 else SignalStrength("moderate"),
         confidence=confidence,
-        evidence=[SignalEvidence(
-            rule_id=f"rule_{indicator.lower()}",
-            rule_description="Test rule",
-            input_value=1.0,
-            condition="Test condition",
-            interpretation="Test interpretation",
-        )],
+        evidence=[
+            SignalEvidence(
+                rule_id=f"rule_{indicator.lower()}",
+                rule_description="Test rule",
+                input_value=1.0,
+                condition="Test condition",
+                interpretation="Test interpretation",
+            )
+        ],
     )
 
 
-def make_hypothesis(statement: str, dimension: str, direction: str = "neutral", confidence: float = 0.6):
+def make_hypothesis(
+    statement: str, dimension: str, direction: str = "neutral", confidence: float = 0.6
+):
     return HypothesisSchema(
         statement=statement,
         dimension=dimension,
@@ -99,9 +99,11 @@ class TestEmptyInput:
         """Signals present but no hypotheses → valid narrative."""
         engine = NarrativeEngine()
         n = engine.narrate(
-            signals=SignalSnapshot(signals=[
-                make_signal("DXY", "bullish", "Liquidity", 0.8),
-            ]),
+            signals=SignalSnapshot(
+                signals=[
+                    make_signal("DXY", "bullish", "Liquidity", 0.8),
+                ]
+            ),
             hypotheses=HypothesisSet(hypotheses=[]),
             reflections=ReflectionSet(reports=[]),
         )
@@ -112,9 +114,11 @@ class TestEmptyInput:
         engine = NarrativeEngine()
         hyp = make_hypothesis("Test.", "Liquidity", "bearish", 0.7)
         n = engine.narrate(
-            signals=SignalSnapshot(signals=[
-                make_signal("DXY", "bullish", "Liquidity", 0.8),
-            ]),
+            signals=SignalSnapshot(
+                signals=[
+                    make_signal("DXY", "bullish", "Liquidity", 0.8),
+                ]
+            ),
             hypotheses=HypothesisSet(hypotheses=[hyp], dimensions_covered=["Liquidity"]),
             reflections=ReflectionSet(reports=[]),
         )
@@ -122,8 +126,9 @@ class TestEmptyInput:
 
     def test_empty_string_goal_pipeline(self):
         """Empty goal string is caught gracefully."""
-        from src.planning.planner import RuleBasedPlanner
         import asyncio
+
+        from src.planning.planner import RuleBasedPlanner
         from src.shared.exceptions import PlanCreationError
 
         planner = RuleBasedPlanner()
@@ -144,13 +149,17 @@ class TestBoundaryValues:
         engine = NarrativeEngine()
         hyp = make_hypothesis("Zero confidence.", "Liquidity", "bearish", 0.0)
         n = engine.narrate(
-            signals=SignalSnapshot(signals=[
-                make_signal("DXY", "neutral", "Liquidity", 0.0),
-            ]),
+            signals=SignalSnapshot(
+                signals=[
+                    make_signal("DXY", "neutral", "Liquidity", 0.0),
+                ]
+            ),
             hypotheses=HypothesisSet(hypotheses=[hyp], dimensions_covered=["Liquidity"]),
-            reflections=ReflectionSet(reports=[
-                make_reflection(hyp, "uncertain", 0.0),
-            ]),
+            reflections=ReflectionSet(
+                reports=[
+                    make_reflection(hyp, "uncertain", 0.0),
+                ]
+            ),
         )
         assert 0.0 <= n.confidence_score <= 1.0
 
@@ -159,28 +168,34 @@ class TestBoundaryValues:
         engine = NarrativeEngine()
         hyp = make_hypothesis("Max confidence.", "Growth", "bullish", 1.0)
         n = engine.narrate(
-            signals=SignalSnapshot(signals=[
-                make_signal("PMI", "bullish", "Growth", 1.0),
-            ]),
+            signals=SignalSnapshot(
+                signals=[
+                    make_signal("PMI", "bullish", "Growth", 1.0),
+                ]
+            ),
             hypotheses=HypothesisSet(hypotheses=[hyp], dimensions_covered=["Growth"]),
-            reflections=ReflectionSet(reports=[
-                make_reflection(hyp, "confirmed", 1.0),
-            ]),
+            reflections=ReflectionSet(
+                reports=[
+                    make_reflection(hyp, "confirmed", 1.0),
+                ]
+            ),
         )
         assert n.confidence_score <= 1.0
 
     def test_many_signals(self):
         """100 signals should not cause memory or perf issues."""
         engine = NarrativeEngine()
-        signals = SignalSnapshot(signals=[
-            make_signal(f"IND{i}", "bullish", "Liquidity", 0.7)
-            for i in range(100)
-        ])
+        signals = SignalSnapshot(
+            signals=[make_signal(f"IND{i}", "bullish", "Liquidity", 0.7) for i in range(100)]
+        )
         n = engine.narrate(
             signals=signals,
-            hypotheses=HypothesisSet(hypotheses=[
-                make_hypothesis("Many signals.", "Liquidity", "bullish", 0.7),
-            ], dimensions_covered=["Liquidity"]),
+            hypotheses=HypothesisSet(
+                hypotheses=[
+                    make_hypothesis("Many signals.", "Liquidity", "bullish", 0.7),
+                ],
+                dimensions_covered=["Liquidity"],
+            ),
             reflections=ReflectionSet(reports=[]),
         )
         assert isinstance(n, MacroNarrative)
@@ -224,30 +239,35 @@ class TestInvalidInputRecovery:
 
     def test_unknown_capability_is_handled(self):
         """Plan with unknown capability is caught at validation time."""
-        from src.schemas.planning import Task, ExecutionPlan, TaskType
+        from src.schemas.planning import ExecutionPlan, Task, TaskType
 
         task = Task(
-            id="t1", name="Unknown", type=TaskType.ANALYZE,
+            id="t1",
+            name="Unknown",
+            type=TaskType.ANALYZE,
             config={"capability": "nonexistent.capability"},
         )
         plan = ExecutionPlan(goal="test", tasks=[task])
 
         from src.shared.exceptions import ExecutionError
+
         executor = AgentExecutor()
         with pytest.raises(ExecutionError, match="no handler"):
             import asyncio
+
             asyncio.run(executor.execute(plan))
 
     def test_duplicate_task_ids_in_plan(self):
         """Duplicate task IDs should be caught by validation."""
-        from src.schemas.planning import Task, ExecutionPlan, TaskType
         from src.planning.validator import PlanValidator
+        from src.schemas.planning import ExecutionPlan, Task, TaskType
 
         t1 = Task(id="dup_id", name="Task A", type=TaskType.ANALYZE, config={"capability": "test"})
         t2 = Task(id="dup_id", name="Task B", type=TaskType.ANALYZE, config={"capability": "test"})
         plan = ExecutionPlan(goal="test", tasks=[t1, t2])
 
         from src.shared.exceptions import PlanValidationError
+
         with pytest.raises(PlanValidationError, match="Duplicate"):
             PlanValidator.validate(plan)
 
@@ -263,15 +283,20 @@ class TestDuplicateData:
     def test_duplicate_signals(self):
         """Duplicate signals (same indicator) → handled correctly."""
         engine = NarrativeEngine()
-        signals = SignalSnapshot(signals=[
-            make_signal("DXY", "bullish", "Liquidity", 0.8),
-            make_signal("DXY", "bearish", "Liquidity", 0.3),  # duplicate indicator
-        ])
+        signals = SignalSnapshot(
+            signals=[
+                make_signal("DXY", "bullish", "Liquidity", 0.8),
+                make_signal("DXY", "bearish", "Liquidity", 0.3),  # duplicate indicator
+            ]
+        )
         n = engine.narrate(
             signals=signals,
-            hypotheses=HypothesisSet(hypotheses=[
-                make_hypothesis("Dupe test.", "Liquidity", "neutral", 0.5),
-            ], dimensions_covered=["Liquidity"]),
+            hypotheses=HypothesisSet(
+                hypotheses=[
+                    make_hypothesis("Dupe test.", "Liquidity", "neutral", 0.5),
+                ],
+                dimensions_covered=["Liquidity"],
+            ),
             reflections=ReflectionSet(reports=[]),
         )
         assert isinstance(n, MacroNarrative)
@@ -282,11 +307,12 @@ class TestCircularDependency:
 
     def test_circular_dependency_detected(self):
         """Task depending on itself → validation fails."""
-        from src.schemas.planning import Task, ExecutionPlan, TaskType
         from src.planning.validator import PlanValidator
+        from src.schemas.planning import ExecutionPlan, Task, TaskType
 
         t1 = Task(
-            id="t_circular", name="Self-dep",
+            id="t_circular",
+            name="Self-dep",
             type=TaskType.ANALYZE,
             dependencies=["t_circular"],
             config={"capability": "test"},
@@ -294,6 +320,7 @@ class TestCircularDependency:
         plan = ExecutionPlan(goal="test", tasks=[t1])
 
         from src.shared.exceptions import PlanValidationError
+
         with pytest.raises(PlanValidationError):
             PlanValidator.validate(plan)
 
@@ -341,9 +368,12 @@ class TestMemoryRecovery:
         store = BeliefMemoryStore(file_path=":test_single_rev:")
         hyp = make_hypothesis("Single", "Liquidity", "bearish", 0.7)
         rec = BeliefRecord(
-            run_id="run1", hypothesis_id=hyp.hypothesis_id,
-            dimension="Liquidity", statement="Single",
-            direction=SignalDirection("bearish"), confidence=0.7,
+            run_id="run1",
+            hypothesis_id=hyp.hypothesis_id,
+            dimension="Liquidity",
+            statement="Single",
+            direction=SignalDirection("bearish"),
+            confidence=0.7,
         )
         store._loaded = True
         store._records = [rec]

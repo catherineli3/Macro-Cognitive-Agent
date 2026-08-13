@@ -3,11 +3,10 @@
 Replaces Yahoo Finance as the market data collector.
 Sina Finance API is freely accessible without API key and works from China.
 """
+
 from __future__ import annotations
 
-import time
-from datetime import datetime, timezone
-from typing import Optional, Dict
+from datetime import UTC, datetime
 
 import requests
 
@@ -20,28 +19,28 @@ from src.shared.logging import get_logger
 logger = get_logger(__name__)
 
 # Sina code mapping: indicator_symbol -> sina_code
-SINA_CODE_MAP: Dict[str, str] = {
-    "SPY":    "gb_spy",      # S&P 500 ETF
-    "QQQ":    "gb_qqq",      # Nasdaq-100 ETF
-    "IWM":    "gb_iwm",      # Russell 2000 ETF
-    "GLD":    "gb_gld",      # Gold ETF → proxy for GC=F
-    "USO":    "gb_uso",      # WTI Oil ETF → proxy for CL=F
-    "HYG":    "gb_hyg",      # High Yield Bond ETF → proxy for HYG
-    "LQD":    "gb_lqd",      # Investment Grade Bond ETF → proxy for LQD
-    "TLT":    "gb_tlt",      # 20+ Year Treasury ETF → proxy for US10Y
-    "SHY":    "gb_shy",      # 1-3 Year Treasury ETF → proxy for US2Y
-    "VIXY":   "gb_vixy",     # VIX Short-Term Futures → proxy for ^VIX
-    "NVDA":   "gb_nvda",     # NVIDIA
-    "SMH":    "gb_smh",      # Semiconductor ETF → proxy for SOXX/SOXL
-    "ASML":   "gb_asml",     # ASML
-    "TSM":    "gb_tsm",      # TSMC
-    "COPX":   "gb_copx",     # Copper Miners ETF → proxy for HG=F
-    "BND":    "gb_bnd",      # Total Bond Market ETF
-    "UUP":    "gb_uup",      # Invesco DB USD Bullish Fund → proxy for DXY
+SINA_CODE_MAP: dict[str, str] = {
+    "SPY": "gb_spy",  # S&P 500 ETF
+    "QQQ": "gb_qqq",  # Nasdaq-100 ETF
+    "IWM": "gb_iwm",  # Russell 2000 ETF
+    "GLD": "gb_gld",  # Gold ETF → proxy for GC=F
+    "USO": "gb_uso",  # WTI Oil ETF → proxy for CL=F
+    "HYG": "gb_hyg",  # High Yield Bond ETF → proxy for HYG
+    "LQD": "gb_lqd",  # Investment Grade Bond ETF → proxy for LQD
+    "TLT": "gb_tlt",  # 20+ Year Treasury ETF → proxy for US10Y
+    "SHY": "gb_shy",  # 1-3 Year Treasury ETF → proxy for US2Y
+    "VIXY": "gb_vixy",  # VIX Short-Term Futures → proxy for ^VIX
+    "NVDA": "gb_nvda",  # NVIDIA
+    "SMH": "gb_smh",  # Semiconductor ETF → proxy for SOXX/SOXL
+    "ASML": "gb_asml",  # ASML
+    "TSM": "gb_tsm",  # TSMC
+    "COPX": "gb_copx",  # Copper Miners ETF → proxy for HG=F
+    "BND": "gb_bnd",  # Total Bond Market ETF
+    "UUP": "gb_uup",  # Invesco DB USD Bullish Fund → proxy for DXY
 }
 
 
-def _fetch_sina_quote(sina_code: str) -> Optional[Dict]:
+def _fetch_sina_quote(sina_code: str) -> dict | None:
     """Fetch a single quote from Sina Finance. Returns dict or None."""
     try:
         r = requests.get(
@@ -96,7 +95,9 @@ class SinaCollector(CollectorInterface):
             )
 
         logger.info(
-            "sina_collect", symbol=indicator.symbol, sina_code=sina_code,
+            "sina_collect",
+            symbol=indicator.symbol,
+            sina_code=sina_code,
         )
 
         quote = _fetch_sina_quote(sina_code)
@@ -110,7 +111,7 @@ class SinaCollector(CollectorInterface):
             symbol=indicator.symbol,
             value=quote["price"],
             source="Sina",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             quality=QualityScore(
                 overall=0.90,
                 factors={
@@ -120,7 +121,11 @@ class SinaCollector(CollectorInterface):
                     QualityFactor.OUTLIER: 0.80,
                     QualityFactor.DUPLICATE: 0.90,
                 },
-                flags=["sina_realtime", f"code={sina_code}", f"change_pct={quote['change_pct']:.2f}%"],
+                flags=[
+                    "sina_realtime",
+                    f"code={sina_code}",
+                    f"change_pct={quote['change_pct']:.2f}%",
+                ],
             ),
             currency="USD",
             unit=indicator.unit,
@@ -155,7 +160,7 @@ class SinaCollector(CollectorInterface):
             symbol=indicator.symbol,
             value=quote["price"],
             source="Sina",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             quality=QualityScore(
                 overall=0.90,
                 factors={
@@ -165,7 +170,11 @@ class SinaCollector(CollectorInterface):
                     QualityFactor.OUTLIER: 0.80,
                     QualityFactor.DUPLICATE: 0.90,
                 },
-                flags=["sina_realtime", f"code={sina_code}", f"change_pct={quote['change_pct']:.2f}%"],
+                flags=[
+                    "sina_realtime",
+                    f"code={sina_code}",
+                    f"change_pct={quote['change_pct']:.2f}%",
+                ],
             ),
             currency="USD",
             unit=indicator.unit,

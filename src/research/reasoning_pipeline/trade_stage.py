@@ -12,16 +12,15 @@ Rules:
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from src.research.reasoning_pipeline.schemas import (
-    ObservationOutput,
     EvidenceOutput,
-    PatternOutput,
     HypothesisOutput,
+    ObservationOutput,
+    PatternOutput,
     PredictionOutput,
-    TradeOutput,
     StageStatus,
+    TradeOutput,
 )
 
 
@@ -51,7 +50,7 @@ class TradeStage:
         "low_conviction": "0.5-1% risk per idea",
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def execute(
@@ -86,9 +85,7 @@ class TradeStage:
         output.trades = self._map_to_trades(trade_views, hypothesis, prediction)
 
         # 3. Portfolio positioning overview
-        output.portfolio_positioning = self._portfolio_overview(
-            pattern, hypothesis, evidence
-        )
+        output.portfolio_positioning = self._portfolio_overview(pattern, hypothesis, evidence)
 
         # 4. Trades to avoid
         output.trades_to_avoid = self._trades_to_avoid(pattern, evidence)
@@ -158,9 +155,9 @@ class TradeStage:
         conviction = hypothesis.hypothesis_confidence
 
         size_category = (
-            "high_conviction" if conviction > 0.75
-            else "moderate_conviction" if conviction > 0.5
-            else "low_conviction"
+            "high_conviction"
+            if conviction > 0.75
+            else "moderate_conviction" if conviction > 0.5 else "low_conviction"
         )
 
         for view in views:
@@ -174,17 +171,23 @@ class TradeStage:
                 else:
                     direction = "neutral"
 
-                trades.append({
-                    "description": f"{instrument} — expresses {view} view",
-                    "direction": direction,
-                    "instrument": instrument.replace("Long ", "").replace("Short ", ""),
-                    "size_hint": self.POSITION_SIZING[size_category],
-                    "entry": "Current market",
-                    "stop": self._suggest_stop(direction, conviction),
-                    "target": "TBD based on market evolution",
-                    "conviction": round(conviction, 2),
-                    "horizon": prediction.predictions[0]["horizon"] if prediction.predictions else "1-3 months",
-                })
+                trades.append(
+                    {
+                        "description": f"{instrument} — expresses {view} view",
+                        "direction": direction,
+                        "instrument": instrument.replace("Long ", "").replace("Short ", ""),
+                        "size_hint": self.POSITION_SIZING[size_category],
+                        "entry": "Current market",
+                        "stop": self._suggest_stop(direction, conviction),
+                        "target": "TBD based on market evolution",
+                        "conviction": round(conviction, 2),
+                        "horizon": (
+                            prediction.predictions[0]["horizon"]
+                            if prediction.predictions
+                            else "1-3 months"
+                        ),
+                    }
+                )
 
         return trades
 
@@ -228,20 +231,22 @@ class TradeStage:
         patterns_text = " ".join(pattern.patterns).lower()
 
         if "risk-on" in patterns_text:
-            avoid.extend([
-                "Short volatility (crowded, asymmetry wrong)",
-                "Long duration (against momentum)",
-            ])
+            avoid.extend(
+                [
+                    "Short volatility (crowded, asymmetry wrong)",
+                    "Long duration (against momentum)",
+                ]
+            )
         elif "risk-off" in patterns_text:
-            avoid.extend([
-                "Long high-beta equities (catching falling knife)",
-                "Short USD in risk-off (carry trade unwind risk)",
-            ])
+            avoid.extend(
+                [
+                    "Long high-beta equities (catching falling knife)",
+                    "Short USD in risk-off (carry trade unwind risk)",
+                ]
+            )
 
         if evidence.evidence_gaps:
-            avoid.append(
-                "High-conviction bets on themes with significant evidence gaps"
-            )
+            avoid.append("High-conviction bets on themes with significant evidence gaps")
 
         return avoid
 
@@ -273,6 +278,8 @@ class TradeStage:
         trace.append("=== Stage 8: Trade ===")
         trace.append(f"Trade ideas: {len(output.trades)}")
         for t in output.trades:
-            trace.append(f"  {t['description'][:60]}... ({t['direction']}, conv={t['conviction']:.0%})")
+            trace.append(
+                f"  {t['description'][:60]}... ({t['direction']}, conv={t['conviction']:.0%})"
+            )
         trace.append(f"Trades to avoid: {len(output.trades_to_avoid)}")
         return "\n".join(trace)

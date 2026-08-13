@@ -6,11 +6,9 @@ Key design:
       AND the Agent's track record on similar predictions.
 """
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
-
 
 # ── Confidence Calibration ───────────────────────────────────────────────────
 
@@ -84,7 +82,7 @@ class ConfidenceCalibration(BaseModel):
     # ── Metadata ───────────────────────────────────────────────────────
     total_outcomes_tracked: int = Field(default=0, ge=0)
     calibrated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     @property
@@ -122,7 +120,7 @@ class CalibratedConfidenceSet(BaseModel):
         description="Global multiplier based on overall Agent accuracy",
     )
     generated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     @property

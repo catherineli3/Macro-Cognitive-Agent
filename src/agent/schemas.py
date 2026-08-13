@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 
 @dataclass
@@ -14,23 +14,24 @@ class DailyRunReport:
     This is the single deliverable that captures everything the agent
     produced on a given day — from data to narrative to memo.
     """
+
     run_id: str = ""
     date: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     # Phase outputs
-    regime_classification: Optional[Any] = None  # MacroRegime
-    regime_transition: Optional[Any] = None      # RegimeTransitionModel
+    regime_classification: Any | None = None  # MacroRegime
+    regime_transition: Any | None = None  # RegimeTransitionModel
     historical_analogs: list[Any] = field(default_factory=list)
 
-    capital_flow_report: Optional[Any] = None    # CapitalFlowReport
-    reflexivity_report: Optional[Any] = None
-    narrative_report: Optional[Any] = None
-    expert_debate_report: Optional[Any] = None
+    capital_flow_report: Any | None = None  # CapitalFlowReport
+    reflexivity_report: Any | None = None
+    narrative_report: Any | None = None
+    expert_debate_report: Any | None = None
 
-    research_memo: Optional[Any] = None          # ResearchMemo
-    learning_report: Optional[Any] = None         # LearningReport
-    curiosity_report: Optional[Any] = None        # CuriosityReport
+    research_memo: Any | None = None  # ResearchMemo
+    learning_report: Any | None = None  # LearningReport
+    curiosity_report: Any | None = None  # CuriosityReport
 
     # Dashboard summary
     summary_headline: str = ""
@@ -80,6 +81,8 @@ class DailyRunReport:
         if self.action_items:
             lines.append("Actions:")
             lines.extend(f"  - {a}" for a in self.action_items)
-        lines.append(f"\nModules: {len(self.modules_executed)} ok, {len(self.modules_failed)} failed")
+        lines.append(
+            f"\nModules: {len(self.modules_executed)} ok, {len(self.modules_failed)} failed"
+        )
         lines.append(f"Duration: {self.pipeline_duration_seconds:.1f}s")
         return "\n".join(lines)

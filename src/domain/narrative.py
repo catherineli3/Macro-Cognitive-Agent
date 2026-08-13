@@ -34,6 +34,6 @@ class ConfidenceLevel(str, Enum):
     Used by MacroNarrative.confidence_level alongside confidence_score.
     """
 
-    HIGH = "HIGH"        # confidence >= 0.70
-    MEDIUM = "MEDIUM"    # 0.40 <= confidence < 0.70
-    LOW = "LOW"          # confidence < 0.40
+    HIGH = "HIGH"  # confidence >= 0.70
+    MEDIUM = "MEDIUM"  # 0.40 <= confidence < 0.70
+    LOW = "LOW"  # confidence < 0.40

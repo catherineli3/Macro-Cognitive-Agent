@@ -11,52 +11,91 @@ lead indicator readings (yield curve, credit spreads, VIX, etc.).
 """
 
 from __future__ import annotations
-from typing import Optional
-from src.regime.schemas import RegimeTransitionModel, MacroRegime
 
+from src.regime.schemas import MacroRegime, RegimeTransitionModel
 
 # Base transition matrix: P(next_regime | current_regime)
 # Values are unnormalized — normalized on the fly.
 BASE_TRANSITION_MATRIX = {
     "expansion": {
-        "expansion": 5.0, "late_cycle": 2.0, "inflation_shock": 1.0,
-        "policy_tightening": 0.5, "liquidity_stress": 0.2, "credit_event": 0.1,
-        "recovery": 0.2, "stable_growth": 2.0,
+        "expansion": 5.0,
+        "late_cycle": 2.0,
+        "inflation_shock": 1.0,
+        "policy_tightening": 0.5,
+        "liquidity_stress": 0.2,
+        "credit_event": 0.1,
+        "recovery": 0.2,
+        "stable_growth": 2.0,
     },
     "late_cycle": {
-        "expansion": 1.0, "late_cycle": 3.0, "inflation_shock": 3.0,
-        "policy_tightening": 2.0, "liquidity_stress": 1.0, "credit_event": 1.0,
-        "recovery": 0.5, "stable_growth": 1.0,
+        "expansion": 1.0,
+        "late_cycle": 3.0,
+        "inflation_shock": 3.0,
+        "policy_tightening": 2.0,
+        "liquidity_stress": 1.0,
+        "credit_event": 1.0,
+        "recovery": 0.5,
+        "stable_growth": 1.0,
     },
     "inflation_shock": {
-        "expansion": 0.5, "late_cycle": 1.0, "inflation_shock": 3.0,
-        "policy_tightening": 3.0, "liquidity_stress": 2.0, "credit_event": 1.5,
-        "recovery": 1.0, "stable_growth": 0.5,
+        "expansion": 0.5,
+        "late_cycle": 1.0,
+        "inflation_shock": 3.0,
+        "policy_tightening": 3.0,
+        "liquidity_stress": 2.0,
+        "credit_event": 1.5,
+        "recovery": 1.0,
+        "stable_growth": 0.5,
     },
     "policy_tightening": {
-        "expansion": 0.5, "late_cycle": 1.0, "inflation_shock": 1.0,
-        "policy_tightening": 2.0, "liquidity_stress": 3.0, "credit_event": 2.0,
-        "recovery": 1.5, "stable_growth": 0.5,
+        "expansion": 0.5,
+        "late_cycle": 1.0,
+        "inflation_shock": 1.0,
+        "policy_tightening": 2.0,
+        "liquidity_stress": 3.0,
+        "credit_event": 2.0,
+        "recovery": 1.5,
+        "stable_growth": 0.5,
     },
     "liquidity_stress": {
-        "expansion": 0.2, "late_cycle": 0.5, "inflation_shock": 0.5,
-        "policy_tightening": 1.0, "liquidity_stress": 2.0, "credit_event": 4.0,
-        "recovery": 2.0, "stable_growth": 0.3,
+        "expansion": 0.2,
+        "late_cycle": 0.5,
+        "inflation_shock": 0.5,
+        "policy_tightening": 1.0,
+        "liquidity_stress": 2.0,
+        "credit_event": 4.0,
+        "recovery": 2.0,
+        "stable_growth": 0.3,
     },
     "credit_event": {
-        "expansion": 0.1, "late_cycle": 0.1, "inflation_shock": 0.2,
-        "policy_tightening": 0.3, "liquidity_stress": 1.0, "credit_event": 1.0,
-        "recovery": 5.0, "stable_growth": 0.2,
+        "expansion": 0.1,
+        "late_cycle": 0.1,
+        "inflation_shock": 0.2,
+        "policy_tightening": 0.3,
+        "liquidity_stress": 1.0,
+        "credit_event": 1.0,
+        "recovery": 5.0,
+        "stable_growth": 0.2,
     },
     "recovery": {
-        "expansion": 3.0, "late_cycle": 1.0, "inflation_shock": 0.5,
-        "policy_tightening": 0.3, "liquidity_stress": 0.2, "credit_event": 0.1,
-        "recovery": 2.0, "stable_growth": 3.0,
+        "expansion": 3.0,
+        "late_cycle": 1.0,
+        "inflation_shock": 0.5,
+        "policy_tightening": 0.3,
+        "liquidity_stress": 0.2,
+        "credit_event": 0.1,
+        "recovery": 2.0,
+        "stable_growth": 3.0,
     },
     "stable_growth": {
-        "expansion": 2.0, "late_cycle": 1.5, "inflation_shock": 1.0,
-        "policy_tightening": 1.0, "liquidity_stress": 0.5, "credit_event": 0.2,
-        "recovery": 0.5, "stable_growth": 3.0,
+        "expansion": 2.0,
+        "late_cycle": 1.5,
+        "inflation_shock": 1.0,
+        "policy_tightening": 1.0,
+        "liquidity_stress": 0.5,
+        "credit_event": 0.2,
+        "recovery": 0.5,
+        "stable_growth": 3.0,
     },
 }
 
@@ -71,8 +110,8 @@ class RegimeTransitionDetector:
     def estimate_transition(
         self,
         current_regime: MacroRegime,
-        market_data: Optional[dict] = None,
-        regime_history: Optional[list[dict]] = None,
+        market_data: dict | None = None,
+        regime_history: list[dict] | None = None,
     ) -> RegimeTransitionModel:
         """Estimate transition probabilities from current regime.
 
@@ -103,9 +142,7 @@ class RegimeTransitionDetector:
         timing = self._estimate_timing(stability, market_data)
 
         # Lead indicators to watch
-        lead_indicators = self._identify_lead_indicators(
-            current_regime.regime_label, market_data
-        )
+        lead_indicators = self._identify_lead_indicators(current_regime.regime_label, market_data)
 
         # Transition drivers
         drivers = self._identify_drivers(current_regime, market_data)
@@ -119,9 +156,7 @@ class RegimeTransitionDetector:
             lead_indicators=lead_indicators,
         )
 
-    def _apply_indicators(
-        self, base: dict[str, float], market: Optional[dict]
-    ) -> dict[str, float]:
+    def _apply_indicators(self, base: dict[str, float], market: dict | None) -> dict[str, float]:
         """Modify transition probabilities based on lead indicators."""
         if not market:
             return dict(base)
@@ -147,9 +182,7 @@ class RegimeTransitionDetector:
 
         return adjusted
 
-    def _estimate_timing(
-        self, stability: float, market: Optional[dict]
-    ) -> str:
+    def _estimate_timing(self, stability: float, market: dict | None) -> str:
         if stability < 0.3:
             return "imminent (1-4 weeks)"
         if stability < 0.5:
@@ -158,33 +191,43 @@ class RegimeTransitionDetector:
             return "6-12 months"
         return "no change expected (>12 months)"
 
-    def _identify_lead_indicators(
-        self, regime_label: str, market: Optional[dict]
-    ) -> list[str]:
+    def _identify_lead_indicators(self, regime_label: str, market: dict | None) -> list[str]:
         """Identify which indicators to watch for this regime."""
         indicators_by_regime = {
-            "expansion": ["Yield curve", "Inflation breakevens", "Capacity utilization", "Credit growth"],
+            "expansion": [
+                "Yield curve",
+                "Inflation breakevens",
+                "Capacity utilization",
+                "Credit growth",
+            ],
             "late_cycle": ["Yield curve", "HY spreads", "Consumer confidence", "Housing starts"],
             "inflation_shock": ["CPI mom", "Wage growth", "Breakevens", "Commodity prices"],
             "policy_tightening": ["Swap spreads", "HY OAS", "Loan officer survey", "Repo rates"],
-            "liquidity_stress": ["FRA-OIS spread", "Cross-currency basis", "SOFR-IORB", "TED spread"],
+            "liquidity_stress": [
+                "FRA-OIS spread",
+                "Cross-currency basis",
+                "SOFR-IORB",
+                "TED spread",
+            ],
             "credit_event": ["CDX IG/HY", "OAS widening rate", "Funding stress", "CP issuance"],
             "recovery": ["PMI new orders", "Jobless claims", "Credit impulse", "Housing permits"],
             "stable_growth": ["Real rates", "Earnings growth", "Productivity", "Fiscal impulse"],
         }
         return indicators_by_regime.get(regime_label, ["VIX", "Yield curve", "HY spreads"])
 
-    def _identify_drivers(
-        self, regime: MacroRegime, market: Optional[dict]
-    ) -> list[dict]:
+    def _identify_drivers(self, regime: MacroRegime, market: dict | None) -> list[dict]:
         """Identify the key drivers pushing toward transition."""
         drivers = []
         if regime.monetary_stance == "tightening":
             drivers.append({"driver": "monetary_policy", "direction": "tightening", "impact": 0.7})
         if regime.credit_cycle in ("contraction", "peak"):
-            drivers.append({"driver": "credit_conditions", "direction": "tightening", "impact": 0.6})
+            drivers.append(
+                {"driver": "credit_conditions", "direction": "tightening", "impact": 0.6}
+            )
         if regime.dollar_regime == "strong":
-            drivers.append({"driver": "dollar_strength", "direction": "tightening_global", "impact": 0.5})
+            drivers.append(
+                {"driver": "dollar_strength", "direction": "tightening_global", "impact": 0.5}
+            )
         if regime.volatility_regime in ("high_vol", "crisis"):
             drivers.append({"driver": "volatility", "direction": "destabilizing", "impact": 0.8})
         if not drivers:

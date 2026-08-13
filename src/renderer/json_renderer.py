@@ -21,6 +21,7 @@ class JsonRenderer:
             JSON string.
         """
         import json
+
         return json.dumps(narrative.model_dump(mode="json"), indent=indent, ensure_ascii=False)
 
     def render_dict(self, narrative: MacroNarrative) -> dict:

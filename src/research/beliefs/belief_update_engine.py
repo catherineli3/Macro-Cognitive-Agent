@@ -12,10 +12,9 @@ Uses Beta distribution:
 
 from __future__ import annotations
 
-import math
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
+from src.research.beliefs.evidence_weight import compute_evidence_weight
 from src.research.beliefs.schemas import (
     BeliefDomain,
     BeliefStage,
@@ -23,7 +22,6 @@ from src.research.beliefs.schemas import (
     EvidenceSource,
     ResearchBelief,
 )
-from src.research.beliefs.evidence_weight import compute_evidence_weight
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -64,7 +62,7 @@ class BeliefUpdateEngine:
         title: str,
         domain: BeliefDomain,
         description: str = "",
-        initial_evidence: Optional[list[dict]] = None,
+        initial_evidence: list[dict] | None = None,
     ) -> ResearchBelief:
         """Create a new belief with Beta(1,1) prior."""
         belief = ResearchBelief(
@@ -88,8 +86,13 @@ class BeliefUpdateEngine:
                     confidence=ev_data.get("confidence", 0.7),
                 )
 
-        logger.info("belief_initialized | %s | domain=%s alpha=%.2f beta=%.2f",
-                     belief.id[:8], domain.value, belief.alpha, belief.beta)
+        logger.info(
+            "belief_initialized | %s | domain=%s alpha=%.2f beta=%.2f",
+            belief.id[:8],
+            domain.value,
+            belief.alpha,
+            belief.beta,
+        )
         return belief
 
     def add_evidence(
@@ -183,9 +186,7 @@ class BeliefUpdateEngine:
         if not belief.last_evidence_at:
             return
 
-        delta_days = (
-            datetime.now(timezone.utc) - belief.last_evidence_at
-        ).total_seconds() / 86400.0
+        delta_days = (datetime.now(UTC) - belief.last_evidence_at).total_seconds() / 86400.0
 
         if delta_days <= 0:
             return
@@ -202,7 +203,10 @@ class BeliefUpdateEngine:
 
         logger.info(
             "belief_decay | %s delta=%.1fd decay=%.3f conf=%.3f",
-            belief.id[:8], delta_days, belief.decay, belief.confidence,
+            belief.id[:8],
+            delta_days,
+            belief.decay,
+            belief.confidence,
         )
 
     def get_evidence_breakdown(self, belief: ResearchBelief) -> dict:

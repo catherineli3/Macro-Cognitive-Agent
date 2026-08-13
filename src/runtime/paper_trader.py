@@ -27,13 +27,11 @@ from __future__ import annotations
 
 import csv
 import json
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import date as date_type
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Callable
 
-from src.schemas.macro_snapshot import MacroSnapshot, MarketSnapshot
 from src.research.evolution.regime_gate import RegimeSnapshot
 from src.shared.logging import get_logger
 
@@ -49,7 +47,7 @@ logger = get_logger(__name__)
 class ReplayDay:
     """A single day in the replay — market data + metadata."""
 
-    date: str                         # YYYY-MM-DD
+    date: str  # YYYY-MM-DD
     data: dict[str, float] = field(default_factory=dict)
     regime_override: RegimeSnapshot | None = None
 
@@ -121,12 +119,12 @@ class ReplayResult:
             f"=== Replay: {self.start_date} → {self.end_date} ===",
             f"Days: {s.total_days}, Cycles: {s.completed_cycles}/{s.total_days} "
             f"({s.completion_rate:.1%})",
-            f"",
+            "",
             f"Predictions: {s.predictions_made} made, {s.predictions_evaluated} evaluated",
             f"  Hit Rate: {s.hit_rate:.1%} ({s.predictions_correct}/{s.predictions_evaluated})",
             f"  Invalidated Theses: {s.invalidated_theses}",
-            f"",
-            f"Evolution:",
+            "",
+            "Evolution:",
             f"  Principles: {s.principles_created} new, {s.principles_promoted} promoted",
             f"  Frameworks: {s.frameworks_created} created",
             f"  Beliefs: {s.beliefs_updated} updated",
@@ -134,7 +132,7 @@ class ReplayResult:
             f"  Memory: {s.evolving_memory_entries} entries",
         ]
         if self.errors:
-            lines.append(f"")
+            lines.append("")
             lines.append(f"Errors: {len(self.errors)}")
         return "\n".join(lines)
 
@@ -251,23 +249,35 @@ class PaperTrader:
 
                 # Scheduler stats
                 if run_report.scheduler_report:
-                    self._stats.predictions_evaluated += run_report.scheduler_report.predictions_evaluated
+                    self._stats.predictions_evaluated += (
+                        run_report.scheduler_report.predictions_evaluated
+                    )
                     self._stats.predictions_correct += run_report.scheduler_report.correct
                     self._stats.invalidated_theses += run_report.scheduler_report.invalidated_theses
 
                 # Record daily result
-                result.daily_results.append({
-                    "date": day.date,
-                    "status": run_report.status,
-                    "preds_registered": run_report.predictions_registered,
-                    "preds_evaluated": run_report.scheduler_report.predictions_evaluated if run_report.scheduler_report else 0,
-                    "correct": run_report.scheduler_report.correct if run_report.scheduler_report else 0,
-                    "thesis_title": (
-                        run_report.cycle_result.thesis.title[:120]
-                        if run_report.cycle_result and run_report.cycle_result.thesis
-                        else ""
-                    ),
-                })
+                result.daily_results.append(
+                    {
+                        "date": day.date,
+                        "status": run_report.status,
+                        "preds_registered": run_report.predictions_registered,
+                        "preds_evaluated": (
+                            run_report.scheduler_report.predictions_evaluated
+                            if run_report.scheduler_report
+                            else 0
+                        ),
+                        "correct": (
+                            run_report.scheduler_report.correct
+                            if run_report.scheduler_report
+                            else 0
+                        ),
+                        "thesis_title": (
+                            run_report.cycle_result.thesis.title[:120]
+                            if run_report.cycle_result and run_report.cycle_result.thesis
+                            else ""
+                        ),
+                    }
+                )
 
             except Exception as e:
                 self._stats.total_days += 1
@@ -313,6 +323,7 @@ class PaperTrader:
             Ordered list of ReplayDay objects.
         """
         import random
+
         random.seed(seed)
 
         start = datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -323,9 +334,14 @@ class PaperTrader:
             raise ValueError(f"Invalid date range: {start_date} → {end_date}")
 
         base = base_values or {
-            "spx": 4000.0, "vix": 20.0, "dxy": 100.0,
-            "us10y": 3.5, "us2y": 3.8, "hyg": 75.0,
-            "gold": 1900.0, "copper": 3.8,
+            "spx": 4000.0,
+            "vix": 20.0,
+            "dxy": 100.0,
+            "us10y": 3.5,
+            "us2y": 3.8,
+            "hyg": 75.0,
+            "gold": 1900.0,
+            "copper": 3.8,
         }
 
         current = dict(base)
@@ -390,7 +406,9 @@ class PaperTrader:
             current["hyg"] = current["hyg"] * (1 + spx_return * 0.5 + random.gauss(0, 0.002))
 
             # Gold: inverse to real rates
-            current["gold"] = current["gold"] * (1 - 0.5 * (current["us10y"] - 3.5) / 100 + random.gauss(0, 0.005))
+            current["gold"] = current["gold"] * (
+                1 - 0.5 * (current["us10y"] - 3.5) / 100 + random.gauss(0, 0.005)
+            )
 
             # Copper: growth proxy
             current["copper"] = current["copper"] * (1 + spx_return * 0.7 + random.gauss(0, 0.005))
@@ -409,10 +427,9 @@ class PaperTrader:
         Previous values (prev_spx etc.) are automatically computed.
         """
         import csv as csv_mod
-        from collections import defaultdict
 
         rows = []
-        with open(source, "r", encoding="utf-8-sig") as f:
+        with open(source, encoding="utf-8-sig") as f:
             reader = csv_mod.DictReader(f)
             for row in reader:
                 rows.append(row)
@@ -477,17 +494,37 @@ class PaperTrader:
 
         with open(path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow([
-                "prediction_id", "thesis_id", "date", "direction", "asset",
-                "confidence", "horizon_days", "expected_date", "status",
-                "actual_value", "thesis_title",
-            ])
+            writer.writerow(
+                [
+                    "prediction_id",
+                    "thesis_id",
+                    "date",
+                    "direction",
+                    "asset",
+                    "confidence",
+                    "horizon_days",
+                    "expected_date",
+                    "status",
+                    "actual_value",
+                    "thesis_title",
+                ]
+            )
             for p in preds:
-                writer.writerow([
-                    p.prediction_id, p.thesis_id, p.date, p.direction,
-                    p.asset, p.confidence, p.horizon_days, p.expected_date,
-                    p.status, p.actual_value, p.thesis_title,
-                ])
+                writer.writerow(
+                    [
+                        p.prediction_id,
+                        p.thesis_id,
+                        p.date,
+                        p.direction,
+                        p.asset,
+                        p.confidence,
+                        p.horizon_days,
+                        p.expected_date,
+                        p.status,
+                        p.actual_value,
+                        p.thesis_title,
+                    ]
+                )
 
         logger.info("Predictions CSV saved to %s (%d rows)", path, len(preds))
 
@@ -496,15 +533,27 @@ class PaperTrader:
         path = self.output_dir / "daily_summary.csv"
         with open(path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow([
-                "date", "status", "preds_registered", "preds_evaluated",
-                "correct", "thesis_title",
-            ])
+            writer.writerow(
+                [
+                    "date",
+                    "status",
+                    "preds_registered",
+                    "preds_evaluated",
+                    "correct",
+                    "thesis_title",
+                ]
+            )
             for d in result.daily_results:
-                writer.writerow([
-                    d["date"], d["status"], d["preds_registered"],
-                    d["preds_evaluated"], d["correct"], d["thesis_title"],
-                ])
+                writer.writerow(
+                    [
+                        d["date"],
+                        d["status"],
+                        d["preds_registered"],
+                        d["preds_evaluated"],
+                        d["correct"],
+                        d["thesis_title"],
+                    ]
+                )
 
         logger.info("Daily summary CSV saved to %s", path)
 
@@ -514,53 +563,59 @@ class PaperTrader:
 
         lines = [
             f"# Agent Growth Report — {result.start_date} → {result.end_date}",
-            f"",
-            f"## Executive Summary",
-            f"",
+            "",
+            "## Executive Summary",
+            "",
             f"- **Days Replayed**: {s.total_days}",
             f"- **Completed Cycles**: {s.completed_cycles}/{s.total_days} ({s.completion_rate:.1%})",
             f"- **Predictions**: {s.predictions_made} made, {s.predictions_evaluated} evaluated",
             f"- **Hit Rate**: {s.hit_rate:.1%}",
             f"- **Evolution**: {s.principles_created} principles, {s.frameworks_created} frameworks",
-            f"",
-            f"## Hypothesis Quality",
-            f"",
-            f"| Metric | Value |",
-            f"|--------|-------|",
+            "",
+            "## Hypothesis Quality",
+            "",
+            "| Metric | Value |",
+            "|--------|-------|",
             f"| Hit Rate | {s.hit_rate:.1%} |",
             f"| Total Predictions | {s.predictions_made} |",
             f"| Evaluated | {s.predictions_evaluated} |",
             f"| Invalidated Theses | {s.invalidated_theses} |",
-            f"",
-            f"## Framework Evolution",
-            f"",
-            f"| Metric | Value |",
-            f"|--------|-------|",
+            "",
+            "## Framework Evolution",
+            "",
+            "| Metric | Value |",
+            "|--------|-------|",
             f"| Frameworks Created | {s.frameworks_created} |",
             f"| Principles Created | {s.principles_created} |",
             f"| Principles Promoted | {s.principles_promoted} |",
             f"| Beliefs Updated | {s.beliefs_updated} |",
             f"| Conflicts Resolved | {s.conflicts_resolved} |",
-            f"",
-            f"## Assessment",
-            f"",
+            "",
+            "## Assessment",
+            "",
         ]
 
         # Self-evaluation
         if s.hit_rate > 0.65:
-            lines.append("✅ **Strong**: Agent's prediction accuracy is significantly above random.")
+            lines.append(
+                "✅ **Strong**: Agent's prediction accuracy is significantly above random."
+            )
         elif s.hit_rate > 0.55:
             lines.append("⚠️ **Moderate**: Agent shows directional edge but room for improvement.")
         else:
             lines.append("❌ **Weak**: Agent does not demonstrate reliable prediction capability.")
 
         if s.frameworks_created > 0:
-            lines.append(f"🧠 **Learning**: Agent formed {s.frameworks_created} new frameworks — knowledge is evolving.")
+            lines.append(
+                f"🧠 **Learning**: Agent formed {s.frameworks_created} new frameworks — knowledge is evolving."
+            )
         else:
-            lines.append("⚠️ **Static**: No new frameworks formed — knowledge may not be accumulating.")
+            lines.append(
+                "⚠️ **Static**: No new frameworks formed — knowledge may not be accumulating."
+            )
 
         lines.append("")
-        lines.append(f"*Generated: {datetime.now(timezone.utc).isoformat()}*")
+        lines.append(f"*Generated: {datetime.now(UTC).isoformat()}*")
 
         path = self.output_dir / "growth_report.md"
         path.write_text("\n".join(lines), encoding="utf-8")

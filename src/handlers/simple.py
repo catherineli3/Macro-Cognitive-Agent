@@ -15,7 +15,7 @@ Capability keys follow "simple.<action>":
     simple.validate   → SimpleValidateHandler  (artifact: "validation")
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from src.domain.execution import TaskResultStatus
 from src.interfaces.task_handler import TaskHandlerInterface
@@ -37,8 +37,8 @@ class SimpleRetrieveHandler(TaskHandlerInterface):
         return "SimpleRetrieveHandler"
 
     async def execute(self, task: Task, context) -> TaskResult:
-        started = datetime.now(timezone.utc)
-        completed = datetime.now(timezone.utc)
+        started = datetime.now(UTC)
+        completed = datetime.now(UTC)
 
         return TaskResult(
             task_id=task.id,
@@ -74,8 +74,8 @@ class SimpleProcessHandler(TaskHandlerInterface):
         return "SimpleProcessHandler"
 
     async def execute(self, task: Task, context) -> TaskResult:
-        started = datetime.now(timezone.utc)
-        completed = datetime.now(timezone.utc)
+        started = datetime.now(UTC)
+        completed = datetime.now(UTC)
 
         raw = context.get_artifact("raw_data", {})
 
@@ -112,8 +112,8 @@ class SimpleAnalyzeHandler(TaskHandlerInterface):
         return "SimpleAnalyzeHandler"
 
     async def execute(self, task: Task, context) -> TaskResult:
-        started = datetime.now(timezone.utc)
-        completed = datetime.now(timezone.utc)
+        started = datetime.now(UTC)
+        completed = datetime.now(UTC)
 
         raw = context.get_artifact("raw_data", {})
         processed = context.get_artifact("processed_data", {})
@@ -157,8 +157,8 @@ class SimpleGenerateHandler(TaskHandlerInterface):
         return "SimpleGenerateHandler"
 
     async def execute(self, task: Task, context) -> TaskResult:
-        started = datetime.now(timezone.utc)
-        completed = datetime.now(timezone.utc)
+        started = datetime.now(UTC)
+        completed = datetime.now(UTC)
 
         analysis = context.get_artifact("analysis", {})
 
@@ -195,8 +195,8 @@ class SimpleValidateHandler(TaskHandlerInterface):
         return "SimpleValidateHandler"
 
     async def execute(self, task: Task, context) -> TaskResult:
-        started = datetime.now(timezone.utc)
-        completed = datetime.now(timezone.utc)
+        started = datetime.now(UTC)
+        completed = datetime.now(UTC)
 
         all_artifacts = context.artifacts
 

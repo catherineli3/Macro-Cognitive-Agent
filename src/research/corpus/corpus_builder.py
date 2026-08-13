@@ -13,30 +13,26 @@ prompts — all prompts derived from real institutional research.
 
 from __future__ import annotations
 
-import json
-import os
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
-from src.research.corpus.schemas import (
-    ResearchDocument,
-    ReasoningUnit,
-    PredictionUnit,
-    TradeIdea,
-    CorpusCounterArgument,
-    CorpusEntry,
-    MacroResearchCorpus,
-    DocumentSource,
-    DocumentType,
-)
-from src.research.corpus.pdf_parser import PDFParser
+from src.research.corpus.argument_extractor import ArgumentExtractor
 from src.research.corpus.html_parser import HTMLParser
 from src.research.corpus.memo_segmenter import MemoSegmenter
-from src.research.corpus.reasoning_extractor import ReasoningExtractor
-from src.research.corpus.argument_extractor import ArgumentExtractor
+from src.research.corpus.pdf_parser import PDFParser
 from src.research.corpus.prediction_extractor import PredictionExtractor
+from src.research.corpus.reasoning_extractor import ReasoningExtractor
+from src.research.corpus.schemas import (
+    CorpusCounterArgument,
+    CorpusEntry,
+    DocumentSource,
+    MacroResearchCorpus,
+    PredictionUnit,
+    ReasoningUnit,
+    ResearchDocument,
+    TradeIdea,
+)
 from src.research.corpus.trade_extractor import TradeExtractor
 
 
@@ -56,8 +52,8 @@ class CorpusBuilder:
     """
 
     # Quality thresholds
-    MIN_PARSE_QUALITY = 0.3          # Minimum parse quality to include
-    MIN_REASONING_SCORE = 0.25       # Minimum reasoning unit quality
+    MIN_PARSE_QUALITY = 0.3  # Minimum parse quality to include
+    MIN_REASONING_SCORE = 0.25  # Minimum reasoning unit quality
     GRADE_THRESHOLDS = {
         "A": 0.80,
         "B": 0.60,
@@ -120,7 +116,7 @@ class CorpusBuilder:
             try:
                 doc = self.add_pdf(str(pdf_file))
                 docs.append(doc)
-            except Exception as e:
+            except Exception:
                 # Log and skip failed parses
                 pass
 
@@ -227,7 +223,7 @@ class CorpusBuilder:
     def query_by_theme(self, theme: str) -> list[ResearchDocument]:
         """Get all documents about a specific theme."""
         # Build index if needed
-        if not hasattr(self, '_theme_index') or not self._theme_index:
+        if not hasattr(self, "_theme_index") or not self._theme_index:
             self._theme_index = self._build_theme_index(self._documents)
 
         doc_ids = self._theme_index.get(theme, [])
@@ -339,7 +335,9 @@ class CorpusBuilder:
         score = doc.parse_quality * 0.3
 
         if doc.reasoning_units:
-            avg_quality = sum(u.quality_score for u in doc.reasoning_units) / len(doc.reasoning_units)
+            avg_quality = sum(u.quality_score for u in doc.reasoning_units) / len(
+                doc.reasoning_units
+            )
             score += avg_quality * 0.3
 
         if doc.predictions:

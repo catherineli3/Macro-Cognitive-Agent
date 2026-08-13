@@ -6,11 +6,8 @@ No real API calls — all template string assertions.
 
 from __future__ import annotations
 
-import pytest
-
-from src.llm.narrative import LLMNarrativeEngine, LLMNarrativeResult
-from src.llm.retriever import HistoryRecord, HistoryRetriever
-
+from src.llm.narrative import LLMNarrativeEngine
+from src.llm.retriever import HistoryRecord
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -19,33 +16,40 @@ from src.llm.retriever import HistoryRecord, HistoryRetriever
 
 class FakeLLMClientSuccess:
     """Fake client that returns valid JSON string."""
+
     def chat(self, messages, temperature=0.3):
-        return ('{"executive_summary": "测试摘要", '
-                '"scenario_analysis": "测试情景", '
-                '"action_recommendations": ["建议1"], '
-                '"belief_revision": "测试信念修正"}')
+        return (
+            '{"executive_summary": "测试摘要", '
+            '"scenario_analysis": "测试情景", '
+            '"action_recommendations": ["建议1"], '
+            '"belief_revision": "测试信念修正"}'
+        )
 
 
 class FakeLLMClientFail:
     """Fake client that raises an error."""
+
     def chat(self, messages, temperature=0.3):
         raise RuntimeError("LLM unavailable")
 
 
 class FakeLLMClientGarbage:
     """Fake client that returns non-JSON garbage."""
+
     def chat(self, messages, temperature=0.3):
         return "this is not valid json {{ at all"
 
 
 class FakeRetrieverEmpty:
     """Retriever that returns empty history."""
+
     def retrieve(self, structured_input):
         return []
 
 
 class FakeRetrieverWithHistory:
     """Retriever that returns 2 history records."""
+
     def retrieve(self, structured_input):
         return [
             HistoryRecord("2026-08-10", "liquidity", "历史流动性收紧信号", 0.85),
@@ -55,6 +59,7 @@ class FakeRetrieverWithHistory:
 
 class FakeRetrieverFails:
     """Retriever that raises an exception."""
+
     def retrieve(self, structured_input):
         raise FileNotFoundError("beliefs.json not found")
 

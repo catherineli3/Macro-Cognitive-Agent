@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """BeliefMemoryStore — JSON-file backed belief persistence.
 
 Sprint 8 introduces persistent belief storage. The store handles:
@@ -14,12 +12,13 @@ Design:
     - The store owns NO domain knowledge beyond BeliefRecord fields.
 """
 
+from __future__ import annotations
+
 import json
 import os
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 from src.domain.memory import TransitionType
 from src.schemas.memory import BeliefRecord
@@ -136,7 +135,7 @@ class BeliefMemoryStore:
 
     # ── Query Operations ─────────────────────────────────────────────────
 
-    def last_belief(self, dimension: str) -> Optional[BeliefRecord]:
+    def last_belief(self, dimension: str) -> BeliefRecord | None:
         """Most recent belief for a dimension.
 
         Args:
@@ -194,7 +193,7 @@ class BeliefMemoryStore:
     def _detect_transition(
         self,
         current: BeliefRecord,
-        prior: Optional[BeliefRecord],
+        prior: BeliefRecord | None,
     ) -> TransitionType:
         """Compute the transition type for a new belief.
 
@@ -229,7 +228,7 @@ class BeliefMemoryStore:
 
         if self._file_path.exists():
             try:
-                with open(self._file_path, "r", encoding="utf-8") as f:
+                with open(self._file_path, encoding="utf-8") as f:
                     raw = json.load(f)
                 loaded_records: list[BeliefRecord] = []
                 for item in raw.get("records", []):
@@ -271,7 +270,7 @@ class BeliefMemoryStore:
 
         payload = {
             "version": "1.0",
-            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(UTC).isoformat(),
             "count": len(self._records),
             "records": [r.model_dump(mode="json") for r in self._records],
         }
@@ -297,7 +296,4 @@ class BeliefMemoryStore:
             self._dirty = False
 
     def __repr__(self) -> str:
-        return (
-            f"<BeliefMemoryStore path={self._file_path.name} "
-            f"records={self.belief_count}>"
-        )
+        return f"<BeliefMemoryStore path={self._file_path.name} " f"records={self.belief_count}>"

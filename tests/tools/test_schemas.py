@@ -1,4 +1,5 @@
 """Tests for ToolResult schema and ToolResultStatus enum."""
+
 import pytest
 
 from src.domain.tool import ToolResultStatus
@@ -71,9 +72,7 @@ class TestToolResult:
 
     def test_latency_non_negative(self):
         """Latency must be >= 0."""
-        result = ToolResult(
-            status=ToolResultStatus.SUCCESS, tool_name="t", latency_ms=0.0
-        )
+        result = ToolResult(status=ToolResultStatus.SUCCESS, tool_name="t", latency_ms=0.0)
         assert result.latency_ms == 0.0
 
     def test_completed_at_auto_set(self):

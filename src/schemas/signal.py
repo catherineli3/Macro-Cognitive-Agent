@@ -4,13 +4,11 @@ Sprint 2 defines the canonical signal format. Every signal in the system
 MUST conform to this schema. No dict or DataFrame across module boundaries.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
-
 
 # ── Shared enums ─────────────────────────────────────────────────────────
 
@@ -18,17 +16,17 @@ from pydantic import BaseModel, Field
 class SignalDirection(str, Enum):
     """Market-implied direction of the signal."""
 
-    BULLISH = "bullish"    # Positive for risk assets / accommodative conditions
-    BEARISH = "bearish"    # Negative for risk assets / tightening conditions
-    NEUTRAL = "neutral"    # No clear directional bias
+    BULLISH = "bullish"  # Positive for risk assets / accommodative conditions
+    BEARISH = "bearish"  # Negative for risk assets / tightening conditions
+    NEUTRAL = "neutral"  # No clear directional bias
 
 
 class SignalStrength(str, Enum):
     """Confidence-weighted severity of the signal."""
 
-    STRONG = "strong"      # Clear rule breach, high confidence
+    STRONG = "strong"  # Clear rule breach, high confidence
     MODERATE = "moderate"  # Rule breach, medium confidence
-    WEAK = "weak"          # Borderline breach, low confidence
+    WEAK = "weak"  # Borderline breach, low confidence
 
 
 # ── Evidence ──────────────────────────────────────────────────────────────
@@ -45,13 +43,15 @@ class SignalEvidence(BaseModel):
     rule_id: str = Field(..., description="Unique rule identifier, e.g. 'threshold_dxy_strong'")
     rule_description: str = Field(..., description="Human-readable rule description")
     input_value: float = Field(..., description="Actual observed value that triggered the rule")
-    condition: str = Field(..., description="The condition that was evaluated, e.g. 'value > 105.0'")
+    condition: str = Field(
+        ..., description="The condition that was evaluated, e.g. 'value > 105.0'"
+    )
     interpretation: str = Field(
         ...,
         description="Financial meaning in plain language, e.g. 'Financial Conditions Tightening'",
     )
     evaluated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="When the rule was evaluated",
     )
 
@@ -77,20 +77,22 @@ class MacroSignalSchema(BaseModel):
         default_factory=lambda: uuid4().hex[:12],
         description="Unique signal identifier (deterministic in production via hash)",
     )
-    indicator: str = Field(..., min_length=1, max_length=20, description="Indicator symbol, e.g. 'DXY'")
+    indicator: str = Field(
+        ..., min_length=1, max_length=20, description="Indicator symbol, e.g. 'DXY'"
+    )
     dimension: str = Field(..., description="Hypothesis dimension, e.g. 'Liquidity', 'Credit'")
     direction: SignalDirection = Field(..., description="Market-implied direction")
     strength: SignalStrength = Field(..., description="Signal severity level")
     confidence: float = Field(default=0.5, ge=0.0, le=1.0, description="Confidence score 0-1")
     timestamp: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="Signal generation timestamp (timezone-aware)",
     )
     evidence: list[SignalEvidence] = Field(
         default_factory=list,
         description="Structured evidence chain explaining signal provenance",
     )
-    data_timestamp: Optional[datetime] = Field(
+    data_timestamp: datetime | None = Field(
         default=None,
         description="Timestamp of the input data that generated this signal",
     )
@@ -121,7 +123,7 @@ class SignalSnapshot(BaseModel):
     """
 
     generated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
     signals: list[MacroSignalSchema] = Field(default_factory=list)
     summary: str = Field(default="", description="One-line summary of the macro signal picture")
@@ -206,7 +208,7 @@ class CompositeSignal(BaseModel):
         description="Any contradictory signals found during composition",
     )
     generated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     def __repr__(self) -> str:
@@ -278,7 +280,7 @@ class MacroTheme(BaseModel):
         le=1.0,
     )
     generated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     def __repr__(self) -> str:
@@ -290,11 +292,11 @@ class CompositeSignalSnapshot(BaseModel):
     """A point-in-time snapshot of all composite signals and macro themes."""
 
     generated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
     composite_signals: list[CompositeSignal] = Field(default_factory=list)
     macro_themes: list[MacroTheme] = Field(default_factory=list)
-    dominant_theme: Optional[str] = Field(
+    dominant_theme: str | None = Field(
         default=None,
         description="The single most dominant macro theme",
     )

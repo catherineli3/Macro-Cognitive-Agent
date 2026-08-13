@@ -11,11 +11,9 @@ Handles HTML content from:
 from __future__ import annotations
 
 import re
-import io
-from typing import Optional
 
-from src.research.corpus.schemas import ResearchDocument, Paragraph
 from src.research.corpus.pdf_parser import PDFParser
+from src.research.corpus.schemas import ResearchDocument
 
 
 class HTMLParser:
@@ -26,19 +24,19 @@ class HTMLParser:
     """
 
     DOMAIN_SOURCE_MAP = {
-        'federalreserve.gov': 'fed',
-        'ecb.europa.eu': 'ecb',
-        'boj.or.jp': 'boj',
-        'bis.org': 'bis',
-        'imf.org': 'imf',
-        'worldbank.org': 'world_bank',
-        'brookings.edu': 'brookings',
-        'blackrock.com': 'blackrock',
-        'apolloacademy.com': 'apollo',
-        'oaktreecapital.com': 'howard_marks',
-        'bridgewater.com': 'bridgewater',
-        'gavekal.com': 'gavekal',
-        'bcaresearch.com': 'bca',
+        "federalreserve.gov": "fed",
+        "ecb.europa.eu": "ecb",
+        "boj.or.jp": "boj",
+        "bis.org": "bis",
+        "imf.org": "imf",
+        "worldbank.org": "world_bank",
+        "brookings.edu": "brookings",
+        "blackrock.com": "blackrock",
+        "apolloacademy.com": "apollo",
+        "oaktreecapital.com": "howard_marks",
+        "bridgewater.com": "bridgewater",
+        "gavekal.com": "gavekal",
+        "bcaresearch.com": "bca",
     }
 
     def __init__(self):
@@ -65,16 +63,14 @@ class HTMLParser:
     def parse_from_url(self, url: str) -> ResearchDocument:
         """Fetch and parse HTML from URL."""
         import urllib.request
+
         try:
-            req = urllib.request.Request(
-                url,
-                headers={'User-Agent': 'MacroResearchAgent/5.1'}
-            )
+            req = urllib.request.Request(url, headers={"User-Agent": "MacroResearchAgent/5.1"})
             with urllib.request.urlopen(req, timeout=30) as response:
-                html = response.read().decode('utf-8', errors='replace')
+                html = response.read().decode("utf-8", errors="replace")
             return self.parse_html(html, url=url)
         except urllib.error.URLError as e:
-            raise IOError(f"Failed to fetch {url}: {e}")
+            raise OSError(f"Failed to fetch {url}: {e}")
 
     def parse_batch(self, urls: list[str]) -> list[ResearchDocument]:
         """Parse multiple URLs."""
@@ -82,7 +78,7 @@ class HTMLParser:
         for url in urls:
             try:
                 docs.append(self.parse_from_url(url))
-            except IOError:
+            except OSError:
                 docs.append(ResearchDocument(url=url, parse_quality=0.0))
         return docs
 
@@ -91,39 +87,39 @@ class HTMLParser:
     def _extract_text(self, html: str) -> str:
         """Extract clean text from HTML using regex."""
         # Remove scripts and styles
-        html = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.DOTALL | re.IGNORECASE)
-        html = re.sub(r'<style[^>]*>.*?</style>', '', html, flags=re.DOTALL | re.IGNORECASE)
-        html = re.sub(r'<!--.*?-->', '', html, flags=re.DOTALL)
-        html = re.sub(r'<nav[^>]*>.*?</nav>', '', html, flags=re.DOTALL | re.IGNORECASE)
-        html = re.sub(r'<footer[^>]*>.*?</footer>', '', html, flags=re.DOTALL | re.IGNORECASE)
+        html = re.sub(r"<script[^>]*>.*?</script>", "", html, flags=re.DOTALL | re.IGNORECASE)
+        html = re.sub(r"<style[^>]*>.*?</style>", "", html, flags=re.DOTALL | re.IGNORECASE)
+        html = re.sub(r"<!--.*?-->", "", html, flags=re.DOTALL)
+        html = re.sub(r"<nav[^>]*>.*?</nav>", "", html, flags=re.DOTALL | re.IGNORECASE)
+        html = re.sub(r"<footer[^>]*>.*?</footer>", "", html, flags=re.DOTALL | re.IGNORECASE)
 
         # Remove all HTML tags
-        text = re.sub(r'<[^>]+>', ' ', html)
+        text = re.sub(r"<[^>]+>", " ", html)
 
         # Decode common HTML entities
-        text = text.replace('&amp;', '&')
-        text = text.replace('&lt;', '<')
-        text = text.replace('&gt;', '>')
-        text = text.replace('&quot;', '"')
-        text = text.replace('&#39;', "'")
-        text = text.replace('&nbsp;', ' ')
+        text = text.replace("&amp;", "&")
+        text = text.replace("&lt;", "<")
+        text = text.replace("&gt;", ">")
+        text = text.replace("&quot;", '"')
+        text = text.replace("&#39;", "'")
+        text = text.replace("&nbsp;", " ")
 
         return text
 
     def _clean_html_text(self, text: str) -> str:
         """Clean extracted HTML text."""
         # Collapse whitespace
-        text = re.sub(r'[ \t]+', ' ', text)
+        text = re.sub(r"[ \t]+", " ", text)
         # Remove multiple blank lines
-        text = re.sub(r'\n\s*\n\s*\n+', '\n\n', text)
+        text = re.sub(r"\n\s*\n\s*\n+", "\n\n", text)
         # Strip each line
-        lines = [line.strip() for line in text.split('\n')]
+        lines = [line.strip() for line in text.split("\n")]
         # Remove leading/trailing empty lines
         while lines and not lines[0]:
             lines.pop(0)
         while lines and not lines[-1]:
             lines.pop()
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def _domain_to_source_hint(self, url: str) -> str:
         """Map URL domain to source identification hint."""

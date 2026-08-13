@@ -1,9 +1,10 @@
 """Tests for Sprint 2 schema and domain models."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
+from src.domain.signal import RuleType
 from src.schemas.signal import (
     MacroSignalSchema,
     SignalDirection,
@@ -11,7 +12,6 @@ from src.schemas.signal import (
     SignalSnapshot,
     SignalStrength,
 )
-from src.domain.signal import RuleType
 
 
 class TestSignalEvidence:
@@ -72,7 +72,7 @@ class TestMacroSignalSchema:
             strength=SignalStrength.MODERATE,
             confidence=0.75,
             evidence=[ev],
-            data_timestamp=datetime(2026, 7, 13, tzinfo=timezone.utc),
+            data_timestamp=datetime(2026, 7, 13, tzinfo=UTC),
         )
         assert len(sig.evidence) == 1
         assert sig.evidence[0].interpretation == "Strong dollar — tightening conditions"
@@ -141,12 +141,18 @@ class TestSignalSnapshot:
 
     def test_snapshot_with_signals(self) -> None:
         sig1 = MacroSignalSchema(
-            indicator="DXY", dimension="Liquidity",
-            direction=SignalDirection.BEARISH, strength=SignalStrength.MODERATE, confidence=0.7,
+            indicator="DXY",
+            dimension="Liquidity",
+            direction=SignalDirection.BEARISH,
+            strength=SignalStrength.MODERATE,
+            confidence=0.7,
         )
         sig2 = MacroSignalSchema(
-            indicator="VIX", dimension="Risk_Appetite",
-            direction=SignalDirection.BEARISH, strength=SignalStrength.STRONG, confidence=0.9,
+            indicator="VIX",
+            dimension="Risk_Appetite",
+            direction=SignalDirection.BEARISH,
+            strength=SignalStrength.STRONG,
+            confidence=0.9,
         )
         snap = SignalSnapshot(signals=[sig1, sig2])
         assert snap.count == 2

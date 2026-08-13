@@ -14,14 +14,13 @@ These become training data for V5.2 Trade Stage prompts.
 from __future__ import annotations
 
 import re
-from typing import Optional
 
+from src.research.corpus.memo_segmenter import MemoSegmenter
 from src.research.corpus.schemas import (
-    ResearchDocument,
     Paragraph,
+    ResearchDocument,
     TradeIdea,
 )
-from src.research.corpus.memo_segmenter import MemoSegmenter
 
 
 class TradeExtractor:
@@ -31,67 +30,67 @@ class TradeExtractor:
 
     DIRECTION_MARKERS: dict[str, list[str]] = {
         "long": [
-            r'\b(?:long|buy|overweight|add|accumulate|initiate\s+long)\b',
-            r'\b(?:bullish|constructive|positive|favorable)\s+(?:on|view|outlook|stance)\b',
-            r'\b(?:we\s+(?:like|favor|prefer|recommend|advocate))\b',
-            r'\b(?:upside|appreciation|outperformance)\s+(?:potential|case|scenario)\b',
+            r"\b(?:long|buy|overweight|add|accumulate|initiate\s+long)\b",
+            r"\b(?:bullish|constructive|positive|favorable)\s+(?:on|view|outlook|stance)\b",
+            r"\b(?:we\s+(?:like|favor|prefer|recommend|advocate))\b",
+            r"\b(?:upside|appreciation|outperformance)\s+(?:potential|case|scenario)\b",
         ],
         "short": [
-            r'\b(?:short|sell|underweight|reduce|trim|exit|initiate\s+short)\b',
-            r'\b(?:bearish|cautious|negative|unfavorable)\s+(?:on|view|outlook|stance)\b',
-            r'\b(?:we\s+(?:dislike|avoid|recommend\s+sell|advise\s+against))\b',
-            r'\b(?:downside|depreciation|underperformance)\s+(?:risk|potential|case)\b',
+            r"\b(?:short|sell|underweight|reduce|trim|exit|initiate\s+short)\b",
+            r"\b(?:bearish|cautious|negative|unfavorable)\s+(?:on|view|outlook|stance)\b",
+            r"\b(?:we\s+(?:dislike|avoid|recommend\s+sell|advise\s+against))\b",
+            r"\b(?:downside|depreciation|underperformance)\s+(?:risk|potential|case)\b",
         ],
         "neutral": [
-            r'\b(?:neutral|market[\s-]?weight|hold|maintain|no\s+strong\s+view)\b',
-            r'\b(?:range[\s-]?bound|sideways|mixed\s+picture)\b',
+            r"\b(?:neutral|market[\s-]?weight|hold|maintain|no\s+strong\s+view)\b",
+            r"\b(?:range[\s-]?bound|sideways|mixed\s+picture)\b",
         ],
     }
 
     INSTRUMENT_PATTERNS = [
         # Equities
-        r'\b(?:S&P\s*500|SPX|Nasdaq|NDX|Dow\s*Jones|DJIA|Russell\s*2000|RTY|MSCI)\b',
-        r'\b(?:STOXX\s*600|Euro\s*Stoxx|FTSE\s*100|Nikkei\s*225|CSI\s*300|Hang\s*Seng|HSI)\b',
-        r'\b(?:equit(?:y|ies)|stocks?|index|indices)\b',
+        r"\b(?:S&P\s*500|SPX|Nasdaq|NDX|Dow\s*Jones|DJIA|Russell\s*2000|RTY|MSCI)\b",
+        r"\b(?:STOXX\s*600|Euro\s*Stoxx|FTSE\s*100|Nikkei\s*225|CSI\s*300|Hang\s*Seng|HSI)\b",
+        r"\b(?:equit(?:y|ies)|stocks?|index|indices)\b",
         # Fixed Income
-        r'\b(?:10(?:Y|yr?|[\s-]?year)|2(?:Y|yr?|[\s-]?year)|30(?:Y|yr?|[\s-]?year))\s+(?:UST|Treasury|T[\s-]?note|T[\s-]?bond)\b',
-        r'\b(?:Bund|Gilt|JGB|OAT|BTP)\b',
-        r'\b(?:yield\s+curve|flattener|steepener|duration|fixed\s+income)\b',
+        r"\b(?:10(?:Y|yr?|[\s-]?year)|2(?:Y|yr?|[\s-]?year)|30(?:Y|yr?|[\s-]?year))\s+(?:UST|Treasury|T[\s-]?note|T[\s-]?bond)\b",
+        r"\b(?:Bund|Gilt|JGB|OAT|BTP)\b",
+        r"\b(?:yield\s+curve|flattener|steepener|duration|fixed\s+income)\b",
         # FX
-        r'\b(?:EUR/USD|USD/JPY|GBP/USD|USD/CNY|AUD/USD|DXY|dollar\s+index)\b',
-        r'\b(?:foreign\s+exchange|currency|forex|fx)\b',
+        r"\b(?:EUR/USD|USD/JPY|GBP/USD|USD/CNY|AUD/USD|DXY|dollar\s+index)\b",
+        r"\b(?:foreign\s+exchange|currency|forex|fx)\b",
         # Commodities
-        r'\b(?:WTI|Brent|crude\s+oil|gold|copper|natural\s+gas|commodit(?:y|ies))\b',
+        r"\b(?:WTI|Brent|crude\s+oil|gold|copper|natural\s+gas|commodit(?:y|ies))\b",
         # Credit
-        r'\b(?:CDX|ITRAXX|credit\s+spread|HY|IG|high\s+yield|investment\s+grade)\b',
+        r"\b(?:CDX|ITRAXX|credit\s+spread|HY|IG|high\s+yield|investment\s+grade)\b",
         # Volatility
-        r'\b(?:VIX|VSTOXX|volatility|vol)\b',
+        r"\b(?:VIX|VSTOXX|volatility|vol)\b",
     ]
 
     RATIONALE_MARKERS = [
-        r'(?:because|since|as|due\s+to|given\s+that|owing\s+to)\s+(.{10,100})',
-        r'(?:the\s+)?(?:rationale|thesis|reasoning|logic)\s+(?:is|behind\s+this)\s+(?:is\s+)?(.{10,100})',
-        r'(?:this\s+trade\s+)?(?:works|benefits|performs\s+well)\s+(?:when|if|in|because)(.{10,100})',
+        r"(?:because|since|as|due\s+to|given\s+that|owing\s+to)\s+(.{10,100})",
+        r"(?:the\s+)?(?:rationale|thesis|reasoning|logic)\s+(?:is|behind\s+this)\s+(?:is\s+)?(.{10,100})",
+        r"(?:this\s+trade\s+)?(?:works|benefits|performs\s+well)\s+(?:when|if|in|because)(.{10,100})",
     ]
 
     CONVICTION_MARKERS: dict[str, float] = {
-        r'\b(?:highest\s+conviction|top\s+pick|best\s+idea|strongest\s+view)\b': 0.95,
-        r'\b(?:high\s+conviction|strong\s+view|core\s+position)\b': 0.85,
-        r'\b(?:moderate\s+conviction|tactical|opportunistic)\b': 0.65,
-        r'\b(?:low\s+conviction|small\s+position|exploratory|pilot)\b': 0.35,
+        r"\b(?:highest\s+conviction|top\s+pick|best\s+idea|strongest\s+view)\b": 0.95,
+        r"\b(?:high\s+conviction|strong\s+view|core\s+position)\b": 0.85,
+        r"\b(?:moderate\s+conviction|tactical|opportunistic)\b": 0.65,
+        r"\b(?:low\s+conviction|small\s+position|exploratory|pilot)\b": 0.35,
     }
 
     STOP_TARGET_PATTERNS = [
-        r'(?:stop[\s-]?(?:loss|out)\s+(?:at|of|near|around)\s+)?(\d[\d,.]*\s*(?:%|bps|points?)?)',
-        r'(?:target\s+(?:at|of|near|around)\s+)?(\d[\d,.]*\s*(?:%|bps|points?)?)',
-        r'(?:entry\s+(?:at|of|near|around)\s+)?(\d[\d,.]*)\s*(?:-|to)\s*(\d[\d,.]*)',
+        r"(?:stop[\s-]?(?:loss|out)\s+(?:at|of|near|around)\s+)?(\d[\d,.]*\s*(?:%|bps|points?)?)",
+        r"(?:target\s+(?:at|of|near|around)\s+)?(\d[\d,.]*\s*(?:%|bps|points?)?)",
+        r"(?:entry\s+(?:at|of|near|around)\s+)?(\d[\d,.]*)\s*(?:-|to)\s*(\d[\d,.]*)",
     ]
 
     RISK_MARKERS = [
-        r'(?:key\s+)?risk(?:s)?\s+(?:to\s+this\s+(?:trade|view|call)\s+)?(?:is|are|include)',
-        r'(?:what\s+(?:could|could)\s+go\s+wrong)',
-        r'(?:this\s+trade\s+(?:fails|loses|underperforms)\s+(?:if|when))',
-        r'(?:vulnerable?\s+to)',
+        r"(?:key\s+)?risk(?:s)?\s+(?:to\s+this\s+(?:trade|view|call)\s+)?(?:is|are|include)",
+        r"(?:what\s+(?:could|could)\s+go\s+wrong)",
+        r"(?:this\s+trade\s+(?:fails|loses|underperforms)\s+(?:if|when))",
+        r"(?:vulnerable?\s+to)",
     ]
 
     def __init__(self):
@@ -108,8 +107,10 @@ class TradeExtractor:
         trades = []
 
         trade_section_names = {
-            "investment_implications", "conclusion",
-            "executive_summary", "key_themes",
+            "investment_implications",
+            "conclusion",
+            "executive_summary",
+            "key_themes",
         }
 
         for section in sections:
@@ -122,7 +123,7 @@ class TradeExtractor:
     def extract_from_text(self, text: str) -> list[TradeIdea]:
         """Extract trade ideas from raw text."""
         paras = []
-        for i, para_text in enumerate(text.split('\n\n')):
+        for i, para_text in enumerate(text.split("\n\n")):
             if para_text.strip():
                 paras.append(Paragraph(index=i, text=para_text.strip()))
         return self._extract_trades(paras)
@@ -208,7 +209,7 @@ class TradeExtractor:
     def _extract_conviction(self, text: str) -> float:
         """Extract conviction level."""
         text_lower = text.lower()
-        best_conviction = 0.5  # Default moderate
+        _best_conviction = 0.5  # Default moderate
 
         for pattern, conviction in self.CONVICTION_MARKERS.items():
             if re.search(pattern, text_lower):
@@ -221,9 +222,9 @@ class TradeExtractor:
     def _extract_horizon(self, text: str) -> str:
         """Extract trade time horizon."""
         horizon_patterns = [
-            (r'\b(?:short[\s-]?term|tactical|weeks?)\b', 'short-term'),
-            (r'\b(?:medium[\s-]?term|quarter|months?)\b', 'medium-term'),
-            (r'\b(?:long[\s-]?term|strategic|year)\b', 'long-term'),
+            (r"\b(?:short[\s-]?term|tactical|weeks?)\b", "short-term"),
+            (r"\b(?:medium[\s-]?term|quarter|months?)\b", "medium-term"),
+            (r"\b(?:long[\s-]?term|strategic|year)\b", "long-term"),
         ]
 
         for pattern, horizon in horizon_patterns:
@@ -237,7 +238,7 @@ class TradeExtractor:
         risks = []
 
         for pattern in self.RISK_MARKERS:
-            match = re.search(pattern + r'.{10,120}[.!?]', text, re.IGNORECASE)
+            match = re.search(pattern + r".{10,120}[.!?]", text, re.IGNORECASE)
             if match:
                 risks.append(match.group(0).strip())
 
@@ -249,16 +250,12 @@ class TradeExtractor:
 
         # Look for explicit stop/target mentions
         stop_match = re.search(
-            r'stop[\s-]?(?:loss|out)\s+(?:at|of|near|around)\s+([\d,.]+)',
-            text, re.IGNORECASE
+            r"stop[\s-]?(?:loss|out)\s+(?:at|of|near|around)\s+([\d,.]+)", text, re.IGNORECASE
         )
         if stop_match:
             result["stop"] = stop_match.group(1)
 
-        target_match = re.search(
-            r'target\s+(?:at|of|near|around)\s+([\d,.]+)',
-            text, re.IGNORECASE
-        )
+        target_match = re.search(r"target\s+(?:at|of|near|around)\s+([\d,.]+)", text, re.IGNORECASE)
         if target_match:
             result["target"] = target_match.group(1)
 

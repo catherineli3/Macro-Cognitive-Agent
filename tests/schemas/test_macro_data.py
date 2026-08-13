@@ -4,7 +4,7 @@ The single data contract for the entire pipeline.
 All modules must produce/consume this schema.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -55,7 +55,7 @@ class TestMacroDataSchema:
     def valid_data(self) -> dict:
         return {
             "symbol": "DXY",
-            "timestamp": datetime(2026, 7, 13, 10, 0, 0, tzinfo=timezone.utc),
+            "timestamp": datetime(2026, 7, 13, 10, 0, 0, tzinfo=UTC),
             "value": 104.5,
             "currency": "USD",
             "unit": "Index",
@@ -82,7 +82,7 @@ class TestMacroDataSchema:
         with pytest.raises(ValueError):
             MacroDataSchema(
                 symbol="",
-                timestamp=datetime(2026, 7, 13, tzinfo=timezone.utc),
+                timestamp=datetime(2026, 7, 13, tzinfo=UTC),
                 value=104.5,
                 source="Yahoo",
             )
@@ -109,7 +109,7 @@ class TestMacroDataSchema:
         """
         ms = MacroDataSchema(
             symbol="DXY",
-            timestamp=datetime(2099, 1, 1, tzinfo=timezone.utc),
+            timestamp=datetime(2099, 1, 1, tzinfo=UTC),
             value=104.5,
             source="Yahoo",
         )
@@ -119,7 +119,7 @@ class TestMacroDataSchema:
         """Schema allows negative values — Validator rejects them."""
         ms = MacroDataSchema(
             symbol="US10Y",
-            timestamp=datetime(2026, 7, 13, tzinfo=timezone.utc),
+            timestamp=datetime(2026, 7, 13, tzinfo=UTC),
             value=-5.0,
             source="Yahoo",
         )

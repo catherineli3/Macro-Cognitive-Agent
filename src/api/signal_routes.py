@@ -7,7 +7,7 @@ All endpoints follow RESTful conventions. Business logic lives
 in the Signal module; the API layer handles HTTP concerns only.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, HTTPException
 
@@ -57,7 +57,7 @@ async def get_signal_snapshot() -> SignalSnapshot:
             summary = " | ".join(parts)
 
         snapshot = SignalSnapshot(
-            generated_at=datetime.now(timezone.utc),
+            generated_at=datetime.now(UTC),
             signals=signals,
             summary=summary,
         )

@@ -13,14 +13,13 @@ Key discipline:
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from src.research.reasoning_pipeline.schemas import (
-    ObservationOutput,
-    EvidenceOutput,
-    PatternOutput,
     AnalogyOutput,
+    EvidenceOutput,
     HypothesisOutput,
+    ObservationOutput,
+    PatternOutput,
     StageStatus,
 )
 
@@ -29,21 +28,21 @@ class HypothesisStage:
     """Stage 5: Causal hypothesis generation."""
 
     CAUSAL_FRAMEWORKS = [
-        "monetary_policy_transmission",    # Rate changes → financial conditions → economy
-        "fiscal_dominance",                # Fiscal expansion drives inflation/growth
-        "credit_cycle",                    # Credit expansion → asset boom → credit contraction → bust
-        "balance_sheet_recession",         # Private sector deleveraging → persistent weak demand
-        "supply_side_shock",               # Supply disruption → stagflation or disinflation
-        "liquidity_driven",                # Central bank liquidity → asset prices
-        "expectations_channel",            # Forward guidance → market pricing
-        "portfolio_balance_channel",       # QE → portfolio rebalancing → risk assets
-        "exchange_rate_channel",           # Currency moves → trade/inflation passthrough
-        "wealth_effect",                   # Asset prices → consumer spending
-        "financial_accelerator",           # Collateral values → credit → spending
-        "secular_stagnation",              # Demographics + technology → low r* → policy challenges
+        "monetary_policy_transmission",  # Rate changes → financial conditions → economy
+        "fiscal_dominance",  # Fiscal expansion drives inflation/growth
+        "credit_cycle",  # Credit expansion → asset boom → credit contraction → bust
+        "balance_sheet_recession",  # Private sector deleveraging → persistent weak demand
+        "supply_side_shock",  # Supply disruption → stagflation or disinflation
+        "liquidity_driven",  # Central bank liquidity → asset prices
+        "expectations_channel",  # Forward guidance → market pricing
+        "portfolio_balance_channel",  # QE → portfolio rebalancing → risk assets
+        "exchange_rate_channel",  # Currency moves → trade/inflation passthrough
+        "wealth_effect",  # Asset prices → consumer spending
+        "financial_accelerator",  # Collateral values → credit → spending
+        "secular_stagnation",  # Demographics + technology → low r* → policy challenges
     ]
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def execute(
@@ -72,29 +71,19 @@ class HypothesisStage:
         )
 
         # 1. Build primary hypothesis
-        output.primary_hypothesis = self._build_primary(
-            observation, evidence, pattern, analogy
-        )
+        output.primary_hypothesis = self._build_primary(observation, evidence, pattern, analogy)
 
         # 2. Identify causal mechanism
-        output.causal_mechanism = self._identify_mechanism(
-            evidence, pattern
-        )
+        output.causal_mechanism = self._identify_mechanism(evidence, pattern)
 
         # 3. Build logic chain
-        output.logic_chain = self._build_logic_chain(
-            observation, evidence, pattern
-        )
+        output.logic_chain = self._build_logic_chain(observation, evidence, pattern)
 
         # 4. Generate alternatives
-        output.alternative_hypotheses = self._generate_alternatives(
-            evidence, pattern
-        )
+        output.alternative_hypotheses = self._generate_alternatives(evidence, pattern)
 
         # 5. Explain preference
-        output.preference_rationale = self._explain_preference(
-            output, evidence
-        )
+        output.preference_rationale = self._explain_preference(output, evidence)
 
         # 6. Calibrate confidence
         output.hypothesis_confidence = self._calibrate(output, evidence, belief_data)
@@ -150,24 +139,21 @@ class HypothesisStage:
 
         # Monetary policy transmission
         if "monetary_policy" in clusters:
-            mechanism_scores["monetary_policy_transmission"] = (
-                len(clusters["monetary_policy"]) * 2 +
-                len(clusters.get("financial_conditions", []))
-            )
+            mechanism_scores["monetary_policy_transmission"] = len(
+                clusters["monetary_policy"]
+            ) * 2 + len(clusters.get("financial_conditions", []))
 
         # Credit cycle
         if "credit_markets" in clusters:
-            mechanism_scores["credit_cycle"] = (
-                len(clusters["credit_markets"]) * 2 +
-                len(clusters.get("housing", []))
+            mechanism_scores["credit_cycle"] = len(clusters["credit_markets"]) * 2 + len(
+                clusters.get("housing", [])
             )
 
         # Supply side
         if "commodity_markets" in clusters or "global_trade" in clusters:
-            mechanism_scores["supply_side_shock"] = (
-                len(clusters.get("commodity_markets", [])) +
-                len(clusters.get("global_trade", []))
-            )
+            mechanism_scores["supply_side_shock"] = len(
+                clusters.get("commodity_markets", [])
+            ) + len(clusters.get("global_trade", []))
 
         # Fiscal dominance
         if "fiscal_policy" in clusters:
@@ -202,9 +188,7 @@ class HypothesisStage:
 
         # Step 1: What we observe
         if observation.data_surprises:
-            chain.append(
-                f"1. Data shows: {'; '.join(observation.data_surprises[:2])}"
-            )
+            chain.append(f"1. Data shows: {'; '.join(observation.data_surprises[:2])}")
         else:
             chain.append("1. Current macro data is in line with expectations")
 
@@ -219,9 +203,7 @@ class HypothesisStage:
 
         # Step 4: Market implications
         if observation.market_moves:
-            chain.append(
-                f"4. Markets are pricing: {'; '.join(observation.market_moves[:2])}"
-            )
+            chain.append(f"4. Markets are pricing: {'; '.join(observation.market_moves[:2])}")
 
         # Step 5: Expected evolution
         chain.append(

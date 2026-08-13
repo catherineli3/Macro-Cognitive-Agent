@@ -37,10 +37,10 @@ class RuleType(str, Enum):
     is designed to accommodate them without refactoring.
     """
 
-    THRESHOLD = "threshold"          # Sprint 2: value vs threshold comparison
+    THRESHOLD = "threshold"  # Sprint 2: value vs threshold comparison
     # ── Reserved for future Sprints ──────────────────────────────────
-    TREND = "trend"                  # Future: moving average direction
-    MOMENTUM = "momentum"            # Future: rate-of-change acceleration
-    SPREAD = "spread"               # Future: difference between two indicators
-    CORRELATION = "correlation"      # Future: rolling correlation break
-    REGIME = "regime"               # Future: statistical regime detection
+    TREND = "trend"  # Future: moving average direction
+    MOMENTUM = "momentum"  # Future: rate-of-change acceleration
+    SPREAD = "spread"  # Future: difference between two indicators
+    CORRELATION = "correlation"  # Future: rolling correlation break
+    REGIME = "regime"  # Future: statistical regime detection

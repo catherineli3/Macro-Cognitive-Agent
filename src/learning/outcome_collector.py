@@ -14,9 +14,9 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from src.learning.schemas import PredictionOutcome
 
@@ -26,9 +26,7 @@ class OutcomeCollector:
 
     def __init__(self, data_dir: str = None):
         if data_dir is None:
-            data_dir = os.path.join(
-                os.path.dirname(__file__), "..", "..", "data", "learning"
-            )
+            data_dir = os.path.join(os.path.dirname(__file__), "..", "..", "data", "learning")
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self._outcome_store = self._load_outcome_store()
@@ -36,7 +34,7 @@ class OutcomeCollector:
     def _load_outcome_store(self) -> dict:
         store_path = self.data_dir / "resolved_outcomes.json"
         if store_path.exists():
-            with open(store_path, "r", encoding="utf-8") as f:
+            with open(store_path, encoding="utf-8") as f:
                 return json.load(f)
         return {}
 
@@ -48,7 +46,7 @@ class OutcomeCollector:
     def collect_outcomes(
         self,
         beliefs: list[Any],
-        market_data: Optional[dict[str, dict]] = None,
+        market_data: dict[str, dict] | None = None,
     ) -> list[PredictionOutcome]:
         """Scan all beliefs, find unresolved predictions, resolve them.
 
@@ -61,7 +59,7 @@ class OutcomeCollector:
             List of resolved PredictionOutcome objects.
         """
         outcomes: list[PredictionOutcome] = []
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         for belief in beliefs:
             belief_id = getattr(belief, "belief_id", "") or getattr(belief, "id", "")
@@ -119,7 +117,7 @@ class OutcomeCollector:
 
     def _from_prediction_object(
         self, pred: Any, belief: Any, pred_id: str
-    ) -> Optional[PredictionOutcome]:
+    ) -> PredictionOutcome | None:
         """Extract an already-resolved outcome from a Prediction object."""
         outcome_val = getattr(pred, "outcome", None)
         if outcome_val is None:
@@ -143,7 +141,11 @@ class OutcomeCollector:
             actual_direction=actual_direction,
             actual_value=float(getattr(outcome_val, "actual_price", 0) or 0),
             actual_change_pct=float(getattr(outcome_val, "actual_change_pct", 0) or 0),
-            was_correct=score_val is not None and float(getattr(score_val, "score", 0) or 0) >= 0.5 if hasattr(score_val, "score") else False,
+            was_correct=(
+                score_val is not None and float(getattr(score_val, "score", 0) or 0) >= 0.5
+                if hasattr(score_val, "score")
+                else False
+            ),
             resolved_at=getattr(pred, "resolved_at", ""),
             days_to_resolution=0,
         )
@@ -153,11 +155,11 @@ class OutcomeCollector:
         pred: Any,
         belief: Any,
         pred_id: str,
-        predicted_at: Optional[datetime],
+        predicted_at: datetime | None,
         time_horizon: int,
-        market_data: Optional[dict],
+        market_data: dict | None,
         now: datetime,
-    ) -> Optional[PredictionOutcome]:
+    ) -> PredictionOutcome | None:
         """Resolve a single prediction against market data."""
         asset = getattr(pred, "asset", "") or getattr(pred, "ticker", "") or "unknown"
         direction = str(getattr(pred, "direction", "flat")).lower()
@@ -167,9 +169,7 @@ class OutcomeCollector:
                 pred, asset, direction, market_data, predicted_at, time_horizon, now
             )
         else:
-            actual = self._resolve_from_simulation(
-                pred, direction, predicted_at, time_horizon, now
-            )
+            actual = self._resolve_from_simulation(pred, direction, predicted_at, time_horizon, now)
 
         return PredictionOutcome(
             prediction_id=pred_id,
@@ -186,9 +186,7 @@ class OutcomeCollector:
             actual_change_pct=actual["change_pct"],
             was_correct=actual["is_correct"],
             resolved_at=now.isoformat(),
-            days_to_resolution=(
-                (now - predicted_at).days if predicted_at else time_horizon
-            ),
+            days_to_resolution=((now - predicted_at).days if predicted_at else time_horizon),
         )
 
     def _resolve_from_market_data(
@@ -197,7 +195,7 @@ class OutcomeCollector:
         asset: str,
         direction: str,
         market_data: dict,
-        predicted_at: Optional[datetime],
+        predicted_at: datetime | None,
         time_horizon: int,
         now: datetime,
     ) -> dict:
@@ -248,7 +246,7 @@ class OutcomeCollector:
         self,
         pred: Any,
         direction: str,
-        predicted_at: Optional[datetime],
+        predicted_at: datetime | None,
         time_horizon: int,
         now: datetime,
     ) -> dict:
@@ -290,15 +288,12 @@ class OutcomeCollector:
 
     def get_resolved_outcomes(self) -> list[PredictionOutcome]:
         """Retrieve all previously resolved outcomes."""
-        return [
-            PredictionOutcome(**data)
-            for data in self._outcome_store.values()
-        ]
+        return [PredictionOutcome(**data) for data in self._outcome_store.values()]
 
     def get_pending_count(self, beliefs: list[Any]) -> int:
         """Count predictions that are still pending."""
         pending = 0
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         for belief in beliefs:
             predictions = getattr(belief, "prediction_history", []) or []
             for pred in predictions:

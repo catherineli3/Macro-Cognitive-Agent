@@ -19,18 +19,17 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
-from typing import Optional
 
+from src.research.qa.causal_checker import CausalChecker
+from src.research.qa.hallucination_checker import HallucinationChecker
+from src.research.qa.reasoning_checker import ReasoningChecker
 from src.research.qa.schemas import (
-    ResearchScoreCard,
     DimensionScore,
     MemoGrade,
     QAVerdict,
+    ResearchScoreCard,
 )
-from src.research.qa.hallucination_checker import HallucinationChecker
 from src.research.qa.source_verifier import SourceVerifier
-from src.research.qa.reasoning_checker import ReasoningChecker
-from src.research.qa.causal_checker import CausalChecker
 from src.research.qa.trade_checker import TradeChecker
 
 
@@ -45,7 +44,7 @@ class MemoGrader:
 
     QUALITY_THRESHOLD = 80  # Minimum score to pass
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
         self.hallucination = HallucinationChecker()
@@ -78,15 +77,11 @@ class MemoGrader:
         sections = self._extract_sections(text)
 
         # Run all checkers
-        scorecard.evidence_coverage = self._check_evidence_coverage(
-            text, sections
-        )
+        scorecard.evidence_coverage = self._check_evidence_coverage(text, sections)
         scorecard.reasoning_consistency = self.reasoning.verify(text)
         scorecard.causal_completeness = self.causal.verify(text)
         scorecard.counter_quality = self._check_counter_quality(text, sections)
-        scorecard.prediction_testability = self._check_prediction_testability(
-            text, sections
-        )
+        scorecard.prediction_testability = self._check_prediction_testability(text, sections)
         scorecard.hallucination_risk = self.hallucination.check(text)
         scorecard.source_traceability = self.source_verifier.verify(text)
 
@@ -108,6 +103,7 @@ class MemoGrader:
         """Grade from V5.2 PipelineState output."""
         # Extract text from pipeline state
         from src.research.reasoning_pipeline.pipeline import ReasoningPipeline
+
         pipeline = ReasoningPipeline(self.config)
         text = pipeline._build_summary(pipeline_state)
         return self.grade(text, memo_id=pipeline_state.pipeline_id)
@@ -135,20 +131,20 @@ class MemoGrader:
 
         # Common section headers
         section_patterns = {
-            "executive_summary": r'(?:EXECUTIVE\s+SUMMARY|Executive\s+Summary)',
-            "observations": r'(?:KEY\s+OBSERVATIONS|Key\s+Observations|OBSERVATIONS)',
-            "evidence": r'(?:EVIDENCE|Evidence\s+Table|SUPPORTING\s+EVIDENCE)',
-            "hypothesis": r'(?:HYPOTHESIS|Central\s+Hypothesis|OUR\s+VIEW)',
-            "counter": r'(?:COUNTER|Counter[\s-]?Argument|RISK\s+TO\s+VIEW)',
-            "prediction": r'(?:FORECAST|Prediction|OUTLOOK)',
-            "trade": r'(?:TRADE|Trade\s+Expression|POSITIONING)',
-            "risk": r'(?:RISK|Risk\s+Dashboard|WATCHLIST)',
+            "executive_summary": r"(?:EXECUTIVE\s+SUMMARY|Executive\s+Summary)",
+            "observations": r"(?:KEY\s+OBSERVATIONS|Key\s+Observations|OBSERVATIONS)",
+            "evidence": r"(?:EVIDENCE|Evidence\s+Table|SUPPORTING\s+EVIDENCE)",
+            "hypothesis": r"(?:HYPOTHESIS|Central\s+Hypothesis|OUR\s+VIEW)",
+            "counter": r"(?:COUNTER|Counter[\s-]?Argument|RISK\s+TO\s+VIEW)",
+            "prediction": r"(?:FORECAST|Prediction|OUTLOOK)",
+            "trade": r"(?:TRADE|Trade\s+Expression|POSITIONING)",
+            "risk": r"(?:RISK|Risk\s+Dashboard|WATCHLIST)",
         }
 
         current_section = "body"
         sections[current_section] = ""
 
-        for line in text.split('\n'):
+        for line in text.split("\n"):
             line_stripped = line.strip()
             matched = False
             for name, pattern in section_patterns.items():
@@ -158,9 +154,7 @@ class MemoGrader:
                     matched = True
                     break
             if not matched:
-                sections[current_section] = (
-                    sections.get(current_section, "") + line_stripped + "\n"
-                )
+                sections[current_section] = sections.get(current_section, "") + line_stripped + "\n"
 
         return sections
 
@@ -183,17 +177,15 @@ class MemoGrader:
 
         # Count evidence markers
         evidence_markers = [
-            r'data\s+(?:show|indicate|confirm|suggest|reveal)',
-            r'(?:chart|figure|table)\s+\d+',
-            r'according\s+to\s+(?:the\s+)?(?:latest|recent|data)',
-            r'(?:source|data):\s+',
-            r'supported\s+by',
-            r'evidenced?\s+(?:by|from)',
-            r'(?:we|i)\s+(?:find|found)\s+that',
+            r"data\s+(?:show|indicate|confirm|suggest|reveal)",
+            r"(?:chart|figure|table)\s+\d+",
+            r"according\s+to\s+(?:the\s+)?(?:latest|recent|data)",
+            r"(?:source|data):\s+",
+            r"supported\s+by",
+            r"evidenced?\s+(?:by|from)",
+            r"(?:we|i)\s+(?:find|found)\s+that",
         ]
-        evidence_count = sum(
-            len(re.findall(p, text_lower)) for p in evidence_markers
-        )
+        evidence_count = sum(len(re.findall(p, text_lower)) for p in evidence_markers)
 
         if evidence_count < 3:
             deductions += 35
@@ -204,12 +196,10 @@ class MemoGrader:
 
         # Check if claims match evidence count
         claim_markers = [
-            r'\b(?:believe|think|expect|forecast|predict|estimate)\b',
-            r'\b(?:suggest|indicate|imply|point\s+to)\b',
+            r"\b(?:believe|think|expect|forecast|predict|estimate)\b",
+            r"\b(?:suggest|indicate|imply|point\s+to)\b",
         ]
-        claim_count = sum(
-            len(re.findall(p, text_lower)) for p in claim_markers
-        )
+        claim_count = sum(len(re.findall(p, text_lower)) for p in claim_markers)
 
         if claim_count > evidence_count * 2:
             deductions += 20
@@ -245,13 +235,16 @@ class MemoGrader:
 
         # Check for counter language
         counter_markers = [
-            r'counter[\s-]?argument', r'bear\s+case', r'skeptical\s+view',
-            r'however', r'on\s+the\s+other\s+hand', r'risk\s+is\s+that',
-            r'what\s+could\s+go\s+wrong', r'alternative\s+(?:view|scenario)',
+            r"counter[\s-]?argument",
+            r"bear\s+case",
+            r"skeptical\s+view",
+            r"however",
+            r"on\s+the\s+other\s+hand",
+            r"risk\s+is\s+that",
+            r"what\s+could\s+go\s+wrong",
+            r"alternative\s+(?:view|scenario)",
         ]
-        counter_count = sum(
-            len(re.findall(p, counter_lower)) for p in counter_markers
-        )
+        counter_count = sum(len(re.findall(p, counter_lower)) for p in counter_markers)
 
         if counter_count == 0:
             deductions += 40
@@ -262,7 +255,7 @@ class MemoGrader:
 
         # Check if counters have severity labels
         severity_marks = re.findall(
-            r'\b(?:fatal|major|serious|significant|minor|modest)\b',
+            r"\b(?:fatal|major|serious|significant|minor|modest)\b",
             counter_lower,
         )
         if not severity_marks and counter_count > 0:
@@ -271,7 +264,7 @@ class MemoGrader:
 
         # Check invalidation conditions
         invalidation = re.findall(
-            r'(?:invalid|wrong|incorrect|prove\s+wrong|revisit|reassess)',
+            r"(?:invalid|wrong|incorrect|prove\s+wrong|revisit|reassess)",
             counter_lower,
         )
         if not invalidation:
@@ -305,28 +298,34 @@ class MemoGrader:
         deductions = 0
 
         # Check predictions have probability
-        prob_count = len(re.findall(
-            r'\b(\d{1,2})%\s+(?:probability|chance|confidence)',
-            pred_lower,
-        ))
+        prob_count = len(
+            re.findall(
+                r"\b(\d{1,2})%\s+(?:probability|chance|confidence)",
+                pred_lower,
+            )
+        )
         if prob_count < 1:
             deductions += 25
             score.findings.append("No probability-quantified predictions")
 
         # Check predictions have horizon
-        horizon_count = len(re.findall(
-            r'\b(?:week|month|quarter|year|Q[1-4]|H[12])\b',
-            pred_lower,
-        ))
+        horizon_count = len(
+            re.findall(
+                r"\b(?:week|month|quarter|year|Q[1-4]|H[12])\b",
+                pred_lower,
+            )
+        )
         if horizon_count < 1:
             deductions += 20
             score.findings.append("No time horizon for predictions")
 
         # Check for vague predictions
-        vague_preds = len(re.findall(
-            r'\b(?:may|might|could|possibly|maybe|perhaps)\s+\w+\s+\w+\b',
-            pred_lower,
-        ))
+        vague_preds = len(
+            re.findall(
+                r"\b(?:may|might|could|possibly|maybe|perhaps)\s+\w+\s+\w+\b",
+                pred_lower,
+            )
+        )
         if vague_preds > 3 and prob_count == 0:
             deductions += 15
             score.findings.append("Vague predictions without probability calibration")
@@ -412,12 +411,8 @@ class MemoGrader:
 
         # Add global recommendations
         if sc.total_score < 80:
-            actions.append(
-                "GLOBAL: Reduce unsupported assertions; increase citation density"
-            )
-            actions.append(
-                "GLOBAL: Ensure each section has clear evidence linkage"
-            )
+            actions.append("GLOBAL: Reduce unsupported assertions; increase citation density")
+            actions.append("GLOBAL: Ensure each section has clear evidence linkage")
 
         return actions[:8]
 

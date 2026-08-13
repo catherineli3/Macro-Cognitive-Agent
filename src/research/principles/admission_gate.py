@@ -13,10 +13,9 @@ to determine whether a finding qualifies for promotion to ResearchPrinciple.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 
+from src.schemas.research import PrincipleEvidence, PrincipleStrength, ResearchPrinciple
 from src.schemas.transmission_v3_1 import ResearchFinding, ResearchFindingsReport
-from src.schemas.research import ResearchPrinciple, PrincipleEvidence, PrincipleStrength
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -25,6 +24,7 @@ logger = get_logger(__name__)
 @dataclass
 class AdmissionResult:
     """Result of evaluating a finding cluster against admission criteria."""
+
     passed: bool = False
     p1_cross_regime: bool = False
     p2_repetition: bool = False
@@ -56,21 +56,21 @@ class PrincipleAdmissionGate:
 
     # Regime definition dimensions
     REGIME_DIMENSIONS = [
-        "monetary_policy",   # "tightening" | "neutral" | "easing"
-        "fiscal_stance",     # "expansionary" | "neutral" | "contractionary"
-        "volatility",         # "low" | "moderate" | "high"
-        "growth",            # "accelerating" | "stable" | "decelerating" | "contracting"
-        "inflation",         # "rising" | "stable" | "falling"
+        "monetary_policy",  # "tightening" | "neutral" | "easing"
+        "fiscal_stance",  # "expansionary" | "neutral" | "contractionary"
+        "volatility",  # "low" | "moderate" | "high"
+        "growth",  # "accelerating" | "stable" | "decelerating" | "contracting"
+        "inflation",  # "rising" | "stable" | "falling"
     ]
 
     def __init__(self) -> None:
         self._finding_clusters: dict[str, list[ResearchFinding]] = {}
-        self._regime_tags: dict[str, dict] = {}      # finding_id → regime dict
+        self._regime_tags: dict[str, dict] = {}  # finding_id → regime dict
         self._contradiction_counts: dict[str, list] = {}  # finding_id → contradiction cycles
 
-    def register_finding(self, finding: ResearchFinding,
-                         regime: dict | None = None,
-                         cycle: int = 0) -> None:
+    def register_finding(
+        self, finding: ResearchFinding, regime: dict | None = None, cycle: int = 0
+    ) -> None:
         """Register a finding and its regime tag for later evaluation."""
         channel = finding.category or "unknown"
         if channel not in self._finding_clusters:
@@ -79,9 +79,9 @@ class PrincipleAdmissionGate:
         if regime:
             self._regime_tags[finding.finding_id] = regime
 
-    def register_findings_report(self, report: ResearchFindingsReport,
-                                 regime: dict | None = None,
-                                 cycle: int = 0) -> None:
+    def register_findings_report(
+        self, report: ResearchFindingsReport, regime: dict | None = None, cycle: int = 0
+    ) -> None:
         """Register all findings from a report."""
         for f in report.reliability_ranking:
             self.register_finding(f, regime, cycle)
@@ -92,8 +92,7 @@ class PrincipleAdmissionGate:
         for f in report.regime_similarities:
             self.register_finding(f, regime, cycle)
 
-    def evaluate(self, findings: list[ResearchFinding],
-                 context_key: str = "") -> AdmissionResult:
+    def evaluate(self, findings: list[ResearchFinding], context_key: str = "") -> AdmissionResult:
         """Evaluate a cluster of findings against P1-P5 and return the result.
 
         Returns an AdmissionResult with pass/fail for each criterion.
@@ -111,37 +110,57 @@ class PrincipleAdmissionGate:
         # P5: Generality
         result.p5_generality, result.channels_found = self._check_generality(findings)
 
-        result.passed = all([
-            result.p1_cross_regime, result.p2_repetition,
-            result.p3_evidence, result.p4_sustained, result.p5_generality,
-        ])
+        result.passed = all(
+            [
+                result.p1_cross_regime,
+                result.p2_repetition,
+                result.p3_evidence,
+                result.p4_sustained,
+                result.p5_generality,
+            ]
+        )
 
         if result.passed:
             result.detail = "All P1-P5 criteria met. Eligible for Principle promotion."
         elif result.p2_repetition and result.p3_evidence and result.p4_sustained:
-            result.detail = "P2-P4 met but P1 (cross-regime) pending. Eligible for candidate status."
+            result.detail = (
+                "P2-P4 met but P1 (cross-regime) pending. Eligible for candidate status."
+            )
         else:
             missing = []
-            if not result.p1_cross_regime: missing.append("P1")
-            if not result.p2_repetition: missing.append("P2")
-            if not result.p3_evidence: missing.append("P3")
-            if not result.p4_sustained: missing.append("P4")
-            if not result.p5_generality: missing.append("P5")
+            if not result.p1_cross_regime:
+                missing.append("P1")
+            if not result.p2_repetition:
+                missing.append("P2")
+            if not result.p3_evidence:
+                missing.append("P3")
+            if not result.p4_sustained:
+                missing.append("P4")
+            if not result.p5_generality:
+                missing.append("P5")
             result.detail = f"Failed criteria: {', '.join(missing)}. Not eligible."
 
         logger.info(
             "Admission gate: %s | P1=%s P2=%s P3=%s P4=%s P5=%s → %s",
             context_key,
-            result.p1_cross_regime, result.p2_repetition,
-            result.p3_evidence, result.p4_sustained, result.p5_generality,
+            result.p1_cross_regime,
+            result.p2_repetition,
+            result.p3_evidence,
+            result.p4_sustained,
+            result.p5_generality,
             "PASS" if result.passed else "FAIL",
         )
         return result
 
-    def create_principle(self, findings: list[ResearchFinding],
-                         name: str, statement: str, domain: str,
-                         preconditions: dict | None = None,
-                         cycle: int = 0) -> ResearchPrinciple | None:
+    def create_principle(
+        self,
+        findings: list[ResearchFinding],
+        name: str,
+        statement: str,
+        domain: str,
+        preconditions: dict | None = None,
+        cycle: int = 0,
+    ) -> ResearchPrinciple | None:
         """Attempt to create a Principle from findings. Returns None if criteria not met.
 
         F1.6 (G2): ALL new principles start as CANDIDATE regardless of P1-P5 result.
@@ -222,9 +241,7 @@ class PrincipleAdmissionGate:
         recent_contradictions = 0
         for f in findings:
             contradictions = self._contradiction_counts.get(f.finding_id, [])
-            recent_contradictions += sum(
-                1 for c in contradictions if c >= self.P4_SUSTAINED_WINDOW
-            )
+            recent_contradictions += sum(1 for c in contradictions if c >= self.P4_SUSTAINED_WINDOW)
         sustained = recent_contradictions == 0
         # Calculate sustained cycles (approximate from repetition count)
         sustained_cycles = len(findings) * 5  # rough estimate
@@ -236,7 +253,7 @@ class PrincipleAdmissionGate:
         for f in findings:
             if f.category:
                 channels.add(f.category)
-            for edge in (f.source_edges or []):
+            for edge in f.source_edges or []:
                 channels.add(edge)
         channels_list = list(channels)
         return len(channels_list) >= PrincipleAdmissionGate.P5_MIN_CHANNELS, channels_list
@@ -246,7 +263,8 @@ class PrincipleAdmissionGate:
     def get_candidates(self) -> list[str]:
         """Get channels that have enough findings for evaluation."""
         return [
-            ch for ch, findings in self._finding_clusters.items()
+            ch
+            for ch, findings in self._finding_clusters.items()
             if len(findings) >= self.P2_MIN_REPETITION
         ]
 

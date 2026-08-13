@@ -7,24 +7,23 @@ Every hypothesis has: causal chain, assumptions, falsification conditions.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
-from src.research.reasoning.schemas import Hypothesis, EvidenceCluster
+from src.research.reasoning.schemas import EvidenceCluster, Hypothesis
 
 
 class HypothesisBuilder:
     """Generate causal hypotheses from evidence clusters and beliefs."""
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def build_hypotheses(
         self,
         evidence_clusters: list[EvidenceCluster],
         beliefs: list = None,
-        regime_result: Optional[dict] = None,
-        narrative: Optional[str] = None,
+        regime_result: dict | None = None,
+        narrative: str | None = None,
     ) -> list[Hypothesis]:
         """Generate ranked hypotheses from current evidence landscape."""
         beliefs = beliefs or []
@@ -53,7 +52,7 @@ class HypothesisBuilder:
         hypotheses.sort(key=lambda h: h.confidence, reverse=True)
         return hypotheses
 
-    def _from_cluster(self, cluster: EvidenceCluster, regime: Optional[dict]) -> Optional[Hypothesis]:
+    def _from_cluster(self, cluster: EvidenceCluster, regime: dict | None) -> Hypothesis | None:
         h_id = f"HYP_{str(uuid.uuid4())[:8]}"
         theme, direction = cluster.theme, cluster.net_direction
 
@@ -65,7 +64,10 @@ class HypothesisBuilder:
         contradicting = [i for i in cluster.evidence_items if i["direction"] == "bearish"]
         ew = cluster.weight_score * (1 if direction == "supporting_bullish" else -1)
 
-        conf = min(0.85, cluster.weight_score * 0.5 + cluster.quality_score * 0.3 + cluster.recency_score * 0.2)
+        conf = min(
+            0.85,
+            cluster.weight_score * 0.5 + cluster.quality_score * 0.3 + cluster.recency_score * 0.2,
+        )
 
         return Hypothesis(
             hypothesis_id=h_id,
@@ -90,10 +92,10 @@ class HypothesisBuilder:
             if_true_implication=self._implication(theme, direction),
             asset_impact=self._impact(theme, direction),
             source=f"evidence_cluster:{cluster.cluster_id}",
-            generated_at=datetime.now(timezone.utc).isoformat(),
+            generated_at=datetime.now(UTC).isoformat(),
         )
 
-    def _from_belief(self, bd: dict, clusters: list[EvidenceCluster]) -> Optional[Hypothesis]:
+    def _from_belief(self, bd: dict, clusters: list[EvidenceCluster]) -> Hypothesis | None:
         name = bd.get("name", bd.get("label", ""))
         if not name:
             return None
@@ -104,13 +106,15 @@ class HypothesisBuilder:
         supports = [c for c in clusters if c.net_direction == "supporting_bullish"]
         contradicts = [c for c in clusters if c.net_direction == "supporting_bearish"]
         evidence_weight = len(supports) - len(contradicts)
-        final_conf = round(float(confidence) * 0.6 + min(0.9, max(0.1, 0.5 + evidence_weight * 0.1)) * 0.4, 2)
+        final_conf = round(
+            float(confidence) * 0.6 + min(0.9, max(0.1, 0.5 + evidence_weight * 0.1)) * 0.4, 2
+        )
 
         return Hypothesis(
             hypothesis_id=f"HYP_{str(uuid.uuid4())[:8]}",
             title=f"Belief: {name} — {self._dir_label(direction)}",
             statement=f"Research belief '{name}' is {'supported' if evidence_weight >= 0 else 'challenged'} "
-                      f"by current evidence (net: {evidence_weight:+d} clusters)",
+            f"by current evidence (net: {evidence_weight:+d} clusters)",
             domain="macro_view",
             causal_chain=[f"Belief: {name}", f"Evidence alignment: {evidence_weight:+d}"],
             key_assumptions=["Belief model is well-specified"],
@@ -120,15 +124,27 @@ class HypothesisBuilder:
             contradicting_evidence=[],
             evidence_weight=round(evidence_weight / max(len(clusters), 1), 2),
             confidence=final_conf,
-            confidence_breakdown={"causal_logic": 0.6, "data_quality": 0.5, "timing": 0.7, "historical_consistency": 0.5},
-            falsification_conditions=[{"condition": "Evidence direction reverses", "if_triggered": "Invert belief", "probability": 0.3, "timeline": "1-2 weeks"}],
+            confidence_breakdown={
+                "causal_logic": 0.6,
+                "data_quality": 0.5,
+                "timing": 0.7,
+                "historical_consistency": 0.5,
+            },
+            falsification_conditions=[
+                {
+                    "condition": "Evidence direction reverses",
+                    "if_triggered": "Invert belief",
+                    "probability": 0.3,
+                    "timeline": "1-2 weeks",
+                }
+            ],
             if_true_implication="Confirms existing research direction",
             asset_impact=[],
             source="belief_driven",
-            generated_at=datetime.now(timezone.utc).isoformat(),
+            generated_at=datetime.now(UTC).isoformat(),
         )
 
-    def _from_regime(self, rr: dict, clusters: list[EvidenceCluster]) -> Optional[Hypothesis]:
+    def _from_regime(self, rr: dict, clusters: list[EvidenceCluster]) -> Hypothesis | None:
         rl = rr.get("regime_label", rr.get("regime_type", ""))
         if not rl:
             return None
@@ -147,35 +163,80 @@ class HypothesisBuilder:
             hypothesis_id=f"HYP_REGIME_{str(uuid.uuid4())[:8]}",
             title=f"Regime: {rl} {'Stable' if stable else 'In Transition'}",
             statement=f"Macro regime is {rl} with {tr:.0%} transition risk. "
-                      f"{'Stable favors directional views.' if stable else 'Elevated risk argues caution.'}",
+            f"{'Stable favors directional views.' if stable else 'Elevated risk argues caution.'}",
             domain="macro_regime",
             causal_chain=causal,
             key_assumptions=["Regime classifier is calibrated", "Historical analogs apply"],
             structural_factors=[rl],
             cyclical_factors=[f"Transition prob: {tr:.0%}"],
-            supporting_evidence=[], contradicting_evidence=[],
+            supporting_evidence=[],
+            contradicting_evidence=[],
             evidence_weight=0.0,
             confidence=round(rc * (1 - tr * 0.5), 2),
-            confidence_breakdown={"causal_logic": 0.8, "data_quality": 0.6, "timing": 0.7, "historical_consistency": 0.5},
-            falsification_conditions=[{"condition": "Key regime indicator breaks trend", "if_triggered": "Re-classify regime", "probability": tr, "timeline": "1-4 weeks"}],
+            confidence_breakdown={
+                "causal_logic": 0.8,
+                "data_quality": 0.6,
+                "timing": 0.7,
+                "historical_consistency": 0.5,
+            },
+            falsification_conditions=[
+                {
+                    "condition": "Key regime indicator breaks trend",
+                    "if_triggered": "Re-classify regime",
+                    "probability": tr,
+                    "timeline": "1-4 weeks",
+                }
+            ],
             if_true_implication=f"Maintain {rl}-appropriate allocation",
             asset_impact=[],
             source="regime_driven",
-            generated_at=datetime.now(timezone.utc).isoformat(),
+            generated_at=datetime.now(UTC).isoformat(),
         )
 
     # ── Helpers ──
 
     def _causal(self, theme, direction, cluster):
         maps = {
-            "growth_momentum": ["Activity indicators shifting", f"Direction: {direction}", "Transmission → earnings (1-2Q lag)", "Policy response contingent on persistence"],
-            "inflation_dynamics": ["Price signals across baskets", f"Direction: {direction}", "Core/headline divergence = signal quality", "CB reaction function at thresholds"],
-            "labor_market": ["Labor tightness evolving", f"Direction: {direction}", "Wage pressure → services inflation channel", "Employment → consumption → growth"],
-            "monetary_policy": ["Policy stance identified", "Rate path expectations forming", "Financial conditions transmission", "Lag effects: 12-18 months to real economy"],
-            "capital_flows": ["Flow direction established", f"Direction: {direction}", "Institutional positioning confirms/diverges", "Cross-asset ripple effects"],
-            "credit_conditions": ["Credit impulse direction", f"Spreads: {direction}", "Bank lending standards = leading indicator", "Corporate refinancing wall approaching"],
+            "growth_momentum": [
+                "Activity indicators shifting",
+                f"Direction: {direction}",
+                "Transmission → earnings (1-2Q lag)",
+                "Policy response contingent on persistence",
+            ],
+            "inflation_dynamics": [
+                "Price signals across baskets",
+                f"Direction: {direction}",
+                "Core/headline divergence = signal quality",
+                "CB reaction function at thresholds",
+            ],
+            "labor_market": [
+                "Labor tightness evolving",
+                f"Direction: {direction}",
+                "Wage pressure → services inflation channel",
+                "Employment → consumption → growth",
+            ],
+            "monetary_policy": [
+                "Policy stance identified",
+                "Rate path expectations forming",
+                "Financial conditions transmission",
+                "Lag effects: 12-18 months to real economy",
+            ],
+            "capital_flows": [
+                "Flow direction established",
+                f"Direction: {direction}",
+                "Institutional positioning confirms/diverges",
+                "Cross-asset ripple effects",
+            ],
+            "credit_conditions": [
+                "Credit impulse direction",
+                f"Spreads: {direction}",
+                "Bank lending standards = leading indicator",
+                "Corporate refinancing wall approaching",
+            ],
         }
-        return maps.get(theme, [f"{theme} evolving", f"Direction: {direction}", "Impact assessment pending"])
+        return maps.get(
+            theme, [f"{theme} evolving", f"Direction: {direction}", "Impact assessment pending"]
+        )
 
     def _statement(self, theme, direction, cluster):
         templates = {
@@ -184,16 +245,24 @@ class HypothesisBuilder:
             "monetary_policy": f"Monetary policy stance is assessed as {self._dir_label(direction)} with weight score {cluster.weight_score:.2f}.",
             "capital_flows": f"Capital flows signal {self._dir_label(direction)} positioning. Cluster weight: {cluster.weight_score:.2f}.",
         }
-        return templates.get(theme, f"Evidence on {theme} points {self._dir_label(direction)} (weight: {cluster.weight_score:.2f}, quality: {cluster.quality_score:.0%}).")
+        return templates.get(
+            theme,
+            f"Evidence on {theme} points {self._dir_label(direction)} (weight: {cluster.weight_score:.2f}, quality: {cluster.quality_score:.0%}).",
+        )
 
     @staticmethod
     def _title(theme, direction):
         labels = {
-            "growth_momentum": f"Growth: {direction}", "inflation_dynamics": f"Inflation: {direction}",
-            "labor_market": f"Labor: {direction}", "monetary_policy": f"Policy: {direction}",
-            "capital_flows": f"Flows: {direction}", "credit_conditions": f"Credit: {direction}",
-            "fiscal_policy": f"Fiscal: {direction}", "geopolitical_risk": f"Geopolitics",
-            "currency_markets": f"FX: {direction}", "commodity_markets": f"Commodities: {direction}",
+            "growth_momentum": f"Growth: {direction}",
+            "inflation_dynamics": f"Inflation: {direction}",
+            "labor_market": f"Labor: {direction}",
+            "monetary_policy": f"Policy: {direction}",
+            "capital_flows": f"Flows: {direction}",
+            "credit_conditions": f"Credit: {direction}",
+            "fiscal_policy": f"Fiscal: {direction}",
+            "geopolitical_risk": "Geopolitics",
+            "currency_markets": f"FX: {direction}",
+            "commodity_markets": f"Commodities: {direction}",
         }
         base = labels.get(theme, f"{theme.replace('_', ' ').title()}: {direction}")
         return base
@@ -201,30 +270,79 @@ class HypothesisBuilder:
     @staticmethod
     def _assumptions(theme):
         maps = {
-            "growth_momentum": ["Data accurately reflects real activity", "No structural break in leading indicators"],
-            "inflation_dynamics": ["Supply-side normalization continues", "Shelter/OER lag is well-modeled"],
+            "growth_momentum": [
+                "Data accurately reflects real activity",
+                "No structural break in leading indicators",
+            ],
+            "inflation_dynamics": [
+                "Supply-side normalization continues",
+                "Shelter/OER lag is well-modeled",
+            ],
             "labor_market": ["Participation rate stable", "Immigration policy unchanged"],
-            "monetary_policy": ["Fed reaction function unchanged", "Data-dependent framework holds"],
+            "monetary_policy": [
+                "Fed reaction function unchanged",
+                "Data-dependent framework holds",
+            ],
         }
         return maps.get(theme, ["Underlying relationships are stable", "No regime change imminent"])
 
     @staticmethod
     def _factor_split(theme):
         splits = {
-            "growth_momentum": (["Productivity trend", "Demographics"], ["Inventory cycle", "Consumer confidence"]),
-            "inflation_dynamics": (["Deglobalization", "Energy transition cost"], ["Base effects", "Commodity prices"]),
-            "labor_market": (["Aging workforce", "Skills mismatch"], ["Hiring/firing cycle", "Seasonal patterns"]),
-            "monetary_policy": (["Natural rate (r*)", "Neutral rate debate"], ["Meeting-by-meeting data", "Hawk/dove rotation"]),
+            "growth_momentum": (
+                ["Productivity trend", "Demographics"],
+                ["Inventory cycle", "Consumer confidence"],
+            ),
+            "inflation_dynamics": (
+                ["Deglobalization", "Energy transition cost"],
+                ["Base effects", "Commodity prices"],
+            ),
+            "labor_market": (
+                ["Aging workforce", "Skills mismatch"],
+                ["Hiring/firing cycle", "Seasonal patterns"],
+            ),
+            "monetary_policy": (
+                ["Natural rate (r*)", "Neutral rate debate"],
+                ["Meeting-by-meeting data", "Hawk/dove rotation"],
+            ),
         }
         return splits.get(theme, ([], []))
 
     @staticmethod
     def _falsify(theme, direction):
-        defaults = [{"condition": "Key data reverses direction", "if_triggered": "Abandon hypothesis", "probability": 0.25, "timeline": "2-4 weeks"}]
+        defaults = [
+            {
+                "condition": "Key data reverses direction",
+                "if_triggered": "Abandon hypothesis",
+                "probability": 0.25,
+                "timeline": "2-4 weeks",
+            }
+        ]
         specifics = {
-            "growth_momentum": [{"condition": "Two consecutive negative PMI prints", "if_triggered": "Growth hypothesis falsified", "probability": 0.3, "timeline": "1-2 months"}],
-            "inflation_dynamics": [{"condition": "Core CPI MoM exceeds 0.3% for 3 months", "if_triggered": "Disinflation thesis invalidated", "probability": 0.25, "timeline": "3 months"}],
-            "monetary_policy": [{"condition": "FOMC surprises markets with opposite action", "if_triggered": "Policy path hypothesis wrong", "probability": 0.15, "timeline": "Next FOMC"}],
+            "growth_momentum": [
+                {
+                    "condition": "Two consecutive negative PMI prints",
+                    "if_triggered": "Growth hypothesis falsified",
+                    "probability": 0.3,
+                    "timeline": "1-2 months",
+                }
+            ],
+            "inflation_dynamics": [
+                {
+                    "condition": "Core CPI MoM exceeds 0.3% for 3 months",
+                    "if_triggered": "Disinflation thesis invalidated",
+                    "probability": 0.25,
+                    "timeline": "3 months",
+                }
+            ],
+            "monetary_policy": [
+                {
+                    "condition": "FOMC surprises markets with opposite action",
+                    "if_triggered": "Policy path hypothesis wrong",
+                    "probability": 0.15,
+                    "timeline": "Next FOMC",
+                }
+            ],
         }
         return specifics.get(theme, defaults)
 
@@ -240,9 +358,27 @@ class HypothesisBuilder:
 
     def _impact(self, theme, direction):
         impacts = {
-            "growth_momentum": [{"asset": "Equities", "direction": "long" if "bullish" in direction else "short", "conviction": "medium"}],
-            "inflation_dynamics": [{"asset": "Bonds", "direction": "long" if "bullish" not in direction else "short", "conviction": "medium"}],
-            "monetary_policy": [{"asset": "USD", "direction": "long" if "bullish" not in direction else "short", "conviction": "low"}],
+            "growth_momentum": [
+                {
+                    "asset": "Equities",
+                    "direction": "long" if "bullish" in direction else "short",
+                    "conviction": "medium",
+                }
+            ],
+            "inflation_dynamics": [
+                {
+                    "asset": "Bonds",
+                    "direction": "long" if "bullish" not in direction else "short",
+                    "conviction": "medium",
+                }
+            ],
+            "monetary_policy": [
+                {
+                    "asset": "USD",
+                    "direction": "long" if "bullish" not in direction else "short",
+                    "conviction": "low",
+                }
+            ],
         }
         return impacts.get(theme, [])
 
@@ -259,7 +395,12 @@ class HypothesisBuilder:
 
     @staticmethod
     def _dir_label(direction):
-        return {"supporting_bullish": "bullish", "supporting_bearish": "bearish", "mixed": "mixed", "neutral": "neutral"}.get(direction, str(direction))
+        return {
+            "supporting_bullish": "bullish",
+            "supporting_bearish": "bearish",
+            "mixed": "mixed",
+            "neutral": "neutral",
+        }.get(direction, str(direction))
 
     @staticmethod
     def _to_dict(obj):

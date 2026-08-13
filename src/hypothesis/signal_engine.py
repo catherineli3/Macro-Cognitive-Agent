@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import statistics
 from dataclasses import dataclass, field
-from typing import Optional
 
 from src.shared.logging import get_logger
 
@@ -21,29 +20,32 @@ logger = get_logger(__name__)
 @dataclass
 class AnomalousSignal:
     """A single anomalous signal detected in the macro snapshot."""
+
     indicator: str
     value: float
-    z_score: float                 # Deviation from historical mean
-    direction: str                 # "bullish" / "bearish" / "neutral"
-    strength: float                # 0~1, normalized anomaly strength
-    interpretation: str = ""       # Human-readable interpretation
+    z_score: float  # Deviation from historical mean
+    direction: str  # "bullish" / "bearish" / "neutral"
+    strength: float  # 0~1, normalized anomaly strength
+    interpretation: str = ""  # Human-readable interpretation
 
 
 @dataclass
 class SignalTheme:
     """A macro theme aggregated from multiple signals."""
-    name: str                      # e.g. "tightening_liquidity"
-    label: str                     # Human-readable, e.g. "Liquidity Tightening"
-    direction: str                 # Overall direction
-    strength: float                # 0~1
+
+    name: str  # e.g. "tightening_liquidity"
+    label: str  # Human-readable, e.g. "Liquidity Tightening"
+    direction: str  # Overall direction
+    strength: float  # 0~1
     supporting_signals: list[str] = field(default_factory=list)
-    narrative: str = ""            # One-sentence description
+    narrative: str = ""  # One-sentence description
 
 
 @dataclass
 class SignalReport:
     """Complete signal analysis output."""
-    regime: str = "unknown"                           # easing / tightening / neutral
+
+    regime: str = "unknown"  # easing / tightening / neutral
     anomalies: list[AnomalousSignal] = field(default_factory=list)
     themes: list[SignalTheme] = field(default_factory=list)
     regime_shift_detected: bool = False
@@ -125,9 +127,9 @@ _THEME_RULES: list[dict] = [
         "direction": "bearish",
         "required_signals": ["TIPS", "US10Y", "Gold"],
         "condition": lambda sigs: (
-            _get_dir(sigs, "TIPS") == "bearish" and
-            _get_dir(sigs, "US10Y") == "bullish" and
-            _get_dir(sigs, "Gold") == "bullish"
+            _get_dir(sigs, "TIPS") == "bearish"
+            and _get_dir(sigs, "US10Y") == "bullish"
+            and _get_dir(sigs, "Gold") == "bullish"
         ),
         "narrative": "Inflation pressures are building — declining TIPS, rising long yields, and strong gold demand signal inflation concerns.",
     },
@@ -178,7 +180,7 @@ class SignalEngine:
     This is the entry point for Milestone A: it answers "What's unusual today?"
     """
 
-    def __init__(self, reference_stats: Optional[dict] = None) -> None:
+    def __init__(self, reference_stats: dict | None = None) -> None:
         self._stats = reference_stats or _REFERENCE_STATS
         self._anomaly_threshold = 1.0  # z-score threshold for anomaly detection
 
@@ -243,11 +245,16 @@ class SignalEngine:
 
             interpretation = self._interpret_signal(name, value, z, direction)
 
-            anomalies.append(AnomalousSignal(
-                indicator=name, value=value, z_score=round(z, 2),
-                direction=direction, strength=round(strength, 3),
-                interpretation=interpretation,
-            ))
+            anomalies.append(
+                AnomalousSignal(
+                    indicator=name,
+                    value=value,
+                    z_score=round(z, 2),
+                    direction=direction,
+                    strength=round(strength, 3),
+                    interpretation=interpretation,
+                )
+            )
 
         # Sort by absolute z_score descending
         anomalies.sort(key=lambda s: abs(s.z_score), reverse=True)
@@ -275,16 +282,20 @@ class SignalEngine:
 
             if rule["condition"](sig_dict):
                 supporting = [r for r in required if r in sig_dict]
-                avg_strength = statistics.mean(sig_dict[r].strength for r in supporting) if supporting else 0.3
+                avg_strength = (
+                    statistics.mean(sig_dict[r].strength for r in supporting) if supporting else 0.3
+                )
 
-                themes.append(SignalTheme(
-                    name=rule["name"],
-                    label=rule["label"],
-                    direction=rule["direction"],
-                    strength=round(avg_strength, 3),
-                    supporting_signals=supporting,
-                    narrative=rule["narrative"],
-                ))
+                themes.append(
+                    SignalTheme(
+                        name=rule["name"],
+                        label=rule["label"],
+                        direction=rule["direction"],
+                        strength=round(avg_strength, 3),
+                        supporting_signals=supporting,
+                        narrative=rule["narrative"],
+                    )
+                )
 
         themes.sort(key=lambda t: t.strength, reverse=True)
         return themes

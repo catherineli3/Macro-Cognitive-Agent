@@ -8,7 +8,6 @@ Prohibited: DB writes, analysis, LLM calls, data transformation.
 
 import asyncio
 import random
-from datetime import datetime, timezone
 
 import yfinance as yf
 

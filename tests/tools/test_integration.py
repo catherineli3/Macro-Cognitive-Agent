@@ -8,9 +8,7 @@ Tests the full Tool Layer pipeline:
 
 Also tests ToolManager + Handler integration pattern.
 """
-import asyncio
-from datetime import datetime, timezone
-from typing import Optional
+
 from unittest.mock import patch
 
 import pandas as pd
@@ -18,17 +16,13 @@ import pytest
 
 from src.domain.execution import TaskResultStatus
 from src.domain.planning import TaskType
-from src.domain.tool import ToolResultStatus
-from src.interfaces.task_handler import TaskHandlerInterface
 from src.schemas.execution import TaskResult
 from src.schemas.macro_data import MacroDataSchema
 from src.schemas.planning import Task
-from src.schemas.tool import ToolResult as ToolResultSchema
 from src.tools.base import BaseTool
 from src.tools.manager import ToolManager
 from src.tools.registry import ToolRegistry
 from src.tools.yahoo_tool import YahooMacroTool
-
 
 # ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -52,7 +46,7 @@ def _make_mock_df():
 def _make_task(
     task_id: str = "t1",
     capability: str = "macro.yahoo",
-    config_extra: Optional[dict] = None,
+    config_extra: dict | None = None,
 ) -> Task:
     config = {"capability": capability, **(config_extra or {})}
     return Task(
@@ -80,9 +74,7 @@ class TestFullToolPipeline:
 
         # Execute via Manager (what a Handler would do)
         with patch.object(YahooMacroTool, "_fetch_history", return_value=_make_mock_df()):
-            result = await manager.execute(
-                "macro.yahoo", {"symbol": "^VIX", "period": "1mo"}
-            )
+            result = await manager.execute("macro.yahoo", {"symbol": "^VIX", "period": "1mo"})
 
         # Assertions
         assert result.is_success is True
@@ -108,8 +100,12 @@ class TestFullToolPipeline:
         registry = ToolRegistry()
 
         class BrokenTool(BaseTool):
-            def tool_name(self): return "Broken"
-            def capability(self): return "test.broken"
+            def tool_name(self):
+                return "Broken"
+
+            def capability(self):
+                return "test.broken"
+
             async def execute(self, input_data):
                 raise RuntimeError("Catastrophic failure")
 

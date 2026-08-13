@@ -1,16 +1,16 @@
 """v2.0 Confidence Calibration tests."""
 
-import pytest
-
 from src.calibration.confidence_calibrator import ConfidenceCalibrator
+from src.domain.signal import SignalDirection
 from src.learning.learning_engine import LearningEngine
 from src.schemas.hypothesis import HypothesisEvidence, HypothesisSchema, HypothesisSet
-from src.schemas.reflection import ReflectionReport, ReflectionSet, ReflectionVerdict
 from src.schemas.outcome import (
-    OutcomeDirection, OutcomeRecord, OutcomeVerdict, PredictionOutcome,
+    OutcomeDirection,
+    OutcomeRecord,
+    OutcomeVerdict,
+    PredictionOutcome,
 )
-from src.domain.signal import SignalDirection
-
+from src.schemas.reflection import ReflectionReport, ReflectionSet, ReflectionVerdict
 
 # ── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -18,19 +18,25 @@ from src.domain.signal import SignalDirection
 def make_hypothesis(h_id, dim, direction, confidence, sup=3, con=0):
     sup_ev = [
         HypothesisEvidence(
-            indicator=f"S{i}", signal_id=f"s_{i}",
+            indicator=f"S{i}",
+            signal_id=f"s_{i}",
             observation=f"Support {i}",
             interpretation=f"Evidence for {dim}",
-            contribution=0.7, alignment="supporting",
-        ) for i in range(sup)
+            contribution=0.7,
+            alignment="supporting",
+        )
+        for i in range(sup)
     ]
     con_ev = [
         HypothesisEvidence(
-            indicator=f"C{i}", signal_id=f"c_{i}",
+            indicator=f"C{i}",
+            signal_id=f"c_{i}",
             observation=f"Contradict {i}",
-            interpretation=f"Evidence against",
-            contribution=0.3, alignment="contradicting",
-        ) for i in range(con)
+            interpretation="Evidence against",
+            contribution=0.3,
+            alignment="contradicting",
+        )
+        for i in range(con)
     ]
     return HypothesisSchema(
         hypothesis_id=h_id,
@@ -75,18 +81,22 @@ class TestConfidenceCalibrator:
         # Pre-train engine with perfect Liquidity accuracy
         records = []
         for i in range(20):
-            records.append(OutcomeRecord(
-                run_id=f"r{i}",
-                outcome=PredictionOutcome(
-                    hypothesis_id=f"h{i}", dimension="Liquidity",
-                    predicted_statement="Test",
-                    predicted_direction=SignalDirection.BULLISH,
-                    predicted_confidence=0.8,
-                    verdict=OutcomeVerdict.CORRECT,
-                    observed_direction=OutcomeDirection.UP,
-                ),
-            ))
+            records.append(
+                OutcomeRecord(
+                    run_id=f"r{i}",
+                    outcome=PredictionOutcome(
+                        hypothesis_id=f"h{i}",
+                        dimension="Liquidity",
+                        predicted_statement="Test",
+                        predicted_direction=SignalDirection.BULLISH,
+                        predicted_confidence=0.8,
+                        verdict=OutcomeVerdict.CORRECT,
+                        observed_direction=OutcomeDirection.UP,
+                    ),
+                )
+            )
         from src.outcome.engine import OutcomeMetrics
+
         summary = OutcomeMetrics.compute_summary(records)
         engine.learn(summary, records)
 
@@ -102,18 +112,24 @@ class TestConfidenceCalibrator:
         records = []
         for i in range(20):
             correct = i < 5  # only 5/20 correct
-            records.append(OutcomeRecord(
-                run_id=f"r{i}",
-                outcome=PredictionOutcome(
-                    hypothesis_id=f"h{i}", dimension="Growth",
-                    predicted_statement="Test",
-                    predicted_direction=SignalDirection.BULLISH,
-                    predicted_confidence=0.8,
-                    verdict=OutcomeVerdict.CORRECT if correct else OutcomeVerdict.INCORRECT,
-                    observed_direction=OutcomeDirection.UP if correct else OutcomeDirection.DOWN,
-                ),
-            ))
+            records.append(
+                OutcomeRecord(
+                    run_id=f"r{i}",
+                    outcome=PredictionOutcome(
+                        hypothesis_id=f"h{i}",
+                        dimension="Growth",
+                        predicted_statement="Test",
+                        predicted_direction=SignalDirection.BULLISH,
+                        predicted_confidence=0.8,
+                        verdict=OutcomeVerdict.CORRECT if correct else OutcomeVerdict.INCORRECT,
+                        observed_direction=(
+                            OutcomeDirection.UP if correct else OutcomeDirection.DOWN
+                        ),
+                    ),
+                )
+            )
         from src.outcome.engine import OutcomeMetrics
+
         summary = OutcomeMetrics.compute_summary(records)
         engine.learn(summary, records)
 
@@ -132,18 +148,23 @@ class TestConfidenceCalibrator:
 
     def test_calibrate_set(self):
         engine = LearningEngine()
-        records = [OutcomeRecord(
-            run_id=f"r{i}",
-            outcome=PredictionOutcome(
-                hypothesis_id=f"h{i}", dimension="Liquidity",
-                predicted_statement="Test",
-                predicted_direction=SignalDirection.BULLISH,
-                predicted_confidence=0.8,
-                verdict=OutcomeVerdict.CORRECT,
-                observed_direction=OutcomeDirection.UP,
-            ),
-        ) for i in range(10)]
+        records = [
+            OutcomeRecord(
+                run_id=f"r{i}",
+                outcome=PredictionOutcome(
+                    hypothesis_id=f"h{i}",
+                    dimension="Liquidity",
+                    predicted_statement="Test",
+                    predicted_direction=SignalDirection.BULLISH,
+                    predicted_confidence=0.8,
+                    verdict=OutcomeVerdict.CORRECT,
+                    observed_direction=OutcomeDirection.UP,
+                ),
+            )
+            for i in range(10)
+        ]
         from src.outcome.engine import OutcomeMetrics
+
         summary = OutcomeMetrics.compute_summary(records)
         engine.learn(summary, records)
 
@@ -156,11 +177,13 @@ class TestConfidenceCalibrator:
             ],
             dimensions_covered=["Liquidity", "Credit", "Growth"],
         )
-        refs = ReflectionSet(reports=[
-            make_reflection(hyps.hypotheses[0], "confirmed", 0.85),
-            make_reflection(hyps.hypotheses[1], "confirmed", 0.75),
-            make_reflection(hyps.hypotheses[2], "uncertain", 0.55),
-        ])
+        refs = ReflectionSet(
+            reports=[
+                make_reflection(hyps.hypotheses[0], "confirmed", 0.85),
+                make_reflection(hyps.hypotheses[1], "confirmed", 0.75),
+                make_reflection(hyps.hypotheses[2], "uncertain", 0.55),
+            ]
+        )
 
         result = calibrator.calibrate_set(hyps, refs, "run_test")
         assert len(result.calibrations) == 3

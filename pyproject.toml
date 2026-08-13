@@ -65,24 +65,57 @@ select = [
     "W",   # pycodestyle warnings
     "UP",  # pyupgrade
 ]
+ignore = [
+    "E501",   # line length is enforced by the formatter (black); remaining
+              # long lines are LLM prompts / log strings that must not be split
+    "UP042",  # keep `str, Enum` mixin: StrEnum changes f-string rendering of
+              # members, which would alter LLM prompt content
+    "N801",   # KPI1_*/KPI2_* class names are intentional domain naming
+    "N806",   # uppercase pseudo-constants inside functions are intentional
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["E402"]       # conftest/test modules adjust sys.path before imports
+"**/__init__.py" = ["F401"] # package re-exports
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
 
 [tool.mypy]
 python_version = "3.11"
-strict = true
-warn_return_any = true
+ignore_missing_imports = true
+show_error_codes = true
 warn_unused_configs = true
-disallow_untyped_defs = true
 
+# ── Gradual typing adoption ──────────────────────────────────────────────
+# The packages below predate mypy adoption and are exempted until they are
+# annotated (tracked as tech debt — shrink this list over time).
+# All other modules are type-checked on every CI run.
 [[tool.mypy.overrides]]
 module = [
-    "langgraph.*",
-    "langchain.*",
-    "langchain_core.*",
+    "src.agent", "src.agent.*",
+    "src.belief_versioning", "src.belief_versioning.*",
+    "src.calibration", "src.calibration.*",
+    "src.capital_flow", "src.capital_flow.*",
+    "src.collector", "src.collector.*",
+    "src.data_pipeline", "src.data_pipeline.*",
+    "src.diagnosis", "src.diagnosis.*",
+    "src.executor", "src.executor.*",
+    "src.learning", "src.learning.*",
+    "src.live_intelligence", "src.live_intelligence.*",
+    "src.llm", "src.llm.*",
+    "src.memory", "src.memory.*",
+    "src.news", "src.news.*",
+    "src.normalizer", "src.normalizer.*",
+    "src.pipeline",
+    "src.regime", "src.regime.*",
+    "src.renderer", "src.renderer.*",
+    "src.research", "src.research.*",
+    "src.research_cycle", "src.research_cycle.*",
+    "src.summary_engine", "src.summary_engine.*",
+    "src.transmission", "src.transmission.*",
 ]
-ignore_missing_imports = true
+ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

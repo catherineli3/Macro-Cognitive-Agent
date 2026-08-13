@@ -10,10 +10,10 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
-
+from typing import Any
 
 # ── Stage Status ──────────────────────────────────────────────────────
+
 
 class StageStatus(str, Enum):
     PENDING = "pending"
@@ -25,9 +25,11 @@ class StageStatus(str, Enum):
 
 # ── Stage Output Objects ──────────────────────────────────────────────
 
+
 @dataclass
 class ObservationOutput:
     """Stage 1: What do we observe in the macro data and market today?"""
+
     stage_id: str = field(default_factory=lambda: f"obs_{uuid.uuid4().hex[:8]}")
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
@@ -56,6 +58,7 @@ class ObservationOutput:
 @dataclass
 class EvidenceOutput:
     """Stage 2: What evidence supports or contradicts our observations?"""
+
     stage_id: str = field(default_factory=lambda: f"evd_{uuid.uuid4().hex[:8]}")
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
@@ -84,6 +87,7 @@ class EvidenceOutput:
 @dataclass
 class PatternOutput:
     """Stage 3: What patterns or regime signals do we see?"""
+
     stage_id: str = field(default_factory=lambda: f"pat_{uuid.uuid4().hex[:8]}")
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
@@ -109,6 +113,7 @@ class PatternOutput:
 @dataclass
 class AnalogyOutput:
     """Stage 4: What does history tell us about similar situations?"""
+
     stage_id: str = field(default_factory=lambda: f"ana_{uuid.uuid4().hex[:8]}")
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
@@ -135,6 +140,7 @@ class AnalogyOutput:
 @dataclass
 class HypothesisOutput:
     """Stage 5: What is our causal hypothesis?"""
+
     stage_id: str = field(default_factory=lambda: f"hyp_{uuid.uuid4().hex[:8]}")
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
@@ -163,6 +169,7 @@ class HypothesisOutput:
 @dataclass
 class CounterOutput:
     """Stage 6: What could prove our hypothesis wrong?"""
+
     stage_id: str = field(default_factory=lambda: f"cnt_{uuid.uuid4().hex[:8]}")
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
@@ -189,6 +196,7 @@ class CounterOutput:
 @dataclass
 class PredictionOutput:
     """Stage 7: What do we forecast?"""
+
     stage_id: str = field(default_factory=lambda: f"prd_{uuid.uuid4().hex[:8]}")
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
@@ -212,6 +220,7 @@ class PredictionOutput:
 @dataclass
 class TradeOutput:
     """Stage 8: How do we express this view in markets?"""
+
     stage_id: str = field(default_factory=lambda: f"trd_{uuid.uuid4().hex[:8]}")
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
@@ -237,6 +246,7 @@ class TradeOutput:
 @dataclass
 class RiskOutput:
     """Stage 9: What are the risks and what do we monitor?"""
+
     stage_id: str = field(default_factory=lambda: f"rsk_{uuid.uuid4().hex[:8]}")
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
@@ -266,9 +276,11 @@ class RiskOutput:
 
 # ── Pipeline State ────────────────────────────────────────────────────
 
+
 @dataclass
 class StageResult:
     """Container for a single stage's execution result."""
+
     stage_name: str
     status: StageStatus
     output: Any = None
@@ -281,19 +293,20 @@ class StageResult:
 @dataclass
 class PipelineState:
     """Full pipeline execution state, tracking progress through all stages."""
+
     pipeline_id: str = field(default_factory=lambda: f"pp_{uuid.uuid4().hex[:8]}")
     started_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
     # Stage results in order
-    observation: Optional[StageResult] = None
-    evidence: Optional[StageResult] = None
-    pattern: Optional[StageResult] = None
-    analogy: Optional[StageResult] = None
-    hypothesis: Optional[StageResult] = None
-    counter: Optional[StageResult] = None
-    prediction: Optional[StageResult] = None
-    trade: Optional[StageResult] = None
-    risk: Optional[StageResult] = None
+    observation: StageResult | None = None
+    evidence: StageResult | None = None
+    pattern: StageResult | None = None
+    analogy: StageResult | None = None
+    hypothesis: StageResult | None = None
+    counter: StageResult | None = None
+    prediction: StageResult | None = None
+    trade: StageResult | None = None
+    risk: StageResult | None = None
 
     # Pipeline metadata
     current_stage: int = 0
@@ -307,14 +320,17 @@ class PipelineState:
     def all_completed(self) -> bool:
         """Check if all stages completed successfully."""
         stages = [
-            self.observation, self.evidence, self.pattern,
-            self.analogy, self.hypothesis, self.counter,
-            self.prediction, self.trade, self.risk,
+            self.observation,
+            self.evidence,
+            self.pattern,
+            self.analogy,
+            self.hypothesis,
+            self.counter,
+            self.prediction,
+            self.trade,
+            self.risk,
         ]
-        return all(
-            s is not None and s.status == StageStatus.COMPLETED
-            for s in stages
-        )
+        return all(s is not None and s.status == StageStatus.COMPLETED for s in stages)
 
     def get_output(self, stage_name: str) -> Any:
         """Get the output of a specific stage."""
@@ -324,10 +340,17 @@ class PipelineState:
     def progress_pct(self) -> float:
         """Pipeline completion percentage."""
         completed = sum(
-            1 for s in [
-                self.observation, self.evidence, self.pattern,
-                self.analogy, self.hypothesis, self.counter,
-                self.prediction, self.trade, self.risk,
+            1
+            for s in [
+                self.observation,
+                self.evidence,
+                self.pattern,
+                self.analogy,
+                self.hypothesis,
+                self.counter,
+                self.prediction,
+                self.trade,
+                self.risk,
             ]
             if s is not None and s.status == StageStatus.COMPLETED
         )

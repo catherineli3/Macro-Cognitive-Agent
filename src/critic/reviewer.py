@@ -67,9 +67,7 @@ class HypothesisReviewer:
             )
 
         # Single-source risk
-        supporting_indicators = {
-            e.indicator for e in hypothesis.supporting_evidence
-        }
+        supporting_indicators = {e.indicator for e in hypothesis.supporting_evidence}
         if len(supporting_indicators) == 1 and hypothesis.evidence_count > 1:
             findings.append(
                 ReflectionFinding(
@@ -135,9 +133,7 @@ class HypothesisReviewer:
             findings=findings,
             evidence_sufficiency=sufficiency,
             evidence_consistency=consistency,
-            review_summary=self._build_summary(
-                sufficiency, consistency, findings, hypothesis
-            ),
+            review_summary=self._build_summary(sufficiency, consistency, findings, hypothesis),
         )
 
         return report
@@ -197,12 +193,8 @@ class HypothesisReviewer:
         hypothesis: HypothesisSchema,
     ) -> ReflectionVerdict:
         """Decide: confirmed, refuted, or uncertain?"""
-        has_critical = any(
-            f.severity == FindingSeverity.CRITICAL for f in findings
-        )
-        has_major = any(
-            f.severity == FindingSeverity.MAJOR for f in findings
-        )
+        has_critical = any(f.severity == FindingSeverity.CRITICAL for f in findings)
+        has_major = any(f.severity == FindingSeverity.MAJOR for f in findings)
 
         # Empty hypothesis (no evidence at all) → uncertain
         if hypothesis.evidence_count == 0:
@@ -236,9 +228,7 @@ class HypothesisReviewer:
     def _avg_supporting_contribution(self, h: HypothesisSchema) -> float:
         if not h.supporting_evidence:
             return 0.0
-        return sum(e.contribution for e in h.supporting_evidence) / len(
-            h.supporting_evidence
-        )
+        return sum(e.contribution for e in h.supporting_evidence) / len(h.supporting_evidence)
 
     def _build_summary(
         self,

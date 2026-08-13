@@ -6,10 +6,9 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Optional
-
 
 # ── Document Source Enum ────────────────────────────────────────────────
+
 
 class DocumentSource(str, Enum):
     BRIDGEWATER = "bridgewater"
@@ -47,9 +46,11 @@ class DocumentType(str, Enum):
 
 # ── Core Units ──────────────────────────────────────────────────────────
 
+
 @dataclass
 class Paragraph:
     """Single paragraph from a research document."""
+
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     index: int = 0
     text: str = ""
@@ -66,41 +67,44 @@ class Paragraph:
 @dataclass
 class ReasoningUnit:
     """Extracted reasoning chain from a paragraph."""
+
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
-    observation: str = ""               # What was observed
+    observation: str = ""  # What was observed
     evidence: list[str] = field(default_factory=list)  # Supporting evidence cited
-    pattern: str = ""                   # Pattern or regime identified
-    historical_analogy: str = ""        # Historical comparison made
-    hypothesis: str = ""                # Causal hypothesis
-    counter_consideration: str = ""     # Acknowledged counter
-    conclusion: str = ""                # Final judgment
-    confidence_marker: str = ""         # e.g. "likely", "almost certain", "possible"
+    pattern: str = ""  # Pattern or regime identified
+    historical_analogy: str = ""  # Historical comparison made
+    hypothesis: str = ""  # Causal hypothesis
+    counter_consideration: str = ""  # Acknowledged counter
+    conclusion: str = ""  # Final judgment
+    confidence_marker: str = ""  # e.g. "likely", "almost certain", "possible"
     source_paragraph_ids: list[str] = field(default_factory=list)
-    quality_score: float = 0.0          # 0-1 quality of extracted reasoning
+    quality_score: float = 0.0  # 0-1 quality of extracted reasoning
 
 
 @dataclass
 class PredictionUnit:
     """Extracted prediction from a research document."""
+
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
-    claim: str = ""                     # What is predicted
-    probability: float = 0.0            # Explicit or implied probability
-    time_horizon: str = ""              # e.g. "3 months", "end of 2026", "Q4"
+    claim: str = ""  # What is predicted
+    probability: float = 0.0  # Explicit or implied probability
+    time_horizon: str = ""  # e.g. "3 months", "end of 2026", "Q4"
     conditions: list[str] = field(default_factory=list)  # Conditions
-    invalidation: str = ""              # What would prove it wrong
-    asset_implication: str = ""         # What it means for markets
+    invalidation: str = ""  # What would prove it wrong
+    asset_implication: str = ""  # What it means for markets
     source_paragraph_ids: list[str] = field(default_factory=list)
 
 
 @dataclass
 class TradeIdea:
     """Extracted trade idea from a research document."""
+
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     description: str = ""
-    direction: str = ""                 # long, short, neutral
-    instrument: str = ""                # e.g. "SPX", "10Y UST", "EUR/USD"
-    rationale: str = ""                 # Why this trade
-    conviction: float = 0.0             # 0-1
+    direction: str = ""  # long, short, neutral
+    instrument: str = ""  # e.g. "SPX", "10Y UST", "EUR/USD"
+    rationale: str = ""  # Why this trade
+    conviction: float = 0.0  # 0-1
     stop_loss: str = ""
     target: str = ""
     time_horizon: str = ""
@@ -111,26 +115,29 @@ class TradeIdea:
 @dataclass
 class CorpusCounterArgument:
     """Extracted counterargument from a research document."""
+
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     counter_claim: str = ""
     against_hypothesis: str = ""
     evidence_for_counter: list[str] = field(default_factory=list)
-    why_dismissed: str = ""             # Why author dismisses this counter
-    severity: str = ""                  # minor, major, fatal
+    why_dismissed: str = ""  # Why author dismisses this counter
+    severity: str = ""  # minor, major, fatal
     source_paragraph_ids: list[str] = field(default_factory=list)
 
 
 # ── Document-Level Models ───────────────────────────────────────────────
 
+
 @dataclass
 class ResearchDocument:
     """Full parsed research document."""
+
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     title: str = ""
     author: str = ""
     source: DocumentSource = DocumentSource.BRIDGEWATER
     doc_type: DocumentType = DocumentType.DAILY_OBSERVATION
-    publication_date: str = ""          # ISO date string
+    publication_date: str = ""  # ISO date string
     url: str = ""
     raw_text: str = ""
     paragraphs: list[Paragraph] = field(default_factory=list)
@@ -140,7 +147,7 @@ class ResearchDocument:
     counter_arguments: list[CorpusCounterArgument] = field(default_factory=list)
     key_themes: list[str] = field(default_factory=list)
     word_count: int = 0
-    parse_quality: float = 0.0          # 0-1
+    parse_quality: float = 0.0  # 0-1
 
     def __post_init__(self):
         if self.raw_text and not self.word_count:
@@ -150,15 +157,17 @@ class ResearchDocument:
 @dataclass
 class CorpusEntry:
     """Indexed entry in the macro research corpus."""
+
     doc: ResearchDocument
-    embedding_id: str = ""              # Vector DB reference
-    indexed_at: str = ""                # ISO datetime
-    quality_grade: str = "B"            # A/B/C/D
+    embedding_id: str = ""  # Vector DB reference
+    indexed_at: str = ""  # ISO datetime
+    quality_grade: str = "B"  # A/B/C/D
 
 
 @dataclass
 class MacroResearchCorpus:
     """The assembled corpus of institutional macro research."""
+
     name: str = "Macro Research Corpus"
     version: str = "1.0"
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())

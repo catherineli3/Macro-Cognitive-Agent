@@ -10,8 +10,7 @@ from price action, volume, and cross-asset correlations.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
 from src.research.reflexivity.schemas import CapitalFlowSnapshot
 from src.shared.logging import get_logger
@@ -47,7 +46,7 @@ class CapitalFlowTracker:
             CapitalFlowSnapshot with inferred flow signals
         """
         snap = CapitalFlowSnapshot()
-        now = datetime.now(timezone.utc)
+        _now = datetime.now(UTC)
 
         vix = float(market_data.get("vix", 18))
         dxy = float(market_data.get("dxy", 100))
@@ -73,7 +72,9 @@ class CapitalFlowTracker:
         if nasdaq_ytd > spx_ytd * 1.3:
             snap.sector_rotation.append({"from": "defensive", "to": "tech/growth", "strength": 0.7})
         elif nasdaq_ytd < spx_ytd * 0.5:
-            snap.sector_rotation.append({"from": "tech/growth", "to": "value/defensive", "strength": 0.6})
+            snap.sector_rotation.append(
+                {"from": "tech/growth", "to": "value/defensive", "strength": 0.6}
+            )
 
         # ── Fixed income flows ──
         if us10y > 4.5:
@@ -101,20 +102,30 @@ class CapitalFlowTracker:
         else:
             snap.usd_flow_direction = "neutral"
 
-        snap.em_fx_flow_direction = "outflow" if dxy > 102 else ("inflow" if dxy < 98 else "neutral")
+        snap.em_fx_flow_direction = (
+            "outflow" if dxy > 102 else ("inflow" if dxy < 98 else "neutral")
+        )
 
         # ── Commodity flows ──
-        snap.gold_flow_direction = "inflow" if gold > 1900 else ("outflow" if gold < 1600 else "neutral")
+        snap.gold_flow_direction = (
+            "inflow" if gold > 1900 else ("outflow" if gold < 1600 else "neutral")
+        )
         snap.oil_flow_signal = "bullish" if oil > 85 else ("bearish" if oil < 50 else "neutral")
 
         # ── Aggregate ──
         risk_signals = []
-        if vix < 15: risk_signals.append(1)
-        if spx_ytd > 10: risk_signals.append(1)
-        if hyg < 350: risk_signals.append(1)
-        if vix > 25: risk_signals.append(-1)
-        if spx_ytd < -10: risk_signals.append(-1)
-        if hyg > 500: risk_signals.append(-1)
+        if vix < 15:
+            risk_signals.append(1)
+        if spx_ytd > 10:
+            risk_signals.append(1)
+        if hyg < 350:
+            risk_signals.append(1)
+        if vix > 25:
+            risk_signals.append(-1)
+        if spx_ytd < -10:
+            risk_signals.append(-1)
+        if hyg > 500:
+            risk_signals.append(-1)
 
         risk_avg = sum(risk_signals) / len(risk_signals) if risk_signals else 0
         if risk_avg > 0.3:
@@ -129,7 +140,7 @@ class CapitalFlowTracker:
         # ── Store history ──
         self._flow_history.append(snap)
         if len(self._flow_history) > self._max_history:
-            self._flow_history = self._flow_history[-self._max_history:]
+            self._flow_history = self._flow_history[-self._max_history :]
 
         return snap
 
@@ -137,7 +148,7 @@ class CapitalFlowTracker:
         """Return recent flow history."""
         return self._flow_history[-days:]
 
-    def detect_flow_regime_change(self) -> Optional[dict]:
+    def detect_flow_regime_change(self) -> dict | None:
         """Detect if flow regime has changed significantly.
 
         Compares most recent flow snapshot against the average of last N.
@@ -146,7 +157,9 @@ class CapitalFlowTracker:
             return None
 
         current = self._flow_history[-1]
-        prev_window = self._flow_history[-10:-1] if len(self._flow_history) >= 10 else self._flow_history[:-1]
+        prev_window = (
+            self._flow_history[-10:-1] if len(self._flow_history) >= 10 else self._flow_history[:-1]
+        )
 
         changes = []
 

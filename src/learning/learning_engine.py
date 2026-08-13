@@ -12,8 +12,7 @@ Design (DDR-v2):
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from src.schemas.learning import BeliefWeight, LearningSummary
 from src.schemas.outcome import OutcomeSummary
@@ -39,7 +38,7 @@ class BeliefUpdater:
         self,
         weights: list[BeliefWeight],
         outcome_summary: OutcomeSummary,
-        recent_outcomes: Optional[list] = None,
+        recent_outcomes: list | None = None,
     ) -> list[BeliefWeight]:
         """Update belief weights using outcome data.
 
@@ -89,7 +88,7 @@ class BeliefUpdater:
                 # Streak tracking
                 bw.streak = self._compute_streak(bw, recent_outcomes, dim_key)
 
-                bw.last_updated = datetime.now(timezone.utc)
+                bw.last_updated = datetime.now(UTC)
 
         return weights
 
@@ -105,7 +104,7 @@ class BeliefUpdater:
     @staticmethod
     def _compute_streak(
         bw: BeliefWeight,
-        recent_outcomes: Optional[list],
+        recent_outcomes: list | None,
         dim_key: str,
     ) -> int:
         """Compute consecutive streak of correct/incorrect predictions."""
@@ -128,7 +127,7 @@ class BeliefUpdater:
                     break
         return streak
 
-    def initialize_weights(self, dimensions: Optional[list[str]] = None) -> list[BeliefWeight]:
+    def initialize_weights(self, dimensions: list[str] | None = None) -> list[BeliefWeight]:
         """Initialize belief weights for all dimensions (neutral start)."""
         dims = dimensions or _DEFAULT_DIMENSIONS
         return [BeliefWeight(dimension=d, current_weight=0.5, initial_weight=0.5) for d in dims]
@@ -150,7 +149,7 @@ class ConfidenceDecay:
     def apply_decay(
         self,
         weights: list[BeliefWeight],
-        days_since_last_update: Optional[float] = None,
+        days_since_last_update: float | None = None,
     ) -> list[BeliefWeight]:
         """Apply time decay to belief weights.
 
@@ -184,7 +183,7 @@ class ConfidenceDecay:
         if not outcomes:
             return []
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         weights: list[float] = []
         for record in outcomes:
             age_days = (now - record.outcome.predicted_at).total_seconds() / 86400
@@ -250,11 +249,15 @@ class PatternMiner:
         if bullish:
             bull_hit = sum(1 for o in bullish if o.is_correct) / len(bullish)
             if bull_hit > 0.65:
-                patterns.append(f"Bullish calls have been accurate ({bull_hit:.0%} on {len(bullish)} predictions).")
+                patterns.append(
+                    f"Bullish calls have been accurate ({bull_hit:.0%} on {len(bullish)} predictions)."
+                )
         if bearish:
             bear_hit = sum(1 for o in bearish if o.is_correct) / len(bearish)
             if bear_hit > 0.65:
-                patterns.append(f"Bearish calls have been accurate ({bear_hit:.0%} on {len(bearish)} predictions).")
+                patterns.append(
+                    f"Bearish calls have been accurate ({bear_hit:.0%} on {len(bearish)} predictions)."
+                )
 
         # Pattern 3: Confidence calibration observation
         high_conf = [o for o in evaluated if o.predicted_confidence >= 0.75]
@@ -313,9 +316,9 @@ class LearningEngine:
 
     def __init__(
         self,
-        updater: Optional[BeliefUpdater] = None,
-        decay: Optional[ConfidenceDecay] = None,
-        miner: Optional[PatternMiner] = None,
+        updater: BeliefUpdater | None = None,
+        decay: ConfidenceDecay | None = None,
+        miner: PatternMiner | None = None,
     ) -> None:
         self._updater = updater or BeliefUpdater()
         self._decay = decay or ConfidenceDecay()
@@ -331,8 +334,8 @@ class LearningEngine:
     def learn(
         self,
         outcome_summary: OutcomeSummary,
-        outcome_records: Optional[list] = None,
-        days_since_last: Optional[float] = None,
+        outcome_records: list | None = None,
+        days_since_last: float | None = None,
     ) -> LearningSummary:
         """Execute a learning cycle.
 
@@ -352,7 +355,9 @@ class LearningEngine:
 
         # 2. Update weights from outcomes
         self._weights = self._updater.update_from_summary(
-            self._weights, outcome_summary, outcome_records,
+            self._weights,
+            outcome_summary,
+            outcome_records,
         )
 
         # 3. Mine patterns
@@ -385,12 +390,8 @@ class LearningEngine:
 
         # 6. Improvement trend
         if outcome_summary.total_predictions >= 5:
-            improving_count = sum(
-                1 for bw in self._weights if bw.accuracy_trend == "improving"
-            )
-            declining_count = sum(
-                1 for bw in self._weights if bw.accuracy_trend == "declining"
-            )
+            improving_count = sum(1 for bw in self._weights if bw.accuracy_trend == "improving")
+            declining_count = sum(1 for bw in self._weights if bw.accuracy_trend == "declining")
             if improving_count > declining_count:
                 trend = "improving"
             elif declining_count > improving_count:

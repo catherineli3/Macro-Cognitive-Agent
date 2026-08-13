@@ -8,7 +8,12 @@ V3.1 Architecture Consolidation:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.research.beliefs.schemas import ResearchBelief
+    from src.schemas.belief_version import AdaptiveBelief
 
 
 class BeliefAdapter:
@@ -34,7 +39,7 @@ class BeliefAdapter:
     }
 
     @staticmethod
-    def to_adaptive(belief) -> "AdaptiveBelief":
+    def to_adaptive(belief) -> AdaptiveBelief:
         """Convert ResearchBelief → AdaptiveBelief for legacy compatibility."""
         from src.schemas.belief_version import AdaptiveBelief
 
@@ -54,16 +59,17 @@ class BeliefAdapter:
             maturity=0.5,  # Default maturity
             source=(
                 ", ".join(getattr(belief, "source_narratives", []))
-                if hasattr(belief, "source_narratives") else ""
+                if hasattr(belief, "source_narratives")
+                else ""
             ),
-            created_at=getattr(belief, "created_at", datetime.now(timezone.utc)),
-            updated_at=getattr(belief, "updated_at", datetime.now(timezone.utc)),
+            created_at=getattr(belief, "created_at", datetime.now(UTC)),
+            updated_at=getattr(belief, "updated_at", datetime.now(UTC)),
         )
 
     @staticmethod
-    def from_adaptive(adaptive_belief: "AdaptiveBelief") -> "ResearchBelief":
+    def from_adaptive(adaptive_belief: AdaptiveBelief) -> ResearchBelief:
         """Convert AdaptiveBelief → ResearchBelief."""
-        from src.research.beliefs.schemas import ResearchBelief, BeliefDomain, BeliefStage
+        from src.research.beliefs.schemas import BeliefDomain, BeliefStage, ResearchBelief
 
         # Map dimension string to BeliefDomain enum
         dim = (adaptive_belief.dimension or "").upper()

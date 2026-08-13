@@ -10,10 +10,9 @@ Responsibilities:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any
+from datetime import UTC, datetime
 
-from src.schemas.research_thesis import ResearchThesis, ThesisOutcome, ThesisStatus
+from src.schemas.research_thesis import ResearchThesis, ThesisOutcome
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -27,14 +26,14 @@ class PendingThesis:
     thesis_title: str
     invalidation_conditions: list[str] = field(default_factory=list)
     expected_window: str = ""
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     prediction_count: int = 0
     predictions: list = field(default_factory=list)
 
     @property
     def is_overdue(self) -> bool:
         """Check if expected window has passed (simple heuristic)."""
-        elapsed = (datetime.now(timezone.utc) - self.created_at).days
+        elapsed = (datetime.now(UTC) - self.created_at).days
         # Parse window like "30-90 days"
         window = self.expected_window.lower().replace("days", "").strip()
         try:
@@ -59,8 +58,9 @@ class OutcomeTracker:
 
     # ── Registration ────────────────────────────────────────────────────
 
-    def register_thesis(self, thesis: ResearchThesis,
-                        predictions: list | None = None) -> PendingThesis:
+    def register_thesis(
+        self, thesis: ResearchThesis, predictions: list | None = None
+    ) -> PendingThesis:
         """Register a thesis for outcome tracking.
 
         Args:
@@ -72,7 +72,7 @@ class OutcomeTracker:
         """
         # Unwrap PredictionBatch if needed (it stores predictions in .predictions list)
         pred_list = predictions
-        if pred_list is not None and hasattr(pred_list, 'predictions'):
+        if pred_list is not None and hasattr(pred_list, "predictions"):
             pred_list = pred_list.predictions
 
         pending = PendingThesis(
@@ -84,14 +84,15 @@ class OutcomeTracker:
             predictions=list(pred_list) if pred_list else [],
         )
         self._pending[thesis.thesis_id] = pending
-        logger.info("Tracking thesis '%s' (%d predictions, %d conditions)",
-                     thesis.title[:60], pending.prediction_count,
-                     len(pending.invalidation_conditions))
+        logger.info(
+            "Tracking thesis '%s' (%d predictions, %d conditions)",
+            thesis.title[:60],
+            pending.prediction_count,
+            len(pending.invalidation_conditions),
+        )
         return pending
 
-    def record_prediction_outcome(self, thesis_id: str,
-                                   prediction_id: str,
-                                   correct: bool) -> None:
+    def record_prediction_outcome(self, thesis_id: str, prediction_id: str, correct: bool) -> None:
         """Record the outcome of a single prediction linked to a thesis."""
         pending = self._pending.get(thesis_id)
         if pending:
@@ -145,7 +146,8 @@ class OutcomeTracker:
                 invalidation_triggered=None,
                 transmission_verified=None,  # Postmortem will determine
                 timing_correct=None,
-                notes=diagnosis_notes or (
+                notes=diagnosis_notes
+                or (
                     "Thesis validated: market moved in expected direction."
                     if directional_correct
                     else "Thesis not invalidated but directional outcome unclear."
@@ -156,7 +158,9 @@ class OutcomeTracker:
                 logger.info("Thesis %s VALIDATED", thesis.thesis_id)
             else:
                 thesis.invalidate("directional outcome not met", outcome)
-                logger.info("Thesis %s: no invalidation triggered, but direction wrong", thesis.thesis_id)
+                logger.info(
+                    "Thesis %s: no invalidation triggered, but direction wrong", thesis.thesis_id
+                )
 
         # Move from pending to completed
         self._completed[thesis.thesis_id] = outcome
@@ -165,8 +169,7 @@ class OutcomeTracker:
 
         return outcome
 
-    def check_invalidation(self, thesis_id: str,
-                            actual_data: dict[str, float]) -> str | None:
+    def check_invalidation(self, thesis_id: str, actual_data: dict[str, float]) -> str | None:
         """Check if any invalidation condition has been triggered.
 
         Parses conditions like:
@@ -193,8 +196,7 @@ class OutcomeTracker:
 
         return None
 
-    def _condition_triggered(self, condition: str,
-                              actual_data: dict[str, float]) -> bool:
+    def _condition_triggered(self, condition: str, actual_data: dict[str, float]) -> bool:
         """Check if a specific condition is met by actual data.
 
         Parses natural language conditions against data.
@@ -271,11 +273,12 @@ class OutcomeTracker:
         numbers ("S&P 500") appear earlier.
         """
         import re
-        matches = re.findall(r'[\d,.]+', text)
+
+        matches = re.findall(r"[\d,.]+", text)
         for m in reversed(matches):
             m_pos = text.find(m)
-            after = text[m_pos + len(m):m_pos + len(m) + 2].strip()
-            if after.startswith("Y"):          # "10Y Treasury"
+            after = text[m_pos + len(m) : m_pos + len(m) + 2].strip()
+            if after.startswith("Y"):  # "10Y Treasury"
                 continue
             cleaned = m.replace(",", "").replace("$", "")
             try:
@@ -285,8 +288,7 @@ class OutcomeTracker:
         return None
 
     @staticmethod
-    def _check_direction(thesis: ResearchThesis,
-                          actual_data: dict[str, float]) -> bool:
+    def _check_direction(thesis: ResearchThesis, actual_data: dict[str, float]) -> bool:
         """Check if market moved in the thesis direction based on core belief."""
         belief = thesis.core_belief.lower()
 
@@ -334,7 +336,4 @@ class OutcomeTracker:
         return len(self._completed)
 
     def summary(self) -> str:
-        return (
-            f"OutcomeTracker: {self.pending_count} pending, "
-            f"{self.completed_count} completed"
-        )
+        return f"OutcomeTracker: {self.pending_count} pending, " f"{self.completed_count} completed"

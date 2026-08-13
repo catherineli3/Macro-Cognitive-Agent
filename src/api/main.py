@@ -8,12 +8,13 @@ Start with:
 """
 
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import FastAPI
 
 from src.api.analyze_routes import router as analyze_router
 from src.api.signal_routes import router as signal_router
+from src.api.v2_routes import router as v2_router
 from src.shared.logging import configure_logging
 from src.storage.engine import check_db_health
 
@@ -32,7 +33,6 @@ app.include_router(signal_router)
 app.include_router(analyze_router)
 
 # Register v2.0 routes (continuous learning)
-from src.api.v2_routes import router as v2_router
 
 app.include_router(v2_router)
 
@@ -111,17 +111,17 @@ async def health_check() -> dict:
     components["last_ingested"] = {"value": last_value}
 
     # Overall status — only check dict-type components with "status" key
-    statuses = [
-        c["status"]
-        for c in components.values()
-        if isinstance(c, dict) and "status" in c
-    ]
+    statuses = [c["status"] for c in components.values() if isinstance(c, dict) and "status" in c]
     if "unhealthy" in statuses:
         overall = "degraded" if "healthy" in statuses else "unhealthy"
     else:
         overall = "healthy"
 
-    return {"status": overall, "components": components, "timestamp": datetime.now(timezone.utc).isoformat()}
+    return {
+        "status": overall,
+        "components": components,
+        "timestamp": datetime.now(UTC).isoformat(),
+    }
 
 
 @app.get("/")

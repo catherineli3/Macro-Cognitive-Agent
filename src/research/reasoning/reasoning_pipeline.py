@@ -25,8 +25,8 @@ import json
 import os
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from src.research.reasoning.schemas import LoopState
 from src.shared.logging import get_logger
@@ -53,19 +53,19 @@ class ConvergenceAnalyzer:
         Memo Delta < 3%
     """
 
-    EVIDENCE_DELTA_THRESHOLD = 5.0    # pct
+    EVIDENCE_DELTA_THRESHOLD = 5.0  # pct
     HYPOTHESIS_DELTA_THRESHOLD = 5.0  # pct
-    BELIEF_DELTA_THRESHOLD = 3.0      # pct
-    MEMO_DELTA_THRESHOLD = 3.0        # pct
+    BELIEF_DELTA_THRESHOLD = 3.0  # pct
+    MEMO_DELTA_THRESHOLD = 3.0  # pct
 
-    QUALITY_EXIT = 92.0               # Memo quality ≥ 92 → independent exit
-    MARKET_EXIT = 85.0                # MC score ≥ 85 → independent exit
+    QUALITY_EXIT = 92.0  # Memo quality ≥ 92 → independent exit
+    MARKET_EXIT = 85.0  # MC score ≥ 85 → independent exit
 
     @classmethod
     def analyze(
         cls,
         current: LoopState,
-        previous: Optional[LoopState] = None,
+        previous: LoopState | None = None,
     ) -> LoopState:
         """Compute deltas and determine convergence.
 
@@ -114,7 +114,9 @@ class ConvergenceAnalyzer:
             current.belief_delta_pct = 0.0
 
         # ── Memo Delta (approximated via quality + market score change) ──
-        memo_change = abs(current.quality - previous.quality) + abs(current.market_score - previous.market_score)
+        memo_change = abs(current.quality - previous.quality) + abs(
+            current.market_score - previous.market_score
+        )
         prev_total = max(previous.quality + previous.market_score, 1.0)
         current.memo_delta_pct = round((memo_change / prev_total) * 100, 1)
 
@@ -194,6 +196,7 @@ class LoopTraceEntry:
     Records what decisions were made, what changed, and why.
     Attached to final Memo as complete reasoning trail.
     """
+
     round_number: int = 0
 
     # Evidence retry log
@@ -242,6 +245,7 @@ class LoopTraceEntry:
 @dataclass
 class StepResult:
     """Output of a single pipeline step — always structured JSON."""
+
     step_name: str = ""
     step_id: int = 0
     success: bool = True
@@ -254,29 +258,50 @@ class StepResult:
 @dataclass
 class PipelineResult:
     """Complete 10-step reasoning pipeline output (V10 Sprint 4.5)."""
+
     pipeline_id: str = ""
     date: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     # Step outputs (all structured JSON)
-    step_evidence: StepResult = field(default_factory=lambda: StepResult(step_id=1, step_name="Evidence"))
-    step_hypothesis: StepResult = field(default_factory=lambda: StepResult(step_id=2, step_name="Hypothesis"))
-    step_counter: StepResult = field(default_factory=lambda: StepResult(step_id=3, step_name="Counter"))
-    step_reflexivity: StepResult = field(default_factory=lambda: StepResult(step_id=4, step_name="Reflexivity"))
-    step_history: StepResult = field(default_factory=lambda: StepResult(step_id=5, step_name="Historical"))
-    step_portfolio: StepResult = field(default_factory=lambda: StepResult(step_id=6, step_name="Portfolio"))
-    step_llm_synthesis: StepResult = field(default_factory=lambda: StepResult(step_id=7, step_name="LLM_Synthesis"))
-    step_quality: StepResult = field(default_factory=lambda: StepResult(step_id=8, step_name="Quality_Review"))
-    step_self_review: StepResult = field(default_factory=lambda: StepResult(step_id=9, step_name="Self_Review"))
-    step_market_challenge: StepResult = field(default_factory=lambda: StepResult(step_id=10, step_name="Market_Challenge"))
+    step_evidence: StepResult = field(
+        default_factory=lambda: StepResult(step_id=1, step_name="Evidence")
+    )
+    step_hypothesis: StepResult = field(
+        default_factory=lambda: StepResult(step_id=2, step_name="Hypothesis")
+    )
+    step_counter: StepResult = field(
+        default_factory=lambda: StepResult(step_id=3, step_name="Counter")
+    )
+    step_reflexivity: StepResult = field(
+        default_factory=lambda: StepResult(step_id=4, step_name="Reflexivity")
+    )
+    step_history: StepResult = field(
+        default_factory=lambda: StepResult(step_id=5, step_name="Historical")
+    )
+    step_portfolio: StepResult = field(
+        default_factory=lambda: StepResult(step_id=6, step_name="Portfolio")
+    )
+    step_llm_synthesis: StepResult = field(
+        default_factory=lambda: StepResult(step_id=7, step_name="LLM_Synthesis")
+    )
+    step_quality: StepResult = field(
+        default_factory=lambda: StepResult(step_id=8, step_name="Quality_Review")
+    )
+    step_self_review: StepResult = field(
+        default_factory=lambda: StepResult(step_id=9, step_name="Self_Review")
+    )
+    step_market_challenge: StepResult = field(
+        default_factory=lambda: StepResult(step_id=10, step_name="Market_Challenge")
+    )
 
     # Final memo
-    memo: Optional[Any] = None      # ResearchMemo
+    memo: Any | None = None  # ResearchMemo
     memo_text: str = ""
     memo_quality_score: float = 0.0
 
     # Sprint 2: Prompt routing info
-    routed_prompt: Optional[Any] = None  # RoutedPrompt or NarrativeRoutedPrompt
+    routed_prompt: Any | None = None  # RoutedPrompt or NarrativeRoutedPrompt
     selected_domains: list = field(default_factory=list)
     prompt_router_used: str = ""  # "domain" / "narrative" / "none"
 
@@ -286,10 +311,10 @@ class PipelineResult:
     self_review_passed: bool = False
 
     # Sprint 4: Learning info (populated after benchmark cycle)
-    learning_report: Optional[Any] = None  # LearningReport
+    learning_report: Any | None = None  # LearningReport
 
     # Sprint 4.5: Narrative routing
-    narrative_routed_prompt: Optional[Any] = None  # NarrativeRoutedPrompt
+    narrative_routed_prompt: Any | None = None  # NarrativeRoutedPrompt
     narrative_dominant: str = ""  # Dominant narrative title
     narrative_stance: str = ""  # challenge / support / nuance
 
@@ -363,8 +388,12 @@ class PipelineResult:
     def all_steps_successful(self) -> bool:
         """Check if all deterministic steps succeeded."""
         steps = [
-            self.step_evidence, self.step_hypothesis, self.step_counter,
-            self.step_reflexivity, self.step_history, self.step_portfolio,
+            self.step_evidence,
+            self.step_hypothesis,
+            self.step_counter,
+            self.step_reflexivity,
+            self.step_history,
+            self.step_portfolio,
         ]
         return all(s.success for s in steps)
 
@@ -373,7 +402,7 @@ class PipelineResult:
 # LLM Synthesis Prompt — Structured reasoning input ONLY
 # ═══════════════════════════════════════════════════════════════════════════
 
-_FALLBACK_SYNTHESIS_PROMPT = """You are a senior macro strategist at a top-tier hedge fund. 
+_FALLBACK_SYNTHESIS_PROMPT = """You are a senior macro strategist at a top-tier hedge fund.
 Your task is to synthesize structured reasoning outputs into a professional institutional research memo.
 
 CRITICAL RULES:
@@ -409,67 +438,93 @@ Think step by step, but output ONLY the JSON."""
 
 def _build_synthesis_user_prompt(step_outputs: dict[str, dict]) -> str:
     """Build the user prompt for LLM synthesis.
-    
+
     Contains ONLY structured reasoning results — NO raw market data.
     """
     parts = ["## STRUCTURED REASONING INPUT\n"]
     parts.append("Below are the results of 6 deterministic reasoning steps. ")
     parts.append("Synthesize them into a professional macro research memo.\n")
-    
+
     # Step 1: Evidence
     evidence = step_outputs.get("evidence", {})
     parts.append("### 1. Evidence Assessment")
-    parts.append(f"Evidence clusters: {json.dumps(evidence.get('clusters', []), ensure_ascii=False)}")
-    parts.append(f"Consensus signals: {json.dumps(evidence.get('consensus_signals', []), ensure_ascii=False)}")
-    parts.append(f"Key missing data: {json.dumps(evidence.get('key_missing_data', []), ensure_ascii=False)}")
+    parts.append(
+        f"Evidence clusters: {json.dumps(evidence.get('clusters', []), ensure_ascii=False)}"
+    )
+    parts.append(
+        f"Consensus signals: {json.dumps(evidence.get('consensus_signals', []), ensure_ascii=False)}"
+    )
+    parts.append(
+        f"Key missing data: {json.dumps(evidence.get('key_missing_data', []), ensure_ascii=False)}"
+    )
     parts.append(f"Evidence quality: {evidence.get('overall_quality', 'N/A')}\n")
-    
+
     # Step 2: Hypotheses
     hypotheses = step_outputs.get("hypotheses", {})
     parts.append("### 2. Hypothesis Set")
     for h in hypotheses.get("hypotheses", []):
         parts.append(f"- [{h.get('domain', '')}] {h.get('title', '')}: {h.get('statement', '')}")
-        parts.append(f"  Confidence: {h.get('confidence', 0)}, Causal chain: {' → '.join(h.get('causal_chain', []))}")
+        parts.append(
+            f"  Confidence: {h.get('confidence', 0)}, Causal chain: {' → '.join(h.get('causal_chain', []))}"
+        )
         parts.append(f"  Evidence weight: {h.get('evidence_weight', 0)}")
     parts.append(f"\nDominant hypothesis: {hypotheses.get('dominant_hypothesis', 'N/A')}\n")
-    
+
     # Step 3: Counter Arguments
     counter = step_outputs.get("counter", {})
     parts.append("### 3. Counter Arguments")
     for c in counter.get("counter_arguments", []):
         parts.append(f"- [{c.get('severity', '')}] {c.get('title', '')}: {c.get('argument', '')}")
-        parts.append(f"  Probability: {c.get('probability', 0)}, Triggers: {json.dumps(c.get('trigger_conditions', []), ensure_ascii=False)}")
+        parts.append(
+            f"  Probability: {c.get('probability', 0)}, Triggers: {json.dumps(c.get('trigger_conditions', []), ensure_ascii=False)}"
+        )
     parts.append(f"Primary counter risk: {counter.get('primary_counter_risk', 'N/A')}\n")
-    
+
     # Step 4: Reflexivity
     reflexivity = step_outputs.get("reflexivity", {})
     parts.append("### 4. Reflexivity Analysis")
-    parts.append(f"Active cycles: {json.dumps(reflexivity.get('active_cycles', []), ensure_ascii=False)}")
+    parts.append(
+        f"Active cycles: {json.dumps(reflexivity.get('active_cycles', []), ensure_ascii=False)}"
+    )
     parts.append(f"Vulnerability score: {reflexivity.get('vulnerability_score', 0)}")
-    parts.append(f"Break triggers: {json.dumps(reflexivity.get('break_triggers', []), ensure_ascii=False)}")
+    parts.append(
+        f"Break triggers: {json.dumps(reflexivity.get('break_triggers', []), ensure_ascii=False)}"
+    )
     parts.append(f"Cycle stage: {reflexivity.get('cycle_stage', 'N/A')}\n")
-    
+
     # Step 5: Historical Analogies
     history = step_outputs.get("history", {})
     parts.append("### 5. Historical Analogies")
     for a in history.get("analogs", []):
-        parts.append(f"- {a.get('period', '')}: {a.get('name', a.get('label', ''))} (similarity: {a.get('similarity_score', 0)})")
+        parts.append(
+            f"- {a.get('period', '')}: {a.get('name', a.get('label', ''))} (similarity: {a.get('similarity_score', 0)})"
+        )
         parts.append(f"  Key lesson: {a.get('key_lesson', 'N/A')}")
     parts.append("")
-    
+
     # Step 6: Portfolio Impact
     portfolio = step_outputs.get("portfolio", {})
     parts.append("### 6. Portfolio Impact")
     parts.append(f"Overall stance: {portfolio.get('overall_stance', 'N/A')}")
     parts.append(f"Risk budget: {portfolio.get('risk_budget', 'N/A')}")
-    parts.append(f"Overweight themes: {json.dumps(portfolio.get('overweight_themes', []), ensure_ascii=False)}")
-    parts.append(f"Underweight themes: {json.dumps(portfolio.get('underweight_themes', []), ensure_ascii=False)}")
-    parts.append(f"Conviction distribution: {json.dumps(portfolio.get('conviction_distribution', {}), ensure_ascii=False)}")
-    parts.append(f"Key risk factors: {json.dumps(portfolio.get('key_risk_factors', []), ensure_ascii=False)}\n")
-    
+    parts.append(
+        f"Overweight themes: {json.dumps(portfolio.get('overweight_themes', []), ensure_ascii=False)}"
+    )
+    parts.append(
+        f"Underweight themes: {json.dumps(portfolio.get('underweight_themes', []), ensure_ascii=False)}"
+    )
+    parts.append(
+        f"Conviction distribution: {json.dumps(portfolio.get('conviction_distribution', {}), ensure_ascii=False)}"
+    )
+    parts.append(
+        f"Key risk factors: {json.dumps(portfolio.get('key_risk_factors', []), ensure_ascii=False)}\n"
+    )
+
     parts.append("\n---\n")
-    parts.append("SYNTHESIZE the above into a professional macro research memo. Output ONLY valid JSON.")
-    
+    parts.append(
+        "SYNTHESIZE the above into a professional macro research memo. Output ONLY valid JSON."
+    )
+
     return "\n".join(parts)
 
 
@@ -480,67 +535,94 @@ def _build_synthesis_user_prompt(step_outputs: dict[str, dict]) -> str:
 
 def _compute_quality_review(memo_dict: dict, step_outputs: dict[str, dict]) -> dict:
     """Deterministic quality review of the synthesized memo.
-    
+
     Evaluates: completeness, evidence coverage, counter-argument coverage,
     hallucination risk, and structural quality.
     """
     checks = {}
-    
+
     # Structural completeness
     required = [
-        "executive_summary", "one_sentence_view", "regime_detail",
-        "market_consensus", "our_view_vs_consensus", "evidence_summary",
-        "key_evidence_supporting", "key_evidence_contradicting",
-        "counter_arguments", "key_risks", "predictions",
-        "trading_implication", "invalidation_conditions",
-        "open_questions", "data_to_watch", "full_memo_text",
+        "executive_summary",
+        "one_sentence_view",
+        "regime_detail",
+        "market_consensus",
+        "our_view_vs_consensus",
+        "evidence_summary",
+        "key_evidence_supporting",
+        "key_evidence_contradicting",
+        "counter_arguments",
+        "key_risks",
+        "predictions",
+        "trading_implication",
+        "invalidation_conditions",
+        "open_questions",
+        "data_to_watch",
+        "full_memo_text",
     ]
     filled = [k for k in required if memo_dict.get(k)]
     checks["structural_completeness"] = len(filled) / len(required)
-    
+
     # Executive summary quality (200-300 words)
     es = memo_dict.get("executive_summary", "")
     es_words = len(es.split()) if es else 0
     checks["executive_summary_word_count"] = es_words
     checks["executive_summary_ok"] = 150 <= es_words <= 400
-    
+
     # Full memo word count (target 1000-3000)
     full_text = memo_dict.get("full_memo_text", "")
     total_words = len(full_text.split()) if full_text else 0
     checks["total_word_count"] = total_words
     checks["total_word_count_ok"] = 800 <= total_words <= 4000
-    
+
     # Evidence coverage
     evidence_clusters = step_outputs.get("evidence", {}).get("clusters", [])
     supports = memo_dict.get("key_evidence_supporting", [])
     contradicts = memo_dict.get("key_evidence_contradicting", [])
     checks["has_supporting_evidence"] = len(supports) > 0
     checks["has_contradicting_evidence"] = len(contradicts) > 0
-    checks["evidence_coverage"] = min((len(supports) + len(contradicts)) / max(len(evidence_clusters), 1), 1.0)
-    
+    checks["evidence_coverage"] = min(
+        (len(supports) + len(contradicts)) / max(len(evidence_clusters), 1), 1.0
+    )
+
     # Counter argument coverage (100% required)
     counter_args = step_outputs.get("counter", {}).get("counter_arguments", [])
     memo_counters = memo_dict.get("counter_arguments", [])
     checks["counter_argument_coverage"] = min(len(memo_counters) / max(len(counter_args), 1), 1.0)
-    
+
     # Predictions
     predictions = memo_dict.get("predictions", [])
     checks["has_predictions"] = len(predictions) > 0
     for p in predictions:
-        required_fields = ["statement", "asset", "direction", "target", "timeframe", "confidence", "invalidation"]
+        required_fields = [
+            "statement",
+            "asset",
+            "direction",
+            "target",
+            "timeframe",
+            "confidence",
+            "invalidation",
+        ]
         missing = [f for f in required_fields if not p.get(f)]
         if missing:
             checks.setdefault("prediction_field_missing", []).append(
                 f"Prediction '{p.get('statement', '?')}' missing: {missing}"
             )
-    
+
     # Invalidation conditions
     invals = memo_dict.get("invalidation_conditions", [])
     checks["has_invalidation"] = len(invals) > 0
-    
+
     # Hallucination risk (simplified: check if memo text references specific items)
-    checks["hallucination_risk"] = "low" if (checks.get("evidence_coverage", 0) > 0.3 and checks.get("counter_argument_coverage", 0) > 0.5) else "medium"
-    
+    checks["hallucination_risk"] = (
+        "low"
+        if (
+            checks.get("evidence_coverage", 0) > 0.3
+            and checks.get("counter_argument_coverage", 0) > 0.5
+        )
+        else "medium"
+    )
+
     # Compute composite score (0-100)
     weights = {
         "structural_completeness": 25,
@@ -552,7 +634,7 @@ def _compute_quality_review(memo_dict: dict, step_outputs: dict[str, dict]) -> d
         "has_predictions": 10,
         "has_invalidation": 10,
     }
-    
+
     raw_score = 0.0
     for key, weight in weights.items():
         val = checks.get(key, 0)
@@ -560,16 +642,15 @@ def _compute_quality_review(memo_dict: dict, step_outputs: dict[str, dict]) -> d
             raw_score += weight if val else 0
         elif isinstance(val, (int, float)):
             raw_score += val * weight
-    
+
     quality_score = round(raw_score, 1)
-    
+
     return {
         "quality_score": quality_score,
         "grade": (
-            "A" if quality_score >= 90 else
-            "B" if quality_score >= 75 else
-            "C" if quality_score >= 60 else
-            "D"
+            "A"
+            if quality_score >= 90
+            else "B" if quality_score >= 75 else "C" if quality_score >= 60 else "D"
         ),
         "checks": checks,
         "recommendations": _generate_quality_recommendations(checks),
@@ -603,19 +684,19 @@ def _generate_quality_recommendations(checks: dict) -> list[str]:
 
 class ReasoningPipeline:
     """V10 Sprint 1: Multi-pass Reasoning Engine.
-    
+
     Replaces the old pattern of:
         Observation → Prompt → LLM → Memo
-    
+
     With:
         Observation → [6 deterministic reasoning steps] → LLM Synthesis → Quality Review
-    
+
     Requirements:
         - LLM ONLY at Step 7
         - Steps 1-6 are deterministic
         - Every step outputs structured JSON
         - LLM receives ONLY structured reasoning results, NOT raw market data
-    
+
     Usage:
         pipeline = ReasoningPipeline()
         result = pipeline.execute(
@@ -628,8 +709,8 @@ class ReasoningPipeline:
             date_str=date_str,
         )
     """
-    
-    def __init__(self, llm_model: Optional[str] = None, llm_base_url: Optional[str] = None):
+
+    def __init__(self, llm_model: str | None = None, llm_base_url: str | None = None):
         """Initialize ReasoningPipeline with optional LLM configuration overrides."""
         self._llm_model = llm_model
         self._llm_base_url = llm_base_url
@@ -640,24 +721,24 @@ class ReasoningPipeline:
         self._last_self_review = None
         self._last_market_challenge = None
         # Sprint 4.5: Reasoning Evolution Engine (built lazily)
-        self._reasoning_evolution: Optional[Any] = None
-    
+        self._reasoning_evolution: Any | None = None
+
     @property
     def llm_call_count(self) -> int:
         return self._call_count
-    
+
     # ── Public API ────────────────────────────────────────────────────
-    
+
     def execute(
         self,
         market_data: dict,
         narratives: list,
         beliefs: list,
         regime_result: dict,
-        capital_flow_result: Optional[dict] = None,
-        news_events: Optional[list] = None,
+        capital_flow_result: dict | None = None,
+        news_events: list | None = None,
         date_str: str = "",
-        old_beliefs: Optional[list] = None,
+        old_beliefs: list | None = None,
         max_iterations: int = 6,
         min_iterations: int = 1,
     ) -> PipelineResult:
@@ -698,16 +779,16 @@ class ReasoningPipeline:
         t0 = time.time()
 
         if not date_str:
-            date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            date_str = datetime.now(UTC).strftime("%Y-%m-%d")
 
-        pipeline_id = f"pipeline-{date_str}-{datetime.now(timezone.utc).strftime('%H%M%S')}"
+        pipeline_id = f"pipeline-{date_str}-{datetime.now(UTC).strftime('%H%M%S')}"
 
         result = PipelineResult(pipeline_id=pipeline_id, date=date_str)
 
         reasoning_trace: list = []
         excluded_hypothesis_ids: set = set()
         visited_sources: set = set()
-        prev_state: Optional[LoopState] = None
+        prev_state: LoopState | None = None
         iteration = 0
 
         while iteration < max_iterations:
@@ -728,12 +809,20 @@ class ReasoningPipeline:
             for retry_attempt in range(3):  # attempt 0 = first, 1-2 = retries
                 try:
                     result.step_evidence = self._step1_evidence(
-                        market_data, narratives, beliefs,
-                        capital_flow_result or {}, regime_result,
-                        news_events or [], date_str,
+                        market_data,
+                        narratives,
+                        beliefs,
+                        capital_flow_result or {},
+                        regime_result,
+                        news_events or [],
+                        date_str,
                         retry_attempt=retry_attempt,
                         visited_sources=visited_sources,
-                        hypotheses_json=result.step_hypothesis.structured_json if result.step_hypothesis and result.step_hypothesis.success else None,
+                        hypotheses_json=(
+                            result.step_hypothesis.structured_json
+                            if result.step_hypothesis and result.step_hypothesis.success
+                            else None
+                        ),
                     )
                 except Exception as e:
                     logger.error("Step 1 (Evidence) attempt %d failed: %s", retry_attempt, e)
@@ -749,9 +838,9 @@ class ReasoningPipeline:
                 ).get("overall_coverage_pct", 0.0)
 
                 # V10.1: Track visited sources
-                new_visited = result.step_evidence.structured_json.get(
-                    "evidence_coverage", {}
-                ).get("visited_sources", [])
+                new_visited = result.step_evidence.structured_json.get("evidence_coverage", {}).get(
+                    "visited_sources", []
+                )
                 visited_sources.update(new_visited)
 
                 if evidence_quality_score >= 70:
@@ -774,12 +863,17 @@ class ReasoningPipeline:
 
             state.evidence_score = evidence_quality_score
             state.evidence_coverage = evidence_coverage
-            state.evidence_points = result.step_evidence.structured_json.get("total_evidence_points", 0)
+            state.evidence_points = result.step_evidence.structured_json.get(
+                "total_evidence_points", 0
+            )
             state.visited_source_count = len(visited_sources)
             if prev_state:
-                state.new_sources_collected = sorted(visited_sources - set(
-                    prev_state.new_sources_collected if prev_state.new_sources_collected else []
-                ))
+                state.new_sources_collected = sorted(
+                    visited_sources
+                    - set(
+                        prev_state.new_sources_collected if prev_state.new_sources_collected else []
+                    )
+                )
 
             # ── Step 2: Hypothesis Generation ──
             try:
@@ -787,13 +881,19 @@ class ReasoningPipeline:
                 if raw_clusters and hasattr(raw_clusters, "clusters"):
                     raw_clusters = raw_clusters.clusters
                 result.step_hypothesis = self._step2_hypothesis(
-                    result.step_evidence.structured_json, beliefs,
-                    regime_result, narratives, raw_clusters=raw_clusters,
+                    result.step_evidence.structured_json,
+                    beliefs,
+                    regime_result,
+                    narratives,
+                    raw_clusters=raw_clusters,
                 )
             except Exception as e:
                 logger.error("Step 2 (Hypothesis) failed: %s", e)
                 result.step_hypothesis = StepResult(
-                    step_id=2, step_name="Hypothesis", success=False, error=str(e),
+                    step_id=2,
+                    step_name="Hypothesis",
+                    success=False,
+                    error=str(e),
                 )
                 result.errors.append(f"Step2: {e}")
 
@@ -811,7 +911,10 @@ class ReasoningPipeline:
             except Exception as e:
                 logger.error("Step 3 (Counter) failed: %s", e)
                 result.step_counter = StepResult(
-                    step_id=3, step_name="Counter", success=False, error=str(e),
+                    step_id=3,
+                    step_name="Counter",
+                    success=False,
+                    error=str(e),
                 )
                 result.errors.append(f"Step3: {e}")
 
@@ -825,12 +928,18 @@ class ReasoningPipeline:
             # ── Step 4: Reflexivity Analysis ──
             try:
                 result.step_reflexivity = self._step4_reflexivity(
-                    market_data, beliefs, capital_flow_result, narratives,
+                    market_data,
+                    beliefs,
+                    capital_flow_result,
+                    narratives,
                 )
             except Exception as e:
                 logger.error("Step 4 (Reflexivity) failed: %s", e)
                 result.step_reflexivity = StepResult(
-                    step_id=4, step_name="Reflexivity", success=False, error=str(e),
+                    step_id=4,
+                    step_name="Reflexivity",
+                    success=False,
+                    error=str(e),
                 )
                 result.errors.append(f"Step4: {e}")
 
@@ -840,22 +949,30 @@ class ReasoningPipeline:
             except Exception as e:
                 logger.error("Step 5 (Historical) failed: %s", e)
                 result.step_history = StepResult(
-                    step_id=5, step_name="Historical", success=False, error=str(e),
+                    step_id=5,
+                    step_name="Historical",
+                    success=False,
+                    error=str(e),
                 )
                 result.errors.append(f"Step5: {e}")
 
             # ── Step 6: Portfolio Impact ──
             try:
                 result.step_portfolio = self._step6_portfolio(
-                    regime_result, beliefs,
+                    regime_result,
+                    beliefs,
                     result.step_hypothesis.structured_json,
-                    capital_flow_result, narratives,
+                    capital_flow_result,
+                    narratives,
                     result.step_counter.structured_json,
                 )
             except Exception as e:
                 logger.error("Step 6 (Portfolio) failed: %s", e)
                 result.step_portfolio = StepResult(
-                    step_id=6, step_name="Portfolio", success=False, error=str(e),
+                    step_id=6,
+                    step_name="Portfolio",
+                    success=False,
+                    error=str(e),
                 )
                 result.errors.append(f"Step6: {e}")
 
@@ -883,7 +1000,9 @@ class ReasoningPipeline:
 
                 if self._last_narrative_routed:
                     result.narrative_routed_prompt = self._last_narrative_routed
-                    result.narrative_dominant = self._last_narrative_routed.dominant_narrative.primary.title
+                    result.narrative_dominant = (
+                        self._last_narrative_routed.dominant_narrative.primary.title
+                    )
                     result.narrative_stance = self._last_narrative_routed.stance
                     if not result.selected_domains:
                         result.selected_domains = self._last_narrative_routed.selected_domains
@@ -895,7 +1014,10 @@ class ReasoningPipeline:
             except Exception as e:
                 logger.error("Step 7 (LLM Synthesis) failed: %s", e)
                 result.step_llm_synthesis = StepResult(
-                    step_id=7, step_name="LLM_Synthesis", success=False, error=str(e),
+                    step_id=7,
+                    step_name="LLM_Synthesis",
+                    success=False,
+                    error=str(e),
                 )
                 result.errors.append(f"Step7: {e}")
 
@@ -912,11 +1034,16 @@ class ReasoningPipeline:
                         "portfolio": result.step_portfolio.structured_json,
                     },
                 )
-                result.memo_quality_score = result.step_quality.structured_json.get("quality_score", 0)
+                result.memo_quality_score = result.step_quality.structured_json.get(
+                    "quality_score", 0
+                )
             except Exception as e:
                 logger.error("Step 8 (Quality) failed: %s", e)
                 result.step_quality = StepResult(
-                    step_id=8, step_name="Quality_Review", success=False, error=str(e),
+                    step_id=8,
+                    step_name="Quality_Review",
+                    success=False,
+                    error=str(e),
                 )
                 result.errors.append(f"Step8: {e}")
 
@@ -932,7 +1059,10 @@ class ReasoningPipeline:
                     "portfolio": result.step_portfolio.structured_json,
                 }
                 result.step_self_review = self._step9_self_review(
-                    memo_json, step_outputs_full, regime_result, date_str,
+                    memo_json,
+                    step_outputs_full,
+                    regime_result,
+                    date_str,
                 )
 
                 if hasattr(self, "_last_self_review") and self._last_self_review:
@@ -950,13 +1080,18 @@ class ReasoningPipeline:
             except Exception as e:
                 logger.warning("Step 9 (Self-Review) failed: %s", e)
                 result.step_self_review = StepResult(
-                    step_id=9, step_name="Self_Review", success=False, error=str(e),
+                    step_id=9,
+                    step_name="Self_Review",
+                    success=False,
+                    error=str(e),
                 )
                 result.errors.append(f"Step9: {e}")
 
             if not result.memo_text:
                 memo_data = result.step_llm_synthesis.structured_json
-                result.memo_text = memo_data.get("full_memo_text", memo_data.get("executive_summary", ""))
+                result.memo_text = memo_data.get(
+                    "full_memo_text", memo_data.get("executive_summary", "")
+                )
 
             # ── Step 10: Market Challenge ──
             try:
@@ -984,7 +1119,10 @@ class ReasoningPipeline:
             except Exception as e:
                 logger.warning("Step 10 (Market Challenge) failed: %s", e)
                 result.step_market_challenge = StepResult(
-                    step_id=10, step_name="Market_Challenge", success=False, error=str(e),
+                    step_id=10,
+                    step_name="Market_Challenge",
+                    success=False,
+                    error=str(e),
                 )
                 result.errors.append(f"Step10: {e}")
 
@@ -997,17 +1135,25 @@ class ReasoningPipeline:
             state = ConvergenceAnalyzer.analyze(current=state, previous=prev_state)
 
             # Build trace entry
-            trace_entry = self._build_trace_entry(state, evidence_retry_reasons, evidence_retries_used)
+            trace_entry = self._build_trace_entry(
+                state, evidence_retry_reasons, evidence_retries_used
+            )
             reasoning_trace.append(trace_entry.to_dict())
 
             logger.info(
                 "%s done: quality=%.1f mc=%.1f evidence=%.1f coverage=%.0f%% "
                 "hyps=%d→%d evΔ=%.1f%% hyΔ=%.1f%% bΔ=%.1f%% mΔ=%.1f%% converged=%s",
-                round_label, state.quality, state.market_score,
-                state.evidence_score, state.evidence_coverage,
-                state.hypothesis_count, state.surviving_hypotheses,
-                state.evidence_delta_pct, state.hypothesis_delta_pct,
-                state.belief_delta_pct, state.memo_delta_pct,
+                round_label,
+                state.quality,
+                state.market_score,
+                state.evidence_score,
+                state.evidence_coverage,
+                state.hypothesis_count,
+                state.surviving_hypotheses,
+                state.evidence_delta_pct,
+                state.hypothesis_delta_pct,
+                state.belief_delta_pct,
+                state.memo_delta_pct,
                 state.is_converged,
             )
 
@@ -1015,7 +1161,8 @@ class ReasoningPipeline:
             if iteration >= min_iterations and state.is_converged:
                 logger.info(
                     "Research Loop converged at round %d: %s",
-                    iteration, state.stop_reason,
+                    iteration,
+                    state.stop_reason,
                 )
                 break
 
@@ -1037,11 +1184,17 @@ class ReasoningPipeline:
             "Pipeline %s complete: %.0fms, iterations=%d, quality=%.1f, llm_calls=%d, "
             "errors=%d, domains=%s, revisions=%d, narrative=%s, mc=%.0f/%s, "
             "evolution_entries=%d, stop=%s",
-            pipeline_id, result.total_elapsed_ms, iteration, result.memo_quality_score,
-            self._call_count, len(result.errors),
-            result.selected_domains, result.self_review_revisions,
+            pipeline_id,
+            result.total_elapsed_ms,
+            iteration,
+            result.memo_quality_score,
+            self._call_count,
+            len(result.errors),
+            result.selected_domains,
+            result.self_review_revisions,
             result.narrative_dominant[:40] if result.narrative_dominant else "none",
-            result.market_challenge_score, result.market_challenge_grade,
+            result.market_challenge_score,
+            result.market_challenge_grade,
             len(reasoning_trace),
             prev_state.stop_reason if prev_state else "",
         )
@@ -1079,7 +1232,7 @@ class ReasoningPipeline:
         predictions: list,
         outcomes: list,
         beliefs: list,
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """V10 Sprint 4: Run continuous learning after a benchmark cycle.
 
         Diagnoses prediction errors, updates beliefs/prompts/reasoning,
@@ -1103,12 +1256,15 @@ class ReasoningPipeline:
             predictions=predictions,
             outcomes=outcomes,
             beliefs=beliefs,
-            used_domains=self._last_routed_prompt.selected_domains
-            if self._last_routed_prompt else ["Growth"],
+            used_domains=(
+                self._last_routed_prompt.selected_domains
+                if self._last_routed_prompt
+                else ["Growth"]
+            ),
         )
 
     # ═════════════════════════════════════════════════════════════════
-    
+
     def _step1_evidence(
         self,
         market_data: dict,
@@ -1119,8 +1275,8 @@ class ReasoningPipeline:
         news_events: list,
         date_str: str,
         retry_attempt: int = 0,
-        visited_sources: Optional[set] = None,
-        hypotheses_json: Optional[dict] = None,
+        visited_sources: set | None = None,
+        hypotheses_json: dict | None = None,
     ) -> StepResult:
         """Step 1: Evidence Synthesis — deterministic.
 
@@ -1149,14 +1305,15 @@ class ReasoningPipeline:
             visited_sources=visited_sources,
             hypotheses_json=hypotheses_json,
         )
-        
+
         elapsed = (time.time() - t0) * 1000
-        
+
         json_output = assessment.to_dict() if hasattr(assessment, "to_dict") else assessment
         cluster_count = len(assessment.clusters)
-        
+
         result = StepResult(
-            step_id=1, step_name="Evidence",
+            step_id=1,
+            step_name="Evidence",
             success=True,
             structured_json=json_output,
             summary=f"Synthesized {cluster_count} evidence clusters from {len(assessment.clusters)} themes",
@@ -1165,14 +1322,14 @@ class ReasoningPipeline:
         # Store raw object for downstream consumers that need typed objects
         result._raw_assessment = assessment
         return result
-    
+
     def _step2_hypothesis(
         self,
         evidence_json: dict,
         beliefs: list,
         regime_result: dict,
         narratives: list,
-        raw_clusters: Optional[list] = None,
+        raw_clusters: list | None = None,
     ) -> StepResult:
         """Step 2: Hypothesis Generation — deterministic.
 
@@ -1180,13 +1337,13 @@ class ReasoningPipeline:
         Accepts raw EvidenceCluster objects when available (preferred over dicts).
         """
         t0 = time.time()
-        
+
         from src.research.reasoning.hypothesis_builder import HypothesisBuilder
-        from src.research.reasoning.schemas import Hypothesis, EvidenceCluster
-        
+        from src.research.reasoning.schemas import EvidenceCluster
+
         # Prefer raw EvidenceCluster objects (passed via _raw_assessment)
         # Fall back to dict conversion if not available
-        if raw_clusters and all(hasattr(c, 'weight_score') for c in raw_clusters):
+        if raw_clusters and all(hasattr(c, "weight_score") for c in raw_clusters):
             clusters = raw_clusters
         else:
             # Convert dicts to EvidenceCluster objects
@@ -1215,7 +1372,7 @@ class ReasoningPipeline:
                             weight_score=float(c_dict.get("weight_score", 0)),
                         )
                         clusters.append(cluster)
-        
+
         builder = HypothesisBuilder()
         hypotheses = builder.build_hypotheses(
             evidence_clusters=clusters,
@@ -1223,30 +1380,35 @@ class ReasoningPipeline:
             regime_result=regime_result,
             narrative=narratives[0] if narratives else None,
         )
-        
+
         elapsed = (time.time() - t0) * 1000
-        
+
         json_output = {
             "hypotheses": [h.to_dict() for h in hypotheses],
             "hypothesis_count": len(hypotheses),
             "dominant_hypothesis": hypotheses[0].title if hypotheses else "",
-            "avg_confidence": round(sum(h.confidence for h in hypotheses) / len(hypotheses), 2) if hypotheses else 0,
+            "avg_confidence": (
+                round(sum(h.confidence for h in hypotheses) / len(hypotheses), 2)
+                if hypotheses
+                else 0
+            ),
         }
-        
+
         return StepResult(
-            step_id=2, step_name="Hypothesis",
+            step_id=2,
+            step_name="Hypothesis",
             success=True,
             structured_json=json_output,
             summary=f"Generated {len(hypotheses)} hypotheses, dominant: {json_output['dominant_hypothesis']}",
             elapsed_ms=elapsed,
         )
-    
+
     def _step3_counter(
         self,
         hypothesis_json: dict,
         evidence_json: dict,
         regime_result: dict,
-        excluded_hypothesis_ids: Optional[set] = None,
+        excluded_hypothesis_ids: set | None = None,
     ) -> StepResult:
         """Step 3: Counter Argument Generation + Hypothesis Elimination.
 
@@ -1259,7 +1421,7 @@ class ReasoningPipeline:
         t0 = time.time()
 
         from src.research.reasoning.counter_argument_generator import CounterArgumentGenerator
-        from src.research.reasoning.schemas import Hypothesis, CounterArgument
+        from src.research.reasoning.schemas import Hypothesis
 
         # Reconstruct Hypothesis objects from JSON, skipping previously eliminated
         hypotheses = []
@@ -1281,7 +1443,8 @@ class ReasoningPipeline:
 
         if not hypotheses:
             return StepResult(
-                step_id=3, step_name="Counter",
+                step_id=3,
+                step_name="Counter",
                 success=True,
                 structured_json={
                     "counter_arguments": [],
@@ -1321,35 +1484,36 @@ class ReasoningPipeline:
             summary += f", eliminated {len(eliminated_ids)} hypotheses"
 
         return StepResult(
-            step_id=3, step_name="Counter",
+            step_id=3,
+            step_name="Counter",
             success=True,
             structured_json=json_output,
             summary=summary,
             elapsed_ms=elapsed,
         )
-    
+
     def _step4_reflexivity(
         self,
         market_data: dict,
         beliefs: list,
-        capital_flow_result: Optional[dict],
+        capital_flow_result: dict | None,
         narratives: list,
     ) -> StepResult:
         """Step 4: Reflexivity Analysis — deterministic.
-        
+
         Uses ReflexivityCycleDetector to identify self-reinforcing
         narrative-capital-price feedback loops.
         """
         t0 = time.time()
-        
+
         from src.research.reflexivity.reflexivity_cycle_detector import ReflexivityCycleDetector
         from src.research.reflexivity.schemas import MarketBelief
-        
+
         detector = ReflexivityCycleDetector()
-        
+
         # Convert belief dicts to MarketBelief if needed
         belief_objects = []
-        for b in (beliefs or []):
+        for b in beliefs or []:
             if hasattr(b, "strength"):
                 belief_objects.append(b)
             elif isinstance(b, dict):
@@ -1365,7 +1529,7 @@ class ReasoningPipeline:
                     belief_objects.append(mbl)
                 except Exception:
                     pass
-        
+
         dominant_narrative = ""
         if narratives:
             n = narratives[0]
@@ -1373,7 +1537,7 @@ class ReasoningPipeline:
                 dominant_narrative = n.get("summary", n.get("content", ""))
             elif hasattr(n, "summary"):
                 dominant_narrative = n.summary
-        
+
         report = detector.detect(
             market_data=market_data,
             beliefs=belief_objects if belief_objects else None,
@@ -1381,142 +1545,161 @@ class ReasoningPipeline:
             dominant_narrative=dominant_narrative,
             narrative_objects=narratives if narratives else None,
         )
-        
+
         elapsed = (time.time() - t0) * 1000
-        
+
         json_output = report.to_dict() if hasattr(report, "to_dict") else report
-        
+
         cycles = json_output.get("active_cycles", []) if isinstance(json_output, dict) else []
-        vuln_score = json_output.get("vulnerability_score", 0) if isinstance(json_output, dict) else 0
-        
+        vuln_score = (
+            json_output.get("vulnerability_score", 0) if isinstance(json_output, dict) else 0
+        )
+
         return StepResult(
-            step_id=4, step_name="Reflexivity",
+            step_id=4,
+            step_name="Reflexivity",
             success=True,
-            structured_json=json_output if isinstance(json_output, dict) else {"report": str(json_output)},
+            structured_json=(
+                json_output if isinstance(json_output, dict) else {"report": str(json_output)}
+            ),
             summary=f"Detected {len(cycles)} reflexivity cycles, vulnerability={vuln_score}",
             elapsed_ms=elapsed,
         )
-    
+
     def _step5_history(
         self,
         regime_result: dict,
         market_data: dict,
     ) -> StepResult:
         """Step 5: Historical Analogies — deterministic.
-        
+
         Uses HistoricalSimilarity to find analogous historical periods.
         Handles both dict and object input for regime_result.
         """
         t0 = time.time()
-        
+
         from src.regime.historical_similarity import HistoricalSimilarity
         from src.regime.schemas import MacroRegime
-        
+
         similarity = HistoricalSimilarity()
-        
+
         # Convert dict to MacroRegime if needed (HistoricalSimilarity accesses .growth_phase etc.)
         if isinstance(regime_result, dict):
             regime_obj = MacroRegime(
-                regime_label=regime_result.get("regime_label", regime_result.get("regime_type", "")),
+                regime_label=regime_result.get(
+                    "regime_label", regime_result.get("regime_type", "")
+                ),
                 growth_phase=regime_result.get("growth_phase", "stable"),
                 inflation_regime=regime_result.get("inflation_regime", "disinflation"),
                 monetary_stance=regime_result.get("monetary_stance", "neutral"),
                 credit_cycle=regime_result.get("credit_cycle", "expansion"),
-                dollar_regime=regime_result.get("dollar_regime", regime_result.get("dollar", "neutral")),
+                dollar_regime=regime_result.get(
+                    "dollar_regime", regime_result.get("dollar", "neutral")
+                ),
                 volatility_regime=regime_result.get("volatility_regime", "moderate"),
             )
         elif hasattr(regime_result, "growth_phase"):
             regime_obj = regime_result
         else:
             return StepResult(
-                step_id=5, step_name="Historical",
+                step_id=5,
+                step_name="Historical",
                 success=True,
                 structured_json={"analogs": [], "analog_count": 0, "top_similarity": 0},
                 summary="Cannot perform historical analysis (no valid regime data)",
                 elapsed_ms=(time.time() - t0) * 1000,
             )
-        
+
         analogs = similarity.find_analogs(
             current_regime=regime_obj,
             top_n=5,
         )
-        
+
         elapsed = (time.time() - t0) * 1000
-        
+
         json_output = {
             "analogs": [a.to_dict() if hasattr(a, "to_dict") else a for a in analogs],
             "analog_count": len(analogs),
-            "top_similarity": analogs[0].similarity_score if analogs and hasattr(analogs[0], "similarity_score") else (analogs[0].get("similarity_score", 0) if analogs else 0),
+            "top_similarity": (
+                analogs[0].similarity_score
+                if analogs and hasattr(analogs[0], "similarity_score")
+                else (analogs[0].get("similarity_score", 0) if analogs else 0)
+            ),
         }
-        
+
         return StepResult(
-            step_id=5, step_name="Historical",
+            step_id=5,
+            step_name="Historical",
             success=True,
             structured_json=json_output,
             summary=f"Found {len(analogs)} historical analogs, top similarity={json_output['top_similarity']:.2f}",
             elapsed_ms=elapsed,
         )
-    
+
     def _step6_portfolio(
         self,
         regime_result: dict,
         beliefs: list,
         hypothesis_json: dict,
-        capital_flow_result: Optional[dict],
+        capital_flow_result: dict | None,
         narratives: list,
         counter_json: dict,
     ) -> StepResult:
         """Step 6: Portfolio Impact — deterministic.
-        
+
         Uses PortfolioAdvisor to map macro analysis to asset allocation.
         """
         t0 = time.time()
-        
+
         from src.research.portfolio_advisor import PortfolioAdvisor
-        
+
         advisor = PortfolioAdvisor()
-        
+
         # Extract regime label
         regime_label = regime_result.get("regime_label", regime_result.get("regime_type", ""))
         regime_confidence = float(regime_result.get("confidence", 0.5))
-        
+
         # Convert beliefs to dicts if needed
         belief_dicts = []
-        for b in (beliefs or []):
+        for b in beliefs or []:
             if isinstance(b, dict):
                 belief_dicts.append(b)
             elif hasattr(b, "to_dict"):
                 belief_dicts.append(b.to_dict())
-        
+
         # Extract predictions from hypotheses
         predictions = []
         for h in hypothesis_json.get("hypotheses", []):
             if h.get("if_true_implication"):
-                predictions.append({
-                    "statement": h.get("statement", ""),
-                    "asset": h.get("domain", ""),
-                    "direction": "bullish" if h.get("confidence", 0) > 0.5 else "bearish",
-                    "confidence": h.get("confidence", 0),
-                })
-        
+                predictions.append(
+                    {
+                        "statement": h.get("statement", ""),
+                        "asset": h.get("domain", ""),
+                        "direction": "bullish" if h.get("confidence", 0) > 0.5 else "bearish",
+                        "confidence": h.get("confidence", 0),
+                    }
+                )
+
         # Extract risks from counter arguments
         risks = []
         for c in counter_json.get("counter_arguments", []):
-            risks.append({
-                "name": c.get("title", ""),
-                "probability": c.get("probability", 0),
-                "severity": c.get("severity", ""),
-                "triggers": c.get("trigger_conditions", []),
-            })
-        
+            risks.append(
+                {
+                    "name": c.get("title", ""),
+                    "probability": c.get("probability", 0),
+                    "severity": c.get("severity", ""),
+                    "triggers": c.get("trigger_conditions", []),
+                }
+            )
+
         # Narrative strings
         narrative_strs = []
-        for n in (narratives or []):
+        for n in narratives or []:
             if isinstance(n, dict):
                 narrative_strs.append(n.get("summary", n.get("content", "")))
             elif hasattr(n, "summary"):
                 narrative_strs.append(n.summary)
-        
+
         rec = advisor.recommend(
             regime=regime_label,
             regime_confidence=regime_confidence,
@@ -1526,25 +1709,30 @@ class ReasoningPipeline:
             predictions=predictions if predictions else None,
             risks=risks if risks else None,
         )
-        
+
         elapsed = (time.time() - t0) * 1000
-        
+
         json_output = rec.to_dict() if hasattr(rec, "to_dict") else rec
-        
+
         return StepResult(
-            step_id=6, step_name="Portfolio",
+            step_id=6,
+            step_name="Portfolio",
             success=True,
-            structured_json=json_output if isinstance(json_output, dict) else {"recommendation": str(json_output)},
+            structured_json=(
+                json_output
+                if isinstance(json_output, dict)
+                else {"recommendation": str(json_output)}
+            ),
             summary=f"Portfolio stance: {rec.overall_stance if hasattr(rec, 'overall_stance') else 'N/A'}",
             elapsed_ms=elapsed,
         )
-    
+
     def _step7_llm_synthesis(
         self,
         step_outputs: dict[str, dict],
         date_str: str,
-        regime_result: Optional[dict] = None,
-        narratives: Optional[list] = None,
+        regime_result: dict | None = None,
+        narratives: list | None = None,
     ) -> StepResult:
         """Step 7: LLM Synthesis — THE ONLY LLM CALL in the pipeline.
 
@@ -1564,6 +1752,7 @@ class ReasoningPipeline:
         if narratives and len(narratives) > 0:
             try:
                 from src.research.reasoning.narrative_prompt_router import NarrativePromptRouter
+
                 npr = NarrativePromptRouter()
                 narrative_routed = npr.route(
                     narratives=narratives,
@@ -1582,6 +1771,7 @@ class ReasoningPipeline:
 
         # Sprint 2: Always run domain router as fallback
         from src.research.reasoning.prompt_router import PromptRouter
+
         router = PromptRouter()
         domain_routed = router.route(
             regime_result=regime_result or {},
@@ -1590,7 +1780,8 @@ class ReasoningPipeline:
         self._last_routed_prompt = domain_routed
         logger.info(
             "Sprint2 PromptRouter: domains=%s, hybrid=%s, regime=%s",
-            domain_routed.selected_domains, domain_routed.is_hybrid,
+            domain_routed.selected_domains,
+            domain_routed.is_hybrid,
             domain_routed.regime_label,
         )
 
@@ -1645,8 +1836,7 @@ class ReasoningPipeline:
             "prompt_source": prompt_source,
             "domains": used_domains,
             "narrative": (
-                self._last_narrative_routed.to_dict()
-                if self._last_narrative_routed else {}
+                self._last_narrative_routed.to_dict() if self._last_narrative_routed else {}
             ),
             "domain_routing": domain_routed.to_dict(),
         }
@@ -1657,6 +1847,7 @@ class ReasoningPipeline:
             summary = f"LLM synthesis via {prompt_source} prompt [{', '.join(used_domains)}]"
         elif response.content:
             from src.research.llm_brain.llm_client import extract_json_from_text
+
             memo_data = extract_json_from_text(response.content) or {
                 "full_memo_text": response.content,
                 "executive_summary": response.content[:300],
@@ -1670,13 +1861,14 @@ class ReasoningPipeline:
             return self._step7_fallback_deterministic(step_outputs, date_str, t0)
 
         return StepResult(
-            step_id=7, step_name="LLM_Synthesis",
+            step_id=7,
+            step_name="LLM_Synthesis",
             success=True,
             structured_json=memo_data,
             summary=summary,
             elapsed_ms=elapsed,
         )
-    
+
     def _step7_fallback_deterministic(
         self,
         step_outputs: dict[str, dict],
@@ -1685,60 +1877,67 @@ class ReasoningPipeline:
     ) -> StepResult:
         """Deterministic fallback when LLM is unavailable."""
         elapsed = (time.time() - t0) * 1000
-        
+
         from src.research.reasoning.memo_writer import MemoWriter
-        from src.research.reasoning.schemas import Hypothesis, CounterArgument
-        
+        from src.research.reasoning.schemas import CounterArgument, Hypothesis
+
         writer = MemoWriter()
-        
+
         # Reconstruct objects for MemoWriter
         hypotheses = []
         for h_dict in step_outputs.get("hypotheses", {}).get("hypotheses", []):
-            hypotheses.append(Hypothesis(
-                hypothesis_id=h_dict.get("hypothesis_id", ""),
-                title=h_dict.get("title", ""),
-                statement=h_dict.get("statement", ""),
-                domain=h_dict.get("domain", ""),
-                causal_chain=h_dict.get("causal_chain", []),
-                confidence=h_dict.get("confidence", 0.5),
-                evidence_weight=h_dict.get("evidence_weight", 0),
-                if_true_implication=h_dict.get("if_true_implication", ""),
-            ))
-        
+            hypotheses.append(
+                Hypothesis(
+                    hypothesis_id=h_dict.get("hypothesis_id", ""),
+                    title=h_dict.get("title", ""),
+                    statement=h_dict.get("statement", ""),
+                    domain=h_dict.get("domain", ""),
+                    causal_chain=h_dict.get("causal_chain", []),
+                    confidence=h_dict.get("confidence", 0.5),
+                    evidence_weight=h_dict.get("evidence_weight", 0),
+                    if_true_implication=h_dict.get("if_true_implication", ""),
+                )
+            )
+
         counters = []
         for c_dict in step_outputs.get("counter", {}).get("counter_arguments", []):
-            counters.append(CounterArgument(
-                counter_id=c_dict.get("counter_id", ""),
-                title=c_dict.get("title", ""),
-                argument=c_dict.get("argument", ""),
-                severity=c_dict.get("severity", ""),
-                probability=c_dict.get("probability", 0),
-                trigger_conditions=c_dict.get("trigger_conditions", []),
-            ))
-        
+            counters.append(
+                CounterArgument(
+                    counter_id=c_dict.get("counter_id", ""),
+                    title=c_dict.get("title", ""),
+                    argument=c_dict.get("argument", ""),
+                    severity=c_dict.get("severity", ""),
+                    probability=c_dict.get("probability", 0),
+                    trigger_conditions=c_dict.get("trigger_conditions", []),
+                )
+            )
+
         evidence_json = step_outputs.get("evidence", {})
-        regime_label = step_outputs.get("portfolio", {}).get("regime",
-                       step_outputs.get("portfolio", {}).get("overall_stance", "unknown"))
-        
+        regime_label = step_outputs.get("portfolio", {}).get(
+            "regime", step_outputs.get("portfolio", {}).get("overall_stance", "unknown")
+        )
+
         # Build minimal EvidenceAssessment from dict
         from src.research.reasoning.schemas import EvidenceAssessment, EvidenceCluster
-        
+
         clusters = []
         for c_dict in evidence_json.get("clusters", []):
-            clusters.append(EvidenceCluster(
-                cluster_id=c_dict.get("cluster_id", f"c{len(clusters)}"),
-                theme=c_dict.get("theme", "unknown"),
-                description=c_dict.get("description", c_dict.get("theme", "")),
-                weight_score=float(c_dict.get("weight_score", 0)),
-                evidence_items=c_dict.get("evidence_items", []),
-            ))
+            clusters.append(
+                EvidenceCluster(
+                    cluster_id=c_dict.get("cluster_id", f"c{len(clusters)}"),
+                    theme=c_dict.get("theme", "unknown"),
+                    description=c_dict.get("description", c_dict.get("theme", "")),
+                    weight_score=float(c_dict.get("weight_score", 0)),
+                    evidence_items=c_dict.get("evidence_items", []),
+                )
+            )
         evidence_assessment = EvidenceAssessment(
             clusters=clusters,
             total_evidence_points=len(evidence_json.get("clusters", [])),
             net_direction=evidence_json.get("net_direction", "mixed"),
             evidence_quality=evidence_json.get("overall_quality", "moderate"),
         )
-        
+
         memo = writer.write_memo(
             evidence_assessment=evidence_assessment,
             hypotheses=hypotheses,
@@ -1746,35 +1945,37 @@ class ReasoningPipeline:
             regime_result={"regime_label": regime_label, "regime_type": regime_label},
             date_str=date_str,
         )
-        
+
         memo_data = memo.to_dict()
-        
+
         return StepResult(
-            step_id=7, step_name="LLM_Synthesis",
+            step_id=7,
+            step_name="LLM_Synthesis",
             success=True,
             structured_json=memo_data,
             summary="Deterministic synthesis (LLM unavailable)",
             elapsed_ms=elapsed,
         )
-    
+
     def _step8_quality_review(
         self,
         memo_json: dict,
         step_outputs: dict[str, dict],
     ) -> StepResult:
         """Step 8: Quality Review — deterministic.
-        
+
         Evaluates the synthesized memo against quality criteria:
         completeness, evidence coverage, counter-argument coverage, etc.
         """
         t0 = time.time()
-        
+
         review = _compute_quality_review(memo_json, step_outputs)
-        
+
         elapsed = (time.time() - t0) * 1000
-        
+
         return StepResult(
-            step_id=8, step_name="Quality_Review",
+            step_id=8,
+            step_name="Quality_Review",
             success=True,
             structured_json=review,
             summary=f"Quality score: {review['quality_score']}/100 (Grade {review['grade']})",
@@ -1785,7 +1986,7 @@ class ReasoningPipeline:
         self,
         memo_json: dict,
         step_outputs: dict[str, dict],
-        regime_result: Optional[dict],
+        regime_result: dict | None,
         date_str: str,
     ) -> StepResult:
         """Step 9: Self-Review — V10 Sprint 3.
@@ -1805,9 +2006,14 @@ class ReasoningPipeline:
 
         if not memo_text.strip():
             return StepResult(
-                step_id=9, step_name="Self_Review",
+                step_id=9,
+                step_name="Self_Review",
                 success=True,
-                structured_json={"revisions": 0, "passed": True, "note": "Empty memo, skipping review"},
+                structured_json={
+                    "revisions": 0,
+                    "passed": True,
+                    "note": "Empty memo, skipping review",
+                },
                 summary="Self-review skipped (empty memo)",
                 elapsed_ms=(time.time() - t0) * 1000,
             )
@@ -1851,10 +2057,15 @@ class ReasoningPipeline:
             "final_memo": result.final_memo_text,
         }
 
-        status = "PASS" if result.passed_threshold else f"stopped after {result.total_revisions} revisions"
+        status = (
+            "PASS"
+            if result.passed_threshold
+            else f"stopped after {result.total_revisions} revisions"
+        )
 
         return StepResult(
-            step_id=9, step_name="Self_Review",
+            step_id=9,
+            step_name="Self_Review",
             success=True,
             structured_json=review_json,
             summary=(
@@ -1902,7 +2113,8 @@ class ReasoningPipeline:
         )
 
         return StepResult(
-            step_id=10, step_name="Market_Challenge",
+            step_id=10,
+            step_name="Market_Challenge",
             success=True,
             structured_json=result.to_dict(),
             summary=summary,
@@ -1918,6 +2130,7 @@ class ReasoningPipeline:
         """Get or create reasoning evolution engine (lazy init)."""
         if self._reasoning_evolution is None:
             from src.research.reasoning.reasoning_evolution import ReasoningEvolutionEngine
+
             self._reasoning_evolution = ReasoningEvolutionEngine()
         return self._reasoning_evolution
 
@@ -1925,8 +2138,8 @@ class ReasoningPipeline:
         self,
         predictions: list[dict],
         outcomes: list[dict],
-        pipeline_results: Optional[list] = None,
-    ) -> Optional[Any]:
+        pipeline_results: list | None = None,
+    ) -> Any | None:
         """V10 Sprint 4.5 Task 3: Evolve reasoning templates from outcomes.
 
         Unlike belief updates (Sprint 4), this creates REUSABLE REASONING PATTERNS:
@@ -1949,8 +2162,10 @@ class ReasoningPipeline:
         logger.info(
             "ReasoningEvolution: %d cases created, %d templates updated, "
             "library size=%d, patterns: %s",
-            report.cases_created, report.templates_updated,
-            report.library_size, report.patterns_discovered,
+            report.cases_created,
+            report.templates_updated,
+            report.library_size,
+            report.patterns_discovered,
         )
 
         return report
@@ -1961,19 +2176,19 @@ class ReasoningPipeline:
         return engine.get_library_stats()
 
     # ── LLM Client ────────────────────────────────────────────────────
-    
+
     def _get_llm_client(self):
         """Get or create the LLM client (lazy initialization).
-        
+
         Reads model from: constructor arg > LLM_MODEL env var > default.
         Reads base_url from: constructor arg > OPENAI_BASE_URL env var > default.
         """
         if self._llm_client is not None:
             return self._llm_client
-        
+
         try:
             from src.research.llm_brain.llm_client import LLMClient
-            
+
             kwargs = {}
             # Model: explicit > env var > default
             model = self._llm_model or os.environ.get("LLM_MODEL", "gpt-4o")
@@ -1982,16 +2197,16 @@ class ReasoningPipeline:
             base_url = self._llm_base_url or os.environ.get("OPENAI_BASE_URL", "")
             if base_url:
                 kwargs["base_url"] = base_url
-            
+
             self._llm_client = LLMClient(**kwargs)
-            
+
             # Check if actually usable
             health = self._llm_client.health_check()
             if health.get("status") != "ok":
                 logger.warning("LLM client not healthy: %s", health)
                 self._llm_client = None
                 return None
-            
+
             return self._llm_client
         except Exception as e:
             logger.warning("LLM client unavailable, using deterministic fallback: %s", e)

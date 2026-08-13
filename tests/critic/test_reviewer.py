@@ -1,15 +1,12 @@
 """Tests for HypothesisReviewer — the 3-question belief reviewer."""
 
-from typing import Optional
-
 import pytest
 
-from src.domain.reflection import FindingSeverity, ReflectionVerdict
+from src.critic.reviewer import HypothesisReviewer
+from src.domain.reflection import ReflectionVerdict
 from src.domain.signal import SignalDirection
 from src.schemas.hypothesis import HypothesisEvidence, HypothesisSchema
 from src.schemas.reflection import ReflectionReport
-from src.critic.reviewer import HypothesisReviewer
-
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -31,8 +28,8 @@ def _make_evidence(
 def _make_hypothesis(
     hypothesis_id: str = "h1",
     statement: str = "Test hypothesis",
-    supporting: Optional[list] = None,
-    contradicting: Optional[list] = None,
+    supporting: list | None = None,
+    contradicting: list | None = None,
     confidence: float = 0.8,
 ) -> HypothesisSchema:
     return HypothesisSchema(

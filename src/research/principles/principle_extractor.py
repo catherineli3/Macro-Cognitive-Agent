@@ -10,12 +10,12 @@ principles update the existing record rather than creating a duplicate.
 
 from __future__ import annotations
 
-from collections import Counter, defaultdict
+from collections import defaultdict
 from difflib import SequenceMatcher
 
-from src.schemas.transmission_v3_1 import ResearchFinding
-from src.schemas.research import ResearchPrinciple, PrincipleStrength
 from src.research.principles.admission_gate import PrincipleAdmissionGate
+from src.schemas.research import PrincipleStrength, ResearchPrinciple
+from src.schemas.transmission_v3_1 import ResearchFinding
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -58,7 +58,10 @@ class PrincipleExtractor:
         self._principle_store = store
 
     def _find_matching_principle(
-        self, name: str, statement: str, domain: str,
+        self,
+        name: str,
+        statement: str,
+        domain: str,
         findings: list[ResearchFinding],
     ) -> ResearchPrinciple | None:
         """G1: Check if a proposed principle already exists in store.
@@ -88,8 +91,13 @@ class PrincipleExtractor:
 
         for p in existing:
             score = self._compute_similarity(
-                name, statement, domain, new_edges,
-                p.name, p.statement, p.domain,
+                name,
+                statement,
+                domain,
+                new_edges,
+                p.name,
+                p.statement,
+                p.domain,
                 set(p.evidence.channels_validated or []),
             )
             if score > best_score:
@@ -99,7 +107,9 @@ class PrincipleExtractor:
         if best_score >= SIMILARITY_THRESHOLD and best_match is not None:
             logger.info(
                 "G1 Dedup: matched new '%s' → existing '%s' (score=%.2f)",
-                name[:40], best_match.name[:40], best_score,
+                name[:40],
+                best_match.name[:40],
+                best_score,
             )
             return best_match
 
@@ -107,8 +117,14 @@ class PrincipleExtractor:
 
     @staticmethod
     def _compute_similarity(
-        new_name: str, new_stmt: str, new_domain: str, new_edges: set[str],
-        exist_name: str, exist_stmt: str, exist_domain: str, exist_edges: set[str],
+        new_name: str,
+        new_stmt: str,
+        new_domain: str,
+        new_edges: set[str],
+        exist_name: str,
+        exist_stmt: str,
+        exist_domain: str,
+        exist_edges: set[str],
     ) -> float:
         """G1: Compute multi-dimension similarity score (0.0-1.0).
 
@@ -122,8 +138,10 @@ class PrincipleExtractor:
         stmt_sim = SequenceMatcher(None, new_stmt.lower(), exist_stmt.lower()).ratio()
 
         # Domain match
-        domain_sim = 1.0 if new_domain == exist_domain else (
-            0.5 if new_domain.split("_")[0] == exist_domain.split("_")[0] else 0.0
+        domain_sim = (
+            1.0
+            if new_domain == exist_domain
+            else (0.5 if new_domain.split("_")[0] == exist_domain.split("_")[0] else 0.0)
         )
 
         # Edge overlap (Jaccard)
@@ -141,8 +159,11 @@ class PrincipleExtractor:
         return round(score, 4)
 
     def _update_existing_principle(
-        self, existing: ResearchPrinciple, findings: list[ResearchFinding],
-        domain: str, cycle: int,
+        self,
+        existing: ResearchPrinciple,
+        findings: list[ResearchFinding],
+        domain: str,
+        cycle: int,
     ) -> ResearchPrinciple:
         """G1: Update an existing principle with new evidence.
 
@@ -183,15 +204,16 @@ class PrincipleExtractor:
 
         logger.info(
             "G1: Updated existing principle '%s': +%d obs, total=%d, sustained=%d",
-            existing.name[:40], total_obs,
+            existing.name[:40],
+            total_obs,
             existing.evidence.total_observations,
             existing.evidence.sustained_cycles,
         )
         return existing
 
-    def extract_candidates(self,
-                           min_cluster_size: int = 5,
-                           cycle: int = 0) -> list[ResearchPrinciple]:
+    def extract_candidates(
+        self, min_cluster_size: int = 5, cycle: int = 0
+    ) -> list[ResearchPrinciple]:
         """Extract candidate principles from accumulated findings.
 
         F1.6 (G1): Before creating a new principle, checks existing store
@@ -214,7 +236,9 @@ class PrincipleExtractor:
 
                 # Check GR-5: Can this be split?
                 sub_clusters = self._try_split(cluster_findings)
-                target_clusters = sub_clusters if len(sub_clusters) > 1 else {cluster_name: cluster_findings}
+                target_clusters = (
+                    sub_clusters if len(sub_clusters) > 1 else {cluster_name: cluster_findings}
+                )
 
                 for sub_name, sub_findings in target_clusters.items():
                     result = self._extract_or_update(sub_name, sub_findings, domain, cycle)
@@ -223,12 +247,17 @@ class PrincipleExtractor:
                             candidates.append(result)
 
         self._extracted_principles.extend(candidates)
-        logger.info("Extracted %d candidate principles from %d domains (cycle %d)",
-                     len(candidates), len(self._domain_findings), cycle)
+        logger.info(
+            "Extracted %d candidate principles from %d domains (cycle %d)",
+            len(candidates),
+            len(self._domain_findings),
+            cycle,
+        )
         return candidates
 
-    def _extract_or_update(self, name: str, findings: list[ResearchFinding],
-                           domain: str, cycle: int) -> ResearchPrinciple | None:
+    def _extract_or_update(
+        self, name: str, findings: list[ResearchFinding], domain: str, cycle: int
+    ) -> ResearchPrinciple | None:
         """G1+G2: Either update existing matching principle, or create new CANDIDATE.
 
         Flow:
@@ -261,8 +290,9 @@ class PrincipleExtractor:
                 return edge.split("→")[0].strip()
         return finding.category or "unknown"
 
-    def _cluster_by_pattern(self, findings: list[ResearchFinding],
-                            domain: str) -> dict[str, list[ResearchFinding]]:
+    def _cluster_by_pattern(
+        self, findings: list[ResearchFinding], domain: str
+    ) -> dict[str, list[ResearchFinding]]:
         """Group findings by recurring patterns extracted from titles."""
         clusters: dict[str, list[ResearchFinding]] = defaultdict(list)
 
@@ -298,21 +328,19 @@ class PrincipleExtractor:
         # Group by source edge
         by_edge: dict[str, list[ResearchFinding]] = defaultdict(list)
         for f in findings:
-            for edge in (f.source_edges or [""]):
+            for edge in f.source_edges or [""]:
                 by_edge[edge].append(f)
 
         # Only split if we get meaningful sub-groups
-        meaningful = {
-            k: v for k, v in by_edge.items()
-            if len(v) >= 5 and k
-        }
+        meaningful = {k: v for k, v in by_edge.items() if len(v) >= 5 and k}
 
         if len(meaningful) > 1:
             return meaningful
         return {}
 
-    def _extract_single(self, name: str, findings: list[ResearchFinding],
-                        domain: str, cycle: int) -> ResearchPrinciple | None:
+    def _extract_single(
+        self, name: str, findings: list[ResearchFinding], domain: str, cycle: int
+    ) -> ResearchPrinciple | None:
         """G2: Create a NEW principle — ALWAYS as CANDIDATE.
 
         Admission to VALIDATED requires separate multi-cycle confirmation
@@ -356,12 +384,18 @@ class PrincipleExtractor:
     def _build_statement(self, findings: list[ResearchFinding], domain: str) -> str:
         """Build a declarative causal statement from findings."""
         # Extract common themes from finding titles and descriptions
-        titles = [f.title for f in findings if f.title]
+        _titles = [f.title for f in findings if f.title]
         descriptions = [f.description for f in findings if f.description]
 
         # Detect direction patterns
-        direction_words = {"increases": 0, "decreases": 0, "breaks": 0,
-                           "transmits": 0, "reinforces": 0, "weakens": 0}
+        direction_words = {
+            "increases": 0,
+            "decreases": 0,
+            "breaks": 0,
+            "transmits": 0,
+            "reinforces": 0,
+            "weakens": 0,
+        }
         for desc in descriptions:
             desc_lower = desc.lower()
             for word in direction_words:
@@ -371,9 +405,9 @@ class PrincipleExtractor:
         dominant = max(direction_words, key=direction_words.get)
 
         if dominant == "breaks":
-            avg_rel = sum(
-                f.evidence.get("reliability", 0.5) for f in findings
-            ) / max(len(findings), 1)
+            avg_rel = sum(f.evidence.get("reliability", 0.5) for f in findings) / max(
+                len(findings), 1
+            )
             condition = list(self._extract_preconditions(findings).keys())[:1]
             cond_str = f" when {condition[0]}" if condition else ""
             return f"Transmission in {domain}{cond_str} is unreliable (avg {avg_rel:.0%})"

@@ -18,7 +18,7 @@ Formula:
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from src.learning.schemas import (
@@ -83,7 +83,9 @@ class BeliefCalibration:
         # Empirical Bayes calibration
         alpha_post = alpha_prior + correct
         beta_post = beta_prior + (total - correct)
-        calibrated_conf = alpha_post / (alpha_post + beta_post) if (alpha_post + beta_post) > 0 else 0.5
+        calibrated_conf = (
+            alpha_post / (alpha_post + beta_post) if (alpha_post + beta_post) > 0 else 0.5
+        )
 
         # Smooth toward original to prevent over-fitting small samples
         weight_n = min(1.0, total / 10.0)  # Full weight at 10+ predictions
@@ -121,12 +123,14 @@ class BeliefCalibration:
             recommendation=recommendation,
         )
 
-        self._calibration_history[belief_id].append({
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "original": original_conf,
-            "calibrated": final_conf,
-            "bias": bias,
-        })
+        self._calibration_history[belief_id].append(
+            {
+                "timestamp": datetime.now(UTC).isoformat(),
+                "original": original_conf,
+                "calibrated": final_conf,
+                "bias": bias,
+            }
+        )
 
         return result
 
@@ -152,9 +156,7 @@ class BeliefCalibration:
 
         return results
 
-    def get_calibration_summary(
-        self, results: list[BeliefCalibrationResult]
-    ) -> dict:
+    def get_calibration_summary(self, results: list[BeliefCalibrationResult]) -> dict:
         """Summarize calibration results across all beliefs."""
         if not results:
             return {"total": 0, "overconfident": 0, "underconfident": 0, "calibrated": 0}
@@ -164,7 +166,9 @@ class BeliefCalibration:
         under = [r for r in calibrated if r.is_underconfident]
         ok = [r for r in calibrated if not r.is_overconfident and not r.is_underconfident]
 
-        avg_bias = sum(r.calibration_bias for r in calibrated) / len(calibrated) if calibrated else 0
+        avg_bias = (
+            sum(r.calibration_bias for r in calibrated) / len(calibrated) if calibrated else 0
+        )
 
         return {
             "total_beliefs": len(results),
@@ -174,8 +178,8 @@ class BeliefCalibration:
             "well_calibrated": len(ok),
             "avg_calibration_bias": round(avg_bias, 3),
             "systemic_bias": (
-                "overconfident" if avg_bias > 0.05
-                else "underconfident" if avg_bias < -0.05
-                else "well_calibrated"
+                "overconfident"
+                if avg_bias > 0.05
+                else "underconfident" if avg_bias < -0.05 else "well_calibrated"
             ),
         }

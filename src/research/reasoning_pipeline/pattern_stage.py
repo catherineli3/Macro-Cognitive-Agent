@@ -13,11 +13,10 @@ This stage identifies:
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from src.research.reasoning_pipeline.schemas import (
-    ObservationOutput,
     EvidenceOutput,
+    ObservationOutput,
     PatternOutput,
     StageStatus,
 )
@@ -27,35 +26,47 @@ class PatternStage:
     """Stage 3: Pattern recognition and regime diagnosis."""
 
     MACRO_REGIMES = [
-        "goldilocks",           # Strong growth, low inflation
-        "reflation",            # Rising growth, rising inflation
-        "stagflation",          # Weak growth, high inflation
-        "deflation_bust",       # Weak growth, falling prices
-        "overheating",          # Very strong growth, high inflation
-        "secular_stagnation",   # Persistently weak growth, low inflation
-        "disinflationary_boom", # Strong growth, falling inflation
-        "liquidity_trap",       # Low rates, low growth, low inflation
-        "credit_expansion",     # Rising credit, rising asset prices
-        "credit_contraction",   # Falling credit, falling asset prices
-        "dollar_squeeze",       # Strong dollar, EM stress
-        "risk_on",              # Broad risk appetite
-        "risk_off",             # Broad risk aversion
+        "goldilocks",  # Strong growth, low inflation
+        "reflation",  # Rising growth, rising inflation
+        "stagflation",  # Weak growth, high inflation
+        "deflation_bust",  # Weak growth, falling prices
+        "overheating",  # Very strong growth, high inflation
+        "secular_stagnation",  # Persistently weak growth, low inflation
+        "disinflationary_boom",  # Strong growth, falling inflation
+        "liquidity_trap",  # Low rates, low growth, low inflation
+        "credit_expansion",  # Rising credit, rising asset prices
+        "credit_contraction",  # Falling credit, falling asset prices
+        "dollar_squeeze",  # Strong dollar, EM stress
+        "risk_on",  # Broad risk appetite
+        "risk_off",  # Broad risk aversion
     ]
 
     REGIME_SIGNALS: dict[str, list[str]] = {
         "goldilocks": ["above-trend growth + below-target inflation", "PMI > 52 + CPI < 3%"],
         "reflation": ["rising breakevens", "commodity rally", "yield curve steepening"],
-        "stagflation": ["rising CPI + falling PMI", "yield curve inversion", "consumer confidence weak"],
+        "stagflation": [
+            "rising CPI + falling PMI",
+            "yield curve inversion",
+            "consumer confidence weak",
+        ],
         "overheating": ["CPI > 4%", "wage growth > 5%", "capacity utilization > 80%"],
-        "secular_stagnation": ["secular low yields", "persistent output gap", "demographic headwinds"],
+        "secular_stagnation": [
+            "secular low yields",
+            "persistent output gap",
+            "demographic headwinds",
+        ],
         "disinflationary_boom": ["technology-driven productivity", "supply-side expansion"],
         "credit_expansion": ["narrowing spreads", "rising loan growth", "easy lending standards"],
-        "credit_contraction": ["widening spreads", "falling loan growth", "tightening lending standards"],
+        "credit_contraction": [
+            "widening spreads",
+            "falling loan growth",
+            "tightening lending standards",
+        ],
         "risk_on": ["VIX < 15", "EM flows positive", "credit spreads tight"],
         "risk_off": ["VIX > 25", "EM outflows", "credit spreads wide"],
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def execute(
@@ -139,7 +150,9 @@ class PatternStage:
             patterns.append("disinflationary slowdown / potential recession")
 
         # Credit conditions
-        credit_evidence = clusters.get("credit_markets", []) + clusters.get("financial_conditions", [])
+        credit_evidence = clusters.get("credit_markets", []) + clusters.get(
+            "financial_conditions", []
+        )
         credit_tight = any(
             kw in " ".join(credit_evidence).lower()
             for kw in ["tight", "wider", "stress", "contraction"]
@@ -226,15 +239,16 @@ class PatternStage:
         labor_items = clusters.get("labor_market", [])
         if growth_items and labor_items:
             growth_weak = any(
-                kw in " ".join(growth_items).lower()
-                for kw in ["weak", "slow", "below"]
+                kw in " ".join(growth_items).lower() for kw in ["weak", "slow", "below"]
             )
             labor_strong = any(
                 kw in " ".join(labor_items).lower()
                 for kw in ["strong", "tight", "low unemployment"]
             )
             if growth_weak and labor_strong:
-                signals.append("Growth-labor divergence: weak growth + tight labor → potential stagflation transition")
+                signals.append(
+                    "Growth-labor divergence: weak growth + tight labor → potential stagflation transition"
+                )
 
         # Yield curve signal
         market_moves = " ".join(observation.market_moves).lower()
@@ -242,12 +256,16 @@ class PatternStage:
             if "invert" in market_moves or "flatten" in market_moves:
                 signals.append("Yield curve flattening/inversion → recession signal")
             elif "steepen" in market_moves or "dis-invert" in market_moves:
-                signals.append("Yield curve steepening/dis-inversion → recovery or inflation signal")
+                signals.append(
+                    "Yield curve steepening/dis-inversion → recovery or inflation signal"
+                )
 
         # Credit stress signals
         credit_items = clusters.get("credit_markets", [])
         if any("widen" in item.lower() for item in credit_items):
-            signals.append("Credit spreads widening → tightening financial conditions → potential regime shift")
+            signals.append(
+                "Credit spreads widening → tightening financial conditions → potential regime shift"
+            )
 
         return signals
 
@@ -255,9 +273,16 @@ class PatternStage:
         """Identify important patterns that are NOT present."""
         absent = []
         all_regime_keywords = [
-            "goldilocks", "reflation", "stagflation", "overheating",
-            "recession", "credit crisis", "currency crisis",
-            "disinflation", "deflation", "boom",
+            "goldilocks",
+            "reflation",
+            "stagflation",
+            "overheating",
+            "recession",
+            "credit crisis",
+            "currency crisis",
+            "disinflation",
+            "deflation",
+            "boom",
         ]
 
         found_text = " ".join(found_patterns).lower()

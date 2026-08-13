@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """NarrativeHandler — Executor adapter for Narrative Engine.
 
 Capability: "macro.narrative"
@@ -12,7 +10,9 @@ Produces:
     - context.artifacts["narrative"]        → MacroNarrative
 """
 
-from datetime import datetime, timezone
+from __future__ import annotations
+
+from datetime import UTC, datetime
 
 from src.domain.execution import TaskResultStatus
 from src.interfaces.task_handler import TaskHandlerInterface
@@ -20,7 +20,6 @@ from src.narrative.engine import NarrativeEngine
 from src.schemas.execution import TaskResult
 from src.schemas.hypothesis import HypothesisSet
 from src.schemas.memory import BeliefRecord
-from src.schemas.narrative import MacroNarrative
 from src.schemas.planning import Task
 from src.schemas.reflection import ReflectionSet
 from src.schemas.signal import SignalSnapshot
@@ -67,7 +66,7 @@ class NarrativeHandler(TaskHandlerInterface):
             Always returns SUCCESS — even with partial data, the engine
             produces a best-effort narrative.
         """
-        started = datetime.now(timezone.utc)
+        started = datetime.now(UTC)
 
         try:
             # Read all upstream artifacts
@@ -84,7 +83,7 @@ class NarrativeHandler(TaskHandlerInterface):
                 belief_records=memory_records,
             )
 
-            completed = datetime.now(timezone.utc)
+            completed = datetime.now(UTC)
 
             logger.info(
                 "narrative_handler_completed",
@@ -105,7 +104,7 @@ class NarrativeHandler(TaskHandlerInterface):
             )
 
         except Exception as exc:
-            completed = datetime.now(timezone.utc)
+            completed = datetime.now(UTC)
             logger.error(
                 "narrative_handler_failed task=%s error=%s",
                 task.name,

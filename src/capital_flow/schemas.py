@@ -3,24 +3,23 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 
 @dataclass
 class FlowSignal:
     """A single flow signal — money moving into or out of an asset class."""
 
-    asset_class: str = ""           # "equities", "bonds", "gold", "crypto", "cash", "commodities"
-    region: str = ""                # "US", "EM", "Japan", "Europe", "China", "Global"
-    direction: str = ""             # "inflow" / "outflow" / "neutral"
-    magnitude: float = 0.0          # Normalized -1 to 1 (-1 = massive outflow, 1 = massive inflow)
-    weekly_flow_bn: float = 0.0     # Flow amount in billions
+    asset_class: str = ""  # "equities", "bonds", "gold", "crypto", "cash", "commodities"
+    region: str = ""  # "US", "EM", "Japan", "Europe", "China", "Global"
+    direction: str = ""  # "inflow" / "outflow" / "neutral"
+    magnitude: float = 0.0  # Normalized -1 to 1 (-1 = massive outflow, 1 = massive inflow)
+    weekly_flow_bn: float = 0.0  # Flow amount in billions
     monthly_flow_bn: float = 0.0
     ytd_flow_bn: float = 0.0
-    percentile: float = 50.0        # Where this flow sits vs. 5-year history
+    percentile: float = 50.0  # Where this flow sits vs. 5-year history
     description: str = ""
-    source: str = ""                # "ETF", "CFTC", "13F", "cross-asset"
+    source: str = ""  # "ETF", "CFTC", "13F", "cross-asset"
 
     def to_dict(self) -> dict:
         return {
@@ -42,9 +41,9 @@ class ETFDay:
     ticker: str = ""
     name: str = ""
     category: str = ""
-    flow_mm: float = 0.0            # Flow in millions
-    aum_bn: float = 0.0             # AUM in billions
-    flow_pct: float = 0.0           # Flow as % of AUM
+    flow_mm: float = 0.0  # Flow in millions
+    aum_bn: float = 0.0  # AUM in billions
+    flow_pct: float = 0.0  # Flow as % of AUM
     price_change_pct: float = 0.0
 
     def to_dict(self) -> dict:
@@ -67,7 +66,7 @@ class ETFSummary:
     monthly_flow_bn: float = 0.0
     ytd_flow_bn: float = 0.0
     aum_bn: float = 0.0
-    flow_momentum: float = 0.0      # Accelerating/decelerating (-1 to 1)
+    flow_momentum: float = 0.0  # Accelerating/decelerating (-1 to 1)
     days: list[ETFDay] = field(default_factory=list)
     description: str = ""
 
@@ -84,7 +83,7 @@ class PositionSnapshot:
     long_contracts: float = 0
     short_contracts: float = 0
     net_position: float = 0
-    net_pct_of_oi: float = 0.0      # Net as % of open interest
+    net_pct_of_oi: float = 0.0  # Net as % of open interest
 
     # Changes
     weekly_change: float = 0
@@ -92,7 +91,7 @@ class PositionSnapshot:
 
     # Context
     positioning_percentile: float = 50.0  # Where is positioning vs. history?
-    is_extreme: bool = False              # >90th or <10th percentile
+    is_extreme: bool = False  # >90th or <10th percentile
     is_crowded: bool = False
     description: str = ""
 
@@ -101,7 +100,7 @@ class PositionSnapshot:
 class CapitalFlowRegime:
     """Classification of the current capital flow regime."""
 
-    regime_label: str = ""           # "risk_on_inflow", "risk_off_outflow", "rotation", etc.
+    regime_label: str = ""  # "risk_on_inflow", "risk_off_outflow", "rotation", etc.
     confidence: float = 0.5
 
     # Money entering / leaving
@@ -115,7 +114,7 @@ class CapitalFlowRegime:
 
     # Interpretation
     interpretation: str = ""
-    signal_strength: float = 0.0    # 0-1, how clear is the signal?
+    signal_strength: float = 0.0  # 0-1, how clear is the signal?
 
     # Regime history
     prior_regime: str = ""
@@ -139,7 +138,7 @@ class CrossAssetFlowReport:
 
     report_id: str = ""
     date: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     # Flow signals by asset class
     signals: list[FlowSignal] = field(default_factory=list)
@@ -149,7 +148,7 @@ class CrossAssetFlowReport:
 
     # Summary narrative
     narrative: str = ""
-    risk_sentiment: str = ""        # "risk_on", "risk_off", "neutral"
+    risk_sentiment: str = ""  # "risk_on", "risk_off", "neutral"
     conviction: float = 0.5
 
     def to_dict(self) -> dict:
@@ -170,7 +169,7 @@ class CapitalFlowReport:
 
     report_id: str = ""
     date: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     regime: CapitalFlowRegime = field(default_factory=CapitalFlowRegime)
     cross_asset: CrossAssetFlowReport = field(default_factory=CrossAssetFlowReport)

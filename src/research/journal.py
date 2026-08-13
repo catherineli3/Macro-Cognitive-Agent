@@ -13,9 +13,8 @@ This creates a complete audit trail of the agent's research process.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Optional
 from uuid import uuid4
 
 
@@ -30,46 +29,47 @@ class LogType(str, Enum):
 @dataclass
 class JournalEntry:
     """A single entry in any research journal."""
+
     entry_id: str = field(default_factory=lambda: uuid4().hex[:8])
     log_type: LogType = LogType.THINKING
-    date: str = field(default_factory=lambda: datetime.now().strftime('%Y-%m-%d'))
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    
+    date: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
+
     # Content
     title: str = ""
     content: str = ""
     tags: list[str] = field(default_factory=list)
-    
+
     # Context
     session_id: str = ""
     topic: str = ""
-    
+
     # For decision log
     decision: str = ""
     rationale: str = ""
     alternatives_considered: list[str] = field(default_factory=list)
-    
+
     # For evidence log
     evidence_items: list[dict] = field(default_factory=list)
     source: str = ""
     impact_on_beliefs: dict = field(default_factory=dict)
-    
+
     # For prediction log
     prediction: str = ""
-    probability: Optional[float] = None
+    probability: float | None = None
     time_horizon: str = ""
     invalidation_condition: str = ""
-    
+
     # For reflection log
     reflection: str = ""
     lessons_learned: list[str] = field(default_factory=list)
     mistakes_identified: list[str] = field(default_factory=list)
     improvements_needed: list[str] = field(default_factory=list)
-    
+
     # Meta
-    importance: str = "medium"              # critical, high, medium, low
+    importance: str = "medium"  # critical, high, medium, low
     is_milestone: bool = False
-    
+
     def to_dict(self) -> dict:
         return {
             "entry_id": self.entry_id,
@@ -92,21 +92,26 @@ class ResearchJournal:
 
     def __init__(self):
         self.entries: dict[str, JournalEntry] = {}
-        
+
         # Indices for fast lookup
         self._by_date: dict[str, list[str]] = {}
         self._by_type: dict[LogType, list[str]] = {}
         self._by_topic: dict[str, list[str]] = {}
         self._by_session: dict[str, list[str]] = {}
-        
+
         # Stats
         self._entry_counts: dict[LogType, int] = {lt: 0 for lt in LogType}
 
     # ── Log Writers ──────────────────────────────────────────────────────
 
-    def log_thinking(self, title: str, content: str, 
-                     topic: str = "", session_id: str = "",
-                     tags: Optional[list[str]] = None) -> JournalEntry:
+    def log_thinking(
+        self,
+        title: str,
+        content: str,
+        topic: str = "",
+        session_id: str = "",
+        tags: list[str] | None = None,
+    ) -> JournalEntry:
         """Log a thinking process entry."""
         entry = JournalEntry(
             log_type=LogType.THINKING,
@@ -119,10 +124,15 @@ class ResearchJournal:
         self._store(entry)
         return entry
 
-    def log_decision(self, decision: str, rationale: str,
-                     alternatives: Optional[list[str]] = None,
-                     topic: str = "", session_id: str = "",
-                     importance: str = "medium") -> JournalEntry:
+    def log_decision(
+        self,
+        decision: str,
+        rationale: str,
+        alternatives: list[str] | None = None,
+        topic: str = "",
+        session_id: str = "",
+        importance: str = "medium",
+    ) -> JournalEntry:
         """Log a research decision with rationale."""
         entry = JournalEntry(
             log_type=LogType.DECISION,
@@ -139,15 +149,21 @@ class ResearchJournal:
         self._store(entry)
         return entry
 
-    def log_evidence(self, title: str, evidence_items: list[dict],
-                     source: str = "", impact: Optional[dict] = None,
-                     topic: str = "", session_id: str = "") -> JournalEntry:
+    def log_evidence(
+        self,
+        title: str,
+        evidence_items: list[dict],
+        source: str = "",
+        impact: dict | None = None,
+        topic: str = "",
+        session_id: str = "",
+    ) -> JournalEntry:
         """Log new evidence incorporated into research."""
         content_parts = [f"## New Evidence: {title}", f"Source: {source}"]
         for i, item in enumerate(evidence_items):
             content_parts.append(f"### Evidence {i+1}")
             content_parts.append(str(item))
-        
+
         entry = JournalEntry(
             log_type=LogType.EVIDENCE,
             title=title,
@@ -161,9 +177,15 @@ class ResearchJournal:
         self._store(entry)
         return entry
 
-    def log_prediction(self, prediction: str, probability: float = 0.5,
-                       time_horizon: str = "", invalidation: str = "",
-                       topic: str = "", session_id: str = "") -> JournalEntry:
+    def log_prediction(
+        self,
+        prediction: str,
+        probability: float = 0.5,
+        time_horizon: str = "",
+        invalidation: str = "",
+        topic: str = "",
+        session_id: str = "",
+    ) -> JournalEntry:
         """Log a prediction for future calibration."""
         content = (
             f"## Prediction\n{prediction}\n\n"
@@ -171,7 +193,7 @@ class ResearchJournal:
             f"## Time Horizon: {time_horizon}\n\n"
             f"## Invalidation Condition\n{invalidation}"
         )
-        
+
         entry = JournalEntry(
             log_type=LogType.PREDICTION,
             title=f"Prediction: {prediction[:80]}",
@@ -186,11 +208,16 @@ class ResearchJournal:
         self._store(entry)
         return entry
 
-    def log_reflection(self, title: str, reflection: str,
-                       lessons: Optional[list[str]] = None,
-                       mistakes: Optional[list[str]] = None,
-                       improvements: Optional[list[str]] = None,
-                       topic: str = "", session_id: str = "") -> JournalEntry:
+    def log_reflection(
+        self,
+        title: str,
+        reflection: str,
+        lessons: list[str] | None = None,
+        mistakes: list[str] | None = None,
+        improvements: list[str] | None = None,
+        topic: str = "",
+        session_id: str = "",
+    ) -> JournalEntry:
         """Log a reflection on research process or outcomes."""
         entry = JournalEntry(
             log_type=LogType.REFLECTION,
@@ -230,7 +257,7 @@ class ResearchJournal:
 
     def get_today_entries(self) -> list[JournalEntry]:
         """Get today's journal entries."""
-        today = datetime.now().strftime('%Y-%m-%d')
+        today = datetime.now().strftime("%Y-%m-%d")
         return self.get_entries_by_date(today)
 
     def get_predictions(self, limit: int = 50) -> list[JournalEntry]:
@@ -254,44 +281,44 @@ class ResearchJournal:
 
     # ── Journal Summary ──────────────────────────────────────────────────
 
-    def get_daily_summary(self, date: Optional[str] = None) -> dict:
+    def get_daily_summary(self, date: str | None = None) -> dict:
         """Get a structured summary of a day's research."""
-        target_date = date or datetime.now().strftime('%Y-%m-%d')
+        target_date = date or datetime.now().strftime("%Y-%m-%d")
         entries = self.get_entries_by_date(target_date)
-        
+
         by_type: dict[str, list] = {}
         for e in entries:
             key = e.log_type.value
             if key not in by_type:
                 by_type[key] = []
-            by_type[key].append({
-                "title": e.title,
-                "importance": e.importance,
-                "is_milestone": e.is_milestone,
-            })
-        
+            by_type[key].append(
+                {
+                    "title": e.title,
+                    "importance": e.importance,
+                    "is_milestone": e.is_milestone,
+                }
+            )
+
         return {
             "date": target_date,
             "total_entries": len(entries),
             "by_type": {k: len(v) for k, v in by_type.items()},
             "highlights": by_type,
             "milestones": [e.title for e in entries if e.is_milestone],
-            "topics_covered": list(set(
-                e.topic for e in entries if e.topic
-            )),
+            "topics_covered": list(set(e.topic for e in entries if e.topic)),
         }
 
     def get_weekly_summary(self) -> dict:
         """Get summary for the past 7 days."""
         from datetime import timedelta
-        
+
         today = datetime.now()
         summaries = {}
         for i in range(7):
-            date = (today - timedelta(days=i)).strftime('%Y-%m-%d')
+            date = (today - timedelta(days=i)).strftime("%Y-%m-%d")
             entries = self.get_entries_by_date(date)
             summaries[date] = len(entries)
-        
+
         return {
             "period": f"{(today - timedelta(days=6)).strftime('%Y-%m-%d')} to {today.strftime('%Y-%m-%d')}",
             "total_entries": sum(summaries.values()),
@@ -315,7 +342,6 @@ class ResearchJournal:
             "total_dates": len(self._by_date),
             "total_topics": len(self._by_topic),
             "total_sessions": len(self._by_session),
-            
             # Content stats
             "total_predictions": self._entry_counts.get(LogType.PREDICTION, 0),
             "total_decisions": self._entry_counts.get(LogType.DECISION, 0),
@@ -328,9 +354,11 @@ class ResearchJournal:
         q = query.lower()
         results = []
         for entry in self.entries.values():
-            if (q in entry.title.lower() or 
-                q in entry.content.lower() or 
-                q in " ".join(entry.tags).lower()):
+            if (
+                q in entry.title.lower()
+                or q in entry.content.lower()
+                or q in " ".join(entry.tags).lower()
+            ):
                 results.append(entry)
         return sorted(results, key=lambda e: e.timestamp, reverse=True)[:50]
 
@@ -339,28 +367,28 @@ class ResearchJournal:
     def _store(self, entry: JournalEntry):
         """Store entry and update all indices."""
         self.entries[entry.entry_id] = entry
-        
+
         # Date index
         if entry.date not in self._by_date:
             self._by_date[entry.date] = []
         self._by_date[entry.date].append(entry.entry_id)
-        
+
         # Type index
         if entry.log_type not in self._by_type:
             self._by_type[entry.log_type] = []
         self._by_type[entry.log_type].append(entry.entry_id)
-        
+
         # Topic index
         if entry.topic:
             if entry.topic not in self._by_topic:
                 self._by_topic[entry.topic] = []
             self._by_topic[entry.topic].append(entry.entry_id)
-        
+
         # Session index
         if entry.session_id:
             if entry.session_id not in self._by_session:
                 self._by_session[entry.session_id] = []
             self._by_session[entry.session_id].append(entry.entry_id)
-        
+
         # Counts
         self._entry_counts[entry.log_type] = self._entry_counts.get(entry.log_type, 0) + 1

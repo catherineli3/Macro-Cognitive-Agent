@@ -13,18 +13,17 @@ This stage produces:
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from src.research.reasoning_pipeline.schemas import (
-    ObservationOutput,
-    EvidenceOutput,
-    PatternOutput,
-    HypothesisOutput,
-    PredictionOutput,
-    TradeOutput,
     CounterOutput,
+    EvidenceOutput,
+    HypothesisOutput,
+    ObservationOutput,
+    PatternOutput,
+    PredictionOutput,
     RiskOutput,
     StageStatus,
+    TradeOutput,
 )
 
 
@@ -45,14 +44,21 @@ class RiskStage:
     ]
 
     STANDARD_DATA_RELEASES = {
-        "US": ["Nonfarm Payrolls (1st Fri)", "CPI (mid-month)", "FOMC Decision",
-               "GDP (advance)", "Retail Sales", "ISM Manufacturing", "PCE"],
+        "US": [
+            "Nonfarm Payrolls (1st Fri)",
+            "CPI (mid-month)",
+            "FOMC Decision",
+            "GDP (advance)",
+            "Retail Sales",
+            "ISM Manufacturing",
+            "PCE",
+        ],
         "EU": ["ECB Decision", "Flash CPI", "GDP", "PMI"],
         "CN": ["PBOC LPR", "GDP", "CPI/PPI", "PMI", "Trade Balance"],
         "JP": ["BOJ Decision", "CPI", "GDP", "Tankan"],
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
     def execute(
@@ -85,25 +91,17 @@ class RiskStage:
         )
 
         # 1. Ranked risk list
-        output.risks = self._rank_risks(
-            observation, evidence, pattern, hypothesis, counter, trade
-        )
+        output.risks = self._rank_risks(observation, evidence, pattern, hypothesis, counter, trade)
 
         # 2. Tail risks
         output.tail_risks = self._assess_tail_risks(pattern)
 
         # 3. Correlation risks
-        output.correlation_risks = self._assess_correlation_risks(
-            evidence, pattern
-        )
+        output.correlation_risks = self._assess_correlation_risks(evidence, pattern)
 
         # 4. Watchlists
-        output.watchlist_24h = self._build_24h_watchlist(
-            observation, evidence, pattern
-        )
-        output.watchlist_1w = self._build_1w_watchlist(
-            observation, prediction, evidence
-        )
+        output.watchlist_24h = self._build_24h_watchlist(observation, evidence, pattern)
+        output.watchlist_1w = self._build_1w_watchlist(observation, prediction, evidence)
 
         # 5. Key data releases
         output.key_data_releases = self._build_data_calendar(observation)
@@ -134,41 +132,49 @@ class RiskStage:
             prob = c.get("probability", 0.3)
             risk_score = severity_score * prob
 
-            risks.append({
-                "risk": c["claim"][:120],
-                "severity": c.get("severity", "major"),
-                "probability": round(prob, 2),
-                "risk_score": round(risk_score, 2),
-                "impact": "Hypothesis invalidation" if risk_score > 0.3 else "Conviction adjustment",
-                "hedge": self._suggest_hedge(c.get("severity", "major")),
-                "monitor": "Incoming data consistency with central case",
-            })
+            risks.append(
+                {
+                    "risk": c["claim"][:120],
+                    "severity": c.get("severity", "major"),
+                    "probability": round(prob, 2),
+                    "risk_score": round(risk_score, 2),
+                    "impact": (
+                        "Hypothesis invalidation" if risk_score > 0.3 else "Conviction adjustment"
+                    ),
+                    "hedge": self._suggest_hedge(c.get("severity", "major")),
+                    "monitor": "Incoming data consistency with central case",
+                }
+            )
 
         # 2. Evidence-gap risks
         if evidence.evidence_gaps:
-            risks.append({
-                "risk": f"Evidence gaps in: {'; '.join(evidence.evidence_gaps[:3])}",
-                "severity": "major",
-                "probability": 0.4,
-                "risk_score": 0.28,
-                "impact": "Blind spots in analysis",
-                "hedge": "Reduce position size until gaps filled",
-                "monitor": f"Watch for data covering: {evidence.evidence_gaps[0]}",
-            })
+            risks.append(
+                {
+                    "risk": f"Evidence gaps in: {'; '.join(evidence.evidence_gaps[:3])}",
+                    "severity": "major",
+                    "probability": 0.4,
+                    "risk_score": 0.28,
+                    "impact": "Blind spots in analysis",
+                    "hedge": "Reduce position size until gaps filled",
+                    "monitor": f"Watch for data covering: {evidence.evidence_gaps[0]}",
+                }
+            )
 
         # 3. Positioning risk
-        risks.append({
-            "risk": (
-                "Crowded consensus positioning — even correct views may not generate "
-                "alpha if market is already priced for the scenario"
-            ),
-            "severity": "minor",
-            "probability": 0.45,
-            "risk_score": 0.14,
-            "impact": "Limited upside on correct calls",
-            "hedge": "Consider options strategies for asymmetric payoff",
-            "monitor": "Positioning surveys, CFTC COT, flow data",
-        })
+        risks.append(
+            {
+                "risk": (
+                    "Crowded consensus positioning — even correct views may not generate "
+                    "alpha if market is already priced for the scenario"
+                ),
+                "severity": "minor",
+                "probability": 0.45,
+                "risk_score": 0.14,
+                "impact": "Limited upside on correct calls",
+                "hedge": "Consider options strategies for asymmetric payoff",
+                "monitor": "Positioning surveys, CFTC COT, flow data",
+            }
+        )
 
         # Sort by risk score descending
         risks.sort(key=lambda r: r["risk_score"], reverse=True)
@@ -182,22 +188,28 @@ class RiskStage:
         relevant = []
 
         if "risk-off" in patterns_text or "credit" in patterns_text:
-            relevant.extend([
-                "Financial accident triggered by rapid tightening",
-                "Major bank / counterparty failure",
-            ])
+            relevant.extend(
+                [
+                    "Financial accident triggered by rapid tightening",
+                    "Major bank / counterparty failure",
+                ]
+            )
 
         if "inflation" in patterns_text:
-            relevant.extend([
-                "Second wave of inflation forcing super-hawkish policy",
-                "Stagflation scenario: 1970s redux",
-            ])
+            relevant.extend(
+                [
+                    "Second wave of inflation forcing super-hawkish policy",
+                    "Stagflation scenario: 1970s redux",
+                ]
+            )
 
         if "geopolitical" in patterns_text:
-            relevant.extend([
-                "China Taiwan Strait escalation",
-                "Middle East energy supply disruption",
-            ])
+            relevant.extend(
+                [
+                    "China Taiwan Strait escalation",
+                    "Middle East energy supply disruption",
+                ]
+            )
 
         # Always include these
         relevant.append("Black swan event: unknown unknown with systemic impact")
@@ -252,14 +264,10 @@ class RiskStage:
 
         # Gap risks
         if "VIX" in str(observation.market_moves):
-            watchlist.append(
-                "Overnight gap risk: Check Asia/Europe session for any dislocations"
-            )
+            watchlist.append("Overnight gap risk: Check Asia/Europe session for any dislocations")
 
         # Key news risk
-        watchlist.append(
-            "Central bank speaker risk: Any unscheduled comments could move markets"
-        )
+        watchlist.append("Central bank speaker risk: Any unscheduled comments could move markets")
 
         # Liquidity check
         watchlist.append("Liquidity monitoring: Check bid-ask spreads, depth of book")
@@ -283,9 +291,7 @@ class RiskStage:
 
         # Evidence tracking
         if evidence.evidence_gaps:
-            watchlist.append(
-                f"Fill gaps: Watch for new data on {evidence.evidence_gaps[0]}"
-            )
+            watchlist.append(f"Fill gaps: Watch for new data on {evidence.evidence_gaps[0]}")
 
         # Key events
         watchlist.append("Central bank communication: Scheduled speeches, minutes release")
@@ -293,9 +299,7 @@ class RiskStage:
 
         # Dependency tracking
         if prediction.forecast_dependencies:
-            watchlist.append(
-                f"Track dependency: {prediction.forecast_dependencies[0]}"
-            )
+            watchlist.append(f"Track dependency: {prediction.forecast_dependencies[0]}")
 
         return watchlist
 
@@ -331,7 +335,9 @@ class RiskStage:
         trace.append("=== Stage 9: Risk ===")
         trace.append(f"Ranked risks: {len(output.risks)}")
         if output.risks:
-            trace.append(f"  Top risk: {output.risks[0]['risk'][:60]}... (score={output.risks[0]['risk_score']})")
+            trace.append(
+                f"  Top risk: {output.risks[0]['risk'][:60]}... (score={output.risks[0]['risk_score']})"
+            )
         trace.append(f"Tail risks: {len(output.tail_risks)}")
         trace.append(f"Correlation risks: {len(output.correlation_risks)}")
         trace.append(f"24h watchlist: {len(output.watchlist_24h)} items")

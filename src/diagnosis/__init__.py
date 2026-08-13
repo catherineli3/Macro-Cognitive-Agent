@@ -14,7 +14,7 @@ not gate learning. Learning is EMA-only (existing behavior).
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from typing import Optional
 from uuid import uuid4
 
@@ -135,9 +135,7 @@ class DiagnosisEngine:
     def __init__(self) -> None:
         self._classifier = ErrorClassifier()
 
-    async def diagnose_batch(
-        self, evaluation_report: EvaluationReport
-    ) -> DiagnosisReport:
+    async def diagnose_batch(self, evaluation_report: EvaluationReport) -> DiagnosisReport:
         """Diagnose all outcomes in an evaluation report.
 
         Each prediction gets its own ErrorClassification.
@@ -161,10 +159,18 @@ class DiagnosisEngine:
                 classifications.append(classification)
 
                 if classification.is_correct:
-                    cat_key = classification.correct_category.value if classification.correct_category else "UNKNOWN"
+                    cat_key = (
+                        classification.correct_category.value
+                        if classification.correct_category
+                        else "UNKNOWN"
+                    )
                     correct_dist[cat_key] = correct_dist.get(cat_key, 0) + 1
                 else:
-                    err_key = classification.error_category.value if classification.error_category else "UNKNOWN"
+                    err_key = (
+                        classification.error_category.value
+                        if classification.error_category
+                        else "UNKNOWN"
+                    )
                     error_dist[err_key] = error_dist.get(err_key, 0) + 1
 
                     # Per-channel distribution
@@ -177,15 +183,17 @@ class DiagnosisEngine:
                 logger.warning("diagnosis_failed pred=%s err=%s", outcome.prediction_id, e)
                 unclassified += 1
                 # Safe default: mark as HYP_ERR with low confidence
-                classifications.append(ErrorClassification(
-                    prediction_id=outcome.prediction_id,
-                    transmission_channel=outcome.transmission_channel,
-                    hypothesis_id="",
-                    is_correct=False,
-                    error_category=ErrorCategory.HYP_ERR,
-                    diagnosis_confidence=0.3,
-                    diagnosis_rationale=f"Unclassified — safe default: {e}",
-                ))
+                classifications.append(
+                    ErrorClassification(
+                        prediction_id=outcome.prediction_id,
+                        transmission_channel=outcome.transmission_channel,
+                        hypothesis_id="",
+                        is_correct=False,
+                        error_category=ErrorCategory.HYP_ERR,
+                        diagnosis_confidence=0.3,
+                        diagnosis_rationale=f"Unclassified — safe default: {e}",
+                    )
+                )
                 error_dist["HYP_ERR"] = error_dist.get("HYP_ERR", 0) + 1
 
         correct_count = sum(1 for c in classifications if c.is_correct)
@@ -206,20 +214,23 @@ class DiagnosisEngine:
 
         logger.info(
             "diagnosis_complete total=%d correct=%d errors=%d top_err=%s unclassified=%d",
-            report.total_diagnosed, correct_count, incorrect_count,
-            report.most_common_error, unclassified,
+            report.total_diagnosed,
+            correct_count,
+            incorrect_count,
+            report.most_common_error,
+            unclassified,
         )
         return report
 
     async def get_error_trend(
         self,
         entries: list,  # list of LearningLogEntry
-        hypothesis_id: Optional[str] = None,
-        channel: Optional[str] = None,
+        hypothesis_id: str | None = None,
+        channel: str | None = None,
         window_days: int = 90,
     ) -> ErrorTrend:
         """Analyze error trend for a hypothesis or channel."""
-        cutoff = datetime.now(timezone.utc)
+        _cutoff = datetime.now(UTC)
         # Filter entries
         filtered = []
         for entry in entries:

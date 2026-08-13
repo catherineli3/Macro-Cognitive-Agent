@@ -10,18 +10,14 @@ producing Top-5 hypotheses from a macro snapshot.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
-
 from src.hypothesis.candidate_generator import CandidateGenerator
 from src.hypothesis.competition_engine import CompetitionEngine
 from src.hypothesis.retriever import HistoricalRetriever
 from src.hypothesis.selector import HypothesisSelector
-from src.hypothesis.signal_engine import SignalEngine, SignalReport
+from src.hypothesis.signal_engine import SignalEngine
 from src.schemas.hypothesis_library import HypothesisLibraryEntry
 from src.schemas.hypothesis_v3_1 import (
     HypothesisEvolutionResult,
-    SelectedHypothesis,
 )
 from src.shared.logging import get_logger
 
@@ -43,7 +39,7 @@ class HypothesisEvolution:
 
     def __init__(
         self,
-        library_entries: Optional[list[HypothesisLibraryEntry]] = None,
+        library_entries: list[HypothesisLibraryEntry] | None = None,
     ) -> None:
         self._signal_engine = SignalEngine()
         self._generator = CandidateGenerator()
@@ -57,7 +53,7 @@ class HypothesisEvolution:
         self,
         indicators: dict[str, float],
         regime: str = "unknown",
-        library_entries: Optional[list[HypothesisLibraryEntry]] = None,
+        library_entries: list[HypothesisLibraryEntry] | None = None,
     ) -> HypothesisEvolutionResult:
         """Run the complete Hypothesis Evolution pipeline.
 
@@ -84,10 +80,7 @@ class HypothesisEvolution:
         competition_round = self._competition.compete(candidates, retrieval_report)
 
         # Step 5: Selector — produce Top-5
-        survivors = [
-            c for c in candidates
-            if c.candidate_id in competition_round.survivors
-        ]
+        survivors = [c for c in candidates if c.candidate_id in competition_round.survivors]
         selected = self._selector.select(survivors, retrieval_report, competition_round)
 
         # Build result
@@ -105,7 +98,7 @@ class HypothesisEvolution:
     def describe(self, result: HypothesisEvolutionResult) -> str:
         """Generate a human-readable summary of the evolution result."""
         lines = []
-        lines.append(f"══════ Hypothesis Evolution Report ══════")
+        lines.append("══════ Hypothesis Evolution Report ══════")
         lines.append(f"Regime: {result.regime}")
         lines.append(f"Signals detected: {result.signals_detected}")
         lines.append(f"Themes identified: {result.themes_identified}")
@@ -120,12 +113,11 @@ class HypothesisEvolution:
             for e in cr.eliminated[:5]:
                 lines.append(f"    [ELIM] {e.candidate_id}: {e.reason.value} ({e.detail[:80]}...)")
 
-        lines.append(f"")
-        lines.append(f"Top-5 Selected Hypotheses:")
+        lines.append("")
+        lines.append("Top-5 Selected Hypotheses:")
         for h in result.selected_hypotheses:
             lines.append(
-                f"  #{h.rank} [{h.dimension}] {h.direction} "
-                f"({h.confidence:.0%}): {h.thesis}"
+                f"  #{h.rank} [{h.dimension}] {h.direction} " f"({h.confidence:.0%}): {h.thesis}"
             )
             if h.historical_backing and "no direct" not in h.historical_backing.lower():
                 lines.append(f"      History: {h.historical_backing[:100]}...")

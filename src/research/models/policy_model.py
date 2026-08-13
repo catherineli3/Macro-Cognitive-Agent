@@ -97,24 +97,34 @@ class PolicyModel(MentalModel):
     def _interpret_policy(name: str, value: float, features: list[dict]) -> dict:
         if name == "US2Y":
             if value > 4.5:
-                return {"text": f"US2Y elevated ({value:.2f}%) — hawkish short-end pricing", "contradicts": True}
+                return {
+                    "text": f"US2Y elevated ({value:.2f}%) — hawkish short-end pricing",
+                    "contradicts": True,
+                }
             elif value < 3.5:
-                return {"text": f"US2Y low ({value:.2f}%) — dovish / rate cut pricing", "contradicts": False}
+                return {
+                    "text": f"US2Y low ({value:.2f}%) — dovish / rate cut pricing",
+                    "contradicts": False,
+                }
             else:
                 return {"text": f"US2Y moderate ({value:.2f}%)", "contradicts": False}
         if name == "US10Y":
             if value > 4.5:
-                return {"text": f"US10Y elevated ({value:.2f}%) — term premium rising", "contradicts": True}
+                return {
+                    "text": f"US10Y elevated ({value:.2f}%) — term premium rising",
+                    "contradicts": True,
+                }
             elif value < 3.5:
-                return {"text": f"US10Y low ({value:.2f}%) — recession / safety bid", "contradicts": False}
+                return {
+                    "text": f"US10Y low ({value:.2f}%) — recession / safety bid",
+                    "contradicts": False,
+                }
             else:
                 return {"text": f"US10Y moderate ({value:.2f}%)", "contradicts": False}
         return {"text": f"{name}: {value:.2f}", "contradicts": False}
 
     @staticmethod
-    def _compute_spread(
-        us2y: dict | None, us10y: dict | None
-    ) -> tuple[float, str]:
+    def _compute_spread(us2y: dict | None, us10y: dict | None) -> tuple[float, str]:
         """Compute 2s10s spread and signal."""
         if not us2y or not us10y:
             return 0.0, "Spread unavailable"

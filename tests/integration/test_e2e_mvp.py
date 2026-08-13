@@ -13,7 +13,7 @@ MVP Acceptance Criteria:
 import pytest
 
 from src.domain.execution import ExecutionStatus
-from src.pipeline import MacroResearchPipeline, PipelineResult
+from src.pipeline import MacroResearchPipeline
 from src.schemas.narrative import MacroNarrative
 
 
@@ -31,26 +31,23 @@ async def test_full_pipeline_produces_macro_narrative(pipeline: MacroResearchPip
     """MVP Acceptance Criterion #1: pipeline.run() outputs MacroNarrative Schema."""
     result = await pipeline.run(goal="macro environment analysis")
 
-    assert result.status in (ExecutionStatus.COMPLETED, ExecutionStatus.PARTIALLY_COMPLETED), (
-        f"Pipeline status should be COMPLETED or PARTIALLY_COMPLETED, got {result.status}"
-    )
+    assert result.status in (
+        ExecutionStatus.COMPLETED,
+        ExecutionStatus.PARTIALLY_COMPLETED,
+    ), f"Pipeline status should be COMPLETED or PARTIALLY_COMPLETED, got {result.status}"
     assert result.narrative_obj is not None, "Pipeline must produce a MacroNarrative object"
 
     narrative = result.narrative_obj
-    assert isinstance(narrative, MacroNarrative), (
-        f"Expected MacroNarrative, got {type(narrative).__name__}"
-    )
+    assert isinstance(
+        narrative, MacroNarrative
+    ), f"Expected MacroNarrative, got {type(narrative).__name__}"
 
     # Content quality checks
-    assert len(narrative.summary) > 10, (
-        f"Summary too short: '{narrative.summary}'"
-    )
-    assert len(narrative.macro_story) > 50, (
-        f"Macro story too short ({len(narrative.macro_story)} chars)"
-    )
-    assert 0.0 <= narrative.confidence <= 1.0, (
-        f"Confidence out of range: {narrative.confidence}"
-    )
+    assert len(narrative.summary) > 10, f"Summary too short: '{narrative.summary}'"
+    assert (
+        len(narrative.macro_story) > 50
+    ), f"Macro story too short ({len(narrative.macro_story)} chars)"
+    assert 0.0 <= narrative.confidence <= 1.0, f"Confidence out of range: {narrative.confidence}"
 
 
 @pytest.mark.asyncio
@@ -88,9 +85,7 @@ async def test_cli_output_is_markdown_from_narrative(pipeline: MacroResearchPipe
     """Verify CLI Markdown rendering from MacroNarrative."""
     result = await pipeline.run(goal="macro environment analysis")
     assert result.narrative is not None, "Narrative markdown is required"
-    assert len(result.narrative) > 100, (
-        f"Markdown output too short ({len(result.narrative)} chars)"
-    )
+    assert len(result.narrative) > 100, f"Markdown output too short ({len(result.narrative)} chars)"
     # Markdown should contain heading markers
     assert "# " in result.narrative, "Markdown should contain headings"
 
@@ -135,9 +130,9 @@ async def test_narrative_confidence_in_range(pipeline: MacroResearchPipeline):
         result.narrative_obj.growth,
         result.narrative_obj.inflation,
     ]:
-        assert 0.0 <= dim.confidence <= 1.0, (
-            f"Dimension {dim.dimension} confidence {dim.confidence} out of [0, 1] range"
-        )
+        assert (
+            0.0 <= dim.confidence <= 1.0
+        ), f"Dimension {dim.dimension} confidence {dim.confidence} out of [0, 1] range"
 
 
 # ── Pipeline Robustness Tests ──────────────────────────────────────────────
@@ -173,6 +168,6 @@ async def test_pipeline_consistent_on_repeat(pipeline: MacroResearchPipeline):
     assert result2.narrative_obj is not None
 
     # Both should have same structure
-    assert result1.narrative_obj.confidence == result2.narrative_obj.confidence, (
-        "Deterministic pipeline should produce consistent confidence"
-    )
+    assert (
+        result1.narrative_obj.confidence == result2.narrative_obj.confidence
+    ), "Deterministic pipeline should produce consistent confidence"

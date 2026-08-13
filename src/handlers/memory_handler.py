@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """MemoryHandler — Executor adapter for the Belief Memory System.
 
 Capability: "macro.memory"
@@ -16,7 +14,9 @@ Design:
     - Memory records produced as artifact for downstream reporting.
 """
 
-from datetime import datetime, timezone
+from __future__ import annotations
+
+from datetime import UTC, datetime
 
 from src.domain.execution import TaskResultStatus
 from src.interfaces.task_handler import TaskHandlerInterface
@@ -78,7 +78,7 @@ class MemoryHandler(TaskHandlerInterface):
             TaskResult with list[BeliefRecord] in artifacts["memory_records"].
             Returns FAILED if required artifacts are missing or persistence fails.
         """
-        started = datetime.now(timezone.utc)
+        started = datetime.now(UTC)
 
         try:
             # Read required upstream artifacts
@@ -101,7 +101,7 @@ class MemoryHandler(TaskHandlerInterface):
             records = self._builder.build(
                 hypotheses=hypothesis_set,
                 reflections=reflection_set,
-                run_id=context._plan_id if hasattr(context, '_plan_id') else "unknown",
+                run_id=context._plan_id if hasattr(context, "_plan_id") else "unknown",
             )
 
             # Persist to store
@@ -118,7 +118,7 @@ class MemoryHandler(TaskHandlerInterface):
             return self._success(task, started, records)
 
         except Exception as exc:
-            completed = datetime.now(timezone.utc)
+            completed = datetime.now(UTC)
             logger.error(
                 "memory_handler_failed task=%s error=%s",
                 task.name,
@@ -143,7 +143,7 @@ class MemoryHandler(TaskHandlerInterface):
         records: list[BeliefRecord],
     ) -> TaskResult:
         """Build a successful TaskResult with memory records."""
-        completed = datetime.now(timezone.utc)
+        completed = datetime.now(UTC)
         return TaskResult(
             task_id=task.id,
             task_name=task.name,

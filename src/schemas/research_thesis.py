@@ -15,10 +15,9 @@ This is what a PTJ-style macro researcher produces after morning research.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from uuid import uuid4
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Enums
@@ -27,11 +26,12 @@ from uuid import uuid4
 
 class ThesisStatus(str, Enum):
     """Lifecycle of a Research Thesis."""
-    DRAFT = "draft"             # Generated, not yet output
-    ACTIVE = "active"           # Currently being tested by markets
-    VALIDATED = "validated"     # Market outcome aligned with thesis
-    INVALIDATED = "invalidated" # An invalidation condition triggered
-    ARCHIVED = "archived"       # Time-window expired, no trigger
+
+    DRAFT = "draft"  # Generated, not yet output
+    ACTIVE = "active"  # Currently being tested by markets
+    VALIDATED = "validated"  # Market outcome aligned with thesis
+    INVALIDATED = "invalidated"  # An invalidation condition triggered
+    ARCHIVED = "archived"  # Time-window expired, no trigger
     SUPERSEDED = "superseded"  # Replaced by a newer, better thesis
 
 
@@ -54,11 +54,11 @@ class ThesisOutcome:
     # Realized return in the relevant asset (optional)
     realized_return: float | None = None
     # When the outcome was determined
-    verified_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    verified_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     # Detailed outcome notes
     actual_events: list[str] = field(default_factory=list)
     transmission_verified: bool | None = None  # Was the chain correct?
-    timing_correct: bool | None = None         # Was the window right?
+    timing_correct: bool | None = None  # Was the window right?
     notes: str = ""
 
     @property
@@ -101,11 +101,11 @@ class ResearchThesis:
 
     # ── Identity ──────────────────────────────────────────────────────
     thesis_id: str = field(default_factory=lambda: f"thesis-{uuid4().hex[:12]}")
-    title: str = ""                         # One-line thesis statement
+    title: str = ""  # One-line thesis statement
 
     # ── Core Content ──────────────────────────────────────────────────
-    regime_label: str = ""                  # e.g. "Early Easing"
-    core_belief: str = ""                   # The central causal claim
+    regime_label: str = ""  # e.g. "Early Easing"
+    core_belief: str = ""  # The central causal claim
     transmission_chain: list[str] = field(default_factory=list)
     # e.g. ["Fed Balance Sheet ↑", "USD Liquidity ↑", "Credit Spread ↓",
     #       "Long Duration Equities ↑"]
@@ -119,8 +119,8 @@ class ResearchThesis:
     # Falsifiable conditions, e.g. "10Y > 5%" or "Credit spread widening"
 
     # ── Confidence ────────────────────────────────────────────────────
-    confidence: float = 0.0                 # 0.0 ~ 1.0
-    expected_window: str = ""              # e.g. "30-90 days"
+    confidence: float = 0.0  # 0.0 ~ 1.0
+    expected_window: str = ""  # e.g. "30-90 days"
 
     # ── Provenance ────────────────────────────────────────────────────
     framework_used: list[str] = field(default_factory=list)
@@ -132,7 +132,7 @@ class ResearchThesis:
 
     # ── Lifecycle ─────────────────────────────────────────────────────
     status: ThesisStatus = ThesisStatus.DRAFT
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     activated_at: datetime | None = None
     outcome: ThesisOutcome | None = None
 
@@ -182,7 +182,7 @@ class ResearchThesis:
     def activate(self) -> None:
         """Mark the thesis as active (being tested by markets)."""
         self.status = ThesisStatus.ACTIVE
-        self.activated_at = datetime.now(timezone.utc)
+        self.activated_at = datetime.now(UTC)
 
     def validate(self, outcome: ThesisOutcome | None = None) -> None:
         """Mark as validated by market outcome."""
@@ -191,8 +191,7 @@ class ResearchThesis:
             outcome.verified = True
             self.outcome = outcome
 
-    def invalidate(self, triggered_condition: str,
-                   outcome: ThesisOutcome | None = None) -> None:
+    def invalidate(self, triggered_condition: str, outcome: ThesisOutcome | None = None) -> None:
         """Mark as invalidated by a specific condition."""
         self.status = ThesisStatus.INVALIDATED
         if outcome:
@@ -235,11 +234,15 @@ class ResearchThesis:
             "status": self.status.value,
             "created_at": self.created_at.isoformat(),
             "activated_at": self.activated_at.isoformat() if self.activated_at else None,
-            "outcome": {
-                "verified": self.outcome.verified,
-                "invalidation_triggered": self.outcome.invalidation_triggered,
-                "notes": self.outcome.notes,
-            } if self.outcome else None,
+            "outcome": (
+                {
+                    "verified": self.outcome.verified,
+                    "invalidation_triggered": self.outcome.invalidation_triggered,
+                    "notes": self.outcome.notes,
+                }
+                if self.outcome
+                else None
+            ),
             "metadata": self.metadata,
         }
 
@@ -327,4 +330,6 @@ class ResearchThesis:
         return "\n".join(lines)
 
     def __repr__(self) -> str:
-        return f"<ResearchThesis[{self.status.value}] '{self.title[:40]}...' c={self.confidence:.0%}>"
+        return (
+            f"<ResearchThesis[{self.status.value}] '{self.title[:40]}...' c={self.confidence:.0%}>"
+        )

@@ -6,30 +6,35 @@ Validates the full v2.0 cognitive loop:
 """
 
 import tempfile
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-from datetime import datetime, timezone
 
 from src.calibration.confidence_calibrator import ConfidenceCalibrator
+from src.domain.memory import BeliefStatus, TransitionType
 from src.learning.learning_engine import LearningEngine
 from src.narrative.engine import NarrativeEngine
 from src.outcome.engine import OutcomeEngine, OutcomeTracker
-from src.schemas.calibration import CalibratedConfidenceSet
 from src.schemas.hypothesis import HypothesisEvidence, HypothesisSchema, HypothesisSet
 from src.schemas.learning import LearningSummary
 from src.schemas.memory import BeliefRecord
 from src.schemas.narrative import MacroNarrative
 from src.schemas.outcome import (
-    OutcomeDirection, OutcomeRecord, OutcomeVerdict, PredictionOutcome,
+    OutcomeDirection,
 )
 from src.schemas.reflection import ReflectionReport, ReflectionSet, ReflectionVerdict
-from src.schemas.signal import SignalDirection, SignalEvidence, SignalSnapshot, MacroSignalSchema, SignalStrength
+from src.schemas.signal import (
+    MacroSignalSchema,
+    SignalDirection,
+    SignalEvidence,
+    SignalSnapshot,
+    SignalStrength,
+)
 from src.signal.composite_signal_generator import CompositeSignalGenerator
-from src.domain.memory import BeliefStatus, TransitionType
-
 
 # ── Fixture ──────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def engine():
@@ -44,38 +49,54 @@ def engine():
 
 def sig(indicator, dim, direction, confidence=0.8):
     return MacroSignalSchema(
-        indicator=indicator, dimension=dim,
+        indicator=indicator,
+        dimension=dim,
         direction=SignalDirection(direction),
         strength=SignalStrength.STRONG if confidence > 0.7 else SignalStrength.MODERATE,
         confidence=confidence,
-        evidence=[SignalEvidence(
-            rule_id=f"r_{indicator}", rule_description=direction,
-            input_value=1.0, condition=f"{indicator} {direction}",
-            interpretation=f"{indicator}: {direction} signal",
-        )],
+        evidence=[
+            SignalEvidence(
+                rule_id=f"r_{indicator}",
+                rule_description=direction,
+                input_value=1.0,
+                condition=f"{indicator} {direction}",
+                interpretation=f"{indicator}: {direction} signal",
+            )
+        ],
     )
 
 
 def hyp(statement, dim, direction, confidence=0.7):
     return HypothesisSchema(
-        statement=statement, dimension=dim,
-        direction=SignalDirection(direction), confidence=confidence,
-        supporting_evidence=[HypothesisEvidence(
-            indicator=f"S{i}", signal_id=f"s_{i}",
-            observation=f"Support {i}",
-            interpretation=f"Evidence: {statement[:30]}",
-            contribution=0.7, alignment="supporting",
-        ) for i in range(2)],
+        statement=statement,
+        dimension=dim,
+        direction=SignalDirection(direction),
+        confidence=confidence,
+        supporting_evidence=[
+            HypothesisEvidence(
+                indicator=f"S{i}",
+                signal_id=f"s_{i}",
+                observation=f"Support {i}",
+                interpretation=f"Evidence: {statement[:30]}",
+                contribution=0.7,
+                alignment="supporting",
+            )
+            for i in range(2)
+        ],
         contradicting_evidence=[],
     )
 
 
 def ref(h, verdict="confirmed", updated_conf=0.8):
     return ReflectionReport(
-        hypothesis_id=h.hypothesis_id, statement=h.statement,
-        original_confidence=h.confidence, updated_confidence=updated_conf,
-        verdict=ReflectionVerdict(verdict), findings=[],
-        evidence_sufficiency="medium", evidence_consistency="consistent",
+        hypothesis_id=h.hypothesis_id,
+        statement=h.statement,
+        original_confidence=h.confidence,
+        updated_confidence=updated_conf,
+        verdict=ReflectionVerdict(verdict),
+        findings=[],
+        evidence_sufficiency="medium",
+        evidence_consistency="consistent",
         review_summary=f"Review of {h.hypothesis_id}",
     )
 
@@ -91,11 +112,13 @@ class TestV2ClosedLoop:
     def test_full_loop_single_cycle(self, engine):
         """Step-by-step: Signal → Narrative with all v2.0 engines."""
         # Step 1: Signal
-        snapshot = SignalSnapshot(signals=[
-            sig("DXY", "Liquidity", "bullish", 0.85),
-            sig("US10Y", "Liquidity", "bullish", 0.80),
-            sig("HYG", "Credit", "bearish", 0.75),
-        ])
+        snapshot = SignalSnapshot(
+            signals=[
+                sig("DXY", "Liquidity", "bullish", 0.85),
+                sig("US10Y", "Liquidity", "bullish", 0.80),
+                sig("HYG", "Credit", "bearish", 0.75),
+            ]
+        )
 
         # Step 2: Hypothesis
         hypotheses = HypothesisSet(
@@ -107,32 +130,44 @@ class TestV2ClosedLoop:
         )
 
         # Step 3: Reflection
-        reflections = ReflectionSet(reports=[
-            ref(hypotheses.hypotheses[0], "confirmed", 0.85),
-            ref(hypotheses.hypotheses[1], "confirmed", 0.82),
-        ])
+        reflections = ReflectionSet(
+            reports=[
+                ref(hypotheses.hypotheses[0], "confirmed", 0.85),
+                ref(hypotheses.hypotheses[1], "confirmed", 0.82),
+            ]
+        )
 
         # Step 4: Memory
         beliefs = [
             BeliefRecord(
-                run_id="cycle_1", hypothesis_id=hypotheses.hypotheses[0].hypothesis_id,
-                dimension="Liquidity", statement=hypotheses.hypotheses[0].statement,
-                direction=SignalDirection.BEARISH, confidence=0.85,
-                status=BeliefStatus.HELD, transition=TransitionType.NEW,
-                supporting_count=3, contradicting_count=0,
+                run_id="cycle_1",
+                hypothesis_id=hypotheses.hypotheses[0].hypothesis_id,
+                dimension="Liquidity",
+                statement=hypotheses.hypotheses[0].statement,
+                direction=SignalDirection.BEARISH,
+                confidence=0.85,
+                status=BeliefStatus.HELD,
+                transition=TransitionType.NEW,
+                supporting_count=3,
+                contradicting_count=0,
                 evidence_summary="Strong liquidity tightening.",
                 review_summary="Confirmed.",
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             ),
             BeliefRecord(
-                run_id="cycle_1", hypothesis_id=hypotheses.hypotheses[1].hypothesis_id,
-                dimension="Credit", statement=hypotheses.hypotheses[1].statement,
-                direction=SignalDirection.BEARISH, confidence=0.82,
-                status=BeliefStatus.HELD, transition=TransitionType.NEW,
-                supporting_count=3, contradicting_count=0,
+                run_id="cycle_1",
+                hypothesis_id=hypotheses.hypotheses[1].hypothesis_id,
+                dimension="Credit",
+                statement=hypotheses.hypotheses[1].statement,
+                direction=SignalDirection.BEARISH,
+                confidence=0.82,
+                status=BeliefStatus.HELD,
+                transition=TransitionType.NEW,
+                supporting_count=3,
+                contradicting_count=0,
                 evidence_summary="Credit stress signals.",
                 review_summary="Confirmed.",
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             ),
         ]
 
@@ -196,14 +231,19 @@ class TestV2ClosedLoop:
             for dim in dimensions:
                 direction = SignalDirection.BULLISH if cycle % 2 == 1 else SignalDirection.BEARISH
                 belief = BeliefRecord(
-                    run_id=f"cycle_{cycle}", hypothesis_id=f"h_{dim}_{cycle}",
-                    dimension=dim, statement=f"Cycle {cycle}: {dim} {direction.value}",
-                    direction=direction, confidence=0.7 + cycle * 0.05,
-                    status=BeliefStatus.HELD, transition=TransitionType.NEW,
-                    supporting_count=3, contradicting_count=0,
+                    run_id=f"cycle_{cycle}",
+                    hypothesis_id=f"h_{dim}_{cycle}",
+                    dimension=dim,
+                    statement=f"Cycle {cycle}: {dim} {direction.value}",
+                    direction=direction,
+                    confidence=0.7 + cycle * 0.05,
+                    status=BeliefStatus.HELD,
+                    transition=TransitionType.NEW,
+                    supporting_count=3,
+                    contradicting_count=0,
                     evidence_summary=f"Cycle {cycle} evidence.",
                     review_summary=f"Cycle {cycle} review.",
-                    timestamp=datetime(2026, 7, cycle, tzinfo=timezone.utc),
+                    timestamp=datetime(2026, 7, cycle, tzinfo=UTC),
                 )
                 outcome = engine.create_outcome(belief, f"cycle_{cycle}")
                 engine.persist(outcome, f"cycle_{cycle}")
@@ -211,20 +251,27 @@ class TestV2ClosedLoop:
             # Evaluate prev cycle's predictions
             if cycle > 1:
                 prev_outcomes = [
-                    r for r in engine._tracker.get_all()
-                    if r.run_id == f"cycle_{cycle - 1}"
+                    r for r in engine._tracker.get_all() if r.run_id == f"cycle_{cycle - 1}"
                 ]
                 for record in prev_outcomes:
                     # Simulate: Liquidity correct, Growth incorrect, Credit mixed
                     if record.outcome.dimension.lower() == "liquidity":
-                        obs_dir = OutcomeDirection.UP if record.outcome.predicted_direction == SignalDirection.BULLISH else OutcomeDirection.DOWN
-                        correct = True
+                        obs_dir = (
+                            OutcomeDirection.UP
+                            if record.outcome.predicted_direction == SignalDirection.BULLISH
+                            else OutcomeDirection.DOWN
+                        )
+                        _correct = True
                     elif record.outcome.dimension.lower() == "credit":
                         obs_dir = OutcomeDirection.FLAT
-                        correct = False  # partial
+                        _correct = False  # partial
                     else:
-                        obs_dir = OutcomeDirection.DOWN if record.outcome.predicted_direction == SignalDirection.BULLISH else OutcomeDirection.UP
-                        correct = False
+                        obs_dir = (
+                            OutcomeDirection.DOWN
+                            if record.outcome.predicted_direction == SignalDirection.BULLISH
+                            else OutcomeDirection.UP
+                        )
+                        _correct = False
 
                     evaluated = engine.evaluate(
                         record.outcome,
@@ -260,17 +307,25 @@ class TestV2ClosedLoop:
         # Feed 10 perfect outcomes to build trust
         for i in range(10):
             belief = BeliefRecord(
-                run_id=f"trust_{i}", hypothesis_id=f"ht_{i}",
-                dimension="Liquidity", statement="Historical test",
-                direction=SignalDirection.BEARISH, confidence=0.8,
-                status=BeliefStatus.HELD, transition=TransitionType.NEW,
-                supporting_count=3, contradicting_count=0,
-                evidence_summary="Historical.", review_summary="Historical.",
-                timestamp=datetime.now(timezone.utc),
+                run_id=f"trust_{i}",
+                hypothesis_id=f"ht_{i}",
+                dimension="Liquidity",
+                statement="Historical test",
+                direction=SignalDirection.BEARISH,
+                confidence=0.8,
+                status=BeliefStatus.HELD,
+                transition=TransitionType.NEW,
+                supporting_count=3,
+                contradicting_count=0,
+                evidence_summary="Historical.",
+                review_summary="Historical.",
+                timestamp=datetime.now(UTC),
             )
             outcome = engine.create_outcome(belief, f"trust_{i}")
             engine.persist(outcome, f"trust_{i}")
-            evaluated = engine.evaluate(engine._tracker.get_all()[-1].outcome, observed_direction=OutcomeDirection.DOWN)
+            evaluated = engine.evaluate(
+                engine._tracker.get_all()[-1].outcome, observed_direction=OutcomeDirection.DOWN
+            )
             engine._tracker._records[-1].outcome = evaluated
 
         # Learn from perfect history
@@ -287,10 +342,12 @@ class TestV2ClosedLoop:
     def test_narrative_includes_learning_sections(self, engine):
         """Narrative engine generates v2.0 learning sections."""
         # Setup full pipeline
-        signals = SignalSnapshot(signals=[
-            sig("DXY", "Liquidity", "bullish", 0.85),
-            sig("US10Y", "Liquidity", "bullish", 0.80),
-        ])
+        signals = SignalSnapshot(
+            signals=[
+                sig("DXY", "Liquidity", "bullish", 0.85),
+                sig("US10Y", "Liquidity", "bullish", 0.80),
+            ]
+        )
         hyps = HypothesisSet(
             hypotheses=[hyp("Dollar dominance continues.", "Liquidity", "bearish", 0.80)],
             dimensions_covered=["Liquidity"],
@@ -301,13 +358,19 @@ class TestV2ClosedLoop:
         learning = LearningEngine()
         for i in range(5):
             belief_rec = BeliefRecord(
-                run_id=f"narr_{i}", hypothesis_id=f"hn_{i}",
-                dimension="Liquidity", statement="Historical liquidity test",
-                direction=SignalDirection.BULLISH, confidence=0.75,
-                status=BeliefStatus.HELD, transition=TransitionType.NEW,
-                supporting_count=2, contradicting_count=1,
-                evidence_summary=f"Evidence {i}", review_summary=f"Review {i}",
-                timestamp=datetime.now(timezone.utc),
+                run_id=f"narr_{i}",
+                hypothesis_id=f"hn_{i}",
+                dimension="Liquidity",
+                statement="Historical liquidity test",
+                direction=SignalDirection.BULLISH,
+                confidence=0.75,
+                status=BeliefStatus.HELD,
+                transition=TransitionType.NEW,
+                supporting_count=2,
+                contradicting_count=1,
+                evidence_summary=f"Evidence {i}",
+                review_summary=f"Review {i}",
+                timestamp=datetime.now(UTC),
             )
             outcome = engine.create_outcome(belief_rec, f"narr_{i}")
             engine.persist(outcome, f"narr_{i}")
@@ -326,7 +389,9 @@ class TestV2ClosedLoop:
         # Generate narrative
         narrative_engine = NarrativeEngine()
         narrative = narrative_engine.narrate(
-            signals=signals, hypotheses=hyps, reflections=refs,
+            signals=signals,
+            hypotheses=hyps,
+            reflections=refs,
             learning_summary=ls,
             calibrated_confidence=cal,
             outcome_summary=outcome_s,

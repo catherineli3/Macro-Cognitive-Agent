@@ -5,7 +5,7 @@ End-to-end test: Collector → Validator → Normalizer → Repository.
 This verifies the complete Sprint 1 data pipeline works end-to-end.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -90,7 +90,7 @@ class TestPipelineIntegration:
         # Simulate bad data directly (bypassing Collector)
         bad_data = MacroDataSchema(
             symbol="DXY",
-            timestamp=datetime(2099, 1, 1, tzinfo=timezone.utc),  # far future
+            timestamp=datetime(2099, 1, 1, tzinfo=UTC),  # far future
             value=-999.0,  # impossible value
             source="Yahoo",
         )

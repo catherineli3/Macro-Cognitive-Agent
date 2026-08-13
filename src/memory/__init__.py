@@ -17,9 +17,10 @@ Key design (per Architecture Review):
 Dependencies: domain, schemas, shared
 """
 
+from src.schemas.memory import BeliefRecord
+
 from .builder import BeliefRecordBuilder
 from .store import BeliefMemoryStore
-from src.schemas.memory import BeliefRecord
 
 __all__ = [
     "BeliefMemoryStore",

@@ -4,14 +4,12 @@ Reflection is a belief review: HypothesisSet → ReflectionSet.
 Outputs are standalone reports; original Hypothesis objects are never mutated.
 """
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
 from src.domain.reflection import FindingSeverity, ReflectionVerdict
-
 
 # ── Reflection Finding ──────────────────────────────────────────────────────
 
@@ -104,7 +102,7 @@ class ReflectionReport(BaseModel):
         description="One-sentence summary of the belief review",
     )
     reviewed_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="When the review was performed",
     )
 
@@ -131,7 +129,7 @@ class ReflectionSet(BaseModel):
     """Complete belief review output for a set of hypotheses."""
 
     reviewed_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
     reports: list[ReflectionReport] = Field(
         default_factory=list,
@@ -160,7 +158,7 @@ class ReflectionSet(BaseModel):
     def uncertain(self) -> list[ReflectionReport]:
         return [r for r in self.reports if r.verdict == ReflectionVerdict.UNCERTAIN]
 
-    def get_by_hypothesis_id(self, hypothesis_id: str) -> Optional[ReflectionReport]:
+    def get_by_hypothesis_id(self, hypothesis_id: str) -> ReflectionReport | None:
         for r in self.reports:
             if r.hypothesis_id == hypothesis_id:
                 return r

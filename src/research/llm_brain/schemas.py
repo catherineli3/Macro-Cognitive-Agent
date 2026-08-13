@@ -13,8 +13,7 @@ Design principle:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Sub-components
@@ -185,7 +184,7 @@ class ResearchMemo:
 
     memo_id: str = ""
     title: str = ""
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     analyst: str = "MacroResearchAgent V3.4"
 
     # Executive summary
@@ -312,7 +311,7 @@ class ResearchMemo:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "ResearchMemo":
+    def from_dict(cls, data: dict) -> ResearchMemo:
         """Deserialize from dict."""
         r = data.get("regime", {})
         n = data.get("narrative", {})
@@ -341,8 +340,10 @@ class ResearchMemo:
                 regime_duration_estimate=r.get("duration_estimate", ""),
                 defining_characteristics=r.get("characteristics", []),
                 historical_analogs=r.get("analogs", []),
-                **{f"{k}_assessment": r.get("dimensions", {}).get(k, "")
-                   for k in ["growth", "inflation", "monetary", "risk", "credit"]},
+                **{
+                    f"{k}_assessment": r.get("dimensions", {}).get(k, "")
+                    for k in ["growth", "inflation", "monetary", "risk", "credit"]
+                },
             ),
             narrative=NarrativeAnalysis(
                 dominant_narrative=n.get("dominant", ""),

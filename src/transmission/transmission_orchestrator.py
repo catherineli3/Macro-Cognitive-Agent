@@ -13,27 +13,31 @@ Flow:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 from uuid import uuid4
 
+from src.belief_versioning.contextual_belief import ContextualBeliefManager
 from src.diagnosis.breakpoint_detector import BreakpointDetector, DiagnosisUpgrader
 from src.schemas.diagnosis import DiagnosisReport
 from src.schemas.evaluation_v3 import EvaluationReport
 from src.schemas.hypothesis_v3_1 import (
-    CandidateHypothesis, HypothesisEvolutionResult, SelectedHypothesis,
+    CandidateHypothesis,
+    HypothesisEvolutionResult,
+    SelectedHypothesis,
 )
 from src.schemas.prediction_v3 import PredictionBatch
 from src.schemas.transmission_v3_1 import (
-    BreakpointDiagnosis, ContextualBelief, ResearchFindingsReport, ResearchNote,
+    BreakpointDiagnosis,
+    ContextualBelief,
+    ResearchFindingsReport,
+    ResearchNote,
     TransmissionUpdateBatch,
 )
+from src.shared.logging import get_logger
+from src.transmission.research_findings import ResearchFindingsEngine
+from src.transmission.research_note import ResearchNoteGenerator
 from src.transmission.transmission_graph import TransmissionGraph
 from src.transmission.update_engine import TransmissionUpdateEngine
-from src.transmission.research_note import ResearchNoteGenerator
-from src.transmission.research_findings import ResearchFindingsEngine
-from src.belief_versioning.contextual_belief import ContextualBeliefManager
-from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -60,7 +64,8 @@ class TransmissionOrchestrator:
     # ── Bootstrap ────────────────────────────────────────────────────────
 
     def bootstrap_beliefs_from_hypotheses(
-        self, result: HypothesisEvolutionResult,
+        self,
+        result: HypothesisEvolutionResult,
     ) -> list[ContextualBelief]:
         beliefs = []
         for sh in result.selected_hypotheses:
@@ -69,8 +74,7 @@ class TransmissionOrchestrator:
                 dimension=sh.dimension,
                 hypothesis_text=sh.thesis,
                 transmission_segments=(
-                    sh.transmission_summary.split(" → ")
-                    if sh.transmission_summary else []
+                    sh.transmission_summary.split(" → ") if sh.transmission_summary else []
                 ),
                 default_regime=result.regime or "neutral",
             )
@@ -80,12 +84,13 @@ class TransmissionOrchestrator:
             beliefs.append(belief)
 
         self._update_engine.register_beliefs(beliefs)
-        logger.info("bootstrapped_beliefs count=%d regime=%s",
-                     len(beliefs), result.regime)
+        logger.info("bootstrapped_beliefs count=%d regime=%s", len(beliefs), result.regime)
         return beliefs
 
     def bootstrap_from_prediction_batch(
-        self, batch: PredictionBatch, regime: str = "neutral",
+        self,
+        batch: PredictionBatch,
+        regime: str = "neutral",
     ) -> list[ContextualBelief]:
         beliefs = []
         seen = set()
@@ -112,7 +117,7 @@ class TransmissionOrchestrator:
     def run_cycle(
         self,
         evaluation: EvaluationReport,
-        v3_diagnosis: Optional[DiagnosisReport] = None,
+        v3_diagnosis: DiagnosisReport | None = None,
         hypotheses: dict[str, CandidateHypothesis] = None,
         selected_hypotheses: list[SelectedHypothesis] = None,
         context_key: str = "",
@@ -128,7 +133,10 @@ class TransmissionOrchestrator:
             breakpoints = list(enriched.values())
         else:
             breakpoints = self._detector.diagnose_batch(
-                evaluation, hypotheses or {}, selected_hypotheses or [], context_key,
+                evaluation,
+                hypotheses or {},
+                selected_hypotheses or [],
+                context_key,
             )
 
         self._total_breakpoints += sum(1 for b in breakpoints if b.breakpoint_found)
@@ -158,7 +166,9 @@ class TransmissionOrchestrator:
 
         # Step 8: Research Findings (B.5 engine)
         findings_report = self._findings_engine.analyze(
-            breakpoints, context_key, self._cycle_count,
+            breakpoints,
+            context_key,
+            self._cycle_count,
         )
         self._research_reports.append(findings_report)
 
@@ -195,10 +205,13 @@ class TransmissionOrchestrator:
         logger.info(
             "cycle_complete #%d breaks=%d updates=%d cascade=%d "
             "competitions=%d findings=%d notes=%d stability=%.2f",
-            self._cycle_count, result.breakpoints_found,
-            len(update_batch.updates), len(cascade_changes),
+            self._cycle_count,
+            result.breakpoints_found,
+            len(update_batch.updates),
+            len(cascade_changes),
             len(competition_results),
-            findings_report.total_findings, findings_report.total_notes,
+            findings_report.total_findings,
+            findings_report.total_notes,
             self._graph.reliability_stability(),
         )
         return result
@@ -209,13 +222,16 @@ class TransmissionOrchestrator:
         results = []
         for src, tgt in self._graph.competing_pairs():
             cr = self._graph.resolve_competition(src, tgt, ctx)
-            results.append({
-                "source": src, "target": tgt,
-                "winner": cr.winner.mechanism if cr.winner else "none",
-                "margin": cr.margin,
-                "is_conclusive": cr.is_conclusive,
-                "analysis": cr.analysis,
-            })
+            results.append(
+                {
+                    "source": src,
+                    "target": tgt,
+                    "winner": cr.winner.mechanism if cr.winner else "none",
+                    "margin": cr.margin,
+                    "is_conclusive": cr.is_conclusive,
+                    "analysis": cr.analysis,
+                }
+            )
             # Apply competition updates if conclusive
             if cr.is_conclusive and cr.winner:
                 for edge in cr.mechanisms:
@@ -244,7 +260,7 @@ class TransmissionOrchestrator:
         return self._total_breakpoints
 
     @property
-    def latest_report(self) -> Optional[ResearchFindingsReport]:
+    def latest_report(self) -> ResearchFindingsReport | None:
         return self._research_reports[-1] if self._research_reports else None
 
     def summary(self) -> str:
@@ -296,7 +312,7 @@ class TransmissionCycleResult:
         self.findings_report = findings_report
         self.graph_snapshot = graph_snapshot
         self.belief_summary = belief_summary
-        self.completed_at = datetime.now(timezone.utc)
+        self.completed_at = datetime.now(UTC)
 
     @property
     def breakpoints_found(self) -> int:
@@ -322,7 +338,11 @@ class TransmissionCycleResult:
 
     def describe(self) -> str:
         new_ctx = ", ".join(f"{b[:12]}→{c}" for b, c in self.new_contexts)
-        comp = f", {self.competitions_conclusive} competitions resolved" if self.competition_results else ""
+        comp = (
+            f", {self.competitions_conclusive} competitions resolved"
+            if self.competition_results
+            else ""
+        )
         lines = [
             f"Cycle #{self.cycle_number} [{self.context_key or 'default'}]",
             f"  Predictions: {len(self.breakpoints)} ({self.healthy_predictions} healthy, "

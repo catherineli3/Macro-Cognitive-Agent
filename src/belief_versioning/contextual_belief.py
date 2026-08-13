@@ -23,8 +23,7 @@ This module provides:
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from src.schemas.transmission_v3_1 import (
@@ -168,7 +167,7 @@ class ContextSplitter:
     for the sub-condition.
 
     Example:
-        Belief "liquidity easing → equities up" 
+        Belief "liquidity easing → equities up"
         Default context: "easing" with 30 observations, accuracy 0.65
         But when VIX > 25, accuracy drops to 0.38
         → Split: create "easing__vix_over_25" context with lower weight
@@ -184,7 +183,7 @@ class ContextSplitter:
         belief: ContextualBelief,
         performance_by_condition: dict[str, dict],
         # ^ condition_key → {"sample_count": int, "accuracy": float}
-    ) -> Optional[str]:
+    ) -> str | None:
         """Check if a belief's context should be split.
 
         Returns the key of the newly created context, or None if no split needed.
@@ -313,7 +312,7 @@ class ContextualBeliefManager:
         self._dimension_index[dimension].append(v3_belief_id)
         return belief
 
-    def get(self, belief_id: str) -> Optional[ContextualBelief]:
+    def get(self, belief_id: str) -> ContextualBelief | None:
         return self._beliefs.get(belief_id)
 
     def get_by_dimension(self, dimension: str) -> list[ContextualBelief]:
@@ -362,11 +361,11 @@ class ContextualBeliefManager:
         if profile.sample_count > 0:
             profile.historical_accuracy = profile.success_count / profile.sample_count
 
-        belief.last_updated = datetime.now(timezone.utc)
+        belief.last_updated = datetime.now(UTC)
 
     # ── Context splitting ─────────────────────────────────────────────────
 
-    def check_context_split(self, belief_id: str) -> Optional[str]:
+    def check_context_split(self, belief_id: str) -> str | None:
         """Check if a belief needs context splitting. Returns new key or None."""
         belief = self._beliefs.get(belief_id)
         if not belief:

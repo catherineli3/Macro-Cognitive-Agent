@@ -1,17 +1,18 @@
-from __future__ import annotations
-
 """Shared logging infrastructure — zero external dependencies.
 
 Meets Sprint 1 AC: Request / Response / Retry / Error / Latency logging.
 Uses standard library logging with structured key=value formatting.
 """
 
+from __future__ import annotations
+
 import functools
 import inspect
 import logging
 import time
+from collections.abc import AsyncIterator, Callable, Iterator
 from contextlib import asynccontextmanager, contextmanager
-from typing import Any, AsyncIterator, Callable, Iterator
+from typing import Any
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -51,9 +52,7 @@ async def pipeline_step(
 
 
 @contextmanager
-def pipeline_step_sync(
-    logger: logging.Logger, step_name: str, **context: str
-) -> Iterator[None]:
+def pipeline_step_sync(logger: logging.Logger, step_name: str, **context: str) -> Iterator[None]:
     """Sync version of pipeline_step."""
     start = time.perf_counter()
     ctx_str = " ".join(f"{k}={v}" for k, v in context.items())
@@ -158,9 +157,7 @@ def configure_logging(level: str = "INFO", log_file: str | None = None) -> None:
     if log_file:
         from logging.handlers import RotatingFileHandler
 
-        handlers.append(
-            RotatingFileHandler(log_file, maxBytes=10 * 1024 * 1024, backupCount=5)
-        )
+        handlers.append(RotatingFileHandler(log_file, maxBytes=10 * 1024 * 1024, backupCount=5))
 
     logging.basicConfig(
         level=getattr(logging, level.upper(), logging.INFO),

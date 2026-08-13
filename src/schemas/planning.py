@@ -10,14 +10,13 @@ Key design decisions (per Architecture Review):
     - plan_explanation: human-readable justification for observability
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
 from src.domain.planning import TaskType
-
 
 # ── Task ──────────────────────────────────────────────────────────────────
 
@@ -97,7 +96,7 @@ class ExecutionPlan(BaseModel):
         description="Human-readable justification of plan structure (observability/debugging)",
     )
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="Plan creation timestamp (timezone-aware)",
     )
     version: str = Field(default="1.0", description="Schema version")

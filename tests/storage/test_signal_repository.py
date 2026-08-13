@@ -1,6 +1,6 @@
 """Tests for SqlSignalRepository — save, query, snapshot."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -26,7 +26,7 @@ def _make_signal(indicator: str = "DXY", direction: str = "bearish") -> MacroSig
         direction=SignalDirection(direction),
         strength=SignalStrength.MODERATE,
         confidence=0.75,
-        timestamp=datetime(2026, 7, 13, 10, _uid, 0, tzinfo=timezone.utc),
+        timestamp=datetime(2026, 7, 13, 10, _uid, 0, tzinfo=UTC),
         evidence=[
             SignalEvidence(
                 rule_id=f"test_rule_{_uid}",
@@ -36,7 +36,7 @@ def _make_signal(indicator: str = "DXY", direction: str = "bearish") -> MacroSig
                 interpretation="Test interpretation",
             )
         ],
-        data_timestamp=datetime(2026, 7, 13, tzinfo=timezone.utc),
+        data_timestamp=datetime(2026, 7, 13, tzinfo=UTC),
     )
 
 

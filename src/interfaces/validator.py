@@ -1,11 +1,11 @@
-from __future__ import annotations
-
 """ValidatorInterface — Abstract contract for data validation.
 
 Validation is a shared pipeline capability, NOT coupled to any single Collector.
 Every data point entering the pipeline passes through validation before
 normalization or storage.
 """
+
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
@@ -25,7 +25,10 @@ class ValidationError(Exception):
         self.schema = schema
         self.reason = reason
         self.field = field
-        super().__init__(f"Validation failed for {schema.symbol}: {reason}" + (f" (field={field})" if field else ""))
+        super().__init__(
+            f"Validation failed for {schema.symbol}: {reason}"
+            + (f" (field={field})" if field else "")
+        )
 
 
 class ValidatorInterface(ABC):

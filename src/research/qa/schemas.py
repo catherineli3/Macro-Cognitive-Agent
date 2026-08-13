@@ -6,7 +6,6 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 
 
 class MemoGrade(str, Enum):
@@ -19,17 +18,18 @@ class MemoGrade(str, Enum):
 
 
 class QAVerdict(str, Enum):
-    PASS = "pass"            # Score >= 80
+    PASS = "pass"  # Score >= 80
     CONDITIONAL = "conditional"  # 70-79, can publish with warnings
-    REJECT = "reject"        # < 70, must regenerate
+    REJECT = "reject"  # < 70, must regenerate
 
 
 @dataclass
 class DimensionScore:
     """Score for a single quality dimension."""
+
     dimension: str
-    score: float              # 0-100
-    weight: float             # Relative weight in total
+    score: float  # 0-100
+    weight: float  # Relative weight in total
     grade: MemoGrade = MemoGrade.C
     findings: list[str] = field(default_factory=list)
     recommendations: list[str] = field(default_factory=list)
@@ -39,35 +39,68 @@ class DimensionScore:
 @dataclass
 class ResearchScoreCard:
     """Complete quality scorecard for a research memo or pipeline output."""
+
     scorecard_id: str = field(default_factory=lambda: f"qa_{uuid.uuid4().hex[:8]}")
     evaluated_at: str = field(default_factory=lambda: datetime.now().isoformat())
     memo_id: str = ""
 
     # Dimension scores
-    evidence_coverage: DimensionScore = field(default_factory=lambda: DimensionScore(
-        dimension="evidence_coverage", score=0.0, weight=0.20,
-    ))
-    reasoning_consistency: DimensionScore = field(default_factory=lambda: DimensionScore(
-        dimension="reasoning_consistency", score=0.0, weight=0.20,
-    ))
-    causal_completeness: DimensionScore = field(default_factory=lambda: DimensionScore(
-        dimension="causal_completeness", score=0.0, weight=0.15,
-    ))
-    counter_quality: DimensionScore = field(default_factory=lambda: DimensionScore(
-        dimension="counter_quality", score=0.0, weight=0.15,
-    ))
-    prediction_testability: DimensionScore = field(default_factory=lambda: DimensionScore(
-        dimension="prediction_testability", score=0.0, weight=0.10,
-    ))
-    trade_actionability: DimensionScore = field(default_factory=lambda: DimensionScore(
-        dimension="trade_actionability", score=0.0, weight=0.05,
-    ))
-    hallucination_risk: DimensionScore = field(default_factory=lambda: DimensionScore(
-        dimension="hallucination_risk", score=0.0, weight=0.10,
-    ))
-    source_traceability: DimensionScore = field(default_factory=lambda: DimensionScore(
-        dimension="source_traceability", score=0.0, weight=0.05,
-    ))
+    evidence_coverage: DimensionScore = field(
+        default_factory=lambda: DimensionScore(
+            dimension="evidence_coverage",
+            score=0.0,
+            weight=0.20,
+        )
+    )
+    reasoning_consistency: DimensionScore = field(
+        default_factory=lambda: DimensionScore(
+            dimension="reasoning_consistency",
+            score=0.0,
+            weight=0.20,
+        )
+    )
+    causal_completeness: DimensionScore = field(
+        default_factory=lambda: DimensionScore(
+            dimension="causal_completeness",
+            score=0.0,
+            weight=0.15,
+        )
+    )
+    counter_quality: DimensionScore = field(
+        default_factory=lambda: DimensionScore(
+            dimension="counter_quality",
+            score=0.0,
+            weight=0.15,
+        )
+    )
+    prediction_testability: DimensionScore = field(
+        default_factory=lambda: DimensionScore(
+            dimension="prediction_testability",
+            score=0.0,
+            weight=0.10,
+        )
+    )
+    trade_actionability: DimensionScore = field(
+        default_factory=lambda: DimensionScore(
+            dimension="trade_actionability",
+            score=0.0,
+            weight=0.05,
+        )
+    )
+    hallucination_risk: DimensionScore = field(
+        default_factory=lambda: DimensionScore(
+            dimension="hallucination_risk",
+            score=0.0,
+            weight=0.10,
+        )
+    )
+    source_traceability: DimensionScore = field(
+        default_factory=lambda: DimensionScore(
+            dimension="source_traceability",
+            score=0.0,
+            weight=0.05,
+        )
+    )
 
     # Aggregate
     total_score: float = 0.0

@@ -17,16 +17,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date as date_type
-from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 
-from src.schemas.macro_snapshot import MacroSnapshot, MarketSnapshot
 from src.research.evolution.regime_gate import RegimeSnapshot
-from src.research_cycle.cycle_engine import ResearchCycleEngine, CycleResult
-from src.runtime.prediction_registry import PredictionRegistry
+from src.research_cycle.cycle_engine import CycleResult, ResearchCycleEngine
 from src.runtime.outcome_scheduler import OutcomeScheduler, SchedulerReport
+from src.runtime.prediction_registry import PredictionRegistry
 from src.runtime.report_generator import ReportGenerator
+from src.schemas.macro_snapshot import MacroSnapshot, MarketSnapshot
 from src.shared.logging import get_logger
 
 logger = get_logger(__name__)
@@ -37,7 +35,7 @@ class RunReport:
     """Complete output of one daily run."""
 
     date: str = ""
-    status: str = "pending"                # "completed" | "failed"
+    status: str = "pending"  # "completed" | "failed"
     cycle_result: CycleResult | None = None
     scheduler_report: SchedulerReport | None = None
     predictions_registered: int = 0
@@ -55,10 +53,14 @@ class RunReport:
             f"  Predictions: {self.predictions_registered} registered",
         ]
         if self.cycle_result:
-            lines.append(f"  Thesis: {self.cycle_result.thesis.title[:80] if self.cycle_result.thesis else 'N/A'}")
+            lines.append(
+                f"  Thesis: {self.cycle_result.thesis.title[:80] if self.cycle_result.thesis else 'N/A'}"
+            )
         if self.scheduler_report:
-            lines.append(f"  Evaluations: {self.scheduler_report.predictions_evaluated} eval'd, "
-                         f"{self.scheduler_report.hit_rate:.1%} hit rate")
+            lines.append(
+                f"  Evaluations: {self.scheduler_report.predictions_evaluated} eval'd, "
+                f"{self.scheduler_report.hit_rate:.1%} hit rate"
+            )
         if self.report_path:
             lines.append(f"  Report: {self.report_path}")
         if self.error:
@@ -139,8 +141,9 @@ class DailyRunner:
         try:
             # ── Step 1: Build MacroSnapshot ──────────────────
             snapshot = self._build_snapshot(macro_data or {}, regime_override)
-            logger.info("Daily Run #%d — %s — Regime: %s",
-                         self._run_count, today, snapshot.regime_label)
+            logger.info(
+                "Daily Run #%d — %s — Regime: %s", self._run_count, today, snapshot.regime_label
+            )
 
             # ── Step 2: Outcome Evaluation (yesterday's predictions) ──
             scheduler_report = self.scheduler.run(
@@ -148,9 +151,11 @@ class DailyRunner:
                 market_data=macro_data,
             )
             report.scheduler_report = scheduler_report
-            logger.info("Evaluated %d predictions (hit rate: %.1f%%)",
-                         scheduler_report.predictions_evaluated,
-                         scheduler_report.hit_rate * 100)
+            logger.info(
+                "Evaluated %d predictions (hit rate: %.1f%%)",
+                scheduler_report.predictions_evaluated,
+                scheduler_report.hit_rate * 100,
+            )
 
             # ── Step 3: Build previous outcomes map ──────────
             previous_outcomes = self._gather_previous_outcomes()
@@ -217,6 +222,7 @@ class DailyRunner:
         # ── V3.1: Try full MacroPipeline first ──────────────────
         try:
             from src.data_pipeline.macro_pipeline import MacroPipeline
+
             pipeline = MacroPipeline()
             m1_snapshot = pipeline.build_daily_macro_snapshot(
                 for_dimension=None,
@@ -257,6 +263,7 @@ class DailyRunner:
         # Re-use the bridge function from M1DailyRunner
         try:
             from scripts.run_m1_daily import bridge_m1_to_macro_snapshot
+
             snapshot = bridge_m1_to_macro_snapshot(m1_snapshot)
             if regime_override:
                 snapshot.regime = regime_override
@@ -292,9 +299,12 @@ class DailyRunner:
 
             def _dir(d, default="neutral"):
                 d_map = {
-                    "tightening": "tightening", "easing": "easing",
-                    "expansion": "accelerating", "contraction": "decelerating",
-                    "risk_on": "low", "risk_off": "high",
+                    "tightening": "tightening",
+                    "easing": "easing",
+                    "expansion": "accelerating",
+                    "contraction": "decelerating",
+                    "risk_on": "low",
+                    "risk_off": "high",
                 }
                 return d_map.get(d.get("direction", default), default)
 
@@ -405,7 +415,10 @@ class DailyRunner:
     def _build_signals(data: dict[str, float]) -> list[Any]:
         """Build MacroSignalSchema list from market data for hypothesis competition."""
         from src.schemas.signal import (
-            MacroSignalSchema, SignalDirection, SignalStrength, SignalEvidence,
+            MacroSignalSchema,
+            SignalDirection,
+            SignalEvidence,
+            SignalStrength,
         )
 
         # Map indicator keys to hypothesis dimensions
@@ -434,14 +447,19 @@ class DailyRunner:
 
                 # Direction: BULLISH = good for risk assets
                 # BEARISH indicators: VIX↑, DXY↑, rates↑, CPI↑, gold↑
-                BEARISH_INDICATORS = {"vix", "dxy", "us10y", "us2y", "gold",
-                                       "cpi_yoy", "fed_rate"}
+                BEARISH_INDICATORS = {"vix", "dxy", "us10y", "us2y", "gold", "cpi_yoy", "fed_rate"}
                 if change > 0.01:
-                    direction = (SignalDirection.BEARISH if key in BEARISH_INDICATORS
-                                 else SignalDirection.BULLISH)
+                    direction = (
+                        SignalDirection.BEARISH
+                        if key in BEARISH_INDICATORS
+                        else SignalDirection.BULLISH
+                    )
                 elif change < -0.01:
-                    direction = (SignalDirection.BULLISH if key in BEARISH_INDICATORS
-                                 else SignalDirection.BEARISH)
+                    direction = (
+                        SignalDirection.BULLISH
+                        if key in BEARISH_INDICATORS
+                        else SignalDirection.BEARISH
+                    )
                 else:
                     direction = SignalDirection.NEUTRAL
 
@@ -463,13 +481,15 @@ class DailyRunner:
                     direction=direction,
                     strength=strength,
                     confidence=confidence,
-                    evidence=[SignalEvidence(
-                        rule_id=f"market_data_{key}",
-                        rule_description=f"Market data change for {key}",
-                        input_value=value,
-                        condition=f"prev={prev_value}, current={value}, change={change:.2%}",
-                        interpretation=f"{key.upper()}: {prev_value} → {value} ({change:+.2%})",
-                    )],
+                    evidence=[
+                        SignalEvidence(
+                            rule_id=f"market_data_{key}",
+                            rule_description=f"Market data change for {key}",
+                            input_value=value,
+                            condition=f"prev={prev_value}, current={value}, change={change:.2%}",
+                            interpretation=f"{key.upper()}: {prev_value} → {value} ({change:+.2%})",
+                        )
+                    ],
                     metadata={"raw_change": change, "raw_previous": prev_value},
                 )
                 signals.append(signal)
@@ -553,11 +573,11 @@ class DailyRunner:
         """Comprehensive daily runner summary."""
         lines = [
             f"=== Daily Runner (Run {self._run_count}) ===",
-            f"",
+            "",
             f"{self.engine.summary()}",
-            f"",
+            "",
             f"{self.registry.summary()}",
-            f"",
+            "",
             f"Report dir: {self.reporter._output_dir}",
         ]
         return "\n".join(lines)

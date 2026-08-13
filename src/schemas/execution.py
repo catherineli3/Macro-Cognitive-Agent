@@ -9,13 +9,12 @@ Key design decisions:
     - Artifacts are the primary business data carrier (Memory/Reflection/Report consume them)
 """
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
 from src.domain.execution import ExecutionStatus, TaskResultStatus
-
 
 # ── TaskResult ─────────────────────────────────────────────────────────────
 
@@ -46,16 +45,16 @@ class TaskResult(BaseModel):
         default_factory=dict,
         description="Named business outputs produced by this task",
     )
-    error: Optional[str] = Field(
+    error: str | None = Field(
         default=None,
         description="Error message if status is FAILED",
     )
     started_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="Execution start timestamp",
     )
     completed_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="Execution end timestamp",
     )
     execution_time_ms: float = Field(
@@ -112,11 +111,11 @@ class ExecutionResult(BaseModel):
     )
     total_time_ms: float = Field(default=0.0, ge=0, description="Total wall-clock duration")
     started_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="Execution start timestamp",
     )
     completed_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="Execution end timestamp",
     )
 

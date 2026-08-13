@@ -15,9 +15,9 @@ No new intelligence — pure storage + query.
 from __future__ import annotations
 
 import sqlite3
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from datetime import date as date_type
-from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -60,13 +60,13 @@ class PredictionRecord:
 
     prediction_id: str
     thesis_id: str = ""
-    date: str = ""                           # YYYY-MM-DD
-    direction: str = ""                      # UP / DOWN / FLAT
-    asset: str = ""                          # SPX, US10Y, etc.
-    channel: str = ""                        # transmission channel
+    date: str = ""  # YYYY-MM-DD
+    direction: str = ""  # UP / DOWN / FLAT
+    asset: str = ""  # SPX, US10Y, etc.
+    channel: str = ""  # transmission channel
     confidence: float = 0.0
     horizon_days: int = 30
-    expected_date: str = ""                  # YYYY-MM-DD
+    expected_date: str = ""  # YYYY-MM-DD
     status: str = "pending"
     actual_value: float | None = None
     actual_date: str = ""
@@ -121,10 +121,22 @@ class PredictionRecord:
             d = dict(row)
         else:
             cols = [
-                "prediction_id", "thesis_id", "date", "direction", "asset",
-                "channel", "confidence", "horizon_days", "expected_date",
-                "status", "actual_value", "actual_date", "evaluation",
-                "thesis_title", "created_at", "evaluated_at",
+                "prediction_id",
+                "thesis_id",
+                "date",
+                "direction",
+                "asset",
+                "channel",
+                "confidence",
+                "horizon_days",
+                "expected_date",
+                "status",
+                "actual_value",
+                "actual_date",
+                "evaluation",
+                "thesis_title",
+                "created_at",
+                "evaluated_at",
             ]
             d = dict(zip(cols, row))
         return cls(**{k: v for k, v in d.items() if k in cls.__dataclass_fields__})
@@ -172,18 +184,19 @@ class PredictionRegistry:
             Number of predictions registered.
         """
         if predictions is None:
-            logger.info("No predictions to register for thesis '%s'",
-                        getattr(thesis, 'title', 'unknown'))
+            logger.info(
+                "No predictions to register for thesis '%s'", getattr(thesis, "title", "unknown")
+            )
             return 0
 
         today = date_str or date_type.today().isoformat()
-        thesis_id = getattr(thesis, 'thesis_id', 'unknown')
-        thesis_title = getattr(thesis, 'title', '')[:200]
+        thesis_id = getattr(thesis, "thesis_id", "unknown")
+        thesis_title = getattr(thesis, "title", "")[:200]
         count = 0
 
         # Unwrap batch if needed
         pred_list = predictions
-        if hasattr(predictions, 'predictions'):
+        if hasattr(predictions, "predictions"):
             pred_list = predictions.predictions
         if not isinstance(pred_list, (list, tuple)):
             logger.warning("Unsupported prediction type: %s", type(predictions))
@@ -196,8 +209,9 @@ class PredictionRegistry:
                 count += 1
 
         self._conn.commit()
-        logger.info("Registered %d predictions for thesis '%s' on %s",
-                     count, thesis_title[:60], today)
+        logger.info(
+            "Registered %d predictions for thesis '%s' on %s", count, thesis_title[:60], today
+        )
         return count
 
     @staticmethod
@@ -208,25 +222,26 @@ class PredictionRegistry:
         date_str: str,
     ) -> PredictionRecord:
         """Convert a prediction object to a PredictionRecord."""
-        pred_id = getattr(pred, 'prediction_id', '')
+        pred_id = getattr(pred, "prediction_id", "")
         if not pred_id:
             # Generate one
             import uuid
+
             pred_id = f"pred-{uuid.uuid4().hex[:12]}"
 
-        direction = str(getattr(pred, 'direction', ''))
-        asset = getattr(pred, 'asset', '') or getattr(pred, 'indicator', '')
-        channel = getattr(pred, 'transmission_channel', '') or getattr(pred, 'channel', '')
-        confidence = float(getattr(pred, 'confidence', 0.0) or 0.0)
-        horizon_raw = getattr(pred, 'horizon', 30) or 30
+        direction = str(getattr(pred, "direction", ""))
+        asset = getattr(pred, "asset", "") or getattr(pred, "indicator", "")
+        channel = getattr(pred, "transmission_channel", "") or getattr(pred, "channel", "")
+        confidence = float(getattr(pred, "confidence", 0.0) or 0.0)
+        horizon_raw = getattr(pred, "horizon", 30) or 30
         # Horizon may be string like "5d", "21d" or int
         if isinstance(horizon_raw, str):
-            horizon_raw = horizon_raw.rstrip('dD')
+            horizon_raw = horizon_raw.rstrip("dD")
         horizon = int(horizon_raw)
 
         # Compute expected date
         try:
-            expected = (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=horizon))
+            expected = datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=horizon)
             expected_str = expected.strftime("%Y-%m-%d")
         except (ValueError, TypeError):
             expected_str = ""
@@ -243,7 +258,7 @@ class PredictionRegistry:
             expected_date=expected_str,
             status="pending",
             thesis_title=thesis_title,
-            created_at=datetime.now(timezone.utc).isoformat(),
+            created_at=datetime.now(UTC).isoformat(),
         )
 
     def _insert_record(self, rec: PredictionRecord) -> None:
@@ -254,10 +269,18 @@ class PredictionRegistry:
                 thesis_title, created_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
-                rec.prediction_id, rec.thesis_id, rec.date,
-                rec.direction, rec.asset, rec.channel,
-                rec.confidence, rec.horizon_days, rec.expected_date,
-                rec.status, rec.thesis_title, rec.created_at,
+                rec.prediction_id,
+                rec.thesis_id,
+                rec.date,
+                rec.direction,
+                rec.asset,
+                rec.channel,
+                rec.confidence,
+                rec.horizon_days,
+                rec.expected_date,
+                rec.status,
+                rec.thesis_title,
+                rec.created_at,
             ),
         )
 
@@ -360,15 +383,14 @@ class PredictionRegistry:
         """
         status = "success" if success else "failed"
         actual_date = actual_date or date_type.today().isoformat()
-        evaluated_at = datetime.now(timezone.utc).isoformat()
+        evaluated_at = datetime.now(UTC).isoformat()
 
         self._conn.execute(
             """UPDATE predictions
                SET status = ?, actual_value = ?, actual_date = ?,
                    evaluation = ?, evaluated_at = ?
                WHERE prediction_id = ?""",
-            (status, actual_value, actual_date, evaluation, evaluated_at,
-             prediction_id),
+            (status, actual_value, actual_date, evaluation, evaluated_at, prediction_id),
         )
         self._conn.commit()
         logger.info("Prediction %s marked as %s", prediction_id, status)
@@ -379,7 +401,7 @@ class PredictionRegistry:
             """UPDATE predictions
                SET status = 'invalidated', evaluation = ?, evaluated_at = ?
                WHERE prediction_id = ?""",
-            (reason, datetime.now(timezone.utc).isoformat(), prediction_id),
+            (reason, datetime.now(UTC).isoformat(), prediction_id),
         )
         self._conn.commit()
 
@@ -389,7 +411,7 @@ class PredictionRegistry:
             """UPDATE predictions
                SET status = 'invalidated', evaluation = ?, evaluated_at = ?
                WHERE thesis_id = ? AND status = 'pending'""",
-            (reason, datetime.now(timezone.utc).isoformat(), thesis_id),
+            (reason, datetime.now(UTC).isoformat(), thesis_id),
         )
         self._conn.commit()
         count = cursor.rowcount
@@ -400,9 +422,7 @@ class PredictionRegistry:
 
     def stats(self) -> dict:
         """Comprehensive prediction statistics."""
-        row = self._conn.execute(
-            "SELECT COUNT(*) as total FROM predictions"
-        ).fetchone()
+        row = self._conn.execute("SELECT COUNT(*) as total FROM predictions").fetchone()
         total = row["total"] if row else 0
 
         pending_row = self._conn.execute(
@@ -424,12 +444,10 @@ class PredictionRegistry:
         hit_rate = success / evaluated if evaluated > 0 else 0.0
 
         # Average confidence of correct vs wrong predictions
-        conf_row = self._conn.execute(
-            """SELECT
+        conf_row = self._conn.execute("""SELECT
                  AVG(CASE WHEN status='success' THEN confidence END) as avg_success_conf,
                  AVG(CASE WHEN status='failed' THEN confidence END) as avg_failed_conf
-               FROM predictions WHERE status IN ('success', 'failed')"""
-        ).fetchone()
+               FROM predictions WHERE status IN ('success', 'failed')""").fetchone()
 
         return {
             "total": total,
@@ -445,8 +463,7 @@ class PredictionRegistry:
 
     def hit_rate_by_horizon(self) -> dict[str, float]:
         """Hit rate broken down by horizon buckets."""
-        rows = self._conn.execute(
-            """SELECT
+        rows = self._conn.execute("""SELECT
                  CASE
                    WHEN horizon_days <= 7  THEN '0-7d'
                    WHEN horizon_days <= 14 THEN '8-14d'
@@ -459,8 +476,7 @@ class PredictionRegistry:
                FROM predictions
                WHERE status IN ('success', 'failed')
                GROUP BY bucket
-               ORDER BY bucket"""
-        ).fetchall()
+               ORDER BY bucket""").fetchall()
 
         result = {}
         for r in rows:

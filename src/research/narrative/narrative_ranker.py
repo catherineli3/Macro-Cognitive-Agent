@@ -7,7 +7,7 @@ This is NOT a simple sort. Each factor is weighted and normalized.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from src.research.narrative.schemas import Narrative
 from src.shared.logging import get_logger
@@ -18,6 +18,7 @@ logger = get_logger(__name__)
 @dataclass
 class RankedNarrative:
     """A narrative with its full ranking breakdown."""
+
     narrative: Narrative
     rank: int = 0
     composite_score: float = 0.0
@@ -129,9 +130,7 @@ class NarrativeRanker:
         source_diversity_score = min(1.0, unique_sources / 6.0)
 
         # ── Factor 4: Model Agreement ────────────────────────────────────
-        total_models = len(narrative.supporting_models) + len(
-            narrative.contradicting_models
-        )
+        total_models = len(narrative.supporting_models) + len(narrative.contradicting_models)
         if total_models > 0:
             agreement_ratio = len(narrative.supporting_models) / total_models
         else:
@@ -180,17 +179,32 @@ class NarrativeRanker:
     ) -> list[tuple[RankedNarrative, RankedNarrative]]:
         """Identify pairs of highly-ranked but contradicting narratives."""
         pairs = []
-        bullish_kw = {"easing", "expansion", "cooling", "dovish",
-                       "soft landing", "goldilocks", "risk-on"}
-        bearish_kw = {"tightening", "contraction", "rising", "hawkish",
-                       "scare", "stress", "risk-off", "stagflation"}
+        bullish_kw = {
+            "easing",
+            "expansion",
+            "cooling",
+            "dovish",
+            "soft landing",
+            "goldilocks",
+            "risk-on",
+        }
+        bearish_kw = {
+            "tightening",
+            "contraction",
+            "rising",
+            "hawkish",
+            "scare",
+            "stress",
+            "risk-off",
+            "stagflation",
+        }
 
         for i, a in enumerate(rankings):
             a_title = a.narrative.title.lower()
             a_bullish = any(kw in a_title for kw in bullish_kw)
             a_bearish = any(kw in a_title for kw in bearish_kw)
 
-            for b in rankings[i + 1:]:
+            for b in rankings[i + 1 :]:
                 b_title = b.narrative.title.lower()
                 b_bullish = any(kw in b_title for kw in bullish_kw)
                 b_bearish = any(kw in b_title for kw in bearish_kw)

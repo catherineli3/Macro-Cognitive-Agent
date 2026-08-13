@@ -16,28 +16,31 @@ from __future__ import annotations
 import copy
 import uuid
 from collections import defaultdict
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from src.research.beliefs.schemas import BeliefDomain, BeliefStage, ResearchBelief
 
 # Active (non-retired) stages
-_ACTIVE_STAGES = frozenset({
-    BeliefStage.HYPOTHESIS.value,
-    BeliefStage.EVIDENCE_GATHERING.value,
-    BeliefStage.CONFIRMATION.value,
-    BeliefStage.CHALLENGE.value,
-    BeliefStage.CONSOLIDATION.value,
-    BeliefStage.EROSION.value,
-})
+_ACTIVE_STAGES = frozenset(
+    {
+        BeliefStage.HYPOTHESIS.value,
+        BeliefStage.EVIDENCE_GATHERING.value,
+        BeliefStage.CONFIRMATION.value,
+        BeliefStage.CHALLENGE.value,
+        BeliefStage.CONSOLIDATION.value,
+        BeliefStage.EROSION.value,
+    }
+)
 
 # Validated stages (at or beyond CONFIRMATION)
-_VALIDATED_STAGES = frozenset({
-    BeliefStage.CONFIRMATION.value,
-    BeliefStage.CHALLENGE.value,
-    BeliefStage.CONSOLIDATION.value,
-    BeliefStage.EROSION.value,
-})
+_VALIDATED_STAGES = frozenset(
+    {
+        BeliefStage.CONFIRMATION.value,
+        BeliefStage.CHALLENGE.value,
+        BeliefStage.CONSOLIDATION.value,
+        BeliefStage.EROSION.value,
+    }
+)
 
 
 class BeliefStore:
@@ -75,7 +78,7 @@ class BeliefStore:
     def save(
         self,
         beliefs: list[ResearchBelief],
-        date_str: Optional[str] = None,
+        date_str: str | None = None,
     ) -> str:
         """Save a snapshot of beliefs, keyed by date.
 
@@ -89,7 +92,7 @@ class BeliefStore:
             The date string used as the snapshot key.
         """
         if date_str is None:
-            date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            date_str = datetime.now(UTC).strftime("%Y-%m-%d")
 
         # Deep copy beliefs into the history
         self._history[date_str] = [copy.deepcopy(b) for b in beliefs]
@@ -138,16 +141,20 @@ class BeliefStore:
         self._beliefs[belief.id] = belief
 
         # Index by domain
-        domain_key = belief.domain.value if isinstance(belief.domain, BeliefDomain) else str(belief.domain)
+        domain_key = (
+            belief.domain.value if isinstance(belief.domain, BeliefDomain) else str(belief.domain)
+        )
         self._by_domain[domain_key].add(belief.id)
 
         # Index by stage
-        stage_key = belief.stage.value if isinstance(belief.stage, BeliefStage) else str(belief.stage)
+        stage_key = (
+            belief.stage.value if isinstance(belief.stage, BeliefStage) else str(belief.stage)
+        )
         self._by_stage[stage_key].add(belief.id)
 
         return belief.id
 
-    def get(self, belief_id: str) -> Optional[ResearchBelief]:
+    def get(self, belief_id: str) -> ResearchBelief | None:
         """Retrieve a belief by ID (active or retired).
 
         Args:
@@ -195,10 +202,14 @@ class BeliefStore:
         self._beliefs[belief.id] = belief
 
         # Re-index with current values
-        new_domain_key = belief.domain.value if isinstance(belief.domain, BeliefDomain) else str(belief.domain)
+        new_domain_key = (
+            belief.domain.value if isinstance(belief.domain, BeliefDomain) else str(belief.domain)
+        )
         self._by_domain[new_domain_key].add(belief.id)
 
-        new_stage_key = belief.stage.value if isinstance(belief.stage, BeliefStage) else str(belief.stage)
+        new_stage_key = (
+            belief.stage.value if isinstance(belief.stage, BeliefStage) else str(belief.stage)
+        )
         self._by_stage[new_stage_key].add(belief.id)
 
         return True
@@ -220,7 +231,9 @@ class BeliefStore:
         belief.advance_stage(BeliefStage.RETIRED, reason)
 
         # Clean indices
-        domain_key = belief.domain.value if isinstance(belief.domain, BeliefDomain) else str(belief.domain)
+        domain_key = (
+            belief.domain.value if isinstance(belief.domain, BeliefDomain) else str(belief.domain)
+        )
         self._by_domain.get(domain_key, set()).discard(belief_id)
 
         stage_key = belief.stage.value
@@ -296,9 +309,7 @@ class BeliefStore:
         """Return the number of saved snapshots."""
         return len(self._history)
 
-    def diff(
-        self, date_a: str, date_b: str
-    ) -> dict[str, list[ResearchBelief]]:
+    def diff(self, date_a: str, date_b: str) -> dict[str, list[ResearchBelief]]:
         """Compute the difference between two snapshots.
 
         Args:
@@ -319,7 +330,7 @@ class BeliefStore:
 
         modified: list[ResearchBelief] = []
         unchanged: list[ResearchBelief] = []
-        for bid in (ids_a & ids_b):
+        for bid in ids_a & ids_b:
             if beliefs_a[bid].to_dict() != beliefs_b[bid].to_dict():
                 modified.append(beliefs_b[bid])
             else:
@@ -335,13 +346,9 @@ class BeliefStore:
     def summary(self) -> dict:
         """Return a summary of the current store state."""
         stage_counts = {
-            stage_key: len(belief_ids)
-            for stage_key, belief_ids in self._by_stage.items()
+            stage_key: len(belief_ids) for stage_key, belief_ids in self._by_stage.items()
         }
-        domain_counts = {
-            domain: len(belief_ids)
-            for domain, belief_ids in self._by_domain.items()
-        }
+        domain_counts = {domain: len(belief_ids) for domain, belief_ids in self._by_domain.items()}
 
         return {
             "total_active": len(self._beliefs),

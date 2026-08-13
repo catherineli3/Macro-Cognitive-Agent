@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Optional
 
 from pydantic import BaseModel, Field, ValidationError
 
@@ -67,11 +66,11 @@ class LLMNarrativeResult(BaseModel):
         default_factory=LLMNarrativeData,
         description="Validated narrative data (LLM or fallback)",
     )
-    error: Optional[str] = Field(
+    error: str | None = Field(
         default=None,
         description="Error message if degraded",
     )
-    raw_llm_response: Optional[str] = Field(
+    raw_llm_response: str | None = Field(
         default=None,
         description="Raw LLM response for debugging, None if degraded",
     )
@@ -233,9 +232,7 @@ class LLMNarrativeEngine:
     # Internal — LLM call + validation
     # ------------------------------------------------------------------
 
-    def _call_llm(
-        self, structured_input: dict[str, object], history_context: str = ""
-    ) -> str:
+    def _call_llm(self, structured_input: dict[str, object], history_context: str = "") -> str:
         """Send structured input to LLM, return raw response text.
 
         When history_context is non-empty, it is injected before the input
@@ -292,17 +289,12 @@ class LLMNarrativeEngine:
 
         belief_text = (
             "; ".join(
-                f"{b.direction}: {b.hypothesis_statement}"
-                for b in narrative.belief_changes[:3]
+                f"{b.direction}: {b.hypothesis_statement}" for b in narrative.belief_changes[:3]
             )
             or "暂无信念变化"
         )
 
-        actions = (
-            narrative.action_items[:5]
-            if narrative.action_items
-            else []
-        )
+        actions = narrative.action_items[:5] if narrative.action_items else []
 
         return LLMNarrativeData(
             executive_summary=narrative.summary,

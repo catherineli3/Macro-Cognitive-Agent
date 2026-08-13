@@ -15,9 +15,6 @@ Design (DDR-v2):
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
-
 from src.schemas.signal import (
     CompositeSignal,
     CompositeSignalSnapshot,
@@ -38,22 +35,22 @@ _THEME_DEFINITIONS: list[dict] = [
         "name": "Liquidity Tightening",
         "conditions": {
             "liquidity": "bullish",  # DXY↑, US10Y↑ → tightening
-            "credit": "bearish",     # HYG↓
+            "credit": "bearish",  # HYG↓
         },
         "confidence_boost": 0.85,
         "summary": "Dollar strength and rising rates are tightening global liquidity. "
-                   "Credit markets are showing stress — risk assets face headwinds.",
+        "Credit markets are showing stress — risk assets face headwinds.",
         "implications": "Defensive positioning. Reduce EM exposure. Watch funding markets.",
     },
     {
         "name": "Liquidity Easing",
         "conditions": {
             "liquidity": "bearish",  # DXY↓, US10Y↓ → easing
-            "credit": "bullish",     # HYG↑
+            "credit": "bullish",  # HYG↑
         },
         "confidence_boost": 0.85,
         "summary": "Dollar weakness and falling rates are easing financial conditions. "
-                   "Credit markets supportive — risk assets benefit.",
+        "Credit markets supportive — risk assets benefit.",
         "implications": "Risk-on positioning. Consider adding to EM and credit exposure.",
     },
     {
@@ -63,7 +60,7 @@ _THEME_DEFINITIONS: list[dict] = [
         },
         "confidence_boost": 0.75,
         "summary": "Credit markets are signaling stress. High yield spreads widening, "
-                   "HYG under pressure. Watch for contagion to equities.",
+        "HYG under pressure. Watch for contagion to equities.",
         "implications": "Reduce credit exposure. Monitor HYG flows and CDS spreads.",
     },
     {
@@ -73,7 +70,7 @@ _THEME_DEFINITIONS: list[dict] = [
         },
         "confidence_boost": 0.75,
         "summary": "Growth indicators are improving. PMI, ISM, and industrial production "
-                   "show expansion — cyclical assets benefit.",
+        "show expansion — cyclical assets benefit.",
         "implications": "Overweight cyclicals. Watch for confirmation in employment data.",
     },
     {
@@ -83,7 +80,7 @@ _THEME_DEFINITIONS: list[dict] = [
         },
         "confidence_boost": 0.80,
         "summary": "Growth momentum is decelerating. Leading indicators point to "
-                   "weakening activity — defensive positioning warranted.",
+        "weakening activity — defensive positioning warranted.",
         "implications": "Defensive rotation. Monitor initial claims and consumer confidence.",
     },
     {
@@ -93,7 +90,7 @@ _THEME_DEFINITIONS: list[dict] = [
         },
         "confidence_boost": 0.80,
         "summary": "Inflation metrics are re-accelerating. This challenges the "
-                   "disinflation narrative and may delay rate cuts.",
+        "disinflation narrative and may delay rate cuts.",
         "implications": "Hedge inflation risk. Watch CPI MoM, PCE, and breakevens.",
     },
     {
@@ -104,7 +101,7 @@ _THEME_DEFINITIONS: list[dict] = [
         },
         "confidence_boost": 0.80,
         "summary": "Credit and growth signals are both supportive. Risk appetite "
-                   "is broadening — favorable environment for equities.",
+        "is broadening — favorable environment for equities.",
         "implications": "Full risk-on positioning. Add beta exposure.",
     },
     {
@@ -115,7 +112,7 @@ _THEME_DEFINITIONS: list[dict] = [
         },
         "confidence_boost": 0.85,
         "summary": "Risk aversion is dominant. Credit stress and volatility spikes "
-                   "signal a flight to safety.",
+        "signal a flight to safety.",
         "implications": "Move to cash and safe havens. Watch VIX and gold.",
     },
 ]
@@ -196,9 +193,9 @@ class CompositeSignalGenerator:
 
             # Theme name
             theme = f"{dim.title()} " + (
-                "Strengthening" if combined_dir == SignalDirection.BULLISH
-                else "Weakening" if combined_dir == SignalDirection.BEARISH
-                else "Mixed"
+                "Strengthening"
+                if combined_dir == SignalDirection.BULLISH
+                else "Weakening" if combined_dir == SignalDirection.BEARISH else "Mixed"
             )
 
             # Description
@@ -217,7 +214,9 @@ class CompositeSignalGenerator:
                 indicators=indicators_list,
                 dimensions=[dim],
                 combined_direction=combined_dir,
-                combined_strength=SignalStrength.STRONG if agreement >= 0.75 else SignalStrength.MODERATE,
+                combined_strength=(
+                    SignalStrength.STRONG if agreement >= 0.75 else SignalStrength.MODERATE
+                ),
                 combined_confidence=round(combined_conf, 4),
                 agreement_ratio=round(agreement, 4),
                 signal_diversity=round(diversity, 4),
@@ -230,7 +229,7 @@ class CompositeSignalGenerator:
     def generate_themes(
         self,
         snapshot: SignalSnapshot,
-        composites: Optional[list[CompositeSignal]] = None,
+        composites: list[CompositeSignal] | None = None,
     ) -> list[MacroTheme]:
         """Generate macro themes from individual and composite signals.
 
@@ -257,23 +256,19 @@ class CompositeSignalGenerator:
 
             for dim, expected_dir in conditions.items():
                 # Check individual signals
-                dim_signals = [
-                    s for s in snapshot.signals
-                    if s.dimension.lower() == dim
-                ]
+                dim_signals = [s for s in snapshot.signals if s.dimension.lower() == dim]
                 if dim_signals:
                     all_indicators.extend(s.indicator for s in dim_signals)
                     directions = [s.direction.value for s in dim_signals]
                     if expected_dir not in directions:
                         matching = False
                         break
-                    match_signals.extend(s.signal_id for s in dim_signals if s.direction.value == expected_dir)
+                    match_signals.extend(
+                        s.signal_id for s in dim_signals if s.direction.value == expected_dir
+                    )
 
                 # Also check composites
-                dim_composites = [
-                    c for c in composites
-                    if dim in [d.lower() for d in c.dimensions]
-                ]
+                dim_composites = [c for c in composites if dim in [d.lower() for d in c.dimensions]]
                 for c in dim_composites:
                     if c.combined_direction.value == expected_dir:
                         match_signals.append(c.composite_id)
@@ -285,39 +280,42 @@ class CompositeSignalGenerator:
                 avg_conf = 0.5
                 if match_signals:
                     dim_confs = [
-                        s.confidence for s in snapshot.signals
-                        if s.signal_id in match_signals
+                        s.confidence for s in snapshot.signals if s.signal_id in match_signals
                     ]
                     if dim_confs:
                         avg_conf = sum(dim_confs) / len(dim_confs)
 
                 activation = min(avg_conf * template["confidence_boost"], 1.0)
-                themes.append(MacroTheme(
-                    name=template["name"],
-                    activated=True,
-                    activation_score=round(activation, 4),
-                    supporting_composites=list(set(match_signals)),
-                    underlying_indicators=list(set(all_indicators)),
-                    summary=template["summary"],
-                    implications=template["implications"],
-                    confidence=round(activation, 4),
-                ))
+                themes.append(
+                    MacroTheme(
+                        name=template["name"],
+                        activated=True,
+                        activation_score=round(activation, 4),
+                        supporting_composites=list(set(match_signals)),
+                        underlying_indicators=list(set(all_indicators)),
+                        summary=template["summary"],
+                        implications=template["implications"],
+                        confidence=round(activation, 4),
+                    )
+                )
             else:
                 # Inactive theme
-                themes.append(MacroTheme(
-                    name=template["name"],
-                    activated=False,
-                    activation_score=0.0,
-                    supporting_composites=[],
-                    underlying_indicators=[],
-                    summary=template["summary"],
-                    implications=template["implications"],
-                    confidence=0.0,
-                ))
+                themes.append(
+                    MacroTheme(
+                        name=template["name"],
+                        activated=False,
+                        activation_score=0.0,
+                        supporting_composites=[],
+                        underlying_indicators=[],
+                        summary=template["summary"],
+                        implications=template["implications"],
+                        confidence=0.0,
+                    )
+                )
 
         # Determine dominant theme
         active = [t for t in themes if t.activated]
-        dominant = max(active, key=lambda t: t.activation_score).name if active else None
+        _dominant = max(active, key=lambda t: t.activation_score).name if active else None
 
         return themes
 

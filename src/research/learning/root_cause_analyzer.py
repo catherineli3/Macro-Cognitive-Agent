@@ -10,13 +10,12 @@ Goes beyond surface-level "prediction wrong":
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Optional
 
 from src.research.learning.schemas import (
-    LearningEvent,
     FailureDiagnosis,
-    RootCauseCategory,
+    LearningEvent,
     LearningLog,
+    RootCauseCategory,
 )
 
 
@@ -24,30 +23,16 @@ class RootCauseAnalyzer:
     """Deep root cause analysis of prediction and reasoning failures."""
 
     ERROR_PATTERNS = {
-        "overconfidence": (
-            'Agent consistently overestimates probability of favorable outcomes'
-        ),
-        "recency_bias": (
-            'Agent overweights recent data points relative to longer-term trends'
-        ),
-        "narrative_lock": (
-            'Agent fails to update narrative when contrary evidence emerges'
-        ),
-        "counter_neglect": (
-            'Agent systematically underestimates or ignores counterarguments'
-        ),
-        "regime_blindness": (
-            'Agent fails to detect or adapt to regime changes'
-        ),
-        "horizon_mismatch": (
-            'Agent uses wrong time horizon for the prediction type'
-        ),
-        "correlation_assumption": (
-            'Agent assumes stable correlations that break under stress'
-        ),
+        "overconfidence": ("Agent consistently overestimates probability of favorable outcomes"),
+        "recency_bias": ("Agent overweights recent data points relative to longer-term trends"),
+        "narrative_lock": ("Agent fails to update narrative when contrary evidence emerges"),
+        "counter_neglect": ("Agent systematically underestimates or ignores counterarguments"),
+        "regime_blindness": ("Agent fails to detect or adapt to regime changes"),
+        "horizon_mismatch": ("Agent uses wrong time horizon for the prediction type"),
+        "correlation_assumption": ("Agent assumes stable correlations that break under stress"),
     }
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
         self._pattern_history: dict[str, list[str]] = defaultdict(list)
 
@@ -123,58 +108,63 @@ class RootCauseAnalyzer:
 
         # Check overconfidence (high original probability + wrong)
         overconfident = [
-            d for d in diagnoses
-            if d.primary_cause in (
+            d
+            for d in diagnoses
+            if d.primary_cause
+            in (
                 RootCauseCategory.COUNTER_MISSED,
                 RootCauseCategory.NARRATIVE_WRONG,
             )
         ]
         if len(overconfident) >= 3:
-            patterns.append({
-                "pattern": "overconfidence",
-                "description": self.ERROR_PATTERNS["overconfidence"],
-                "count": len(overconfident),
-                "severity": "high" if len(overconfident) > 5 else "medium",
-            })
+            patterns.append(
+                {
+                    "pattern": "overconfidence",
+                    "description": self.ERROR_PATTERNS["overconfidence"],
+                    "count": len(overconfident),
+                    "severity": "high" if len(overconfident) > 5 else "medium",
+                }
+            )
 
         # Check narrative lock (multiple narrative failures)
         narrative_failures = [
-            d for d in diagnoses
-            if d.primary_cause == RootCauseCategory.NARRATIVE_WRONG
+            d for d in diagnoses if d.primary_cause == RootCauseCategory.NARRATIVE_WRONG
         ]
         if len(narrative_failures) >= 3:
-            patterns.append({
-                "pattern": "narrative_lock",
-                "description": self.ERROR_PATTERNS["narrative_lock"],
-                "count": len(narrative_failures),
-                "severity": "high",
-            })
+            patterns.append(
+                {
+                    "pattern": "narrative_lock",
+                    "description": self.ERROR_PATTERNS["narrative_lock"],
+                    "count": len(narrative_failures),
+                    "severity": "high",
+                }
+            )
 
         # Check counter neglect
         counter_missed = [
-            d for d in diagnoses
-            if d.primary_cause == RootCauseCategory.COUNTER_MISSED
+            d for d in diagnoses if d.primary_cause == RootCauseCategory.COUNTER_MISSED
         ]
         if len(counter_missed) >= 2:
-            patterns.append({
-                "pattern": "counter_neglect",
-                "description": self.ERROR_PATTERNS["counter_neglect"],
-                "count": len(counter_missed),
-                "severity": "high",
-            })
+            patterns.append(
+                {
+                    "pattern": "counter_neglect",
+                    "description": self.ERROR_PATTERNS["counter_neglect"],
+                    "count": len(counter_missed),
+                    "severity": "high",
+                }
+            )
 
         # Check regime blindness
-        regime_wrong = [
-            d for d in diagnoses
-            if d.primary_cause == RootCauseCategory.REGIME_WRONG
-        ]
+        regime_wrong = [d for d in diagnoses if d.primary_cause == RootCauseCategory.REGIME_WRONG]
         if len(regime_wrong) >= 2:
-            patterns.append({
-                "pattern": "regime_blindness",
-                "description": self.ERROR_PATTERNS["regime_blindness"],
-                "count": len(regime_wrong),
-                "severity": "high" if len(regime_wrong) > 3 else "medium",
-            })
+            patterns.append(
+                {
+                    "pattern": "regime_blindness",
+                    "description": self.ERROR_PATTERNS["regime_blindness"],
+                    "count": len(regime_wrong),
+                    "severity": "high" if len(regime_wrong) > 3 else "medium",
+                }
+            )
 
         return patterns
 
@@ -193,16 +183,12 @@ class RootCauseAnalyzer:
         # If > 30% of failures are from one cause → systemic
         for cause, count in cause_dist.items():
             if count / total > 0.3:
-                issues.append(
-                    f"Systemic issue: {cause} accounts for {count/total:.0%} of failures"
-                )
+                issues.append(f"Systemic issue: {cause} accounts for {count/total:.0%} of failures")
 
         # If high-severity patterns exist
         for pattern in patterns:
             if pattern["severity"] == "high":
-                issues.append(
-                    f"Systemic issue: {pattern['pattern']} — {pattern['description']}"
-                )
+                issues.append(f"Systemic issue: {pattern['pattern']} — {pattern['description']}")
 
         return issues
 

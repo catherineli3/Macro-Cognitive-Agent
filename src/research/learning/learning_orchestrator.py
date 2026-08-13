@@ -13,20 +13,16 @@ This is the brain that makes the Agent better over time.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
-from src.research.learning.schemas import (
-    LearningEvent,
-    FailureDiagnosis,
-    ImprovementAction,
-    LearningLog,
-    RootCauseCategory,
-)
-
-from src.research.learning.reasoning_feedback_v5 import ReasoningFeedbackV5
 from src.research.learning.narrative_feedback import NarrativeFeedback
-from src.research.learning.trade_feedback import TradeFeedback
+from src.research.learning.reasoning_feedback_v5 import ReasoningFeedbackV5
 from src.research.learning.root_cause_analyzer import RootCauseAnalyzer
+from src.research.learning.schemas import (
+    ImprovementAction,
+    LearningEvent,
+    LearningLog,
+)
+from src.research.learning.trade_feedback import TradeFeedback
 
 
 class LearningOrchestrator:
@@ -54,7 +50,7 @@ class LearningOrchestrator:
         report = orch.get_report()
     """
 
-    def __init__(self, config: Optional[dict] = None):
+    def __init__(self, config: dict | None = None):
         self.config = config or {}
 
         # Feedback analyzers
@@ -112,9 +108,7 @@ class LearningOrchestrator:
 
         # Step 3: Trade feedback
         if trade_details:
-            trade_action = self.trade_feedback.analyze(
-                event, diagnosis, trade_details
-            )
+            trade_action = self.trade_feedback.analyze(event, diagnosis, trade_details)
             if trade_action:
                 actions.append(trade_action)
 
@@ -164,20 +158,21 @@ class LearningOrchestrator:
             action.applied = True
             action.applied_at = datetime.now().isoformat()
             applied["applied_count"] += 1
-            applied["by_target"][action.target] = (
-                applied["by_target"].get(action.target, 0) + 1
+            applied["by_target"][action.target] = applied["by_target"].get(action.target, 0) + 1
+            applied["details"].append(
+                {
+                    "action_id": action.action_id,
+                    "target": action.target,
+                    "type": action.action_type,
+                    "description": action.description[:100],
+                }
             )
-            applied["details"].append({
-                "action_id": action.action_id,
-                "target": action.target,
-                "type": action.action_type,
-                "description": action.description[:100],
-            })
 
         # Add to log
         self.log.actions.extend(actions)
         self._pending_actions = [
-            a for a in self._pending_actions
+            a
+            for a in self._pending_actions
             if a.action_id not in {act.action_id for act in actions}
         ]
 
@@ -187,9 +182,7 @@ class LearningOrchestrator:
         """Get comprehensive learning report."""
         # Update log statistics
         self.log.total_predictions = len(self.log.events)
-        self.log.correct_predictions = sum(
-            1 for e in self.log.events if e.was_correct
-        )
+        self.log.correct_predictions = sum(1 for e in self.log.events if e.was_correct)
 
         # Track accuracy trend
         if self.log.events:
@@ -236,25 +229,25 @@ class LearningOrchestrator:
         lines.append(f"Actions applied: {report['actions_applied']}")
         lines.append("")
 
-        if report['root_cause_distribution']:
+        if report["root_cause_distribution"]:
             lines.append("Root Cause Distribution:")
             for cause, count in sorted(
-                report['root_cause_distribution'].items(),
+                report["root_cause_distribution"].items(),
                 key=lambda x: x[1],
                 reverse=True,
             ):
                 lines.append(f"  {cause}: {count}")
             lines.append("")
 
-        if report['systemic_issues']:
+        if report["systemic_issues"]:
             lines.append("Systemic Issues:")
-            for issue in report['systemic_issues']:
+            for issue in report["systemic_issues"]:
                 lines.append(f"  ! {issue}")
             lines.append("")
 
-        if report['recommendations']:
+        if report["recommendations"]:
             lines.append("Recommendations:")
-            for rec in report['recommendations']:
+            for rec in report["recommendations"]:
                 lines.append(f"  > {rec}")
 
         lines.append("=" * 60)

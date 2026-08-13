@@ -15,7 +15,7 @@ Score computation aggregates 5 dimensions:
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 from typing import Optional
 from uuid import uuid4
@@ -37,10 +37,14 @@ class ScoreComputer:
     @staticmethod
     def compute_prediction_accuracy(predictions: list[Prediction]) -> float:
         """Sub-score 1: Directional accuracy of predictions."""
-        evaluated = [p for p in predictions if hasattr(p, "status") and p.status.value == "evaluated"]
+        evaluated = [
+            p for p in predictions if hasattr(p, "status") and p.status.value == "evaluated"
+        ]
         if not evaluated:
             return 0.5  # Neutral for unproven hypotheses
-        correct = sum(1 for p in evaluated if getattr(getattr(p, "outcome", None), "correct", False))
+        correct = sum(
+            1 for p in evaluated if getattr(getattr(p, "outcome", None), "correct", False)
+        )
         return correct / len(evaluated)
 
     @staticmethod
@@ -60,7 +64,9 @@ class ScoreComputer:
     @staticmethod
     def compute_calibration_score(predictions: list[Prediction]) -> tuple[float, float]:
         """Sub-score 3: Calibration — 1.0 - ECE."""
-        evaluated = [p for p in predictions if hasattr(p, "status") and p.status.value == "evaluated"]
+        evaluated = [
+            p for p in predictions if hasattr(p, "status") and p.status.value == "evaluated"
+        ]
         if not evaluated:
             return 0.5, 0.25  # Default for unproven
         # Simple ECE: average |confidence - accuracy| per prediction
@@ -78,17 +84,22 @@ class ScoreComputer:
         """Sub-score 4: Consistency — stability across cycles."""
         if cycle_count < 2:
             return 0.5, 0.0  # Not enough data for consistency assessment
-        evaluated = [p for p in predictions if hasattr(p, "status") and p.status.value == "evaluated"]
+        evaluated = [
+            p for p in predictions if hasattr(p, "status") and p.status.value == "evaluated"
+        ]
         if len(evaluated) < 5:
             return 0.5, 0.0
-        accuracies = [1.0 if getattr(getattr(p, "outcome", None), "correct", False) else 0.0 for p in evaluated]
+        accuracies = [
+            1.0 if getattr(getattr(p, "outcome", None), "correct", False) else 0.0
+            for p in evaluated
+        ]
         mean = sum(accuracies) / len(accuracies)
         variance = sum((a - mean) ** 2 for a in accuracies) / len(accuracies)
         consistency = 1.0 - min(variance * 4, 1.0)  # Scale variance to 0-1
         return consistency, variance
 
     @staticmethod
-    def compute_learning_history(belief: Optional[AdaptiveBelief]) -> tuple[float, float, int]:
+    def compute_learning_history(belief: AdaptiveBelief | None) -> tuple[float, float, int]:
         """Sub-score 5: Has accuracy improved over time?"""
         if belief is None:
             return 0.5, 0.0, 1
@@ -99,6 +110,7 @@ class ScoreComputer:
         # Positive slope = improving, score > 0.5
         # Slope sigmoid: maps [-0.1, 0.1] to [0.1, 0.9]
         import math
+
         sigmoid_val = 1.0 / (1.0 + math.exp(-slope * 20))
         learning_score = max(0.1, min(0.9, sigmoid_val))
         return learning_score, slope, version_count
@@ -109,7 +121,7 @@ class ScoreComputer:
         predictions: list[Prediction],
         evidence_ids: list[str],
         evidence_freshness_days: float = 30.0,
-        belief: Optional[AdaptiveBelief] = None,
+        belief: AdaptiveBelief | None = None,
     ) -> HypothesisScore:
         """Compute composite HypothesisScore from all 5 sub-scores."""
         # Sub-score 1
@@ -117,7 +129,8 @@ class ScoreComputer:
 
         # Sub-score 2
         ev_quality, ev_count, ev_fresh = self.compute_evidence_quality(
-            evidence_ids, evidence_freshness_days,
+            evidence_ids,
+            evidence_freshness_days,
         )
 
         # Sub-score 3
@@ -132,18 +145,24 @@ class ScoreComputer:
 
         # Composite
         total = (
-            0.30 * pred_acc +
-            0.25 * ev_quality +
-            0.20 * cal_score +
-            0.15 * consistency +
-            0.10 * learning_score
+            0.30 * pred_acc
+            + 0.25 * ev_quality
+            + 0.20 * cal_score
+            + 0.15 * consistency
+            + 0.10 * learning_score
         )
 
         return HypothesisScore(
             hypothesis_id=hypothesis_id,
             total_score=round(total, 4),
             prediction_accuracy=round(pred_acc, 4),
-            predictions_evaluated=len([p for p in predictions if getattr(p, "status", None) and p.status.value == "evaluated"]),
+            predictions_evaluated=len(
+                [
+                    p
+                    for p in predictions
+                    if getattr(p, "status", None) and p.status.value == "evaluated"
+                ]
+            ),
             evidence_quality=round(ev_quality, 4),
             evidence_count=ev_count,
             evidence_freshness_days=ev_fresh,
@@ -155,7 +174,7 @@ class ScoreComputer:
             learning_history_score=round(learning_score, 4),
             accuracy_trajectory_slope=round(slope, 6),
             version_count=v_count,
-            computed_at=datetime.now(timezone.utc),
+            computed_at=datetime.now(UTC),
         )
 
 
@@ -184,7 +203,7 @@ class HypothesisLibrary:
         dimension: str,
         statement: str = "",
         direction: str = "neutral",
-        initial_score: Optional[HypothesisScore] = None,
+        initial_score: HypothesisScore | None = None,
     ) -> str:
         """Register a new hypothesis in the Library."""
         await self._ensure_loaded()
@@ -201,13 +220,18 @@ class HypothesisLibrary:
             direction=direction,
             current_score=score,
             score_history=[score],
-            registered_at=datetime.now(timezone.utc),
-            last_updated=datetime.now(timezone.utc),
+            registered_at=datetime.now(UTC),
+            last_updated=datetime.now(UTC),
             status="active",
         )
         self._entries[hypothesis_id] = entry
         await self._persist()
-        logger.info("hypothesis_registered id=%s dim=%s score=%.3f", hypothesis_id, dimension, score.total_score)
+        logger.info(
+            "hypothesis_registered id=%s dim=%s score=%.3f",
+            hypothesis_id,
+            dimension,
+            score.total_score,
+        )
         return hypothesis_id
 
     async def update_score(
@@ -215,8 +239,8 @@ class HypothesisLibrary:
         hypothesis_id: str,
         predictions: list[Prediction],
         evidence_ids: list[str] | None = None,
-        belief: Optional[AdaptiveBelief] = None,
-    ) -> Optional[HypothesisScore]:
+        belief: AdaptiveBelief | None = None,
+    ) -> HypothesisScore | None:
         """Recompute score after new prediction outcomes."""
         await self._ensure_loaded()
         entry = self._entries.get(hypothesis_id)
@@ -234,31 +258,34 @@ class HypothesisLibrary:
 
         entry.current_score = new_score
         entry.score_history.append(new_score)
-        entry.last_updated = datetime.now(timezone.utc)
+        entry.last_updated = datetime.now(UTC)
 
         # Auto-deprecate if score drops too low
         if new_score.total_score < 0.30 and entry.status == "active":
             entry.status = "deprecated"
-            logger.info("hypothesis_deprecated id=%s score=%.3f", hypothesis_id, new_score.total_score)
+            logger.info(
+                "hypothesis_deprecated id=%s score=%.3f", hypothesis_id, new_score.total_score
+            )
 
         await self._persist()
         return new_score
 
-    async def get(self, hypothesis_id: str) -> Optional[HypothesisLibraryEntry]:
+    async def get(self, hypothesis_id: str) -> HypothesisLibraryEntry | None:
         """Retrieve a hypothesis entry."""
         await self._ensure_loaded()
         return self._entries.get(hypothesis_id)
 
     async def get_top(
         self,
-        dimension: Optional[str] = None,
+        dimension: str | None = None,
         min_score: float = 0.6,
         limit: int = 10,
     ) -> list[HypothesisLibraryEntry]:
         """Get top-scoring active hypotheses, optionally filtered by dimension."""
         await self._ensure_loaded()
         active = [
-            e for e in self._entries.values()
+            e
+            for e in self._entries.values()
             if e.is_active and e.current_score.total_score >= min_score
         ]
         if dimension:
@@ -266,7 +293,7 @@ class HypothesisLibrary:
         active.sort(key=lambda e: e.current_score.total_score, reverse=True)
         return active[:limit]
 
-    async def get_deprecated(self, dimension: Optional[str] = None) -> list[HypothesisLibraryEntry]:
+    async def get_deprecated(self, dimension: str | None = None) -> list[HypothesisLibraryEntry]:
         """Get all deprecated hypotheses."""
         await self._ensure_loaded()
         deprecated = [e for e in self._entries.values() if e.status == "deprecated"]
@@ -279,9 +306,7 @@ class HypothesisLibrary:
         await self._ensure_loaded()
         return [e for e in self._entries.values() if e.is_active]
 
-    async def get_active_belief_ids(
-        self, dimension: str, min_score: float = 0.5
-    ) -> list[str]:
+    async def get_active_belief_ids(self, dimension: str, min_score: float = 0.5) -> list[str]:
         """Get belief IDs from active, well-scored hypotheses in a dimension."""
         entries = await self.get_top(dimension=dimension, min_score=min_score, limit=100)
         belief_ids: list[str] = []
@@ -311,7 +336,8 @@ class HypothesisLibrary:
         """Find active hypotheses with similar dimension and direction."""
         await self._ensure_loaded()
         similar = [
-            e for e in self._entries.values()
+            e
+            for e in self._entries.values()
             if e.is_active
             and e.dimension.lower() == dimension.lower()
             and e.direction.lower() == direction.lower()
@@ -326,7 +352,7 @@ class HypothesisLibrary:
         if entry is None:
             return False
         entry.status = "deprecated"
-        entry.last_updated = datetime.now(timezone.utc)
+        entry.last_updated = datetime.now(UTC)
         await self._persist()
         logger.info("hypothesis_manually_deprecated id=%s", hypothesis_id)
         return True
@@ -357,6 +383,8 @@ class HypothesisLibrary:
             "entries": entries_data,
             "total": len(entries_data),
             "active": sum(1 for e in self._entries.values() if e.is_active),
-            "persisted_at": datetime.now(timezone.utc).isoformat(),
+            "persisted_at": datetime.now(UTC).isoformat(),
         }
-        index_path.write_text(json.dumps(data, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+        index_path.write_text(
+            json.dumps(data, indent=2, ensure_ascii=False, default=str), encoding="utf-8"
+        )

@@ -9,15 +9,13 @@ Each hypothesis becomes a PredictionOutcome after a configurable observation win
 The Learning Engine consumes OutcomeSummary to adjust belief weights and calibrate confidence.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
 from src.domain.signal import SignalDirection
-
 
 # ── Outcome Verdict ──────────────────────────────────────────────────────────
 
@@ -92,11 +90,11 @@ class PredictionOutcome(BaseModel):
     )
 
     # ── Realized Outcome ───────────────────────────────────────────────
-    observed_direction: Optional[OutcomeDirection] = Field(
+    observed_direction: OutcomeDirection | None = Field(
         default=None,
         description="What actually happened (None = pending)",
     )
-    realized_value: Optional[float] = Field(
+    realized_value: float | None = Field(
         default=None,
         description="Realized indicator value (e.g., DXY = 106.5)",
     )
@@ -105,7 +103,7 @@ class PredictionOutcome(BaseModel):
         ge=1,
         description="Days waited before evaluating outcome",
     )
-    observation_end: Optional[datetime] = Field(
+    observation_end: datetime | None = Field(
         default=None,
         description="When the observation window closed",
     )
@@ -129,9 +127,9 @@ class PredictionOutcome(BaseModel):
 
     # ── Timing ─────────────────────────────────────────────────────────
     predicted_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
-    evaluated_at: Optional[datetime] = Field(
+    evaluated_at: datetime | None = Field(
         default=None,
     )
 
@@ -177,7 +175,7 @@ class OutcomeRecord(BaseModel):
     )
     outcome: PredictionOutcome = Field(...)
     recorded_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
     metadata: dict = Field(default_factory=dict)
 
@@ -247,7 +245,7 @@ class OutcomeSummary(BaseModel):
         description="Average days between prediction and evaluation",
     )
     computed_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     @property

@@ -18,16 +18,16 @@ Core components:
     Postmortem           — Post-cycle root cause analysis (D6.2)
 """
 
-from src.research_cycle.cycle_engine import ResearchCycleEngine, CycleResult
-from src.research_cycle.framework_selector import FrameworkSelector, FrameworkSelection
-from src.research_cycle.thesis_generator import ThesisGenerator
-from src.research_cycle.research_memory import (
-    ResearchMemory,
-    ResearchMemoryEntry,
-    PostmortemReport,
-)
+from src.research_cycle.cycle_engine import CycleResult, ResearchCycleEngine
+from src.research_cycle.framework_selector import FrameworkSelection, FrameworkSelector
 from src.research_cycle.outcome_tracker import OutcomeTracker, PendingThesis
 from src.research_cycle.postmortem import Postmortem
+from src.research_cycle.research_memory import (
+    PostmortemReport,
+    ResearchMemory,
+    ResearchMemoryEntry,
+)
+from src.research_cycle.thesis_generator import ThesisGenerator
 
 __all__ = [
     # Engine

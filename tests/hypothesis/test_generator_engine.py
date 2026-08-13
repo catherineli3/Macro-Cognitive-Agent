@@ -11,20 +11,19 @@ Covers:
     - Assumptions are populated and filtered
 """
 
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, timezone
 
 from src.hypothesis.engine import HypothesisEngine
 from src.hypothesis.generator import HypothesisGenerator
-from src.schemas.hypothesis import HypothesisSchema, HypothesisSet
+from src.schemas.hypothesis import HypothesisSet
 from src.schemas.signal import (
     MacroSignalSchema,
     SignalDirection,
-    SignalStrength,
     SignalEvidence,
+    SignalStrength,
 )
-from src.shared.exceptions import HypothesisError
-
 
 # ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -41,7 +40,7 @@ def make_signal(
     interpretation: str = "Dollar strengthening",
 ) -> MacroSignalSchema:
     """Factory for test signals with full evidence."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return MacroSignalSchema(
         signal_id=signal_id,
         indicator=indicator,
@@ -103,15 +102,33 @@ class TestHypothesisGenerator:
 
     def test_bullish_dominant_single_hypothesis(self, generator):
         signals = [
-            make_signal("s1", "DXY", "Liquidity", SignalDirection.BULLISH,
-                       input_value=99.0, condition="value < 100.0",
-                       interpretation="Dollar weakening"),
-            make_signal("s2", "US10Y", "Liquidity", SignalDirection.BULLISH,
-                       input_value=2.8, condition="value < 3.0",
-                       interpretation="Low rates"),
-            make_signal("s3", "HYG", "Credit", SignalDirection.BULLISH,
-                       input_value=80.0, condition="value > 78.0",
-                       interpretation="Credit healthy"),
+            make_signal(
+                "s1",
+                "DXY",
+                "Liquidity",
+                SignalDirection.BULLISH,
+                input_value=99.0,
+                condition="value < 100.0",
+                interpretation="Dollar weakening",
+            ),
+            make_signal(
+                "s2",
+                "US10Y",
+                "Liquidity",
+                SignalDirection.BULLISH,
+                input_value=2.8,
+                condition="value < 3.0",
+                interpretation="Low rates",
+            ),
+            make_signal(
+                "s3",
+                "HYG",
+                "Credit",
+                SignalDirection.BULLISH,
+                input_value=80.0,
+                condition="value > 78.0",
+                interpretation="Credit healthy",
+            ),
         ]
         hypotheses = generator.generate(signals)
         assert len(hypotheses) == 1
@@ -183,10 +200,7 @@ class TestHypothesisGenerator:
         # With Liquidity + Credit + Risk_Appetite all bearish,
         # it should produce a tightening narrative
         statement_lower = hypotheses[0].statement.lower()
-        assert any(
-            keyword in statement_lower
-            for keyword in ["tightening", "risk", "conditions"]
-        )
+        assert any(keyword in statement_lower for keyword in ["tightening", "risk", "conditions"])
 
     def test_dimension_is_metadata_only(self, generator):
         """Dimension should be set but is NOT the primary grouping mechanism."""
@@ -283,28 +297,54 @@ class TestHypothesisEngine:
         result = engine.reason(signals)
         # At least one hypothesis should have contradicting evidence
         # (Copper bullish contradicts bearish thesis)
-        has_contradictions = any(
-            h.has_contradictions for h in result.hypotheses
-        )
+        has_contradictions = any(h.has_contradictions for h in result.hypotheses)
         assert has_contradictions
 
     def test_reason_confidence_correlates_with_evidence(self, engine):
         """More supporting evidence → higher confidence."""
         # Hypothesis with 3 strong supporting signals
-        result1 = engine.reason([
-            make_signal("s1", "DXY", "Liquidity", SignalDirection.BEARISH,
-                       strength=SignalStrength.STRONG, confidence=0.90),
-            make_signal("s2", "US10Y", "Liquidity", SignalDirection.BEARISH,
-                       strength=SignalStrength.STRONG, confidence=0.85),
-            make_signal("s3", "HYG", "Credit", SignalDirection.BEARISH,
-                       strength=SignalStrength.STRONG, confidence=0.90),
-        ])
+        result1 = engine.reason(
+            [
+                make_signal(
+                    "s1",
+                    "DXY",
+                    "Liquidity",
+                    SignalDirection.BEARISH,
+                    strength=SignalStrength.STRONG,
+                    confidence=0.90,
+                ),
+                make_signal(
+                    "s2",
+                    "US10Y",
+                    "Liquidity",
+                    SignalDirection.BEARISH,
+                    strength=SignalStrength.STRONG,
+                    confidence=0.85,
+                ),
+                make_signal(
+                    "s3",
+                    "HYG",
+                    "Credit",
+                    SignalDirection.BEARISH,
+                    strength=SignalStrength.STRONG,
+                    confidence=0.90,
+                ),
+            ]
+        )
 
         # Hypothesis with 1 weak signal
-        result2 = engine.reason([
-            make_signal("s1", "DXY", "Liquidity", SignalDirection.BEARISH,
-                       strength=SignalStrength.WEAK, confidence=0.30),
-        ])
+        result2 = engine.reason(
+            [
+                make_signal(
+                    "s1",
+                    "DXY",
+                    "Liquidity",
+                    SignalDirection.BEARISH,
+                    strength=SignalStrength.WEAK,
+                    confidence=0.30,
+                ),
+            ]
+        )
 
         c1 = result1.hypotheses[0].confidence
         c2 = result2.hypotheses[0].confidence
@@ -326,7 +366,14 @@ class TestHypothesisEngine:
             # - Contains causal or explanatory language
             has_explanation = any(
                 word in h.statement.lower()
-                for word in ["tightening", "easing", "risk", "conditions",
-                           "divergence", "transition", "environment"]
+                for word in [
+                    "tightening",
+                    "easing",
+                    "risk",
+                    "conditions",
+                    "divergence",
+                    "transition",
+                    "environment",
+                ]
             )
             assert has_explanation, f"Statement lacks explanation: {h.statement}"

@@ -6,12 +6,9 @@ Key design:
     - ConfidenceDecay controls how recent outcomes are weighted vs older ones.
 """
 
-from datetime import datetime, timezone
-from typing import Optional
-from uuid import uuid4
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
-
 
 # ── Belief Weight ────────────────────────────────────────────────────────────
 
@@ -78,7 +75,7 @@ class BeliefWeight(BaseModel):
         description="Rate at which confidence decays per cycle without new evidence",
     )
     last_updated: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     @property
@@ -156,7 +153,7 @@ class LearningSummary(BaseModel):
     )
 
     generated_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
     )
 
     def get_weight(self, dimension: str) -> float:

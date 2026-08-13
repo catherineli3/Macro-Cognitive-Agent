@@ -5,16 +5,26 @@ that could change their thesis, then go research it.
 """
 
 from __future__ import annotations
-import hashlib
-from datetime import datetime, timezone
-from typing import Any, Optional
-from src.curiosity.schemas import UncertaintyNode, ResearchQuestion, CuriosityReport
 
+import hashlib
+from datetime import UTC, datetime
+from typing import Any
+
+from src.curiosity.schemas import CuriosityReport, ResearchQuestion, UncertaintyNode
 
 DOMAIN_IMPORTANCE = {
-    "liquidity": 0.9, "credit": 0.85, "inflation": 0.8, "growth": 0.85,
-    "fiscal": 0.7, "dollar": 0.75, "volatility": 0.65, "geopolitical": 0.7,
-    "housing": 0.6, "labor": 0.65, "tech_capex": 0.7, "commodities": 0.6,
+    "liquidity": 0.9,
+    "credit": 0.85,
+    "inflation": 0.8,
+    "growth": 0.85,
+    "fiscal": 0.7,
+    "dollar": 0.75,
+    "volatility": 0.65,
+    "geopolitical": 0.7,
+    "housing": 0.6,
+    "labor": 0.65,
+    "tech_capex": 0.7,
+    "commodities": 0.6,
 }
 
 QUESTION_TEMPLATES = {
@@ -44,12 +54,12 @@ class CuriosityEngine:
     def generate_questions(
         self,
         beliefs: list[Any],
-        mental_models: Optional[dict] = None,
-        learning_report: Optional[dict] = None,
-        date: Optional[str] = None,
+        mental_models: dict | None = None,
+        learning_report: dict | None = None,
+        date: str | None = None,
     ) -> CuriosityReport:
         if date is None:
-            date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            date = datetime.now(UTC).strftime("%Y-%m-%d")
 
         nodes = self._build_uncertainty_map(beliefs, learning_report)
         nodes.sort(key=lambda n: n.curiosity_score, reverse=True)
@@ -62,7 +72,10 @@ class CuriosityEngine:
         questions.sort(key=lambda q: q.priority, reverse=True)
 
         most_important = top[0].topic if top else "No clear unknown"
-        agenda = [f"#{i+1} [{q.domain.upper()}] {q.question} (P:{q.priority:.0%})" for i, q in enumerate(questions[:5])]
+        agenda = [
+            f"#{i+1} [{q.domain.upper()}] {q.question} (P:{q.priority:.0%})"
+            for i, q in enumerate(questions[:5])
+        ]
 
         return CuriosityReport(
             report_id=f"cur_{date}",
@@ -75,7 +88,9 @@ class CuriosityEngine:
             recommended_research_agenda=agenda,
         )
 
-    def _build_uncertainty_map(self, beliefs: list[Any], learning_report: Optional[dict]) -> list[UncertaintyNode]:
+    def _build_uncertainty_map(
+        self, beliefs: list[Any], learning_report: dict | None
+    ) -> list[UncertaintyNode]:
         nodes = []
         for belief in beliefs:
             title = getattr(belief, "title", "Unknown")
@@ -90,18 +105,24 @@ class CuriosityEngine:
             bid = getattr(belief, "belief_id", "") or getattr(belief, "id", "")
             content = getattr(belief, "content", "") or getattr(belief, "description", "")
 
-            nodes.append(UncertaintyNode(
-                topic=title, domain=domain,
-                current_confidence=round(confidence, 2),
-                importance=importance, uncertainty=round(uncertainty, 2),
-                curiosity_score=round(curiosity, 3),
-                related_beliefs=[bid],
-                existing_knowledge=content,
-                unknown_aspects=unknown,
-            ))
+            nodes.append(
+                UncertaintyNode(
+                    topic=title,
+                    domain=domain,
+                    current_confidence=round(confidence, 2),
+                    importance=importance,
+                    uncertainty=round(uncertainty, 2),
+                    curiosity_score=round(curiosity, 3),
+                    related_beliefs=[bid],
+                    existing_knowledge=content,
+                    unknown_aspects=unknown,
+                )
+            )
         return nodes
 
-    def _identify_aspects(self, belief: Any, confidence: float, evidence: int, domain: str) -> list[str]:
+    def _identify_aspects(
+        self, belief: Any, confidence: float, evidence: int, domain: str
+    ) -> list[str]:
         aspects = []
         if confidence < 0.5:
             aspects.append(f"Directional conviction low ({confidence:.0%})")
@@ -122,7 +143,9 @@ class CuriosityEngine:
         return aspects[:4]
 
     def _generate_question(self, node: UncertaintyNode, date: str) -> ResearchQuestion:
-        template = QUESTION_TEMPLATES.get(node.domain, "What don't we understand about {} that matters for our thesis?")
+        template = QUESTION_TEMPLATES.get(
+            node.domain, "What don't we understand about {} that matters for our thesis?"
+        )
         question = template.format(node.topic.lower())
         q_id = hashlib.md5(f"{question}{date}".encode()).hexdigest()[:12]
 
@@ -142,9 +165,11 @@ class CuriosityEngine:
             what_would_change_mind=flip,
             data_needed=DOMAIN_DATA.get(node.domain, ["Market data", "Economic data"]),
             status="open",
-            generated_at=datetime.now(timezone.utc).isoformat(),
+            generated_at=datetime.now(UTC).isoformat(),
         )
 
-    def resolve_question(self, question: ResearchQuestion, findings: str, confidence_change: float) -> ResearchQuestion:
+    def resolve_question(
+        self, question: ResearchQuestion, findings: str, confidence_change: float
+    ) -> ResearchQuestion:
         question.status = "answered"
         return question

@@ -23,16 +23,14 @@ Reuses: StateVectorBuilder.dimensions for directional scoring.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Optional
 
-from src.data_pipeline.feature_engine import FeatureSnapshot, IndicatorFeatures, FeatureDimension
+from src.data_pipeline.feature_engine import FeatureDimension, FeatureSnapshot
 from src.data_pipeline.state_vector import (
     MacroStateVector,
     StateVectorBuilder,
     StateVectorDimension,
-    DimensionScore,
 )
 from src.shared.logging import get_logger
 
@@ -46,6 +44,7 @@ logger = get_logger(__name__)
 
 class MacroCondition(Enum):
     """Categorical macro condition levels."""
+
     LOW = "low"
     MODERATE = "moderate"
     NORMAL = "normal"
@@ -62,6 +61,7 @@ class MacroCondition(Enum):
 
 class MomentumState(Enum):
     """Whether a condition is accelerating, decelerating, or stable."""
+
     ACCELERATING = "accelerating"
     DECELERATING = "decelerating"
     STABLE = "stable"
@@ -106,12 +106,12 @@ class StateAssessment:
 class MacroState:
     """Complete 5-dimension macro state snapshot."""
 
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    inflation_state: Optional[StateAssessment] = None
-    growth_state: Optional[StateAssessment] = None
-    liquidity_state: Optional[StateAssessment] = None
-    credit_state: Optional[StateAssessment] = None
-    risk_state: Optional[StateAssessment] = None
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
+    inflation_state: StateAssessment | None = None
+    growth_state: StateAssessment | None = None
+    liquidity_state: StateAssessment | None = None
+    credit_state: StateAssessment | None = None
+    risk_state: StateAssessment | None = None
 
     overall_risk_regime: str = "normal"
     aggregate_score: float = 0.5
@@ -279,9 +279,7 @@ class MacroStateLayer:
             score=score,
             key_indicators=key_indicators,
             indicator_values=indicator_values,
-            driver_changes=self._detect_driver_changes(
-                features, ["Gold", "Oil"], lookback=1
-            ),
+            driver_changes=self._detect_driver_changes(features, ["Gold", "Oil"], lookback=1),
             narrative_seeds=narrative_seeds,
         )
 
@@ -440,9 +438,7 @@ class MacroStateLayer:
             score=score,
             key_indicators=key_indicators,
             indicator_values=indicator_values,
-            driver_changes=self._detect_driver_changes(
-                features, ["HYG", "LQD"], lookback=1
-            ),
+            driver_changes=self._detect_driver_changes(features, ["HYG", "LQD"], lookback=1),
             narrative_seeds=narrative_seeds,
         )
 
@@ -514,7 +510,7 @@ class MacroStateLayer:
         return 0.0
 
     @staticmethod
-    def _get_trend(features: FeatureSnapshot, indicator_name: str) -> Optional[float]:
+    def _get_trend(features: FeatureSnapshot, indicator_name: str) -> float | None:
         """Get TREND_20D feature value for an indicator."""
         ind = features.get_indicator(indicator_name)
         if ind is None:
@@ -523,7 +519,7 @@ class MacroStateLayer:
         return fv.value if fv else None
 
     @staticmethod
-    def _infer_momentum(trends: list[Optional[float]]) -> str:
+    def _infer_momentum(trends: list[float | None]) -> str:
         """Infer momentum state from multiple trend values."""
         valid = [t for t in trends if t is not None]
         if not valid:
@@ -557,9 +553,7 @@ class MacroStateLayer:
                 changes.append(f"{name}: short-term reversal signal")
         return changes
 
-    def _compute_aggregate(
-        self, ms: MacroState, sv: MacroStateVector
-    ) -> float:
+    def _compute_aggregate(self, ms: MacroState, sv: MacroStateVector) -> float:
         """Compute weighted aggregate from all dimension scores."""
         scores = []
         weights = []

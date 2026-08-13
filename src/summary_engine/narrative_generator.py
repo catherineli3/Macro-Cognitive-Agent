@@ -13,12 +13,11 @@ Pure deterministic rules — no LLM required.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
-from src.summary_engine.macro_state_layer import MacroState, StateAssessment
-from src.summary_engine.change_detector import ChangeSignals, DivergenceSignal, MomentumSignal
 from src.shared.logging import get_logger
+from src.summary_engine.change_detector import ChangeSignals
+from src.summary_engine.macro_state_layer import MacroState
 
 logger = get_logger(__name__)
 
@@ -35,7 +34,7 @@ class MacroNarrative:
     This is the output of Phase 3, consumed by Phase 4 (CIOBrief).
     """
 
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     # Core narrative
     dominant_narrative: str = ""  # One-line macro story
@@ -193,24 +192,16 @@ class NarrativeGenerator:
         narrative.uncertainty_level = self._assess_uncertainty(macro_state, change_signals)
 
         # Step 8: Narrative strength
-        narrative.narrative_strength = self._compute_narrative_strength(
-            narrative, macro_state
-        )
+        narrative.narrative_strength = self._compute_narrative_strength(narrative, macro_state)
 
         # Step 9: Consensus check
-        narrative.is_consensus_narrative = self._check_consensus(
-            theme, macro_state, change_signals
-        )
+        narrative.is_consensus_narrative = self._check_consensus(theme, macro_state, change_signals)
 
         # Step 10: Competing narratives
-        narrative.narrative_competition = self._identify_competing_narratives(
-            theme, macro_state
-        )
+        narrative.narrative_competition = self._identify_competing_narratives(theme, macro_state)
 
         # Step 11: Narrative tension
-        narrative.narrative_tension = self._describe_tension(
-            narrative, macro_state
-        )
+        narrative.narrative_tension = self._describe_tension(narrative, macro_state)
 
         logger.info(
             "narrative_generator_done | theme=%s strength=%.2f balance=%.2f uncertainty=%s",
@@ -322,17 +313,11 @@ class NarrativeGenerator:
         specifics = []
 
         if macro_state.growth_state:
-            specifics.append(
-                f"growth {macro_state.growth_state.direction}"
-            )
+            specifics.append(f"growth {macro_state.growth_state.direction}")
         if macro_state.inflation_state:
-            specifics.append(
-                f"inflation {macro_state.inflation_state.direction}"
-            )
+            specifics.append(f"inflation {macro_state.inflation_state.direction}")
         if macro_state.liquidity_state and macro_state.liquidity_state.direction != "neutral":
-            specifics.append(
-                f"liquidity {macro_state.liquidity_state.direction}"
-            )
+            specifics.append(f"liquidity {macro_state.liquidity_state.direction}")
 
         # Include divergence signals
         divergences = [d for d in change_signals.divergence_signals if d.is_diverging]
@@ -366,23 +351,17 @@ class NarrativeGenerator:
                 for driver in state.key_indicators[:2]:
                     if driver in state.indicator_values:
                         val = state.indicator_values[driver]
-                        evidence.append(
-                            f"{name}: {state.direction} — {driver} @ {self._fmt(val)}"
-                        )
+                        evidence.append(f"{name}: {state.direction} — {driver} @ {self._fmt(val)}")
 
         # Strongest momentum signals
         for m in change_signals.momentum_signals[:3]:
             if abs(m.score) > 0.2:
-                evidence.append(
-                    f"Momentum: {m.indicator} {m.strength} (score {m.score:+.1f})"
-                )
+                evidence.append(f"Momentum: {m.indicator} {m.strength} (score {m.score:+.1f})")
 
         # Convergence confirmations
         for d in change_signals.divergence_signals:
             if not d.is_diverging and d.significance > 0.2:
-                evidence.append(
-                    f"Convergence: {d.asset_a} & {d.asset_b} — {d.interpretation}"
-                )
+                evidence.append(f"Convergence: {d.asset_a} & {d.asset_b} — {d.interpretation}")
 
         return evidence
 
@@ -408,15 +387,11 @@ class NarrativeGenerator:
             ("Liquidity", macro_state.liquidity_state),
         ]:
             if state and state.confidence < 0.5:
-                evidence.append(
-                    f"Low-confidence read on {name} (conf={state.confidence:.0%})"
-                )
+                evidence.append(f"Low-confidence read on {name} (conf={state.confidence:.0%})")
 
         # Regime change signals
         if change_signals.regime_change and change_signals.regime_change.has_shifted:
-            evidence.append(
-                f"Regime shift: {change_signals.regime_change.summary}"
-            )
+            evidence.append(f"Regime shift: {change_signals.regime_change.summary}")
 
         return evidence
 
@@ -454,7 +429,8 @@ class NarrativeGenerator:
 
         # Low-confidence states
         low_conf_states = sum(
-            1 for s in [
+            1
+            for s in [
                 macro_state.growth_state,
                 macro_state.inflation_state,
                 macro_state.liquidity_state,
@@ -503,7 +479,8 @@ class NarrativeGenerator:
 
         # State confidence
         confidences = [
-            s.confidence for s in [
+            s.confidence
+            for s in [
                 macro_state.growth_state,
                 macro_state.inflation_state,
                 macro_state.liquidity_state,
@@ -548,7 +525,8 @@ class NarrativeGenerator:
 
         # Check alignment
         directions = [
-            s.direction for s in [
+            s.direction
+            for s in [
                 macro_state.growth_state,
                 macro_state.inflation_state,
                 macro_state.liquidity_state,
@@ -558,7 +536,9 @@ class NarrativeGenerator:
 
         # If all directions are same type (all "positive" or all "negative"), more consensus-like
         positive = sum(1 for d in directions if d in ("expanding", "cooling", "easing", "risk_on"))
-        negative = sum(1 for d in directions if d in ("contracting", "rising", "tightening", "risk_off"))
+        negative = sum(
+            1 for d in directions if d in ("contracting", "rising", "tightening", "risk_off")
+        )
 
         max_align = max(positive, negative)
         return max_align >= len(directions) * 0.75

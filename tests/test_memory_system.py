@@ -8,11 +8,12 @@ Validates:
     4. Domain independence: BeliefStatus does NOT import ReflectionVerdict
     5. Stateless Reflection: Memory does NOT modify Reflection
 """
+
 import json
 import os
 import sys
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 # ── Setup ────────────────────────────────────────────────────────────────
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -20,16 +21,17 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.domain.memory import BeliefStatus, TransitionType
 from src.domain.reflection import ReflectionVerdict
 from src.domain.signal import SignalDirection
+from src.handlers.memory_handler import MemoryHandler
+from src.memory.builder import BeliefRecordBuilder
+from src.memory.store import BeliefMemoryStore
 from src.schemas.hypothesis import HypothesisEvidence, HypothesisSchema, HypothesisSet
 from src.schemas.memory import BeliefRecord
 from src.schemas.reflection import ReflectionReport, ReflectionSet
-from src.memory.builder import BeliefRecordBuilder
-from src.memory.store import BeliefMemoryStore
-from src.handlers.memory_handler import MemoryHandler
 
-now = datetime.now(timezone.utc)
+now = datetime.now(UTC)
 
 # ── Helpers ───────────────────────────────────────────────────────────────
+
 
 def make_evidence(indicator: str, signal_id: str = "") -> HypothesisEvidence:
     return HypothesisEvidence(
@@ -48,12 +50,8 @@ def make_hypothesis(hid, dim, direction, statement, confidence, s_count, c_count
         direction=direction,
         statement=statement,
         confidence=confidence,
-        supporting_evidence=[
-            make_evidence(f"ind_{i}") for i in range(s_count)
-        ],
-        contradicting_evidence=[
-            make_evidence(f"con_{i}") for i in range(c_count)
-        ],
+        supporting_evidence=[make_evidence(f"ind_{i}") for i in range(s_count)],
+        contradicting_evidence=[make_evidence(f"con_{i}") for i in range(c_count)],
         generated_at=now,
     )
 
@@ -78,27 +76,63 @@ print("=" * 70)
 
 hypotheses = HypothesisSet(
     hypotheses=[
-        make_hypothesis("h1", "Liquidity", SignalDirection.BEARISH,
-                        "Global liquidity is tightening", 0.87, s_count=4, c_count=0),
-        make_hypothesis("h2", "Growth", SignalDirection.BULLISH,
-                        "Growth outlook improving", 0.70, s_count=3, c_count=2),
-        make_hypothesis("h3", "Risk_Appetite", SignalDirection.BEARISH,
-                        "Risk appetite contracting", 0.54, s_count=2, c_count=3),
+        make_hypothesis(
+            "h1",
+            "Liquidity",
+            SignalDirection.BEARISH,
+            "Global liquidity is tightening",
+            0.87,
+            s_count=4,
+            c_count=0,
+        ),
+        make_hypothesis(
+            "h2",
+            "Growth",
+            SignalDirection.BULLISH,
+            "Growth outlook improving",
+            0.70,
+            s_count=3,
+            c_count=2,
+        ),
+        make_hypothesis(
+            "h3",
+            "Risk_Appetite",
+            SignalDirection.BEARISH,
+            "Risk appetite contracting",
+            0.54,
+            s_count=2,
+            c_count=3,
+        ),
     ],
     dimensions_covered=["Liquidity", "Growth", "Risk_Appetite"],
 )
 
 reflections = ReflectionSet(
     reports=[
-        make_report("h1", "Global liquidity is tightening",
-                    ReflectionVerdict.CONFIRMED, 0.87, 0.87,
-                    "Strong, consistent evidence."),
-        make_report("h2", "Growth outlook improving",
-                    ReflectionVerdict.UNCERTAIN, 0.70, 0.54,
-                    "Mixed signals — confidence reduced."),
-        make_report("h3", "Risk appetite contracting",
-                    ReflectionVerdict.CONFIRMED, 0.54, 0.75,
-                    "Review confirmed after adjustment."),
+        make_report(
+            "h1",
+            "Global liquidity is tightening",
+            ReflectionVerdict.CONFIRMED,
+            0.87,
+            0.87,
+            "Strong, consistent evidence.",
+        ),
+        make_report(
+            "h2",
+            "Growth outlook improving",
+            ReflectionVerdict.UNCERTAIN,
+            0.70,
+            0.54,
+            "Mixed signals — confidence reduced.",
+        ),
+        make_report(
+            "h3",
+            "Risk appetite contracting",
+            ReflectionVerdict.CONFIRMED,
+            0.54,
+            0.75,
+            "Review confirmed after adjustment.",
+        ),
     ],
 )
 
@@ -120,18 +154,24 @@ print(f"  [OK] Record 1: {records[0].status.value} Liquidity confidence={records
 assert records[1].status == BeliefStatus.IN_DOUBT
 assert records[1].confidence == 0.54  # updated, not original 0.70
 assert records[1].dimension == "Growth"
-print(f"  [OK] Record 2: {records[1].status.value} Growth confidence={records[1].confidence} (was 0.70)")
+print(
+    f"  [OK] Record 2: {records[1].status.value} Growth confidence={records[1].confidence} (was 0.70)"
+)
 
 # Record 3: CONFIRMED → HELD
 assert records[2].status == BeliefStatus.HELD
 assert records[2].confidence == 0.75  # updated confidence
-print(f"  [OK] Record 3: {records[2].status.value} Risk_Appetite confidence={records[2].confidence}")
+print(
+    f"  [OK] Record 3: {records[2].status.value} Risk_Appetite confidence={records[2].confidence}"
+)
 
 # Metadata preserved
 assert "original_confidence" in records[0].metadata
 assert records[0].metadata["verdict"] == "confirmed"
-print(f"  [OK] Metadata: verdict={records[0].metadata['verdict']}, "
-      f"original_confidence={records[0].metadata['original_confidence']}")
+print(
+    f"  [OK] Metadata: verdict={records[0].metadata['verdict']}, "
+    f"original_confidence={records[0].metadata['original_confidence']}"
+)
 
 print("\n  BeliefRecordBuilder: ALL CHECKS PASSED\n")
 
@@ -243,7 +283,7 @@ with tempfile.TemporaryDirectory() as tmpdir:
     last = store.last_belief("Liquidity")
     assert last is not None
     assert last.belief_id == r5.belief_id
-    print(f"  [OK] last_belief('Liquidity') = r5")
+    print("  [OK] last_belief('Liquidity') = r5")
 
     # Query: recent_beliefs
     recent = store.recent_beliefs("Liquidity", n=3)
@@ -251,21 +291,21 @@ with tempfile.TemporaryDirectory() as tmpdir:
     assert recent[0].belief_id == r5.belief_id  # newest first
     assert recent[1].belief_id == r4.belief_id
     assert recent[2].belief_id == r3.belief_id
-    print(f"  [OK] recent_beliefs('Liquidity', 3) = [r5, r4, r3]")
+    print("  [OK] recent_beliefs('Liquidity', 3) = [r5, r4, r3]")
 
     # Query: has_reversal
     assert store.has_reversal("Liquidity")  # r4(BEARISH) → r5(BULLISH)
-    print(f"  [OK] has_reversal('Liquidity') = True")
+    print("  [OK] has_reversal('Liquidity') = True")
 
     # Query: non-existent dimension
     assert store.last_belief("NonExistent") is None
     assert store.recent_beliefs("NonExistent") == []
     assert not store.has_reversal("NonExistent")
-    print(f"  [OK] Non-existent dimension returns empty")
+    print("  [OK] Non-existent dimension returns empty")
 
     # File exists on disk
     assert os.path.exists(store_path)
-    with open(store_path, "r") as f:
+    with open(store_path) as f:
         data = json.load(f)
     assert data["version"] == "1.0"
     assert data["count"] == 5
@@ -293,63 +333,85 @@ with tempfile.TemporaryDirectory() as tmpdir:
 
     # Edge: confidence exactly at threshold boundary
     r_a = BeliefRecord(
-        run_id="run_a", hypothesis_id="h_a", dimension="Credit",
-        statement="Credit stable", direction=SignalDirection.BULLISH,
-        confidence=0.70, status=BeliefStatus.HELD,
+        run_id="run_a",
+        hypothesis_id="h_a",
+        dimension="Credit",
+        statement="Credit stable",
+        direction=SignalDirection.BULLISH,
+        confidence=0.70,
+        status=BeliefStatus.HELD,
     )
     store.record(r_a)
     assert r_a.transition == TransitionType.NEW
 
     r_b = BeliefRecord(
-        run_id="run_b", hypothesis_id="h_b", dimension="Credit",
-        statement="Credit stable v2", direction=SignalDirection.BULLISH,
+        run_id="run_b",
+        hypothesis_id="h_b",
+        dimension="Credit",
+        statement="Credit stable v2",
+        direction=SignalDirection.BULLISH,
         confidence=0.80,  # delta = +0.10 exactly at threshold
         status=BeliefStatus.HELD,
     )
     store.record(r_b)
     # +0.10 is NOT > 0.10, so should be STABLE
-    assert r_b.transition == TransitionType.STABLE, \
-        f"Expected STABLE for delta=+0.10, got {r_b.transition.value}"
-    print(f"  [OK] delta=+0.10 → STABLE (not REINFORCED)")
+    assert (
+        r_b.transition == TransitionType.STABLE
+    ), f"Expected STABLE for delta=+0.10, got {r_b.transition.value}"
+    print("  [OK] delta=+0.10 → STABLE (not REINFORCED)")
 
     r_c = BeliefRecord(
-        run_id="run_c", hypothesis_id="h_c", dimension="Credit",
-        statement="Credit stable v3", direction=SignalDirection.BULLISH,
+        run_id="run_c",
+        hypothesis_id="h_c",
+        dimension="Credit",
+        statement="Credit stable v3",
+        direction=SignalDirection.BULLISH,
         confidence=0.901,  # delta > 0.10
         status=BeliefStatus.HELD,
     )
     store.record(r_c)
     assert r_c.transition == TransitionType.REINFORCED
-    print(f"  [OK] delta=+0.101 → REINFORCED")
+    print("  [OK] delta=+0.101 → REINFORCED")
 
     r_d = BeliefRecord(
-        run_id="run_d", hypothesis_id="h_d", dimension="Credit",
-        statement="Credit stable v4", direction=SignalDirection.BULLISH,
+        run_id="run_d",
+        hypothesis_id="h_d",
+        dimension="Credit",
+        statement="Credit stable v4",
+        direction=SignalDirection.BULLISH,
         confidence=0.70,  # delta = -0.201, negative
         status=BeliefStatus.HELD,
     )
     store.record(r_d)
     assert r_d.transition == TransitionType.WEAKENED
-    print(f"  [OK] delta=-0.201 → WEAKENED")
+    print("  [OK] delta=-0.201 → WEAKENED")
 
     # NEUTRAL → BULLISH: reversal?
     r_e = BeliefRecord(
-        run_id="run_e", hypothesis_id="h_e", dimension="Inflation",
-        statement="Inflation neutral", direction=SignalDirection.NEUTRAL,
-        confidence=0.50, status=BeliefStatus.IN_DOUBT,
+        run_id="run_e",
+        hypothesis_id="h_e",
+        dimension="Inflation",
+        statement="Inflation neutral",
+        direction=SignalDirection.NEUTRAL,
+        confidence=0.50,
+        status=BeliefStatus.IN_DOUBT,
     )
     store.record(r_e)
     assert r_e.transition == TransitionType.NEW
 
     r_f = BeliefRecord(
-        run_id="run_f", hypothesis_id="h_f", dimension="Inflation",
-        statement="Inflation rising", direction=SignalDirection.BULLISH,
-        confidence=0.65, status=BeliefStatus.HELD,
+        run_id="run_f",
+        hypothesis_id="h_f",
+        dimension="Inflation",
+        statement="Inflation rising",
+        direction=SignalDirection.BULLISH,
+        confidence=0.65,
+        status=BeliefStatus.HELD,
     )
     store.record(r_f)
     # NEUTRAL → BULLISH: different direction → REVERSED
     assert r_f.transition == TransitionType.REVERSED
-    print(f"  [OK] NEUTRAL → BULLISH → REVERSED")
+    print("  [OK] NEUTRAL → BULLISH → REVERSED")
 
 print("\n  Transition Edge Cases: ALL CHECKS PASSED\n")
 
@@ -363,42 +425,52 @@ print("=" * 70)
 # BeliefStatus must NOT import from reflection domain
 import inspect
 
+
 def _has_real_import(source: str, target: str) -> bool:
     """Check if source contains an actual import of target, not just mention in comments/strings."""
-    for line in source.split('\n'):
+    for line in source.split("\n"):
         stripped = line.strip()
         if target not in stripped:
             continue
         # Only match actual Python import statements
-        if stripped.startswith('from ') or stripped.startswith('import '):
+        if stripped.startswith("from ") or stripped.startswith("import "):
             return True
     return False
 
+
 from src.domain import memory as memory_domain
+
 source = inspect.getsource(memory_domain)
-assert not _has_real_import(source, "ReflectionVerdict"), \
-    "memory domain must NOT import ReflectionVerdict!"
+assert not _has_real_import(
+    source, "ReflectionVerdict"
+), "memory domain must NOT import ReflectionVerdict!"
 print("  [OK] memory domain does not import ReflectionVerdict")
 
 # BeliefRecord schema must NOT reference ReflectionVerdict
 from src.schemas import memory as memory_schema
+
 source = inspect.getsource(memory_schema)
-assert not _has_real_import(source, "ReflectionVerdict"), \
-    "BeliefRecord schema must NOT import ReflectionVerdict!"
+assert not _has_real_import(
+    source, "ReflectionVerdict"
+), "BeliefRecord schema must NOT import ReflectionVerdict!"
 print("  [OK] BeliefRecord schema does not import ReflectionVerdict")
 
 # BeliefMemoryStore must NOT import ReflectionVerdict
 from src.memory import store as store_mod
+
 source = inspect.getsource(store_mod)
-assert not _has_real_import(source, "ReflectionVerdict"), \
-    "BeliefMemoryStore must NOT import ReflectionVerdict!"
+assert not _has_real_import(
+    source, "ReflectionVerdict"
+), "BeliefMemoryStore must NOT import ReflectionVerdict!"
 print("  [OK] BeliefMemoryStore does not import ReflectionVerdict")
 
 # Builder MAY import ReflectionVerdict (it's the transformer)
 from src.memory import builder as builder_mod
+
 source = inspect.getsource(builder_mod)
-assert _has_real_import(source, "ReflectionVerdict"), \
-    "Builder MUST import ReflectionVerdict (it's the mapper)"
+assert _has_real_import(
+    source, "ReflectionVerdict"
+), "Builder MUST import ReflectionVerdict (it's the mapper)"
 print("  [OK] BeliefRecordBuilder correctly imports ReflectionVerdict (mapper role)")
 
 # BeliefStatus values are independent
@@ -441,7 +513,7 @@ with tempfile.TemporaryDirectory() as tmpdir:
     for r in records:
         assert isinstance(r, BeliefRecord)
         assert r.run_id == "plan_test_001"
-    print(f"  [OK] All records have correct run_id")
+    print("  [OK] All records have correct run_id")
 
     # Verify transitions
     dims_seen = set()
@@ -474,18 +546,20 @@ with tempfile.TemporaryDirectory() as tmpdir:
 
     # Write many records
     for i in range(20):
-        store.record(BeliefRecord(
-            run_id=f"run_{i:03d}",
-            hypothesis_id=f"h_{i}",
-            dimension="Test",
-            statement=f"Test belief {i}",
-            direction=SignalDirection.NEUTRAL,
-            confidence=0.50,
-            status=BeliefStatus.IN_DOUBT,
-        ))
+        store.record(
+            BeliefRecord(
+                run_id=f"run_{i:03d}",
+                hypothesis_id=f"h_{i}",
+                dimension="Test",
+                statement=f"Test belief {i}",
+                direction=SignalDirection.NEUTRAL,
+                confidence=0.50,
+                status=BeliefStatus.IN_DOUBT,
+            )
+        )
 
     # Verify file is valid JSON
-    with open(store_path, "r") as f:
+    with open(store_path) as f:
         data = json.load(f)
     assert data["count"] == 20
     assert len(data["records"]) == 20
