@@ -362,7 +362,7 @@ class TestPromptAssembly:
 
 class TestDegradation:
     def test_no_belief_store_returns_empty(self, tmp_path, monkeypatch):
-    # Isolate from real data/: force lazy default store onto a nonexistent path
+        # Isolate from real data/: force lazy default store onto a nonexistent path
         monkeypatch.setattr(
             "src.llm.retriever.BeliefMemoryStore",
             lambda *a, **k: BeliefMemoryStore(path=tmp_path / "nonexistent.json"),

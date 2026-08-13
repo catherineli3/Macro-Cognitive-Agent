@@ -444,10 +444,12 @@ class PredictionRegistry:
         hit_rate = success / evaluated if evaluated > 0 else 0.0
 
         # Average confidence of correct vs wrong predictions
-        conf_row = self._conn.execute("""SELECT
+        conf_row = self._conn.execute(
+            """SELECT
                  AVG(CASE WHEN status='success' THEN confidence END) as avg_success_conf,
                  AVG(CASE WHEN status='failed' THEN confidence END) as avg_failed_conf
-               FROM predictions WHERE status IN ('success', 'failed')""").fetchone()
+               FROM predictions WHERE status IN ('success', 'failed')"""
+        ).fetchone()
 
         return {
             "total": total,
@@ -463,7 +465,8 @@ class PredictionRegistry:
 
     def hit_rate_by_horizon(self) -> dict[str, float]:
         """Hit rate broken down by horizon buckets."""
-        rows = self._conn.execute("""SELECT
+        rows = self._conn.execute(
+            """SELECT
                  CASE
                    WHEN horizon_days <= 7  THEN '0-7d'
                    WHEN horizon_days <= 14 THEN '8-14d'
@@ -476,7 +479,8 @@ class PredictionRegistry:
                FROM predictions
                WHERE status IN ('success', 'failed')
                GROUP BY bucket
-               ORDER BY bucket""").fetchall()
+               ORDER BY bucket"""
+        ).fetchall()
 
         result = {}
         for r in rows:

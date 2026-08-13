@@ -179,7 +179,7 @@ class DailyMacroAgent:
             )
             dom_narrative = ""
             if narratives:
-                for n in (narratives if isinstance(narratives, list) else []):
+                for n in narratives if isinstance(narratives, list) else []:
                     if hasattr(n, "title"):
                         dom_narrative = n.title
                         break
